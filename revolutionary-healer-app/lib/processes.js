@@ -1035,7 +1035,6 @@ export function getFrequencyDiagnosticCheckoutUrl(identitySlug) {
 //    points (Aug 10) -- this script must never route anyone back to one of
 //    those as a Step 3 purchase.
 
-import { DIVINE_IDENTITIES, CENTRAL_MESSAGING_RULE, getDivineIdentityBySlug } from "./divineIdentities.js";
 
 // Compact reference table Claude needs in-context to actually run the
 // diagnostic -- one line per identity (name / current frequency / GAP in
