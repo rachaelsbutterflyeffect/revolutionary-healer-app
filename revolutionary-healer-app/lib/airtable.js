@@ -3,9 +3,25 @@
 
 import Airtable from "airtable";
 
-const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
-  process.env.AIRTABLE_BASE_ID
-);
+// `base` is called as a function (base(TableName)) everywhere in this file
+// and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
+// client on first actual use instead of at import time (fix, Aug 12): Next.js
+// imports API route modules during "next build" to collect page data, which
+// was executing this top-level `new Airtable(...)` and crashing the whole
+// Vercel build with "Error: An API key is required to connect to Airtable"
+// -- even though no request had reached the route yet, simply because
+// AIRTABLE_API_KEY isn't set in Vercel's Environment Variables (Rachael
+// still needs to add the real key there; see SPEC.md §9).
+let _base;
+function getBase() {
+    if (!_base) {
+          _base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
+                  process.env.AIRTABLE_BASE_ID
+                );
+    }
+    return _base;
+}
+const base = (...args) => getBase()(...args);
 
 export const Tables = {
   Members: "Members",
