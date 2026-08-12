@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
   const isCancellation = eventType === "cancellation" || eventType === "refund";
 
   const existing = await getMemberByEmail(email);
-  const fields: Record<string, unknown> = {};
+  const fields: Record<string, any> = {};
 
   if (isMemberOffer) fields.member_active = !isCancellation;
   if (isTierOffer) fields.tier_active = !isCancellation;
