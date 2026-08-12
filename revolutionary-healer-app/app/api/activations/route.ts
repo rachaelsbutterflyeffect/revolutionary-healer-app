@@ -11,6 +11,6 @@ export async function GET(req: NextRequest) {
     .select({ filterByFormula: "{active} = 1" })
     .all();
 
-  const healings = records.map((r) => r.fields);
+    const healings = records.map((r: any) => r.fields);
   return NextResponse.json({ healings, focusAreaSlug });
 }
