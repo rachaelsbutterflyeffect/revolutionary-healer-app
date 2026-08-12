@@ -1,0 +1,115 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #fbf8f4;
+  color: #2b2420;
+}
+
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px 96px;
+}
+
+.focus-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.focus-pill {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid #d8cfc2;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.focus-pill.active {
+  background: #6b4f3b;
+  color: #fff;
+  border-color: #6b4f3b;
+}
+
+.process-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.process-chip {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid #c9a15a;
+  background: #fff;
+  color: #6b4f3b;
+  cursor: pointer;
+  font-size: 12.5px;
+}
+
+.process-chip.active {
+  background: #c9a15a;
+  color: #241c0a;
+  border-color: #c9a15a;
+  font-weight: 600;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bubble {
+  padding: 10px 14px;
+  border-radius: 12px;
+  max-width: 85%;
+  line-height: 1.4;
+  font-size: 14px;
+}
+
+.bubble.user {
+  align-self: flex-end;
+  background: #6b4f3b;
+  color: #fff;
+}
+
+.bubble.assistant {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid #eee2d3;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  position: sticky;
+  bottom: 0;
+  background: #fbf8f4;
+  padding-top: 8px;
+}
+
+.composer input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #d8cfc2;
+  font-size: 14px;
+}
+
+.composer button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: none;
+  background: #6b4f3b;
+  color: #fff;
+  cursor: pointer;
+}
