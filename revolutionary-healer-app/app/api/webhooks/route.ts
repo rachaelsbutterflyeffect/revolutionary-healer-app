@@ -10,15 +10,15 @@ import base, { Tables, getMemberByEmail } from "@/lib/airtable";
 const MEMBER_OFFER_IDS = (process.env.MEMBER_OFFER_IDS ?? "").split(",").filter(Boolean);
 const TIER_OFFER_IDS = (process.env.TIER_OFFER_IDS ?? "").split(",").filter(Boolean);
 
-// Added Aug 10: the GAP Method $9 offer starts the 3-day scoped trial that
-// lib/entitlements.js's deriveEntitlement() reads via gap_trial_started_at
-// (see GAP_TRIAL_DAYS there -- currently 3). Before this change, nothing in
-// the codebase ever wrote this field, so the 3-day cutoff logic existed but
-// could never actually fire. Set GAP_TRIAL_OFFER_IDS to the real Kajabi
-// offer id for the $9 "GAP Method" checkout (see
-// step3-activation-products-reference.md's "GAP Method $9 Checkout"
-// section) once it's confirmed/published.
-const GAP_TRIAL_OFFER_IDS = (process.env.GAP_TRIAL_OFFER_IDS ?? "").split(",").filter(Boolean);
+// RETIRED (Aug 12, Rachael's explicit instruction): the $9 GAP Method offer no
+// longer auto-grants a 3-day Full Access trial. Buyers move through the 3-step
+// diagnostic for free (already paid via the $9 purchase itself); Step 3's CTA now
+// sends them to a separate Kajabi sales landing page to buy Full Access ($30/mo or
+// $347/yr) instead of unlocking a trial. GAP_TRIAL_DAYS / onGapTrial /
+// gap_trial_started_at remain defined in lib/entitlements.js for backward
+// compatibility with any already-granted trials, but nothing writes that field
+// anymore, so no new $9 purchase will ever start one. GAP_TRIAL_OFFER_IDS env var
+// is no longer read here -- safe to leave set or remove from Vercel, it's inert.
 
 // TODO(Quantum Dollars): this handler only flips member_active/tier_active today.
 // Per the reward economy in lib/quantumDollars.js + SPEC.md, a purchase of one of
@@ -29,56 +29,43 @@ const GAP_TRIAL_OFFER_IDS = (process.env.GAP_TRIAL_OFFER_IDS ?? "").split(",").f
 // offer IDs to watch for.
 
 function verifyKajabiSignature(req: NextRequest, rawBody: string): boolean {
-  // TODO: implement Kajabi's actual signature scheme once webhook docs/secret are
+    // TODO: implement Kajabi's actual signature scheme once webhook docs/secret are
   // confirmed with Rachael's Kajabi account. Never process an unverified webhook
   // in production.
   const secret = process.env.KAJABI_WEBHOOK_SECRET;
-  return Boolean(secret);
+    return Boolean(secret);
 }
 
 export async function POST(req: NextRequest) {
-  const rawBody = await req.text();
+    const rawBody = await req.text();
 
   if (!verifyKajabiSignature(req, rawBody)) {
-    return NextResponse.json({ error: "invalid signature" }, { status: 401 });
+        return NextResponse.json({ error: "invalid signature" }, { status: 401 });
   }
 
   const event = JSON.parse(rawBody);
-  const email: string | undefined = event?.member_email ?? event?.email;
-  const offerId: string | undefined = event?.offer_id;
-  const eventType: string | undefined = event?.event_type; // e.g. "purchase", "cancellation"
+    const email: string | undefined = event?.member_email ?? event?.email;
+    const offerId: string | undefined = event?.offer_id;
+    const eventType: string | undefined = event?.event_type; // e.g. "purchase", "cancellation"
 
   if (!email) {
-    return NextResponse.json({ error: "no member email in payload" }, { status: 400 });
+        return NextResponse.json({ error: "no member email in payload" }, { status: 400 });
   }
 
   const isMemberOffer = offerId ? MEMBER_OFFER_IDS.includes(offerId) : true;
-  const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
-  const isGapTrialOffer = offerId ? GAP_TRIAL_OFFER_IDS.includes(offerId) : false;
-  const isCancellation = eventType === "cancellation" || eventType === "refund";
+    const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
+    const isCancellation = eventType === "cancellation" || eventType === "refund";
 
   const existing = await getMemberByEmail(email);
-  const fields: Record<string, any> = {};
+    const fields: Record<string, any> = {};
 
   if (isMemberOffer) fields.member_active = !isCancellation;
-  if (isTierOffer) fields.tier_active = !isCancellation;
-
-  // Start the 3-day GAP trial clock exactly once. Idempotent on purpose --
-  // Kajabi (like most webhook senders) can retry/redeliver the same purchase
-  // event, and re-stamping this on every retry would silently extend the
-  // member's 3 days each time it fires. Only write it the first time we see
-  // this member with no existing gap_trial_started_at value. Not touched on
-  // cancellation/refund -- a 3-day trial is short enough that clawing it back
-  // isn't worth the complexity, matches how the free trial (trial_started_at)
-  // already behaves.
-  if (isGapTrialOffer && !isCancellation && !existing?.fields?.gap_trial_started_at) {
-    fields.gap_trial_started_at = new Date().toISOString();
-  }
+    if (isTierOffer) fields.tier_active = !isCancellation;
 
   if (existing) {
-    await base(Tables.Members).update(existing.id, fields);
+        await base(Tables.Members).update(existing.id, fields);
   } else {
-    await base(Tables.Members).create({ email, member_active: !isCancellation, ...fields });
+        await base(Tables.Members).create({ email, member_active: !isCancellation, ...fields });
   }
 
   return NextResponse.json({ ok: true });
