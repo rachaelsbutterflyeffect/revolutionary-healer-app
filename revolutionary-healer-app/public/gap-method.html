@@ -1204,6 +1204,1596 @@
     renderQ();
   }
 
+  // Aug 12 (Rachael's explicit request) -- Step 2's chat now runs on the real
+  // Claude-backed GAP_METHOD_SCRIPT_FUNNEL_UPSELL script (lib/processes.js)
+  // via the public /api/gap-chat endpoint, instead of a static canned
+  // day2Script array. gapChatHistory tracks the running conversation exactly
+  // as the Anthropic Messages API expects it ({role, content} turns);
+  // day2TurnCount drives when the "ready to move on" affordances appear.
+  var gapChatHistory = [];
+  var day2TurnCount = 0;
+
+  function buildGapContext() {
+    var key = winnerKey || 'overworker';
+    var a = ARCHETYPES[key];
+    var reveal = DIVINE_REVEAL[key];
+    var domainLabel = (DOMAINS.filter(function(d) { return d.key === selectedDomain; })[0] || {}).label || '';
+    return {
+      divineIdentity: reveal.name,
+      currentFrequency: reveal.frequency,
+      focusArea: domainLabel,
+      gapSummary: reveal.gapReadyLine + ' ' + reveal.gapStillLine,
+      gapExample: reveal.gapExample,
+      gapRestated: reveal.gapRestated,
+      identityBelief: a.identity,
+      distortionLabel: a.label
+    };
+  }
+
+  function setupDay2() {
+    var key = winnerKey || 'overworker';
+    var a = ARCHETYPES[key];
+    var reveal = DIVINE_REVEAL[key];
+    var domainLabel = selectedDomain ? DOMAINS.filter(function(d) { return d.key === selectedDomain; })[0].label : null;
+    document.getElementById('d2-intro-1').textContent = "In Step 1, we identified that you're " + reveal.name + " currently experiencing the frequency of " + reveal.frequency + ".";
+    document.getElementById('d2-note').textContent = day1Done
+      ? 'Personalized from your step 1 result: ' + a.name + (domainLabel ? ' (' + domainLabel + ')' : '')
+      : 'Complete step 1 first for your real read, showing an example (' + a.name + ') for now.';
+    gapChatHistory = [];
+    day2TurnCount = 0;
+    document.getElementById('chat-log').innerHTML = '';
+    document.getElementById('d2-continue').style.display = 'none';
+    document.getElementById('ready-btn-wrap').style.display = 'none';
+    document.getElementById('chat-input').disabled = true;
+    sendToGapChat("(Begin Step 2 now, using the member's Step 1 results as your opening context.)", true, false);
+  }
+
+  function addTypingBubble() {
+    var log = document.getElementById('chat-log');
+    var b = document.createElement('div');
+    b.className = 'bubble bot';
+    b.id = 'typing-bubble';
+    b.textContent = '···';
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }
+  function removeTypingBubble() {
+    var el = document.getElementById('typing-bubble');
+    if (el) el.remove();
+  }
+
+  // Sends one turn to the real GAP Method Step 2 chatbot. isKickoff=true means
+  // this is a hidden stage-direction message (not shown as a user bubble) --
+  // used to trigger the opening reflection and the "ready to move on" wrap-up.
+  // forceComplete=true always reveals the Step 3 continue button once the
+  // reply comes back, regardless of the completion heuristic below.
+  function sendToGapChat(userText, isKickoff, forceComplete) {
+    var input = document.getElementById('chat-input');
+    if (!isKickoff) addUserBubble(userText);
+    input.disabled = true;
+    addTypingBubble();
+    fetch('/api/gap-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userText, history: gapChatHistory, gapContext: buildGapContext() })
+    }).then(function(res) { return res.json(); })
+      .then(function(data) {
+        removeTypingBubble();
+        var reply = data.reply || "I didn't quite catch that -- can you say a bit more?";
+        addBotBubble(reply);
+        gapChatHistory.push({ role: 'user', content: userText });
+        gapChatHistory.push({ role: 'assistant', content: reply });
+        day2TurnCount++;
+        var lowered = reply.toLowerCase();
+        var seemsComplete = lowered.indexOf("let's name the gap") !== -1 ||
+          lowered.indexOf('now let\'s name') !== -1 ||
+          lowered.indexOf('begin shifting it') !== -1 ||
+          lowered.indexOf('now we can actually see it') !== -1;
+        if (forceComplete || seemsComplete || day2TurnCount >= 7) {
+          input.disabled = true;
+          document.getElementById('ready-btn-wrap').style.display = 'none';
+          document.getElementById('check2').textContent = '✓';
+          document.getElementById('d2-continue').style.display = 'block';
+        } else {
+          input.disabled = false;
+          input.focus();
+          document.getElementById('ready-btn-wrap').style.display = (day2TurnCount >= 2) ? 'block' : 'none';
+        }
+      })
+      .catch(function() {
+        removeTypingBubble();
+        addBotBubble("Sorry -- I had trouble connecting just then. Mind sending that again?");
+        input.disabled = false;
+      });
+  }
+
+  function addBotBubble(text) {
+    var log = document.getElementById('chat-log');
+    var b = document.createElement('div');
+    b.className = 'bubble bot';
+    b.textContent = text;
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }
+  function addUserBubble(text) {
+    var log = document.getElementById('chat-log');
+    var b = document.createElement('div');
+    b.className = 'bubble user';
+    b.textContent = text;
+    log.appendChild(b);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function autoGrowChatInput(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 220) + 'px';
+  }
+
+  function sendChat() {
+    var input = document.getElementById('chat-input');
+    var text = input.value.trim();
+    if (!text || input.disabled) return;
+    input.value = '';
+    input.style.height = 'auto';
+    sendToGapChat(text, false, false);
+  }
+
+  function skipToReveal() {
+    document.getElementById('ready-btn-wrap').style.display = 'none';
+    sendToGapChat("(The member is ready to move forward. Give your Step 2 completion summary now, in the style already described, then stop.)", true, true);
+  }
+
+  function setupDay3() {
+    var key = winnerKey || 'overworker';
+    var a = ARCHETYPES[key];
+    var reveal = DIVINE_REVEAL[key];
+    var domainLabel = (DOMAINS.filter(function(d) { return d.key === selectedDomain; })[0] || {}).label || '';
+
+    // Section 1 -- Your Gap: identity · current distortion (frequency) · focus,
+    // then the same want/reinforcing/contradiction copy used on the Step 1
+    // reveal (gapReadyLine+gapStillLine / gapExample / gapRestated), closed
+    // with "That's your Gap." per Rachael's Step 3 spec (Aug 10, later still).
+    document.getElementById('d3-meta').textContent = reveal.name + ' · ' + reveal.frequency + (domainLabel ? ' · ' + domainLabel : '');
+    document.getElementById('d3-gap-contradiction').innerHTML = reveal.gapReadyLine + '<br>' + reveal.gapStillLine;
+    document.getElementById('d3-gap-example').textContent = reveal.gapExample;
+    document.getElementById('d3-gap-restated').textContent = reveal.gapRestated;
+
+    // Section 2 -- Your personalized activation. a-teaser now uses the new
+    // per-identity activationReason field ("Use this when you notice
+    // yourself... This activation is designed to help you interrupt that
+    // pattern...") instead of the older, more generic activation.teaser, per
+    // Rachael's rule that the description must connect directly to the
+    // specific pattern from Step 2, not describe the activation in vague
+    // energetic terms alone.
+    document.getElementById('a-tag').textContent = a.activation.type;
+    document.getElementById('a-title').textContent = a.activation.title;
+    document.getElementById('a-meta').textContent = a.activation.type + ' · ' + a.activation.duration;
+    document.getElementById('a-teaser').textContent = reveal.activationReason;
+    document.getElementById('check3').textContent = '✓';
+  }
+
+  function updateQuantumDollarsBadge() {
+    document.getElementById('qd-count').textContent = quantumDollars;
+    var unlockedCount = (fullAccess || gapTrialStarted) ? 7 : 0;
+    document.getElementById('unlocked-count').textContent = unlockedCount;
+    var tierLabel = fullAccess ? 'Tier 2 · Full Access' : (gapTrialStarted ? 'GAP Trial · 3-Day Full Access' : 'GAP Method Access');
+    document.getElementById('tier-label').textContent = tierLabel;
+  }
+
+  function renderActivationState() {
+    var key = winnerKey || 'overworker';
+    var unlocked = fullAccess || gapTrialStarted;
+    var unlockBtn = document.getElementById('a-unlock-btn');
+    if (unlocked) {
+      unlockBtn.textContent = 'Go to my activation →';
+    } else {
+      unlockBtn.textContent = 'Open my activation →';
+    }
+    // Section 3 (Enter Revolutionary Healer) + Section 4 (access note) now
+    // live inside the #revolution-modal popup (Aug 10, later still --
+    // Rachael asked for this to pop up on click instead of appearing inline
+    // on the page) -- a-unlock-btn's onclick calls openRevolutionModal()
+    // directly every time it's clicked. This slim on-page confirmation +
+    // "See what's included" reopen button only appear once the activation
+    // has actually been opened.
+    document.getElementById('d3-confirmation').style.display = unlocked ? 'block' : 'none';
+
+    var chatOpen = fullAccess || gapTrialStarted;
+    document.getElementById('a-chat-btn').textContent = chatOpen ? 'Ask about this in chat' : 'Ask about this in chat 🔒';
+
+    var upsellMonthlyBtn = document.getElementById('upsell-monthly-btn');
+    var upsellAnnualBtn = document.getElementById('upsell-annual-btn');
+    var upsellNote = document.getElementById('upsell-note-text');
+    if (fullAccess) {
+      upsellNote.textContent = 'You have Full Access -- all activations and unlimited chat with your guide are unlocked on your account.';
+      upsellMonthlyBtn.style.display = 'none';
+      upsellAnnualBtn.style.display = 'none';
+    }
+
+    // Tier 1 QD-for-chat-pass mechanic RETIRED (Aug 10 paywall flip): this
+    // card used to let a single-$9-activation member (no bot access by
+    // default) spend Quantum Dollars on a temporary Chat Pass, or bank them
+    // toward "the next $9 activation." Neither scenario is reachable in this
+    // funnel anymore -- the $9 GAP Method purchase now happens before Step 1
+    // and grants unlimited chat automatically the moment the activation
+    // opens on Step 3 (see openGapActivation()/gapTrialStarted above), and
+    // there is no more "next $9 activation" to buy since all 7 unlock
+    // together. Card stays hidden here; the numbers it referenced
+    // (CHAT_PASS_COST, ACTIVATION_CREDIT_PER_QUANTUM_DOLLAR) are unchanged
+    // and untouched in case this is ever revived elsewhere.
+    document.getElementById('tier1-spend-card').style.display = 'none';
+
+    // Tier 2: Quantum Dollars become an ongoing engagement reward -- milestone
+    // unlocks instead of a spend-and-lose currency.
+    var t2Card = document.getElementById('tier2-rewards-card');
+    if (fullAccess) {
+      t2Card.style.display = 'block';
+      document.getElementById('t2-qd-count').textContent = quantumDollars;
+
+      var mmPct = Math.min(100, Math.round((quantumDollars / MOMENTUM_MANIFESTOR_THRESHOLD) * 100));
+      document.getElementById('mm-progress-fill').style.width = mmPct + '%';
+      document.getElementById('mm-progress-label').textContent = momentumUnlocked ? 'Unlocked ✓' : (quantumDollars + ' / ' + MOMENTUM_MANIFESTOR_THRESHOLD);
+      var mmBtn = document.getElementById('mm-unlock-btn');
+      mmBtn.disabled = momentumUnlocked || quantumDollars < MOMENTUM_MANIFESTOR_THRESHOLD;
+      mmBtn.textContent = momentumUnlocked ? 'Momentum Manifestor unlocked ✓' : 'Unlock Momentum Manifestor';
+
+      var qrPct = Math.min(100, Math.round((quantumDollars / QUANTUM_RECODE_THRESHOLD) * 100));
+      document.getElementById('qr-progress-fill').style.width = qrPct + '%';
+      document.getElementById('qr-progress-label').textContent = quantumRecodeUnlocked ? 'Unlocked ✓' : (quantumDollars + ' / ' + QUANTUM_RECODE_THRESHOLD);
+      var qrBtn = document.getElementById('qr-unlock-btn');
+      qrBtn.disabled = quantumRecodeUnlocked || quantumDollars < QUANTUM_RECODE_THRESHOLD;
+      qrBtn.textContent = quantumRecodeUnlocked ? 'Quantum Recode unlocked ✓' : 'Unlock 30-min Quantum Recode with Rachael';
+    } else {
+      t2Card.style.display = 'none';
+    }
+
+    updateQuantumDollarsBadge();
+  }
+
+  // --- My Quantum Dollars: individual ledger + modal ---
+  function logQuantumDollars(desc, delta) {
+    quantumDollarsLog.unshift({
+      desc: desc,
+      delta: delta,
+      time: new Date().toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+    });
+    renderQuantumDollarsLog();
+  }
+
+  function renderQuantumDollarsLog() {
+    document.getElementById('modal-qd-count').textContent = quantumDollars;
+    document.getElementById('modal-how-it-works').textContent = fullAccess
+      ? 'You have Full Access, so Quantum Dollars now fund real unlocks: 500 for Momentum Manifestor, 1000 for a live Quantum Recode session with Rachael. They keep adding up the more you use the app.'
+      : 'Your $9 GAP Method access already includes unlimited chat and all 7 activations for 3 days, so there\'s nothing to spend Quantum Dollars on yet — they simply keep building toward Full Access rewards once you upgrade.';
+    var logEl = document.getElementById('qd-log');
+    logEl.innerHTML = '';
+    if (quantumDollarsLog.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'qd-log-empty';
+      empty.textContent = 'Nothing yet — unlock your first activation to start earning.';
+      logEl.appendChild(empty);
+      return;
+    }
+    quantumDollarsLog.forEach(function(entry) {
+      var row = document.createElement('div');
+      row.className = 'qd-log-row';
+      var desc = document.createElement('div');
+      desc.className = 'desc';
+      desc.textContent = entry.desc;
+      var right = document.createElement('div');
+      right.style.textAlign = 'right';
+      var delta = document.createElement('div');
+      delta.className = 'delta ' + (entry.delta > 0 ? 'pos' : (entry.delta < 0 ? 'neg' : ''));
+      delta.textContent = entry.delta > 0 ? '+' + entry.delta : (entry.delta < 0 ? String(entry.delta) : '—');
+      var meta = document.createElement('div');
+      meta.className = 'meta';
+      meta.textContent = entry.time;
+      right.appendChild(delta);
+      right.appendChild(meta);
+      row.appendChild(desc);
+      row.appendChild(right);
+      logEl.appendChild(row);
+    });
+  }
+
+  function openQuantumDollarsModal() {
+    renderQuantumDollarsLog();
+    document.getElementById('quantum-dollars-modal').classList.add('active');
+  }
+
+  function closeQuantumDollarsModal() {
+    document.getElementById('quantum-dollars-modal').classList.remove('active');
+  }
+
+  // Aug 10 (later still) -- "Your Revolution starts here" + the access note +
+  // the de-emphasized upsell mention used to render inline on the page below
+  // the activation card. Rachael asked for this to pop up in a modal instead,
+  // triggered every time the activation button is clicked ("Open my
+  // activation" the first time, "Go to my activation" after), so it's easier
+  // to see instead of requiring a scroll. Mirrors the existing Quantum
+  // Dollars modal pattern (.modal-overlay/.modal-card/.modal-close) above.
+  function openRevolutionModal() {
+    document.getElementById('revolution-modal').classList.add('active');
+  }
+
+  function closeRevolutionModal() {
+    document.getElementById('revolution-modal').classList.remove('active');
+  }
+
+  // Aug 10 paywall flip: this used to be simulatePurchase(), a preview-only
+  // stand-in for a real $9 checkout at Step 3. There is no checkout left to
+  // simulate -- the $9 already happened before Step 1, so opening the
+  // activation for real (via this same click) is what starts the 3-day GAP
+  // trial. +90 Quantum Dollars still awards on this same moment, same number
+  // as before, just no longer framed as a purchase.
+  function openGapActivation() {
+    var key = winnerKey || 'overworker';
+    if (!gapTrialStarted) {
+      gapTrialStarted = true;
+      quantumDollars += QUANTUM_DOLLARS_PER_ACTIVATION;
+      var a = ARCHETYPES[key];
+      logQuantumDollars('Opened ' + a.activation.title + ' — 3-Day Full Access started', QUANTUM_DOLLARS_PER_ACTIVATION);
+    }
+    renderActivationState();
+  }
+
+  function simulateFullAccess() {
+    fullAccess = true;
+    logQuantumDollars('Upgraded to Full Access — Tier 2 unlocked', 0);
+    renderActivationState();
+  }
+
+  function redeemChatPass() {
+    if (quantumDollars < CHAT_PASS_COST || fullAccess) return;
+    quantumDollars -= CHAT_PASS_COST;
+    chatPassActive = true;
+    logQuantumDollars('Redeemed 24-hour Chat Pass', -CHAT_PASS_COST);
+    renderActivationState();
+  }
+
+  function simulateEarnQuantumDollars() {
+    quantumDollars += QUANTUM_DOLLARS_PER_ACTIVATION;
+    logQuantumDollars('Completed an activation', QUANTUM_DOLLARS_PER_ACTIVATION);
+    renderActivationState();
+  }
+
+  function unlockMomentumManifestor() {
+    if (momentumUnlocked || quantumDollars < MOMENTUM_MANIFESTOR_THRESHOLD) return;
+    momentumUnlocked = true;
+    logQuantumDollars('Unlocked Momentum Manifestor 🎉', 0);
+    renderActivationState();
+  }
+
+  function unlockQuantumRecode() {
+    if (quantumRecodeUnlocked || quantumDollars < QUANTUM_RECODE_THRESHOLD) return;
+    quantumRecodeUnlocked = true;
+    logQuantumDollars('Unlocked 30-min Quantum Recode with Rachael 🎉', 0);
+    renderActivationState();
+  }
+
+  function askInChat() {
+    var note = document.getElementById('chat-gate-note');
+    var chatOpen = fullAccess || gapTrialStarted;
+    if (!chatOpen) {
+      note.style.display = 'block';
+      note.textContent = 'Chat unlocks the instant you open your activation above — click "Open my activation now" to start your unlimited 3-day chat access.';
+      var scrollTarget = document.getElementById('d3-activation-card');
+      if (scrollTarget) scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      note.style.display = 'none';
+      alert('(preview) This would open live chat with your guide.');
+    }
+  }
+</script>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The GAP Method | The Revolutionary Healer</title>
+<style>
+  :root {
+    --black: #121110;
+    --panel: #1B1815;
+    --panel-2: #221E19;
+    --taupe: #A9997F;
+    --taupe-soft: #8C8272;
+    --taupe-line: #3A342B;
+    --gold: #CFA646;
+    --gold-soft: #E4C77A;
+    --white: #F6F2E9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--black);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  .serif { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; }
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 24px; }
+
+  .topbar { border-bottom: 1px solid var(--taupe-line); padding: 20px 0; position: sticky; top: 0; background: var(--black); z-index: 10; }
+  .topbar .wrap { max-width: 720px; }
+  .eyebrow-top { color: var(--gold); font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: 21px; font-weight: 400; letter-spacing: 0.05em; margin-bottom: 14px; text-align: center; }
+  .eyebrow-top .tm { font-size: 0.4em; vertical-align: super; letter-spacing: normal; }
+  .day-tabs { display: flex; gap: 10px; justify-content: center; }
+  .day-tab {
+    font-size: 12.5px; color: var(--taupe); background: transparent; border: 1px solid var(--taupe-line);
+    border-radius: 999px; padding: 8px 16px; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px;
+  }
+  .day-tab.active { background: var(--gold); border-color: var(--gold); color: #241C0A; font-weight: 600; }
+  .day-tab .check { color: var(--gold); }
+  .day-tab.active .check { color: #241C0A; }
+
+  .access-note { text-align: center; font-size: 12px; color: var(--gold-soft); margin-top: 12px; line-height: 1.5; }
+  .access-note a { color: var(--gold-soft); }
+
+  .stage { padding: 56px 0 80px; }
+  .card { background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 18px; padding: 42px 38px; }
+  .center { text-align: center; }
+
+  .eyebrow { color: var(--gold); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 26px; font-weight: 400; margin: 0 0 14px; color: var(--white); line-height: 1.35; }
+  p.copy { color: var(--taupe); font-size: 14.5px; line-height: 1.65; margin: 0 0 8px; }
+
+  .btn-gold { background: var(--gold); color: #241C0A; border: none; border-radius: 11px; padding: 13px 26px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .btn-gold:disabled { opacity: 0.4; cursor: default; }
+  .btn-outline { background: transparent; color: var(--white); border: 1px solid var(--taupe-line); border-radius: 11px; padding: 13px 26px; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; }
+  .btn-text { background: none; border: none; color: var(--taupe); font-size: 13.5px; font-family: inherit; cursor: pointer; padding: 8px; }
+
+  .dots { display: flex; justify-content: center; gap: 7px; margin: 22px 0 26px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--taupe-line); }
+  .dot.done { background: var(--gold); }
+  .dot.now { background: var(--gold-soft); }
+
+  .q-label { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--taupe-soft); margin-bottom: 10px; }
+  .q-text { font-size: 19px; font-weight: 400; margin: 0 0 24px; line-height: 1.4; }
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 26px; }
+  .opt { text-align: left; background: var(--panel-2); border: 1px solid var(--taupe-line); border-radius: 12px; padding: 13px 16px; font-size: 13.5px; color: var(--white); font-family: inherit; cursor: pointer; line-height: 1.5; }
+  .opt:hover { border-color: var(--gold); }
+  .opt.selected { border-color: var(--gold); background: #2A2314; }
+  .row-between { display: flex; align-items: center; justify-content: space-between; }
+
+  .textarea-field { width: 100%; background: var(--panel-2); border: 1px solid var(--taupe-line); border-radius: 12px; padding: 14px 16px; color: var(--white); font-size: 14px; font-family: inherit; outline: none; resize: vertical; min-height: 96px; }
+  .textarea-field::placeholder { color: var(--taupe-soft); }
+  .textarea-field:focus { border-color: var(--gold); }
+
+  .domain-chip { text-align: left; background: var(--panel-2); border: 1px solid var(--taupe-line); border-radius: 12px; padding: 14px 16px; font-size: 14px; color: var(--white); font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+  .domain-chip:hover { border-color: var(--gold); }
+  .domain-chip.selected { border-color: var(--gold); background: #2A2314; }
+  .domain-chip .tick { color: var(--gold); opacity: 0; }
+  .domain-chip.selected .tick { opacity: 1; }
+
+  .quote-block { border-left: 2px solid var(--gold); padding: 2px 0 2px 14px; margin: 0 0 22px; text-align: left; font-size: 13.5px; color: var(--taupe); font-style: italic; line-height: 1.6; }
+
+  .block-row { border-top: 1px solid var(--taupe-line); padding: 16px 0; text-align: left; }
+  .block-row:first-of-type { border-top: none; }
+  .block-row .label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+  .block-row .value { font-size: 14px; color: var(--white); line-height: 1.6; }
+
+  .code-tags { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 22px; }
+  .code-tag { font-size: 11.5px; color: var(--gold-soft); border: 1px solid var(--gold); border-radius: 999px; padding: 4px 12px; }
+
+  .reading-card { border: 1px solid var(--gold); background: var(--panel-2); border-radius: 16px; padding: 30px 28px; margin: 10px 0 26px; }
+  .reading-label { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); text-align: center; margin-bottom: 12px; }
+  .reading-text { font-size: 14.5px; color: var(--white); line-height: 1.75; text-align: left; margin: 20px 0 0; }
+
+  .note { font-size: 12.5px; color: var(--taupe-soft); margin-bottom: 20px; text-align: center; }
+
+  .chat-log { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+  .bubble { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.55; }
+  .bubble.bot { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--taupe-line); color: var(--white); }
+  .bubble.user { align-self: flex-end; background: var(--gold); color: #241C0A; }
+  .chat-input-row { display: flex; gap: 10px; border-top: 1px solid var(--taupe-line); padding-top: 18px; align-items: flex-end; }
+  .chat-input-row textarea { flex: 1; background: var(--panel-2); border: 1px solid var(--taupe-line); border-radius: 10px; padding: 12px 14px; color: var(--white); font-size: 15px; line-height: 1.5; font-family: inherit; outline: none; resize: none; min-height: 76px; max-height: 220px; box-sizing: border-box; }
+  .chat-input-row textarea::placeholder { color: var(--taupe-soft); }
+  .chat-input-row textarea:focus { border-color: var(--gold); }
+  .chat-input-row button { align-self: flex-end; background: var(--gold); color: #241C0A; border: none; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+
+  .activation-card { border: 1px solid var(--gold); background: var(--panel-2); border-radius: 14px; padding: 26px 24px; text-align: center; margin-top: 8px; }
+  .activation-tag { display: inline-block; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gold-soft); border: 1px solid var(--gold); border-radius: 999px; padding: 3px 12px; margin-bottom: 14px; }
+  .trial-banner { border: 1px solid var(--gold); background: #2A2314; border-radius: 12px; padding: 18px 20px; margin-top: 22px; text-align: left; }
+  .trial-banner .eyebrow { margin-bottom: 8px; }
+  .trial-banner p { margin: 0; color: var(--white); font-size: 13.5px; line-height: 1.6; }
+  .activation-card h3 { font-size: 17px; font-weight: 500; margin: 0 0 6px; color: var(--white); }
+  .activation-meta { font-size: 12.5px; color: var(--taupe); margin-bottom: 14px; }
+  .activation-card p { color: var(--taupe); font-size: 13.5px; line-height: 1.6; margin: 0 0 22px; }
+  .activation-actions { display: flex; flex-direction: column; gap: 10px; }
+  .activation-actions a.btn-gold, .activation-actions a.btn-outline { text-decoration: none; text-align: center; }
+
+  .qd-badge { text-align: center; font-size: 12px; color: var(--gold-soft); margin-top: 14px; letter-spacing: 0.02em; }
+  .qd-link { background: none; border: none; color: var(--gold-soft); font-size: 12px; letter-spacing: 0.02em; font-family: inherit; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+
+  .progress-bar { width: 100%; height: 8px; background: var(--panel-2); border: 1px solid var(--taupe-line); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; background: var(--gold); border-radius: 999px; transition: width 0.3s ease; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,9,7,0.72); z-index: 50; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 60px 20px; }
+  .modal-overlay.active { display: flex; }
+  .modal-card { background: var(--panel); border: 1px solid var(--gold); border-radius: 18px; padding: 34px 32px; max-width: 520px; width: 100%; }
+  .modal-card h2 { font-size: 21px; font-weight: 400; margin: 0 0 4px; color: var(--white); }
+  .modal-close { float: right; background: none; border: none; color: var(--taupe); font-size: 20px; cursor: pointer; line-height: 1; }
+  .qd-log { margin-top: 8px; border-top: 1px solid var(--taupe-line); }
+  .qd-log-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--taupe-line); font-size: 13px; }
+  .qd-log-row .desc { color: var(--white); }
+  .qd-log-row .meta { color: var(--taupe); font-size: 11.5px; white-space: nowrap; }
+  .qd-log-row .delta { font-weight: 600; white-space: nowrap; }
+  .qd-log-row .delta.pos { color: var(--gold-soft); }
+  .qd-log-row .delta.neg { color: var(--taupe); }
+  .qd-log-empty { color: var(--taupe-soft); font-size: 13px; padding: 14px 0; text-align: center; }
+
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap">
+    <div class="eyebrow-top">3 Step Gap Method<span class="tm">™</span></div>
+    <div class="day-tabs">
+      <button class="day-tab active" id="tab-day1" onclick="goDay(1)">Step 1 <span class="check" id="check1"></span></button>
+      <button class="day-tab" id="tab-day2" onclick="goDay(2)">Step 2 <span class="check" id="check2"></span></button>
+      <button class="day-tab" id="tab-day3" onclick="goDay(3)">Step 3 <span class="check" id="check3"></span></button>
+    </div>
+    <div class="access-note">✓ All 3 steps + your personalized activation are included.</div>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="wrap">
+
+    <div id="view-day1" class="view active">
+      <div id="d1-intro" class="card center">
+        <div class="eyebrow">Step 1: Spot the Gap</div>
+        <h1 class="serif" style="font-size: 44px;">Let's find what isn't adding up.</h1>
+        <p class="copy">In the next 7 questions, we're going to look at what you want, what keeps happening instead, and where the contradiction is showing up.</p>
+        <p class="copy">Don't overthink your answers. Choose what feels most true right now.</p>
+        <p class="copy">By the end, you'll have a much clearer picture of the Gap you're currently working with — and what to do with it next.</p>
+        <p class="copy" style="margin-bottom: 26px;">7 questions · about 3 minutes</p>
+        <button class="btn-gold" onclick="beginStep1();">Begin Step 1 →</button>
+      </div>
+
+      <div id="d1-domain" class="card" style="display:none;">
+        <div class="q-label">Question 3 of 7</div>
+        <div class="q-text serif" style="font-size: 18px;">Where are you feeling the gap the most right now?</div>
+        <div class="options" id="domain-chips"></div>
+        <div class="row-between">
+          <button class="btn-text" onclick="backFromDomain();">← Back</button>
+          <button class="btn-gold" id="domain-next" onclick="beginDomainQuiz()" disabled>Next →</button>
+        </div>
+      </div>
+
+      <div id="d1-quiz" class="card" style="display:none;">
+        <div class="q-label" id="q-label">Question 1 of 7</div>
+        <div class="q-text serif" id="q-text"></div>
+        <div class="quote-block" id="q-personalize" style="display:none;"></div>
+        <div class="options" id="q-options"></div>
+        <div class="dots" id="q-dots"></div>
+        <div class="row-between">
+          <button class="btn-text" id="back-btn" onclick="prevQ()">← Back</button>
+          <button class="btn-gold" id="next-btn" onclick="nextQ()" disabled>Next</button>
+        </div>
+      </div>
+
+      <div id="d1-results" class="card" style="display:none;">
+        <div class="eyebrow center" style="text-align:center;">Here's what we found.</div>
+
+        <div class="reveal-block" style="text-align:left; margin-top: 22px; margin-bottom: 30px;">
+          <div class="eyebrow">Your Divine Identity</div>
+          <h1 class="serif" id="r-identity-name" style="margin-bottom: 10px;"></h1>
+          <p class="copy" id="r-identity-line" style="font-size: 16px; color: var(--white); margin-bottom: 28px;"></p>
+
+          <div class="eyebrow">The frequency you're experiencing right now</div>
+          <p class="copy" id="r-frequency-sentence" style="font-size: 16px; color: var(--white); margin-bottom: 8px;"></p>
+          <p class="copy" id="r-frequency-explanation" style="margin-bottom: 28px;"></p>
+
+          <div class="eyebrow">👀 Your Gap</div>
+          <p class="copy" id="r-gap-contradiction" style="font-size: 17px; color: var(--white); margin-bottom: 14px;"></p>
+          <p class="copy" id="r-gap-example" style="margin-bottom: 14px;"></p>
+          <p class="copy" style="margin-bottom: 14px;">That's the contradiction.</p>
+          <p class="copy" id="r-gap-restated" style="font-size: 16px; color: var(--white); margin-bottom: 22px;"></p>
+          <p class="copy" style="margin-bottom: 22px;">And now that we can see it, we can go deeper into exactly where it's showing up for you.</p>
+          <button class="btn-gold" onclick="goDay(2)">Go deeper →</button>
+        </div>
+
+        <p class="copy center" id="r-domain" style="margin-bottom: 14px;"></p>
+
+        <div class="reading-card">
+          <div class="reading-label">Your frequency reading</div>
+          <h1 class="serif center" id="r-name" style="text-align:center;"></h1>
+          <div class="code-tags" id="r-codes"></div>
+          <p class="reading-text" id="r-reading"></p>
+        </div>
+
+        <div class="block-row"><div class="label">Your Gap</div><div class="value" id="r-gap"></div></div>
+        <div class="center" style="margin-top:28px;">
+          <button class="btn-text" onclick="backToQuizFromResults()">← Back to change an answer</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-day2" class="view">
+      <div class="card">
+        <div class="eyebrow">Step 2: Explore the Gap</div>
+        <h1 class="serif" style="font-size:22px;">Now let's make this specific.</h1>
+        <p class="copy" id="d2-intro-1" style="margin-bottom: 10px;"></p>
+        <p class="copy" style="margin-bottom: 10px;">Go deeper into how it's showing up in thoughts, emotions, behavior, choices, and reality.</p>
+        <p class="copy" style="margin-bottom: 20px;">This is where the pattern stops being just a label and starts becoming something you can actually recognize.</p>
+        <p class="note" id="d2-note"></p>
+        <div class="chat-log" id="chat-log"></div>
+        <div class="chat-input-row">
+          <textarea id="chat-input" rows="3" placeholder="Type anything to continue the conversation..." oninput="autoGrowChatInput(this);" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+          <button onclick="sendChat()">Send</button>
+        </div>
+        <div class="center" id="ready-btn-wrap" style="margin-top:14px; display:none;">
+          <button class="btn-outline" id="ready-btn" onclick="skipToReveal()">I'm ready to see what's underneath →</button>
+        </div>
+        <div class="center" id="d2-continue" style="margin-top:22px; display:none;">
+          <button class="btn-gold" onclick="goDay(3)">Continue to step 3 →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-day3" class="view">
+      <div class="card">
+        <div class="eyebrow">Step 3: Evolve your reality</div>
+        <h1 class="serif" style="font-size:22px; margin-bottom: 28px;">Now you can see the Gap. Let's begin shifting it.</h1>
+
+        <div class="reveal-block" style="text-align:left; margin-bottom: 34px;">
+          <div class="eyebrow">Your Gap</div>
+          <p class="copy" id="d3-meta" style="font-size: 15px; color: var(--white); margin-bottom: 18px;"></p>
+          <p class="copy" id="d3-gap-contradiction" style="font-size: 17px; color: var(--white); margin-bottom: 14px;"></p>
+          <p class="copy" id="d3-gap-example" style="margin-bottom: 14px;"></p>
+          <p class="copy" id="d3-gap-restated" style="font-size: 16px; color: var(--white); margin-bottom: 6px;"></p>
+          <p class="copy" style="margin-bottom: 0;">That's your Gap.</p>
+        </div>
+
+        <div class="eyebrow">Your personalized activation</div>
+        <div class="activation-card" id="d3-activation-card" style="text-align:left; margin-bottom: 34px;">
+          <div class="activation-tag" id="a-tag"></div>
+          <h3 id="a-title"></h3>
+          <div class="activation-meta" id="a-meta"></div>
+          <p id="a-teaser"></p>
+        </div>
+
+        <div class="reveal-block" style="text-align:left; margin-top: 8px;">
+          <div class="eyebrow">Ready for your full transformation?</div>
+          <p class="copy" style="margin-bottom: 20px;">This activation is one piece. Full Access unlocks Rachael's entire Activation Library and unlimited chat with your guide inside The Revolutionary Healer -- so whatever Gap shows up next, the shift is already there for you.</p>
+          <a class="btn-gold" href="https://www.rachaelsbutterflyeffect.com/full-access" target="_blank" rel="noopener">Access Your Full Transformation →</a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  var DOMAINS = [
+    { key: "business", label: "Business + Visibility" },
+    { key: "money", label: "Money" },
+    { key: "gifts", label: "Spiritual Gifts" },
+    { key: "healing", label: "Client Result" }
+  ];
+
+  var QUESTION_BANKS = {
+    business: [
+      { text: "You're posting, sharing, putting content out there, but it's not landing the way you know it could. What's the loudest thing running underneath that?", options: [
+        { key: "overworker", label: "I just need to post more, more consistently, that's the only way it'll finally work." },
+        { key: "doubter", label: "I write it, then second-guess it and delete it before it ever goes out." },
+        { key: "hidden", label: "Some part of me holds back the real thing I actually want to say." },
+        { key: "foggy", label: "My mind goes blank the second I try to get clear on what to even say." },
+        { key: "gripper", label: "I rewrite every caption ten times trying to control exactly how it lands." },
+        { key: "disconnected", label: "Some posts feel completely inspired, others feel like I'm forcing it out of nothing." },
+        { key: "underearner", label: "I create real value in every post, then undersell what I'm actually offering." }
+      ]},
+      { text: "Your offers and structure don't quite feel built to hold what you're actually capable of. What's the loudest thing running underneath that?", options: [
+        { key: "overworker", label: "I just build more, add more, do more, instead of stepping back and simplifying." },
+        { key: "doubter", label: "I have a structure I believe in, but I scrap it the second someone questions it." },
+        { key: "hidden", label: "Part of me keeps the offer smaller and vaguer than what I actually want to build." },
+        { key: "foggy", label: "My business structure changes every few weeks because nothing feels settled long enough to trust." },
+        { key: "gripper", label: "I try to control every moving piece instead of trusting a system to hold it." },
+        { key: "disconnected", label: "Some weeks the structure runs itself, other weeks it falls apart completely." },
+        { key: "underearner", label: "The offer is strong. The price still isn't." }
+      ]},
+      { text: "You know being seen on camera would move things forward, but something keeps you from doing it consistently. What's the loudest thing running underneath that?", options: [
+        { key: "overworker", label: "I'll do it once I've earned the right to be up there, once I've done enough." },
+        { key: "doubter", label: "I record it, then talk myself out of posting it before anyone sees." },
+        { key: "hidden", label: "Being that visible, that seen, feels genuinely unsafe." },
+        { key: "foggy", label: "I freeze the second the camera's on, like the words just disappear." },
+        { key: "gripper", label: "I try to control every second of the video instead of just letting it be real." },
+        { key: "disconnected", label: "Some days I'm completely at ease on camera, other days I can't even hit record." },
+        { key: "underearner", label: "I'll show up on camera, but I still undersell myself once I'm there." }
+      ]},
+      { text: "If you're honest, what pattern keeps repeating right when it's time to actually take the next step in your business?", options: [
+        { key: "overworker", label: "I take the action, then burn out immediately after, every single time." },
+        { key: "doubter", label: "I talk myself out of the exact move I already knew was right." },
+        { key: "hidden", label: "I get right to the edge of the bigger step, then quietly pull back." },
+        { key: "foggy", label: "I circle the decision so long I miss the moment to act at all." },
+        { key: "gripper", label: "I need to control the outcome before I'll even take the first step." },
+        { key: "disconnected", label: "I take inspired action beautifully, then go quiet with no follow-through for weeks." },
+        { key: "underearner", label: "I take the action, get the result, and still don't charge for what it's actually worth." }
+      ]}
+    ],
+    gifts: [
+      { text: "You know you're gifted, but your connection isn't consistent. What's the loudest thing running underneath that?", options: [
+        { key: "overworker", label: "I push myself to force a download even when I'm depleted, that's the only way I get anything." },
+        { key: "doubter", label: "I get information, but I second-guess it before I ever trust it enough to share it." },
+        { key: "hidden", label: "Some part of me is scared of what happens if I actually let my gift be seen." },
+        { key: "foggy", label: "My mind is so scattered I can't tell what's real information and what's noise." },
+        { key: "gripper", label: "I try to control exactly how the information comes through instead of letting it flow." },
+        { key: "disconnected", label: "My gift is on fire some sessions and completely silent in others." },
+        { key: "underearner", label: "I know what I offer is valuable, but I still charge like it isn't." }
+      ]},
+      { text: "When you imagine fully opening your gift and channeling in front of others, what shows up first?", options: [
+        { key: "overworker", label: "Exhaustion, just thinking about holding that kind of energy feels like too much." },
+        { key: "doubter", label: "Doubt, what if I'm wrong about what's coming through." },
+        { key: "hidden", label: "Fear, being seen channeling that clearly feels unsafe." },
+        { key: "foggy", label: "Confusion, I can't even picture receiving that clearly." },
+        { key: "gripper", label: "The urge to control exactly what comes through before I'll let it out." },
+        { key: "disconnected", label: "Uncertainty, I don't know if the channel will even open that day." },
+        { key: "underearner", label: "Guilt, like getting paid well for something this natural to me isn't right." }
+      ]},
+      { text: "What does a hard day with your gift look like right now?", options: [
+        { key: "overworker", label: "Overworking myself trying to force a connection that won't be forced." },
+        { key: "doubter", label: "Talking myself out of the download I actually knew was real." },
+        { key: "hidden", label: "Shrinking back and staying quiet instead of sharing what came through." },
+        { key: "foggy", label: "Feeling foggy and ungrounded, like I can't get a clear signal." },
+        { key: "gripper", label: "Gripping so tight trying to control the message that nothing comes through." },
+        { key: "disconnected", label: "Feeling completely disconnected from my gift, like the line went dead." },
+        { key: "underearner", label: "Undercutting my own price because part of me still doesn't believe this is worth paying for." }
+      ]},
+      { text: "If you're honest, what pattern keeps repeating with your gift no matter how much inner work you do?", options: [
+        { key: "overworker", label: "Pushing through exhaustion, then a burst of connection, then nothing again." },
+        { key: "doubter", label: "Doubting the download right when I need to trust it most." },
+        { key: "hidden", label: "Playing small with what I channel right when I'm on the edge of sharing more." },
+        { key: "foggy", label: "Scattered signal that keeps me guessing instead of receiving clearly." },
+        { key: "gripper", label: "A need to control the message because deep down I don't trust it'll come through on its own." },
+        { key: "disconnected", label: "My gift working beautifully, then going quiet with no warning." },
+        { key: "underearner", label: "My gift getting bigger while my prices stay exactly where they started." }
+      ]}
+    ],
+    healing: [
+      { text: "You're showing up fully for your clients, but the results aren't matching the work you're both putting in. What's the loudest thing running underneath that?", options: [
+        { key: "overworker", label: "I just give more in every session, that's the only way I think it'll finally land." },
+        { key: "doubter", label: "I sense exactly what's needed, then second-guess it before I'll act on it." },
+        { key: "hidden", label: "Some part of me holds back from going as deep as I actually could." },
+        { key: "foggy", label: "My focus scatters mid-session and I lose the thread of what's actually happening." },
+        { key: "gripper", label: "I try to control the outcome of the session instead of trusting the process." },
+        { key: "disconnected", label: "My read is spot-on some sessions and completely off in others." },
+        { key: "underearner", label: "I give everything in the session, then charge like I gave nothing." }
+      ]},
+      { text: "Clients tell you they feel good after a session, but the real shift, the one that actually changes their life, isn't landing. What's the loudest thing running underneath that?", options: [
+        { key: "overworker", label: "I keep giving more in the session hoping more effort will finally make it stick." },
+        { key: "doubter", label: "I sense the deeper shift that's needed, then doubt it and stay on the surface instead." },
+        { key: "hidden", label: "I hold back from naming the real thing because it might be too much for them to hear." },
+        { key: "foggy", label: "I lose the thread of what's actually shifting and stay in the feel-good part instead." },
+        { key: "gripper", label: "I try to control exactly how the transformation happens instead of trusting it to unfold." },
+        { key: "disconnected", label: "Some sessions I feel the real shift land, others I can't tell if anything moved at all." },
+        { key: "underearner", label: "I deliver a real shift and then charge like it was just a nice chat." }
+      ]},
+      { text: "You keep calling in clients who aren't quite the right fit, the ones who drain you or don't follow through. What's the loudest thing running underneath that?", options: [
+        { key: "overworker", label: "I say yes to everyone because turning someone away feels like I'm not doing enough." },
+        { key: "doubter", label: "Something in me senses it's not a fit, and I ignore that read anyway." },
+        { key: "hidden", label: "I stay vague about who I actually work with so more people can say yes." },
+        { key: "foggy", label: "I can't get clear enough on who's actually aligned before I say yes to working with them." },
+        { key: "gripper", label: "I try to control the outcome with a mismatched client instead of just letting them go." },
+        { key: "disconnected", label: "My read on a good fit is sharp some days and completely off other days." },
+        { key: "underearner", label: "I take clients who can't really afford it because I don't trust the right ones will come." }
+      ]},
+      { text: "If you're honest, what pattern keeps repeating in your client work no matter how much inner work you do?", options: [
+        { key: "overworker", label: "Overgiving in every session, then feeling depleted after each one." },
+        { key: "doubter", label: "Doubting my read right at the moment my client needed me to trust it most." },
+        { key: "hidden", label: "Playing small with what I share right when the client is on the edge of a breakthrough." },
+        { key: "foggy", label: "Scattered focus that keeps sessions surface-level instead of going deep." },
+        { key: "gripper", label: "A need to control the session because deep down I don't trust the process to work on its own." },
+        { key: "disconnected", label: "My read working beautifully with one client, then going quiet with the next." },
+        { key: "underearner", label: "Getting better and better at this while my prices never catch up." }
+      ]}
+    ],
+    money: [
+      { text: "You want more financial freedom, but your income doesn't reflect the effort you're putting in. What's the loudest thing running underneath that?", options: [
+        { key: "overworker", label: "I just need to work more hours or take on more clients, that's the only way the money comes." },
+        { key: "doubter", label: "I have pricing and offers I believe in, but I second-guess them before I ever send the invoice." },
+        { key: "hidden", label: "Some part of me is scared of what happens if I actually charge what I'm worth and get seen for it." },
+        { key: "foggy", label: "My relationship with money is so scattered I can't even get clear on what to charge." },
+        { key: "gripper", label: "I'm gripping every dollar so tightly because it feels too risky to trust more will come." },
+        { key: "disconnected", label: "My income is on fire one month and completely dry the next, with no pattern I can see." },
+        { key: "underearner", label: "I get paid, but I keep pricing myself lower than what I'm actually worth." }
+      ]},
+      { text: "When you imagine actually charging your full worth and being paid what your gifts are worth, what shows up first?", options: [
+        { key: "overworker", label: "Exhaustion, like I'd have to work even harder to justify the price." },
+        { key: "doubter", label: "Doubt, what if I'm wrong about what I'm actually worth." },
+        { key: "hidden", label: "Fear, being that visible about money feels unsafe." },
+        { key: "foggy", label: "Confusion, I can't even picture what the right number would be." },
+        { key: "gripper", label: "The urge to control every detail of the offer before I'd ever charge that much." },
+        { key: "disconnected", label: "Uncertainty, I don't know if the income will even show up consistently." },
+        { key: "underearner", label: "Guilt, like charging that much would make me greedy." }
+      ]},
+      { text: "What does a hard month look like with money right now?", options: [
+        { key: "overworker", label: "Overworking myself to try to close a gap that more effort never actually closes." },
+        { key: "doubter", label: "Talking myself out of raising a price I already knew was fair." },
+        { key: "hidden", label: "Staying quiet about what I offer instead of putting my pricing out there." },
+        { key: "foggy", label: "Feeling foggy and avoidant every time I actually look at my numbers." },
+        { key: "gripper", label: "Gripping so tight to every expense that I can't think clearly about growth." },
+        { key: "disconnected", label: "Income that's unpredictable, good one month and gone the next, with no clear reason." },
+        { key: "underearner", label: "Undercharging again and telling myself it's only temporary." }
+      ]},
+      { text: "If you're honest, what pattern keeps repeating with money no matter how much inner work you do?", options: [
+        { key: "overworker", label: "Trading more and more of my time for roughly the same amount of money." },
+        { key: "doubter", label: "Doubting my own value right at the moment I need to charge with confidence." },
+        { key: "hidden", label: "Playing small with my pricing right when I'm on the edge of a bigger offer." },
+        { key: "foggy", label: "Scattered money habits that keep me guessing instead of planning." },
+        { key: "gripper", label: "A need to control every dollar because deep down I believe there isn't enough." },
+        { key: "disconnected", label: "Income that flows beautifully some seasons, then goes quiet with no warning." },
+        { key: "underearner", label: "Getting better and better at what I do while my prices never catch up." }
+      ]}
+    ]
+  };
+
+  // Aug 10 (later still) -- Questions 4-7 rebuilt again per Rachael's direct rule:
+  // (1) the question stem stays NEUTRAL -- worded so the person could honestly answer
+  // "not really, that's not it" -- the Divine Identity only personalizes the reflective
+  // EXAMPLE shown underneath it, never the question itself; (2) never say "As The
+  // [Identity]..." on every question -- name the identity in the example text only 2 of
+  // the 4 slots per domain (here: Questions 4 and 6), let 5 and 7 stand on their own with
+  // no name; (3) dropped "what's the loudest thing running underneath that?" everywhere
+  // in favor of plainer, more neutral framings ("what usually happens first?", "what are
+  // you most likely to do next?", "what tends to happen when...", "what does a hard
+  // ___ actually look like?"). QUESTION_BANKS above is now fully superseded for Questions
+  // 4-7 by this -- left in place, not deleted, in case it's wanted again.
+  var PERSONALIZED_QUESTIONS = {
+    business: [
+      {
+        stem: "When you sit down to create content, what usually happens first?",
+        examples: {
+          overworker: "For The Guardian, this can look like pushing out one more post before you'll let yourself stop, even when you're already running on empty.",
+          doubter: "You write it, know it's good, then delete it before it ever goes out.",
+          hidden: "For The Leader, this can look like softening the real message so it lands as less exposing than what you actually meant.",
+          foggy: "Your mind goes blank the second you try to get clear on what you actually want to say.",
+          gripper: "For The Creator, this can look like rewriting the same post ten times trying to control exactly how it lands.",
+          disconnected: "You pour everything into the post, then feel completely drained by the time it's actually ready to share.",
+          underearner: "For The Expander, this can look like creating something genuinely valuable, then underselling it in the caption."
+        }
+      },
+      {
+        stem: "When you try to build out your offer or structure, what are you most likely to do next?",
+        examples: {
+          overworker: "You keep adding more to it instead of stepping back and simplifying what's already there.",
+          doubter: "You land on a structure that feels right, then scrap it the second someone else questions it.",
+          hidden: "You keep the offer smaller and vaguer than what you actually want to build.",
+          foggy: "You change direction every few weeks because nothing feels settled long enough to trust.",
+          gripper: "You try to control every moving piece instead of trusting a system to hold it.",
+          disconnected: "You build it around what everyone else needs, and forget to build in what actually sustains you.",
+          underearner: "You build something strong, then price it like it isn't."
+        }
+      },
+      {
+        stem: "What tends to happen when it's time to actually be seen — on camera, in a launch, in front of an audience?",
+        examples: {
+          overworker: "For The Guardian, the Gap can show up right at the point where you'd need to just show up as you are — you feel like you need to earn the right to be there first.",
+          doubter: "For The Wayshower, the Gap can show up right at the point where you already know what to say — you still wait for outside proof before you'll say it with confidence.",
+          hidden: "For The Leader, the Gap can show up right at the point where you'd be fully visible — you pull back right when it matters most.",
+          foggy: "For The Messenger, the Gap can show up right at the point where the words are right there — they disappear the second the camera turns on.",
+          gripper: "For The Creator, the Gap can show up right at the point where you'd need to just let it be real — you try to control every second instead.",
+          disconnected: "For The Healer, the Gap can show up right at the point where you'd need to lead with your own presence — you focus on everyone watching instead of trusting yourself.",
+          underearner: "For The Expander, the Gap can show up right at the point where you'd get to fully own your value — you undersell yourself the moment you're actually seen."
+        }
+      },
+      {
+        stem: "What does a hard day in your business actually look like?",
+        examples: {
+          overworker: "Maybe you overwork yourself into the ground and still feel like you're falling behind.",
+          doubter: "Maybe you talk yourself out of the exact move you already knew was right.",
+          hidden: "Maybe you shrink back and stay quiet instead of putting yourself out there.",
+          foggy: "Maybe you feel foggy and ungrounded, like you can't think straight.",
+          gripper: "Maybe you grip so tightly trying to control the outcome that nothing actually moves.",
+          disconnected: "Maybe you feel completely disconnected from your own gift, like the line went dead.",
+          underearner: "Maybe you do the math on a price and quietly talk yourself into charging less."
+        }
+      }
+    ],
+    money: [
+      {
+        stem: "When it's time to set or say your price, what usually happens first?",
+        examples: {
+          overworker: "For The Guardian, this can look like pricing based on how much you think you have to earn the right to charge, instead of what the work is actually worth.",
+          doubter: "You land on a number that feels right, then second-guess it the second someone questions it.",
+          hidden: "For The Leader, this can look like softening the number before you even say it out loud, so it feels less exposing.",
+          foggy: "Your sense of what to charge feels scattered, so you default to whatever number feels safest to say.",
+          gripper: "For The Creator, this can look like overthinking every detail of the offer before you'll commit to a price at all.",
+          disconnected: "You think about everything you're giving the client and quietly round the number down before you even say it.",
+          underearner: "For The Expander, this can look like landing on the number that feels true, then immediately talking yourself into something smaller."
+        }
+      },
+      {
+        stem: "When more money becomes available to you, what are you most likely to do next?",
+        examples: {
+          overworker: "You immediately think about who else needs it or what it needs to cover, instead of letting it actually land as yours.",
+          doubter: "You question whether you actually deserve it before you'll let yourself enjoy it.",
+          hidden: "You keep it quiet instead of letting people see that things are actually going well.",
+          foggy: "You can't quite track where it's going or why, so it feels like it just slips through without you noticing.",
+          gripper: "You start planning and controlling exactly how it needs to be spent before you've even received it fully.",
+          disconnected: "You give a portion of it away almost immediately, before you've let yourself feel what it's like to simply have it.",
+          underearner: "You brace for it to disappear just as fast as it came, instead of trusting there's more where that came from."
+        }
+      },
+      {
+        stem: "What tends to happen when you actually have to talk about money out loud?",
+        examples: {
+          overworker: "For The Guardian, the Gap can show up right at the point where you'd need to ask for what you're worth — you avoid it and just keep doing more instead.",
+          doubter: "For The Wayshower, the Gap can show up right at the point where you already know your number — you still look for someone else's approval before you'll say it.",
+          hidden: "For The Leader, the Gap can show up right at the point where the number needs to be said clearly — you shrink it down so the conversation feels smaller.",
+          foggy: "For The Messenger, the Gap can show up right at the point where you'd need to speak your value plainly — the words get foggy and you undersell it instead.",
+          gripper: "For The Creator, the Gap can show up right at the point where the conversation gets uncertain — you try to control it by overexplaining instead of just stating your price.",
+          disconnected: "For The Healer, the Gap can show up right at the point where you'd need to hold your price — you soften it the moment someone hesitates.",
+          underearner: "For The Expander, the Gap can show up right at the point where you'd need to own what you're worth — you discount it before anyone even asks."
+        }
+      },
+      {
+        stem: "What does a hard month with money actually look like?",
+        examples: {
+          overworker: "Maybe you work yourself into the ground trying to close a gap that more effort never actually closes.",
+          doubter: "Maybe you talk yourself out of raising a price you already knew was fair.",
+          hidden: "Maybe you stay quiet about what you offer instead of putting your pricing out there.",
+          foggy: "Maybe you feel foggy and avoidant every time you actually look at your numbers.",
+          gripper: "Maybe you grip so tightly to every expense that you can't think clearly about growth.",
+          disconnected: "Maybe your income flows beautifully one season, then goes quiet the next, with no clear reason why.",
+          underearner: "Maybe you undercharge again and tell yourself it's only temporary."
+        }
+      }
+    ],
+    gifts: [
+      {
+        stem: "When your connection feels inconsistent, what usually happens first?",
+        examples: {
+          overworker: "For The Guardian, this can look like pushing yourself to force a download even when you're already depleted, because slowing down to actually receive feels unsafe.",
+          doubter: "You sense something is there, then talk yourself out of trusting it before you've even let it fully land.",
+          hidden: "For The Leader, this can look like receiving something clearly and then pulling back because being fully seen with your gifts feels like a bigger step than expected.",
+          foggy: "The signal gets buried under mental noise, and you start wondering whether what you're picking up is even real.",
+          gripper: "For The Creator, this can look like trying to control exactly how the information comes through instead of letting it move on its own.",
+          disconnected: "You notice the connection go quiet and immediately assume the gift itself is gone, instead of just resting.",
+          underearner: "For The Expander, this can look like receiving something valuable and immediately wondering if it's even worth charging for."
+        }
+      },
+      {
+        stem: "When you receive something clearly through your gifts, what are you most likely to do next?",
+        examples: {
+          overworker: "You might already know what you're sensing, then quietly shelve it while you take care of everything else on your plate first.",
+          doubter: "You know what you're receiving is accurate, then look for someone else to confirm it before you'll trust it enough to act.",
+          hidden: "You may know exactly what came through, then start editing it, questioning it, or deciding whether it's safe to share.",
+          foggy: "You catch it clearly for a moment, then start overanalyzing it until you're no longer sure what you actually received.",
+          gripper: "You know exactly what you're receiving, then try to control exactly how and when you'll act on it instead of just letting it move.",
+          disconnected: "You receive it fully, then give it away to everyone else before you've let yourself actually feel it land.",
+          underearner: "You know exactly what came through, then immediately discount how valuable it actually is."
+        }
+      },
+      {
+        stem: "What tends to happen when your gifts are working really well and other people can actually see it?",
+        examples: {
+          overworker: "For The Guardian, the Gap can show up right at the point where people start relying on your gift — you take on the weight of holding it steady for everyone, instead of just letting it be seen.",
+          doubter: "For The Wayshower, the Gap can show up right at the point where your read gets confirmed — instead of trusting yourself sooner, you wait until it's proven before you'll believe you were right.",
+          hidden: "For The Leader, the Gap can show up right at the point where your gifts become visible — you know what you're receiving, but sharing it fully feels like a much bigger move.",
+          foggy: "For The Messenger, the Gap can show up right at the point where the message lands clearly for someone else — you second-guess whether you should have said it at all.",
+          gripper: "For The Creator, the Gap can show up right at the point where the download starts moving on its own — you tighten your grip instead of letting it keep flowing.",
+          disconnected: "For The Healer, the Gap can show up right at the point where someone really needs what you're carrying — you give until there's nothing left of your own connection.",
+          underearner: "For The Expander, the Gap can show up right at the point where your gift is clearly worth more — you still price it, or offer it, like it isn't."
+        }
+      },
+      {
+        stem: "What does a hard day with your gifts actually look like?",
+        examples: {
+          overworker: "Maybe you push through a reading or a download even though you're running on empty, because resting feels like letting the gift down.",
+          doubter: "Maybe you get a clear read, then spend the rest of the day looking for outside proof that you were right before you'll trust it.",
+          hidden: "Maybe you receive something and keep it to yourself, soften what you really want to say, or wait for more confirmation before you trust what came through.",
+          foggy: "Maybe everything feels like static, and no matter how hard you try to tune in, nothing comes through clearly.",
+          gripper: "Maybe you force a download that isn't ready yet, then feel drained when it doesn't come out the way you tried to control it.",
+          disconnected: "Maybe you hold space for everyone around you and end the day completely disconnected from your own gift.",
+          underearner: "Maybe you deliver something powerful, then immediately undercharge or give it away for free."
+        }
+      }
+    ],
+    healing: [
+      {
+        stem: "When a client isn't getting the results you both know are possible, what usually happens first?",
+        examples: {
+          overworker: "For The Guardian, this can look like doubling down and giving even more in the session, instead of stepping back to see what's actually needed.",
+          doubter: "You sense exactly what's really going on, then hold back from saying it because you're not fully sure it's your place to say.",
+          hidden: "For The Leader, this can look like softening what you actually see for the client, because naming it fully feels like too much exposure for both of you.",
+          foggy: "The read gets fuzzy right when it matters most, and you find yourself guessing instead of speaking from what you actually know.",
+          gripper: "For The Creator, this can look like trying to control exactly how the client's transformation should unfold instead of trusting their process.",
+          disconnected: "You feel the disconnect immediately and quietly absorb it as something you did wrong, instead of just naming what's happening.",
+          underearner: "For The Expander, this can look like over-delivering even more for free, instead of addressing what's actually not landing."
+        }
+      },
+      {
+        stem: "When a client says they feel good but the real shift hasn't landed, what are you most likely to do next?",
+        examples: {
+          overworker: "You take it as a sign to work even harder for them next time, instead of naming that something deeper is being avoided.",
+          doubter: "You sense there's more underneath what they're saying, then talk yourself out of pointing it out.",
+          hidden: "You know exactly what needs to be said next, then let the moment pass because it feels too direct.",
+          foggy: "You pick up on the real thing underneath their words, then second-guess whether you actually heard it right.",
+          gripper: "You try to control the pace of their transformation instead of trusting that the real shift takes the time it takes.",
+          disconnected: "You take on responsibility for the shift not landing, and quietly give even more of yourself to try to fix it.",
+          underearner: "You let the feel-good moment be enough, instead of naming that they're capable of so much more."
+        }
+      },
+      {
+        stem: "What tends to happen when you sense a client isn't quite the right fit?",
+        examples: {
+          overworker: "For The Guardian, the Gap can show up right at the point where you'd normally say no — you say yes anyway because turning someone away feels unsafe.",
+          doubter: "For The Wayshower, the Gap can show up right at the point where your gut already knows — you override that knowing and take them on regardless.",
+          hidden: "For The Leader, the Gap can show up right at the point where you'd need to set a clear boundary — you stay vague instead, so it's easier for anyone to say yes.",
+          foggy: "For The Messenger, the Gap can show up right at the point where the misalignment is obvious — you talk yourself out of trusting what you clearly picked up on.",
+          gripper: "For The Creator, the Gap can show up right at the point where you'd need to let the client go — you try to control the outcome and make it work anyway.",
+          disconnected: "For The Healer, the Gap can show up right at the point where the connection feels off — you overgive to try to compensate for what isn't naturally there.",
+          underearner: "For The Expander, the Gap can show up right at the point where you know they can't really afford it — you discount yourself just to make it work."
+        }
+      },
+      {
+        stem: "What does a hard session actually look like?",
+        examples: {
+          overworker: "Maybe you give everything you have in the session and walk away completely depleted, still feeling like it wasn't enough.",
+          doubter: "Maybe you sense exactly what your client needs to hear, then talk yourself out of saying it in the moment.",
+          hidden: "Maybe you hold back from naming what you really saw, worried it'll be too much for them, or for you.",
+          foggy: "Maybe you lose the thread mid-session and can't get clear on what you're actually picking up anymore.",
+          gripper: "Maybe you grip so tightly trying to control how the session unfolds that nothing actually moves.",
+          disconnected: "Maybe you feel completely disconnected from the client's field, like the signal just went dead.",
+          underearner: "Maybe you do incredible work in the session, then charge like you did nothing at all."
+        }
+      }
+    ]
+  };
+
+  var ARCHETYPES = {
+    overworker: {
+      name: "The Guardian",
+      codes: ["Survival", "Overworking", "Stop-and-start energy"],
+      reading: "This is the frequency of someone who has never been taught how to receive without earning it first. You throw everything you have at the goal, and when it doesn't land right away, you throw more. It looks like productivity from the outside. From the inside, it's survival wearing the costume of ambition. This is why your results come in bursts instead of building, you're spending energy faster than you're letting it return to you.",
+      frequency: "survival, not flow, so your action creates results that stall and start over instead of building.",
+      label: "survival",
+      powerQuestion: "What part of you still believes rest isn't safe until everything is done?",
+      deepenPrompt: "Where are you seeing a start-stop energy show up, in your business and in other areas of your life?",
+      distortion: "The belief that if you just push harder and do more, the results have to come, so rest or receiving feels dangerous.",
+      gap: "Between grinding for every win and building momentum that compounds without you forcing it.",
+      identity: "I am someone who only creates results by overriding my body and forcing it to happen.",
+      activation: { title: "Nervous System Recalibration", type: "Guided activation", duration: "15 min", teaser: "A nervous-system shift that moves your action from forced to fueled." },
+      checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/soupFgZY/checkout"
+    },
+    doubter: {
+      name: "The Wayshower",
+      codes: ["Lack of trust", "Second-guessing", "Doubt", "Disempowerment"],
+      reading: "This is the frequency of someone who knows more than they let themselves say out loud. You feel it first, then you talk yourself out of it, then someone else says the exact thing you already knew and gets the credit for it. This shows up as hesitation right before the moment that mattered, the caption you didn't post, the read you didn't trust, the offer you didn't make. It's not that your knowing is wrong. It's that you've been waiting for permission to believe it.",
+      frequency: "self-doubt that overrides your own knowing before you ever act on it.",
+      label: "self-doubt",
+      powerQuestion: "What part of you still doubts how powerful you are?",
+      deepenPrompt: "Where are you seeing yourself second-guess what you already know, in your business and in other areas of your life?",
+      distortion: "The belief that your own knowing isn't valid until someone or something else confirms it.",
+      gap: "Between outsourcing your power to everyone else's opinion and standing fully in your own authority.",
+      identity: "I am someone whose word only counts once somebody else agrees with it.",
+      activation: { title: "Removing the Frequency of Doubt", type: "Guided activation", duration: "12 min", teaser: "An activation built to restore trust between you and your own knowing." },
+      checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/G8oLf2Yr/checkout"
+    },
+    hidden: {
+      name: "The Leader",
+      codes: ["Fear", "Fear of visibility", "Playing small"],
+      reading: "This is the frequency of someone whose gifts are already fully formed and still waiting for an invitation that isn't coming, because you're the one who has to send it. You stay one step behind the moment that would actually change things: the post you save as a draft, the offer you soften before you send it, the room you shrink in before anyone even asks you to. Staying hidden has kept you safe. It has also kept you exactly where you are.",
+      frequency: "staying hidden, even though your gifts are already fully ready.",
+      label: "staying hidden",
+      powerQuestion: "What part of you still believes it's safer to stay hidden than to be fully seen?",
+      deepenPrompt: "Where are you playing small right now, in your business and in other areas of your life?",
+      distortion: "The belief that being fully seen makes you a target, so staying small feels safer than being visible.",
+      gap: "Between being the best-kept secret and being fully found by the people you're meant to serve.",
+      identity: "I am someone who has to stay small to stay safe.",
+      activation: { title: "Expansion Activation", type: "Guided activation", duration: "16 min", teaser: "A release built to unhook safety from smallness." },
+      checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/ELi5FoPE/checkout"
+    },
+    foggy: {
+      name: "The Messenger",
+      codes: ["Confusion", "Ungrounded", "Scattered", "Dysfunction in thinking", "Fogginess through channel"],
+      reading: "This is the frequency of someone whose channel is genuinely open, it's just been running through static for so long you've started to doubt the signal is even there. Some days everything is crystal clear. Other days you can't find your own next step in a room you know by heart. This shows up as half-finished ideas, a business that changes direction every few weeks, and a gift you can't quite call in on command, even though you know, somewhere, that it's real.",
+      frequency: "scatter and static that make clarity come and go instead of staying steady.",
+      label: "scatter and static",
+      powerQuestion: "What part of you still believes clarity has to be earned instead of received?",
+      deepenPrompt: "Where do you feel the most scattered or foggy right now, in your business and in other areas of your life?",
+      distortion: "The belief that if your mind won't settle, your gifts aren't reliable.",
+      gap: "Between catching flashes of clarity and channeling on command, grounded and clear.",
+      identity: "I am someone whose gifts can't be counted on.",
+      activation: { title: "Activating Your Gifts", type: "Guided activation", duration: "12 min", teaser: "A guided activation that clears the static and switches your channel from guessing to receiving." },
+      checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/RXEY2TgP/checkout"
+    },
+    gripper: {
+      name: "The Creator",
+      codes: ["Control", "Lack"],
+      reading: "This is the frequency of someone who learned early that if they didn't hold on tightly, it would disappear. So you control the outcome, the timeline, the exact way it's supposed to look, because loosening your grip feels like losing the thing altogether. This shows up as overplanning, overworking a single decision, and a nervous system that can't quite settle even when things are going well. The tighter the grip, the less room there is for anything new to actually arrive.",
+      frequency: "gripping and control, born from a belief that there isn't enough.",
+      label: "gripping and control",
+      powerQuestion: "What part of you still believes you have to control everything to be safe?",
+      deepenPrompt: "Where are you gripping the tightest to control an outcome right now, in your business and in other areas of your life?",
+      distortion: "The belief that if you let go of control, even for a second, everything collapses into lack.",
+      gap: "Between white-knuckling every result and trusting abundance enough to actually let it in.",
+      identity: "I am someone who has to control everything or lose it all.",
+      activation: { title: "Freedom Timeline Activation", type: "Guided activation", duration: "14 min", teaser: "A guided release that loosens your grip on the old timeline so a new one has room to arrive." },
+      checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/WQNoL2qU/checkout"
+    },
+    disconnected: {
+      name: "The Healer",
+      codes: ["Disconnection", "Inconsistent spiritual gifts"],
+      reading: "This is the frequency of someone whose gift is completely real and completely unreliable, on some days it's undeniable, other days the line goes quiet and nothing you do brings it back. This shows up as brilliant sessions followed by ones where you're guessing, downloads that arrive fully formed and then disappear for weeks, a gift you've stopped fully trusting because you can't predict when it'll show up. The gift was never the problem. The connection to it was never taught to be reliable.",
+      frequency: "inconsistency, on in one moment and completely offline the next.",
+      label: "inconsistency",
+      powerQuestion: "What part of you still believes your connection isn't something you can trust to show up?",
+      deepenPrompt: "Where do you notice your connection go quiet, in your business and in other areas of your life?",
+      distortion: "The belief that your connection is something that happens to you, not something you can reliably open.",
+      gap: "Between hoping your gifts show up and being able to open the connection on command.",
+      identity: "I am someone whose connection can't be relied on.",
+      activation: { title: "Spirit Connection Activation", type: "Guided activation", duration: "18 min", teaser: "An attunement designed to steady and strengthen your connection." },
+      checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/PcMoRCSS/checkout"
+    },
+    underearner: {
+      name: "The Expander",
+      codes: ["Underearning", "Undercharging", "Money guilt", "Capped receiving"],
+      reading: "This is the frequency of someone whose gifts are worth more than they're letting themselves charge for them. You do the math before you send the price, and you round it down. You over-deliver to justify what you did charge, then wonder why you're exhausted and still not where you want to be financially. This shows up as pricing that stays years behind your actual skill, a business that grows in clients but not in income, and a quiet flinch every time someone asks what you charge. It was never about the money. It's the belief that you have to earn every dollar twice before you're allowed to keep it.",
+      frequency: "underearning, so your income stays capped below what your gifts are actually worth.",
+      label: "underearning",
+      powerQuestion: "What part of you still believes you have to earn every dollar twice before you're allowed to keep it?",
+      deepenPrompt: "Where are you seeing yourself undercharge or hold back from receiving, in your business and in other areas of your life?",
+      distortion: "The belief that charging your full worth makes you greedy, so you discount yourself before anyone even asks.",
+      gap: "Between undercharging just to feel safe and receiving in full alignment with what you're actually worth.",
+      identity: "I am someone who has to make it easy or cheap for people to say yes to me.",
+      activation: { title: "Success Code Activation", type: "Guided activation", duration: "12 min", teaser: "A guided activation that recodes what you believe you're allowed to receive." },
+      checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/PsLWTYDM/checkout"
+    }
+  };
+
+  // Aug 10 (later) -- Step 1 restructured from 5 to 7 questions per Rachael's request:
+  // the first 2 questions identify the member's Divine Identity directly (no
+  // score-guessing across all 7 keys at once), THEN the remaining 5 questions
+  // (1 domain-select + 4 domain-quiz) personalize themselves around that already-known
+  // identity to surface the distortion. Keys below match ARCHETYPES/QUESTION_BANKS keys
+  // 1:1 (overworker=Guardian, doubter=Wayshower, hidden=Leader, foggy=Messenger,
+  // gripper=Creator, disconnected=Healer, underearner=Expander) -- same mapping used
+  // throughout this file, do not renumber.
+  var IDENTITY_QUESTIONS = [
+    {
+      text: "Which feels most like who you naturally are?",
+      options: [
+        { key: "overworker", letter: "A", label: "Steady — makes others feel safe to move." },
+        { key: "doubter", letter: "B", label: "Sees ahead, helps people trust the path." },
+        { key: "hidden", letter: "C", label: "Leads, known for what they stand for." },
+        { key: "foggy", letter: "D", label: "Receives insight, speaks what others can't see." },
+        { key: "gripper", letter: "E", label: "Turns ideas into something real." },
+        { key: "disconnected", letter: "F", label: "Deep presence — creates change through connection." },
+        { key: "underearner", letter: "G", label: "Shows others more is possible." }
+      ]
+    },
+    {
+      text: "Which kind of transformation feels most natural to you?",
+      options: [
+        { key: "overworker", letter: "A", label: "Helping people feel supported and steady." },
+        { key: "doubter", letter: "B", label: "Helping people trust a direction that's becoming clear." },
+        { key: "hidden", letter: "C", label: "Going first, giving others permission to lead." },
+        { key: "foggy", letter: "D", label: "Translating insight so it suddenly makes sense." },
+        { key: "gripper", letter: "E", label: "Turning vision into something real." },
+        { key: "disconnected", letter: "F", label: "Transformation through presence and healing." },
+        { key: "underearner", letter: "G", label: "Showing people more is available than they thought." }
+      ]
+    }
+  ];
+
+  // Shared reflection scale for Questions 4-7, once identity is already known -- these
+  // no longer need to re-score across all 7 keys, they just confirm how the
+  // (already-identified) distortion is showing up right now.
+  var RESONANCE_OPTIONS = [
+    { key: "exact", label: "That's exactly it." },
+    { key: "yes", label: "Yes, more than I'd like to admit." },
+    { key: "sometimes", label: "Sometimes, not always." },
+    { key: "no", label: "Not really — that's not it." }
+  ];
+
+  // Aug 10 (later still) -- TRIED AND REVERTED. Briefly replaced Questions 4-7's
+  // QUESTION_BANKS stem + full-sentence personalize quote with a short recognitionPattern
+  // signal (below) per Rachael's "keep step 1 light" note. She then said it felt too thin
+  // ("simplified too much... felt more personalized and in depth before") and asked to go
+  // back to the fuller QUESTION_BANKS-based version -- renderQ()/nextQ()/backToQuizFromResults()
+  // now use QUESTION_BANKS again, same as originally built. DISTORTION_SIGNALS is unused
+  // dead code, kept (not deleted) in case a lighter version is wanted again later.
+  var DISTORTION_SIGNALS = {
+    overworker: ["Constantly overworking", "Difficulty resting without guilt", "Feeling responsible for everyone", "Struggling to receive help"],
+    doubter: ["Second-guessing your decisions", "Waiting for permission", "Looking outside yourself for certainty", "Suppressing what you already know"],
+    hidden: ["Fear of being fully visible", "Playing small", "Softening your truth", "Staying behind the scenes"],
+    foggy: ["A foggy channel", "Second-guessing what you receive", "Mental noise", "Difficulty trusting your inner knowing"],
+    gripper: ["Gripping outcomes", "Forcing creation", "Start-and-stop momentum", "Difficulty surrendering"],
+    disconnected: ["Energetic depletion", "Overgiving", "Neglecting your own needs", "Feeling disconnected from your gifts"],
+    underearner: ["Underearning", "Fear of receiving more", "Feeling guilty for wanting more", "Sabotaging your own expansion"]
+  };
+
+  // Results-screen reveal copy, one per identity (Rachael's Aug 10 template: "Your
+  // Divine Identity: The ___ / [identity line] / The distortion currently running:
+  // ___ / [gap line]"). `frequency` here is the short official Current Frequency word
+  // from lib/divineIdentities.js (currentFrequency), NOT the longer sentence stored on
+  // ARCHETYPES[key].frequency below (that field stays as-is, still used elsewhere).
+  // Aug 10 (later still) -- results screen redesigned around Rachael's exact template
+  // (verbatim Creator example she gave): "Your Divine Identity" / name / identity line,
+  // then "The frequency you're experiencing right now" (replaces the old "distortion
+  // currently running" label) with a two-sentence explanation, then "👀 Your Gap" with
+  // the full contradiction copy + a "Go deeper" CTA. `gapLine` (single-sentence version)
+  // is now superseded by the 3 new gap fields below but left on each entry, unused, in
+  // case the shorter version is wanted again. "That's the contradiction." and the closing
+  // "And now that we can see it..." + button are identical across all 7, so they're
+  // static HTML, not data here.
+  var DIVINE_REVEAL = {
+    overworker: {
+      name: "The Guardian",
+      frequency: "Over-Responsibility",
+      identityLine: "You're here to be the safety, stability and strength people can actually lean on.",
+      gapLine: "Somewhere between knowing you're built to create safety and believing it has to be earned by carrying everything yourself, you've been running yourself into the ground to prove it.",
+      frequencyExplanation: "Your ability to create safety hasn't disappeared. But right now, some of that protective energy is going into carrying, controlling and doing more than you actually need to.",
+      gapReadyLine: "You're ready to feel safe and supported...",
+      gapStillLine: "while still believing safety has to be earned by carrying everything yourself.",
+      gapExample: "You might see it when you say yes to one more thing you don't have capacity for, refuse help that's right in front of you, or keep working past the point your body already asked you to stop.",
+      gapRestated: "You're capable of real safety and support, while simultaneously believing you have to earn it by doing more, carrying more and controlling more.",
+      step2Opener: "You said it's hard to slow down because part of you believes everything depends on you carrying it. So let's start here: the next time you could actually rest or let someone else carry something, what usually happens in the next few minutes?",
+      activationReason: "Use this when you notice yourself saying yes to one more thing you don't have capacity for, refusing help that's right in front of you, or working past the point your body already asked you to stop. This activation is designed to help you interrupt that pattern and let safety come from somewhere other than doing it all yourself."
+    },
+    doubter: {
+      name: "The Wayshower",
+      frequency: "Doubt",
+      identityLine: "You're here to know before everyone else, and show people the way.",
+      gapLine: "Somewhere between what you already know is true and how much authority you give yourself to follow it, you've been outsourcing your own certainty.",
+      frequencyExplanation: "Your ability to know hasn't disappeared. But right now, some of that inner knowing is getting handed over to whoever seems more certain than you.",
+      gapReadyLine: "You're ready to trust what you already know...",
+      gapStillLine: "while still waiting for someone else to confirm it first.",
+      gapExample: "You might see it when you change your mind the second someone questions you, ask for opinions you don't actually need, or wait to move until you feel fully certain.",
+      gapRestated: "You already know what's true for you, while simultaneously giving your authority away to anyone who sounds more sure than you feel.",
+      step2Opener: "You said self-doubt tends to override your own knowing before you act. So let's start here: when you receive a clear message, idea, or knowing, what usually happens in the next few minutes?",
+      activationReason: "Use this when you notice yourself changing your mind the second someone questions you, asking for opinions you don't actually need, or waiting for a certainty that was never going to arrive first. This activation is designed to help you interrupt that pattern and trust what you already know."
+    },
+    hidden: {
+      name: "The Leader",
+      frequency: "Hiddenness",
+      identityLine: "You're here to be seen, recognized, and trusted for what you see.",
+      gapLine: "Somewhere between knowing you're meant to lead and actually letting yourself be fully seen, you've been making yourself easier to overlook.",
+      frequencyExplanation: "Your ability to lead hasn't disappeared. But right now, some of that leadership is going into staying smaller, quieter and safer than what you're actually capable of.",
+      gapReadyLine: "You're ready to be fully seen...",
+      gapStillLine: "while still making yourself easier to overlook.",
+      gapExample: "You might see it when you soften a message right before you send it, stay quiet in the room you were meant to lead, or wait for permission that was never actually required.",
+      gapRestated: "You're meant to lead in full view, while simultaneously keeping enough of yourself hidden to stay safe.",
+      step2Opener: "You said you tend to pull back right when it's time to be fully seen. So let's start here: the next time you have something true to say, what usually happens in the next few minutes?",
+      activationReason: "Use this when you notice yourself softening a message right before you send it, staying quiet in the room you were meant to lead, or waiting for permission that was never actually required. This activation is designed to help you interrupt that pattern and let yourself be fully seen."
+    },
+    foggy: {
+      name: "The Messenger",
+      frequency: "Channel Interference",
+      identityLine: "You're here to receive, translate and speak what others can't yet see for themselves.",
+      gapLine: "Somewhere between what's already moving through you and how much you trust it enough to say it out loud, you've been talking yourself out of your own channel.",
+      frequencyExplanation: "Your ability to receive hasn't disappeared. But right now, some of that clarity is getting lost in second-guessing and mental noise before you'll trust it.",
+      gapReadyLine: "You're ready to speak what you know...",
+      gapStillLine: "while still questioning whether it's actually real.",
+      gapExample: "You might see it when you receive something clearly and immediately talk yourself out of it, look for outside proof before you'll trust it, or stay quiet about the exact thing you were meant to say.",
+      gapRestated: "You already have a clear channel, while simultaneously filling it with enough doubt that you can't fully trust what comes through.",
+      step2Opener: "You said the signal gets buried under mental noise before you'll trust it. So let's start here: when you receive something clearly, what usually happens in the next few minutes?",
+      activationReason: "Use this when you notice yourself receiving something clearly and immediately talking yourself out of it, looking for outside proof before you'll trust it, or staying quiet about the exact thing you were meant to say. This activation is designed to help you interrupt that pattern and trust your channel without needing outside confirmation."
+    },
+    gripper: {
+      name: "The Creator",
+      frequency: "Control",
+      identityLine: "You're here to take what you can see, feel, or imagine and turn it into something real.",
+      gapLine: "Somewhere between your natural power to create and your need to control exactly how it happens, you've been gripping the very thing you're trying to build.",
+      frequencyExplanation: "Your ability to create hasn't disappeared. But right now, some of that creative energy is going into managing the timing, the outcome, and exactly how everything needs to happen.",
+      gapReadyLine: "You're ready to create something new...",
+      gapStillLine: "while still trying to control exactly how the new reality gets here.",
+      gapExample: "You might see it when you revisit a decision you already made, keep adjusting something that was ready to go, or decide the result needs to arrive through one very specific path.",
+      gapRestated: "You're creating something new while simultaneously trying to make sure it arrives in a way you already know how to control.",
+      step2Opener: "You said you keep reopening decisions after you've already made them. So let's start here: what are you usually afraid will happen if you stop adjusting and let the decision stand?",
+      activationReason: "Use this when you notice yourself reopening a decision you already made, adjusting something that was already ready to go, or deciding the result has to arrive through one very specific path. This activation is designed to help you interrupt that pattern and loosen your grip enough to let something new actually land."
+    },
+    disconnected: {
+      name: "The Healer",
+      frequency: "Disconnection",
+      identityLine: "You're here to hold, transform and restore through your presence.",
+      gapLine: "Somewhere between your natural connection to Spirit and how depleted you let yourself get taking care of everyone else, you've been disconnecting from the very source of your gift.",
+      frequencyExplanation: "Your ability to heal hasn't disappeared. But right now, some of that connection is going into everyone else before it ever comes back to you.",
+      gapReadyLine: "You're ready to feel fully connected and replenished...",
+      gapStillLine: "while still giving your energy away faster than you let it return.",
+      gapExample: "You might see it when you keep holding space for others while running on empty, skip what actually restores you, or notice your own gift going quiet after giving so much of it away.",
+      gapRestated: "You're built to be deeply connected, while simultaneously staying so busy pouring out that you rarely let yourself receive.",
+      step2Opener: "You said your energy tends to go to everyone else before it ever comes back to you. So let's start here: the next time you notice yourself pouring out again, what usually happens in the next few minutes?",
+      activationReason: "Use this when you notice yourself holding space for others while running on empty, skipping what actually restores you, or feeling your own gift go quiet after giving so much of it away. This activation is designed to help you interrupt that pattern and restore the connection you keep pouring out of."
+    },
+    underearner: {
+      name: "The Expander",
+      frequency: "Restriction",
+      identityLine: "You're here to hold more — more success, more money, more possibility — without shrinking back from it.",
+      gapLine: "Somewhere between what you're capable of receiving and what you currently feel safe holding, you've been restricting your own expansion.",
+      frequencyExplanation: "Your capacity for more hasn't disappeared. But right now, some of that expansion is getting held back before you'll even let yourself receive it.",
+      gapReadyLine: "You're ready to receive more...",
+      gapStillLine: "while still restricting what you'll let yourself ask for.",
+      gapExample: "You might see it when you undercharge for something you know is valuable, hesitate right before receiving more, or brace for it to disappear the moment it arrives.",
+      gapRestated: "You're capable of holding so much more, while simultaneously keeping yourself smaller so it never feels like too much.",
+      step2Opener: "You said you tend to hold back or undercharge right when more is available to you. So let's start here: the next time more comes your way, what usually happens in the next few minutes?",
+      activationReason: "Use this when you notice yourself undercharging for something you know is valuable, hesitating right before receiving more, or bracing for it to disappear the moment it arrives. This activation is designed to help you interrupt that pattern and let yourself actually receive what you're capable of holding."
+    }
+  };
+
+  var QUANTUM_DOLLARS_PER_ACTIVATION = 90; // earned per activation, whether purchased (Tier 1) or completed (Tier 2)
+  var QUANTUM_DOLLARS_PER_PROGRAM = 250; // earned per Go Deeper program completed (Tier 2 only)
+  var FULL_ACCESS_MONTHLY_URL = "https://www.rachaelsbutterflyeffect.com/offers/26bJnuRE/checkout";
+  var FULL_ACCESS_ANNUAL_URL = "https://www.rachaelsbutterflyeffect.com/offers/3YC8s5FV/checkout";
+
+  // Tier 1 spend mechanics (single-purchase members, no bot access by default).
+  var CHAT_PASS_COST = 10; // Quantum Dollars
+  var CHAT_PASS_HOURS = 24;
+  var ACTIVATION_CREDIT_PER_QUANTUM_DOLLAR = 0.10; // $0.10 credit per Quantum Dollar -- 90 QD (one activation) = $9 = a free next activation
+
+  // Tier 2 ongoing rewards: milestone thresholds, not a spend-and-lose currency --
+  // bucks keep accumulating and these unlock once, permanently, at the threshold.
+  var MOMENTUM_MANIFESTOR_THRESHOLD = 500;
+  var MOMENTUM_MANIFESTOR_URL = "https://www.rachaelsbutterflyeffect.com/offers/JyLvGV2G/checkout"; // real Kajabi offer, normally $111
+  var QUANTUM_RECODE_THRESHOLD = 1000; // TODO(Rachael): no matching Kajabi product found yet for the 30-min Quantum Recode session
+
+  // Client-side simulation state only (resets on reload). In the real app this
+  // is driven by Kajabi purchase webhooks, not local state.
+  // REVISED (Aug 10, paywall flip): the $9 GAP Method purchase now happens
+  // before Step 1, not at Step 3, so there is no more per-identity "which
+  // activation did they buy" state -- gapTrialStarted is a single flag that,
+  // once true, means all 7 GAP Method activations + unlimited chat are open
+  // for the 3-day trial (mirrors onGapTrial in lib/entitlements.js).
+  var quantumDollars = 0;
+  var gapTrialStarted = false;
+  var fullAccess = false;
+  var chatPassActive = false; // retired Aug 10 (see tier1-spend-card note below) -- kept only so redeemChatPass() still has something to toggle if ever re-enabled
+  var momentumUnlocked = false;
+  var quantumRecodeUnlocked = false;
+  var quantumDollarsLog = []; // {desc, delta, time} -- individual per-person ledger for the "My Quantum Dollars" panel
+
+  // The full diagnostic question bank. Step 2 currently pulls a fixed 4-question
+  // arc (rule -> fear -> identity cost -> protection) by index below; the rest
+  // are here so the sequence, count, or selection logic can be revised later
+  // without rewriting the questions themselves.
+  var DEEP_QUESTIONS = [
+    "If you had to name the rule you've been living by underneath all of this, what would it be?",
+    "Who taught you that this was true?",
+    "What would you have to believe about yourself for this pattern to make sense?",
+    "What's the thing you're most afraid would happen if this actually changed?",
+    "What does staying here protect you from?",
+    "If your body had a vote on this, not your mind, what would it say?",
+    "When is the first time you felt this exact feeling? Not about money, not about business. Just this feeling.",
+    "What identity would you have to give up if this pattern stopped?",
+    "What's the thing you know is true but you keep hoping isn't?",
+    "Who would you disappoint if you actually became this version of yourself?",
+    "What have you been making this mean about who you are?",
+    "Where did you decide you were too much, or not enough, for the thing you actually want?",
+    "What's the story you've told about why this hasn't worked yet? Now tell me what's underneath that story.",
+    "What would the version of you who had this already say to the version of you who is still waiting?",
+    "If this pattern is protecting you, what is it protecting you from feeling?",
+    "What part of you still believes you have to earn the right to have this?",
+    "What would it mean about you if you fully received this, money, love, recognition, whatever it is?",
+    "Who are you when no one needs anything from you and nothing is broken?",
+    "What's the one thing you're not saying, the thing you already know but haven't admitted out loud yet?"
+  ];
+
+  var freetextValue = "";
+  var selectedDomain = null;
+  var current = 0;
+  var answers = [];
+  var day1Done = false;
+  var winnerKey = null;
+
+  // Aug 10 (later) -- phase drives which question source renderQ()/nextQ()/prevQ() use.
+  // 'identity' = the 2 new IDENTITY_QUESTIONS (Questions 1-2 of 7). Then d1-domain
+  // (Question 3 of 7, not handled by renderQ -- it's its own chip-select card). Then
+  // 'quiz' = the existing 4 domain-specific questions (Questions 4-7 of 7), now shown
+  // with a personalized reflection line + a resonance scale instead of re-scoring.
+  var phase = 'identity';
+  var identityCurrent = 0;
+  var identityAnswers = [null, null];
+
+  function showEl(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; }
+
+  function goDay(n) {
+    [1,2,3].forEach(function(i) {
+      document.getElementById('view-day' + i).classList.toggle('active', i === n);
+      document.getElementById('tab-day' + i).classList.toggle('active', i === n);
+    });
+    if (n === 2) setupDay2();
+    if (n === 3) setupDay3();
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }
+
+  function beginStep1() {
+    phase = 'identity';
+    identityCurrent = 0;
+    identityAnswers = [null, null];
+    showEl('d1-intro', false);
+    showEl('d1-quiz', true);
+    renderQ();
+  }
+
+  function renderDomainChips() {
+    var el = document.getElementById('domain-chips');
+    el.innerHTML = '';
+    DOMAINS.forEach(function(d) {
+      var b = document.createElement('button');
+      b.className = 'domain-chip' + (selectedDomain === d.key ? ' selected' : '');
+      b.innerHTML = '<span>' + d.label + '</span><span class="tick">✓</span>';
+      b.onclick = function() { selectedDomain = d.key; renderDomainChips(); document.getElementById('domain-next').disabled = false; };
+      el.appendChild(b);
+    });
+  }
+
+  function backFromDomain() {
+    phase = 'identity';
+    identityCurrent = 1;
+    showEl('d1-domain', false);
+    showEl('d1-quiz', true);
+    renderQ();
+  }
+
+  function beginDomainQuiz() {
+    if (!selectedDomain) return;
+    phase = 'quiz';
+    current = 0;
+    answers = [];
+    showEl('d1-domain', false);
+    showEl('d1-quiz', true);
+    renderQ();
+  }
+
+  function renderQ() {
+    var personalizeEl = document.getElementById('q-personalize');
+    var optsEl = document.getElementById('q-options');
+    optsEl.innerHTML = '';
+
+    if (phase === 'identity') {
+      var q = IDENTITY_QUESTIONS[identityCurrent];
+      document.getElementById('q-label').textContent = 'Question ' + (identityCurrent + 1) + ' of 7';
+      document.getElementById('q-text').textContent = q.text;
+      personalizeEl.style.display = 'none';
+      q.options.forEach(function(opt) {
+        var b = document.createElement('button');
+        b.className = 'opt' + (identityAnswers[identityCurrent] === opt.key ? ' selected' : '');
+        b.textContent = opt.label;
+        b.onclick = function() { identityAnswers[identityCurrent] = opt.key; renderQ(); };
+        optsEl.appendChild(b);
+      });
+      var dotsEl = document.getElementById('q-dots');
+      dotsEl.innerHTML = '';
+      IDENTITY_QUESTIONS.forEach(function(_, i) {
+        var d = document.createElement('div');
+        d.className = 'dot' + (i < identityCurrent ? ' done' : (i === identityCurrent ? ' now' : ''));
+        dotsEl.appendChild(d);
+      });
+      document.getElementById('back-btn').style.visibility = 'visible';
+      var nextBtn = document.getElementById('next-btn');
+      nextBtn.disabled = !identityAnswers[identityCurrent];
+      nextBtn.textContent = 'Next';
+      return;
+    }
+
+    // phase === 'quiz' -- identity already known (winnerKey). Uses PERSONALIZED_QUESTIONS
+    // now (see its comment above ARCHETYPES): neutral question stem, personalized example
+    // underneath, identity named in the example text on only 2 of these 4 questions.
+    var set = PERSONALIZED_QUESTIONS[selectedDomain];
+    var q2 = set[current];
+    document.getElementById('q-label').textContent = 'Question ' + (current + 4) + ' of 7';
+    document.getElementById('q-text').textContent = q2.stem;
+    personalizeEl.style.display = 'block';
+    personalizeEl.textContent = q2.examples[winnerKey];
+    RESONANCE_OPTIONS.forEach(function(opt) {
+      var b = document.createElement('button');
+      b.className = 'opt' + (answers[current] === opt.key ? ' selected' : '');
+      b.textContent = opt.label;
+      b.onclick = function() { answers[current] = opt.key; renderQ(); };
+      optsEl.appendChild(b);
+    });
+    var dotsEl2 = document.getElementById('q-dots');
+    dotsEl2.innerHTML = '';
+    set.forEach(function(_, i) {
+      var d = document.createElement('div');
+      d.className = 'dot' + (i < current ? ' done' : (i === current ? ' now' : ''));
+      dotsEl2.appendChild(d);
+    });
+    document.getElementById('back-btn').style.visibility = 'visible';
+    var nextBtn2 = document.getElementById('next-btn');
+    nextBtn2.disabled = !answers[current];
+    nextBtn2.textContent = current === set.length - 1 ? 'See my results →' : 'Next';
+  }
+
+  function nextQ() {
+    if (phase === 'identity') {
+      if (!identityAnswers[identityCurrent]) return;
+      if (identityCurrent === 0) { identityCurrent = 1; renderQ(); return; }
+      // Both identity questions answered -- lock in winnerKey now, before domain step.
+      var scores = {};
+      identityAnswers.forEach(function(key) { scores[key] = (scores[key] || 0) + 1; });
+      var best = -1;
+      Object.keys(ARCHETYPES).forEach(function(key) {
+        var s = scores[key] || 0;
+        if (s > best) { best = s; winnerKey = key; }
+      });
+      if (scores[identityAnswers[0]] === scores[winnerKey]) { winnerKey = identityAnswers[0]; } // tie-break to Q1
+      phase = 'domain';
+      showEl('d1-quiz', false);
+      showEl('d1-domain', true);
+      renderDomainChips();
+      document.getElementById('domain-next').disabled = !selectedDomain;
+      return;
+    }
+    // phase === 'quiz'
+    var set = PERSONALIZED_QUESTIONS[selectedDomain];
+    if (!answers[current]) return;
+    if (current === set.length - 1) { showResults(); return; }
+    current++; renderQ();
+  }
+
+  function prevQ() {
+    if (phase === 'identity') {
+      if (identityCurrent === 0) {
+        showEl('d1-quiz', false);
+        showEl('d1-intro', true);
+        return;
+      }
+      identityCurrent = 0; renderQ();
+      return;
+    }
+    // phase === 'quiz'
+    if (current === 0) {
+      showEl('d1-quiz', false);
+      showEl('d1-domain', true);
+      renderDomainChips();
+      document.getElementById('domain-next').disabled = !selectedDomain;
+      return;
+    }
+    current--; renderQ();
+  }
+
+  function showResults() {
+    var reveal = DIVINE_REVEAL[winnerKey];
+    var a = ARCHETYPES[winnerKey];
+    var domainLabel = DOMAINS.filter(function(d) { return d.key === selectedDomain; })[0].label;
+
+    document.getElementById('r-identity-name').textContent = reveal.name;
+    document.getElementById('r-identity-line').textContent = reveal.identityLine;
+    document.getElementById('r-frequency-sentence').textContent = "You're " + reveal.name + " currently experiencing the frequency of " + reveal.frequency + ".";
+    document.getElementById('r-frequency-explanation').textContent = reveal.frequencyExplanation;
+    document.getElementById('r-gap-contradiction').innerHTML = reveal.gapReadyLine + '<br>' + reveal.gapStillLine;
+    document.getElementById('r-gap-example').textContent = reveal.gapExample;
+    document.getElementById('r-gap-restated').textContent = reveal.gapRestated;
+
+    document.getElementById('r-domain').textContent = domainLabel;
+    document.getElementById('r-name').textContent = a.name;
+    var codesEl = document.getElementById('r-codes');
+    codesEl.innerHTML = '';
+    a.codes.forEach(function(c) {
+      var t = document.createElement('div');
+      t.className = 'code-tag';
+      t.textContent = c;
+      codesEl.appendChild(t);
+    });
+    document.getElementById('r-reading').innerHTML = a.reading;
+    document.getElementById('r-gap').innerHTML = a.gap;
+    day1Done = true;
+    document.getElementById('check1').textContent = '✓';
+    showEl('d1-quiz', false);
+    showEl('d1-results', true);
+  }
+
+  function backToQuizFromResults() {
+    phase = 'quiz';
+    current = PERSONALIZED_QUESTIONS[selectedDomain].length - 1;
+    day1Done = false;
+    document.getElementById('check1').textContent = '';
+    showEl('d1-results', false);
+    showEl('d1-quiz', true);
+    renderQ();
+  }
+
   var day2Script = [];
   var day2Index = 0;
 
