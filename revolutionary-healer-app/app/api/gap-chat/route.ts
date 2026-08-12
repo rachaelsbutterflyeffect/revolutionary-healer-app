@@ -12,7 +12,12 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildGapFunnelSystemPrompt } from "@/lib/processes";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// NOTE: the Vercel env var is literally named "Anthropic_API_Key" (mixed case,
+// set up before this file existed) rather than the conventional ANTHROPIC_API_KEY --
+// app/api/chat/route.ts has this same mismatch. Matching the actual var name here
+// rather than "fixing" the casing, since renaming the Vercel var isn't possible
+// without re-entering the secret value, which this session can't safely do.
+const anthropic = new Anthropic({ apiKey: process.env.Anthropic_API_Key });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
 
 export async function POST(req: NextRequest) {
