@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         const token = generateToken();
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
         await createMemberResetToken(member.id, token, expiresAt);
-        await sendPasswordResetEmail({ email, resetToken: token }).catch((e) =>
+        await sendPasswordResetEmail({ email, firstName: "", resetToken: token }).catch((e) =>
           console.error("sendPasswordResetEmail failed", e)
         );
       }
