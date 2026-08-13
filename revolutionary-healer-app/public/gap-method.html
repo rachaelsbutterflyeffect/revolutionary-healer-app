@@ -993,6 +993,21 @@
   var day1Done = false;
   var winnerKey = null;
 
+  // GAP Method persistence (Aug 12, Rachael's GAP Method persistence
+  // instruction): if this session arrived with an identified buyer email
+  // (?e= query param -- see the Kajabi-side capture this pairs with),
+  // capture it here so Step 3's completion can be saved server-side against
+  // that email. Absent entirely if not present -- the diagnostic still works
+  // fully anonymously either way, this is purely additive.
+  var buyerEmail = (function() {
+    try {
+      var v = new URLSearchParams(window.location.search).get('e');
+      return v ? decodeURIComponent(v).trim() : '';
+    } catch (err) {
+      return '';
+    }
+  })();
+
   // Aug 10 (later) -- phase drives which question source renderQ()/nextQ()/prevQ() use.
   // 'identity' = the 2 new IDENTITY_QUESTIONS (Questions 1-2 of 7). Then d1-domain
   // (Question 3 of 7, not handled by renderQ -- it's its own chip-select card). Then
@@ -1370,6 +1385,29 @@
     document.getElementById('a-meta').textContent = a.activation.type + ' · ' + a.activation.duration;
     document.getElementById('a-teaser').textContent = reveal.activationReason;
     document.getElementById('check3').textContent = '✓';
+
+    // Save this diagnostic result server-side (Aug 12 persistence instruction)
+    // -- backend, zero extra action from the member. Only fires when we
+    // already have an identified email for this session (see buyerEmail
+    // above); silently no-ops otherwise, since the diagnostic itself works
+    // fully without it. Best-effort: failures here never block or interrupt
+    // the funnel.
+    if (buyerEmail) {
+      fetch('/api/gap-method-result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: buyerEmail,
+          divineIdentity: reveal.name,
+          primaryFrequency: reveal.frequency,
+          focusArea: domainLabel,
+          refinedGap: reveal.gapRestated,
+          recommendedActivation: a.activation.title,
+          activationWhy: reveal.activationReason,
+          step1Answers: JSON.stringify(identityAnswers)
+        })
+      }).catch(function() { /* best-effort; ignore failures */ });
+    }
   }
 
   function updateQuantumDollarsBadge() {
