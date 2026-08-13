@@ -3,6 +3,7 @@
 
 import Airtable from "airtable";
 import crypto from "crypto";
+import { DIVINE_IDENTITIES } from "./divineIdentities";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -33,6 +34,7 @@ export const Tables = {
   Practices: "Practices",
   Events: "Events",
   GapMethodResults: "GapMethodResults",
+  Shifts: "Shifts",
 };
 
 // Lowercase + trim for consistent matching. Spec (Aug 12, Rachael's GAP
@@ -181,21 +183,68 @@ export async function saveGapMethodDiagnostic({
     diagnostic_completed_at: new Date().toISOString(),
     status: "diagnostic_complete",
   };
-  if (existing) {
-    return base(Tables.GapMethodResults).update(existing.id, fields);
+  const saved = existing
+    ? await base(Tables.GapMethodResults).update(existing.id, fields)
+    : await base(Tables.GapMethodResults).create({ ...fields, source: "diagnostic_save" });
+  // Aug 13 (Rachael's My Revolution Shift-card build): if this email is
+  // ALREADY a real member (e.g. they bought Full Access before ever doing
+  // the GAP Method), link + auto-create the Shift card right now instead of
+  // waiting for a future Kajabi webhook event that may never come.
+  const member = await getMemberByEmail(normalized);
+  if (member) {
+    await linkGapMethodResultToMember(normalized, member.id);
   }
-  return base(Tables.GapMethodResults).create({ ...fields, source: "diagnostic_save" });
+  return saved;
 }
 
 export async function linkGapMethodResultToMember(email, memberRecordId) {
   const normalized = normalizeEmail(email);
   const existing = await getGapMethodResultByEmail(normalized);
   if (!existing) return null;
-  return base(Tables.GapMethodResults).update(existing.id, {
+  const updated = await base(Tables.GapMethodResults).update(existing.id, {
     linked_member: [memberRecordId],
     linked_at: new Date().toISOString(),
     status: "linked_to_member",
   });
+  // Aug 13 (Rachael's My Revolution Shift-card build, SPEC.md's Post-Gap
+  // Method App Entry Flow point 3): the moment a completed GAP Method
+  // diagnostic links to a real member, auto-create the first "Gap Method
+  // Shift" card so My Revolution isn't empty the moment they arrive. Only
+  // fires once per result (shift_created guard) -- a repeat purchase or
+  // webhook replay must never create a second Shift for the same GAP.
+  if (existing.fields.divine_identity && !existing.fields.shift_created) {
+    await createGapMethodShift(existing, memberRecordId);
+  }
+  return updated;
+}
+
+// Maps a GapMethodResults record's completed diagnostic into the first My
+// Revolution "Shift" card (see lib/shifts.js for the card's full pure-logic
+// shape). SHIFT CARD CREATION RULE (SPEC.md): one Shift per distinct GAP --
+// this only ever runs once per GapMethodResults row, guarded by
+// shift_created above, never re-triggered by a later repurchase.
+export async function createGapMethodShift(gapMethodResultRecord, memberRecordId) {
+  const f = gapMethodResultRecord.fields;
+  const identity = DIVINE_IDENTITIES.find((d) => d.displayName === f.divine_identity);
+  const now = new Date().toISOString();
+  await base(Tables.Shifts).create({
+    member_email: f.email,
+    member: [memberRecordId],
+    gap_method_result: [gapMethodResultRecord.id],
+    method_name: "3 Step GAP Method",
+    divine_identity_slug: identity?.slug ?? "",
+    divine_identity_name: f.divine_identity ?? "",
+    current_frequency: f.primary_frequency ?? "",
+    focus_area: f.focus_area ?? "",
+    gap_explanation: f.refined_gap ?? "",
+    what_we_noticed: f.activation_why ?? "",
+    recommended_activation: f.recommended_activation ?? "",
+    progress_status: "shifting",
+    ready_for_embodied: false,
+    created_at: now,
+    updated_at: now,
+  });
+  await base(Tables.GapMethodResults).update(gapMethodResultRecord.id, { shift_created: true });
 }
 
 export default base;
