@@ -242,10 +242,11 @@
           <p id="a-teaser"></p>
         </div>
 
-        <div class="reveal-block" style="text-align:left; margin-top: 8px;">
+        <div class="reveal-block" id="d3-upsell-block" style="text-align:left; margin-top: 8px;">
           <div class="eyebrow">Ready for your full transformation?</div>
           <p class="copy" style="margin-bottom: 20px;">This activation is what I'd recommend you work with next -- it's not included in what you've already unlocked. Your recommended activation, Rachael's full Activation Library, and ongoing AI support all live inside The Revolutionary Healer, so this is where the real shift happens.</p>
           <a class="btn-gold" href="https://www.rachaelsbutterflyeffect.com/full-access" target="_blank" rel="noopener">Access Your Full Transformation →</a>
+<div id="d3-embed-confirmation" style="display:none; text-align:center; margin-top: 18px;"><p class="copy" style="color: var(--gold-soft); margin:0;">✓ Your Shift has been saved to My Revolution.</p></div>
         </div>
 
       </div>
@@ -981,6 +982,7 @@
     }
   })();
   var buyerFirstName = '';
+  var isEmbed = new URLSearchParams(window.location.search).get('embed') === '1';
   // Aug 13 (Rachael's Kajabi Purchase Webhook architecture): this token
   // resolution is the PRIMARY way buyerEmail gets set now -- the ?e= fallback
   // above is a last resort only. ?t= is an opaque, single-use session token
@@ -1409,8 +1411,21 @@
           activationWhy: reveal.activationReason,
           step1Answers: JSON.stringify(identityAnswers)
         })
-      }).catch(function() { /* best-effort; ignore failures */ });
+      }).then(function() { notifyEmbedParent(); }).catch(function() { notifyEmbedParent(); });
+    } else if (isEmbed) {
+      notifyEmbedParent();
     }
+  }
+
+  function notifyEmbedParent() {
+    if (!isEmbed || !window.parent || window.parent === window) return;
+    var upsell = document.getElementById('d3-upsell-block');
+    if (upsell) upsell.style.display = 'none';
+    var confirmEl = document.getElementById('d3-embed-confirmation');
+    if (confirmEl) confirmEl.style.display = 'block';
+    setTimeout(function() {
+      window.parent.postMessage({ type: 'gapMethodComplete' }, '*');
+    }, 1200);
   }
 
   function updateQuantumDollarsBadge() {
