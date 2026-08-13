@@ -2232,14 +2232,14 @@
   });
 
   if (RH_EMAIL) {
-    document.getElementById('gap-method-starter-btn')document.getElementById('gap-method-starter-btn').addEventListener('click', promptGapMethodInChat);
+    document.getElementById('gap-method-starter-btn').addEventListener('click', promptGapMethodInChat);
     document.getElementById('hero-speak-btn').addEventListener('click', sendHeroChat);
     document.getElementById('chat-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
     });
     initProfileFields();
     loadMemberRevolutionData();
-    document.querySelectorAll('.focus-empty-cta').forEach(function(btn) { btn.addEventListener('click', startGapMethod); });
+    document.querySelectorAll('.focus-empty-cta').forEach(function(btn) { btn.addEventListener('click', embedGapMethodInline); });
   }
 </script>
 
