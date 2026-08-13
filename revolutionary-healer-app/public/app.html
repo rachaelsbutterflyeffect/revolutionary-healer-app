@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>The Revolutionary Healer — App Mockup</title>
+<style>
+  :root {
+    --black: #121110;
+    --panel: #1B1815;
+    --panel-2: #221E19;
+    --taupe: #A9997F;
+    --taupe-soft: #8C8272;
+    --taupe-line: #3A342B;
+    --gold: #CFA646;
+    --gold-soft: #E4C77A;
+    --white: #F6F2E9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--black);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  .serif {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  }
+  .wrap {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 32px;
+  }
+
+  /* nav */
+  nav {
+    border-bottom: 1px solid var(--taupe-line);
+    padding: 22px 0;
+  }
+  nav .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-size: 20px;
+    letter-spacing: 0.04em;
+    color: var(--white);
+  }
+  .logo span { color: var(--gold); }
+  .navlinks {
+    display: flex;
+    gap: 36px;
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--taupe);
+  }
+  .member-pill {
+    border: 1px solid var(--taupe-line);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 12px;
+    color: var(--taupe);
+  }
+
+  /* hero */
+  .hero {
+    padding: 96px 0 80px;
+    text-align: center;
+    border-bottom: 1px solid var(--taupe-line);
+  }
+  .eyebrow {
+    color: var(--gold);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 22px;
+  }
+  h1 {
+    font-size: 46px;
+    line-height: 1.25;
+    font-weight: 400;
+    margin: 0 auto 8px;
+    max-width: 720px;
+    color: var(--white);
+  }
+  .hero-subline {
+    color: var(--gold);
+    font-size: 14px;
+    margin: 0 auto 20px;
+    max-width: 520px;
+  }
+  .hero p.sub {
+    color: var(--taupe);
+    font-size: 16px;
+    max-width: 520px;
+    margin: 0 auto 44px;
+    line-height: 1.6;
+  }
+
+  .focus-pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .focus-pill {
+    border: 1px solid var(--taupe-line);
+    border-radius: 999px;
+    padding: 9px 18px;
+    font-size: 13px;
+    color: var(--taupe);
+    background: var(--panel);
+  }
+  .focus-pill.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #241C0A;
+  }
+
+  .chatbox {
+    max-width: 700px;
+    margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid var(--taupe-line);
+    border-radius: 18px;
+    padding: 18px 18px 18px 26px;
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+  }
+  .chatbox textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    color: var(--white);
+    font-size: 17px;
+    line-height: 1.5;
+    font-family: inherit;
+    /* ~5 lines: font-size * line-height * 5 rows */
+    height: calc(17px * 1.5 * 5);
+  }
+  .chatbox textarea::placeholder { color: var(--taupe-soft); }
+  .send-btn {
+    background: var(--gold);
+    color: #241C0A;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 26px;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .starters {
+    max-width: 620px;
+    margin: 16px auto 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  .starters.starters-top {
+    max-width: 700px;
+    margin: 0 auto 20px;
+  }
+  .starter {
+    font-size: 12.5px;
+    color: var(--taupe-soft);
+    border: 1px solid var(--taupe-line);
+    border-radius: 999px;
+    padding: 6px 14px;
+  }
+  .starter.process {
+    color: var(--gold-soft);
+    border-color: var(--gold);
+    cursor: pointer;
+    background: transparent;
+    font-family: inherit;
+  }
+  .starter.process:hover { background: rgba(207,166,70,0.12); }
+
+  /* sections */
+  section.block { padding: 72px 0; border-bottom: 1px solid var(--taupe-line); }
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 34px; }
+  .section-head h2 { font-size: 26px; font-weight: 400; margin: 0; color: var(--white); }
+  .section-head p { color: var(--taupe); font-size: 14px; margin: 6px 0 0; }
+  .see-all { color: var(--gold); font-size: 13px; letter-spacing: 0.04em; }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .media-card {
+    background: var(--panel);
+    border: 1px solid var(--taupe-line);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .media-thumb {
+    height: 130px;
+    background: linear-gradient(135deg, #2A2419, #17140F);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Activation card placeholder art -- colorful gradients (purple/blue/pink/white) */
+  .media-thumb.glyph-roots, .fav-thumb.glyph-roots { background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.35), transparent 55%), linear-gradient(135deg, #4C1D95, #2563EB); }
+  .media-thumb.glyph-wave, .fav-thumb.glyph-wave { background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.3), transparent 55%), linear-gradient(135deg, #2563EB, #38BDF8); }
+  .media-thumb.glyph-sunburst, .fav-thumb.glyph-sunburst { background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.45), transparent 55%), linear-gradient(135deg, #EC4899, #F9A8D4); }
+  .media-thumb.glyph-eye, .fav-thumb.glyph-eye { background: radial-gradient(circle at 65% 30%, rgba(255,255,255,0.3), transparent 55%), linear-gradient(135deg, #7C3AED, #EC4899); }
+  .media-thumb.glyph-spiral, .fav-thumb.glyph-spiral { background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.3), transparent 55%), linear-gradient(135deg, #4C1D95, #7C3AED, #38BDF8); }
+  .media-thumb.glyph-flame, .fav-thumb.glyph-flame { background: radial-gradient(circle at 60% 25%, rgba(255,255,255,0.35), transparent 55%), linear-gradient(135deg, #F472B6, #7C3AED); }
+  .media-thumb.glyph-infinity, .fav-thumb.glyph-infinity { background: radial-gradient(circle at 40% 35%, rgba(255,255,255,0.5), transparent 55%), linear-gradient(135deg, #F6F2E9, #93C5FD); }
+  .media-thumb.glyph-star, .fav-thumb.glyph-star { background: radial-gradient(circle at 50% 30%, rgba(255,255,255,0.5), transparent 55%), linear-gradient(135deg, #7C3AED, #F6F2E9); }
+  .media-thumb.glyph-lotus, .fav-thumb.glyph-lotus { background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.35), transparent 55%), linear-gradient(135deg, #F9A8D4, #C4B5FD); }
+  .media-thumb.glyph-crystal, .fav-thumb.glyph-crystal { background: radial-gradient(circle at 60% 30%, rgba(255,255,255,0.45), transparent 55%), linear-gradient(135deg, #38BDF8, #F6F2E9); }
+  .media-thumb.glyph-butterfly, .fav-thumb.glyph-butterfly { background: radial-gradient(circle at 30% 25%, rgba(255,255,255,0.4), transparent 55%), linear-gradient(120deg, #7C3AED 0%, #EC4899 45%, #38BDF8 100%); }
+
+  .play-dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .play-dot svg { fill: var(--gold); }
+  .media-tag {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--gold-soft);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 3px 10px;
+  }
+  .media-body { padding: 16px 18px 18px; }
+  .media-body h3 { font-size: 15px; font-weight: 500; margin: 0 0 6px; color: var(--white); }
+  .media-meta { font-size: 12.5px; color: var(--taupe); }
+  .media-description { font-size: 12.5px; color: var(--taupe); margin: 0 0 6px; line-height: 1.4; }
+  .activation-player { position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: 14px; overflow: hidden; margin: 20px 0; }
+  .activation-player iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+  .activation-detail-actions { display: flex; gap: 12px; align-items: center; margin-top: 8px; }
+
+  /* GAP Method scoped-trial demo (Aug 10) -- gold lock badge shown on library
+     cards not covered by the member's current unlockedActivationSlugs. The
+     .coming-soon-badge rule below is now unused markup-wise (all 7 GAP
+     Method activations got real Wistia video later on Aug 10 -- see
+     lib/activations.js's GAP_METHOD_ACTIVATIONS) but is left defined in
+     case a future activation needs the same "video coming soon" treatment. */
+  .activation-lock-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .coming-soon-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--gold-soft);
+    border: 1px solid var(--gold);
+    border-radius: 999px;
+    padding: 3px 10px;
+    background: var(--panel-2);
+  }
+  .locked-activation-toast {
+    position: fixed;
+    left: 50%;
+    bottom: 28px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--panel-2);
+    border: 1px solid var(--gold);
+    border-radius: 12px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13.5px;
+    color: var(--white);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 500;
+  }
+  .locked-activation-toast.active { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+  .locked-activation-toast a { color: var(--gold); font-weight: 600; white-space: nowrap; cursor: pointer; }
+
+  /* explore/upgrade */
+  .explore-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 20px;
+  }
+  .explore-card {
+    background: var(--panel);
+    border: 1px solid var(--taupe-line);
+    border-radius: 14px;
+    padding: 26px 22px;
+  }
+  .explore-card.featured {
+    border: 1px solid var(--gold);
+    background: var(--panel-2);
+  }
+  .badge {
+    display: inline-block;
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #241C0A;
+    background: var(--gold);
+    border-radius: 999px;
+    padding: 4px 10px;
+    margin-bottom: 14px;
+  }
+  .explore-card h3 { font-size: 17px; font-weight: 500; margin: 0 0 8px; color: var(--white); }
+  .explore-card p { font-size: 13.5px; color: var(--taupe); line-height: 1.6; margin: 0 0 18px; }
+  .explore-link { font-size: 13px; color: var(--gold); }
+
+  footer { padding: 40px 0 60px; text-align: center; }
+  footer .logo { justify-content: center; display: flex; margin-bottom: 10px; }
+  footer p { color: var(--taupe-soft); font-size: 12.5px; letter-spacing: 0.03em; }
+
+  .navlinks .qd-nav { background: none; border: none; font: inherit; color: var(--gold); cursor: pointer; letter-spacing: 0.06em; text-transform: uppercase; padding: 0; text-decoration: none; }
+
+  /* Trial banner -- shown while a member is on the 3-day paid trial from the
+     Step 3 $9 offer (see lib/entitlements.js onPaidTrial). Always visible in
+     this static mockup as an example state; the real app should only render
+     it when onPaidTrial is true, and drive trial-days-remaining from
+     paidTrialDaysRemaining instead of the static "2" below. */
+  .trial-banner { background: var(--gold); }
+  .trial-banner-inner { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 9px 20px; flex-wrap: wrap; }
+  .trial-banner-text { font-size: 12.5px; color: #241C0A; font-weight: 600; letter-spacing: 0.02em; }
+  .trial-banner-cta { background: #241C0A; color: var(--gold); border: none; border-radius: 999px; padding: 6px 16px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; letter-spacing: 0.03em; }
+
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,9,7,0.72); z-index: 50; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 60px 20px; }
+  .modal-overlay.active { display: flex; }
+  .modal-card { background: var(--panel); border: 1px solid var(--gold); border-radius: 18px; padding: 34px 32px; max-width: 520px; width: 100%; }
+  .modal-card h2 { font-size: 21px; font-weight: 400; margin: 0 0 4px; color: var(--white); font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; }
+  .modal-card p { color: var(--taupe); font-size: 14px; line-height: 1.6; }
+  .modal-close { float: right; background: none; border: none; color: var(--taupe); font-size: 20px; cursor: pointer; line-height: 1; }
+  .qd-log-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--taupe-line); font-size: 13px; }
+  .qd-log-row .desc { color: var(--white); }
+  .qd-log-row .meta { color: var(--taupe); font-size: 11.5px; white-space: nowrap; text-align: right; }
+  .qd-log-row .delta { font-weight: 600; white-space: nowrap; color: var(--gold-soft); }
+
+  /* My Revolution */
+  .navlinks a { color: inherit; text-decoration: none; }
+  .focus-card { background: var(--panel-2); border: 1px solid var(--gold); border-radius: 16px; padding: 28px 26px; margin-bottom: 40px; }
+  .card { background: var(--panel-2); border: 1px solid var(--taupe-line); border-radius: 16px; padding: 28px 26px; margin-bottom: 40px; }
+  .center { text-align: center; }
+  p.copy { color: var(--taupe); font-size: 14px; line-height: 1.6; margin: 0; }
+  .focus-card-label { color: var(--gold); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 18px; }
+  .focus-card-body { display: flex; align-items: flex-end; flex-wrap: wrap; gap: 28px; margin-bottom: 20px; }
+  .focus-card-kicker { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--taupe); margin-bottom: 6px; }
+  .focus-card-identity h3 { font-size: 28px; font-weight: 400; margin: 0; color: var(--white); }
+  .focus-card-freq-value { font-size: 16px; color: var(--gold-soft); }
+  .status-pill { font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--taupe-line); color: var(--white); white-space: nowrap; }
+  .status-pill.shifting { border-color: #C9A227; background: rgba(201,162,39,0.12); }
+  .status-pill.embodied { border-color: #4C8B5B; background: rgba(76,139,91,0.14); }
+  .focus-card-activity { font-size: 12.5px; color: var(--taupe); display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
+  .focus-card-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-top: 16px; border-top: 1px solid var(--taupe-line); }
+  .focus-card-activation { font-size: 13.5px; color: var(--taupe); }
+  .focus-card-activation strong { color: var(--white); font-weight: 500; }
+  .btn-primary { background: var(--gold); color: #241C0A; border: none; border-radius: 10px; padding: 11px 20px; font-size: 13.5px; font-weight: 600; font-family: inherit; cursor: pointer; }
+  .btn-secondary { background: transparent; color: var(--white); border: 1px solid var(--taupe-line); border-radius: 10px; padding: 11px 20px; font-size: 13.5px; font-weight: 500; font-family: inherit; cursor: pointer; }
+  .revolution-subsection { margin-bottom: 44px; }
+  .revolution-subsection:last-child { margin-bottom: 0; }
+  .subsection-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
+  .subsection-head h3 { font-size: 16px; font-weight: 500; margin: 0; color: var(--white); letter-spacing: 0.02em; }
+  .favorites-row { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 4px; }
+  .fav-card { flex: 0 0 200px; background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 14px; overflow: hidden; }
+  .fav-thumb { height: 90px; background: linear-gradient(135deg, #2A2419, #17140F); display: flex; align-items: center; justify-content: center; }
+  .fav-thumb .play-dot { width: 34px; height: 34px; }
+  .fav-thumb .play-dot svg { width: 11px; height: 11px; }
+  .fav-body { padding: 12px 14px 14px; }
+  .fav-title { font-size: 13.5px; color: var(--white); margin-bottom: 10px; line-height: 1.3; }
+  .fav-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .heart-btn { background: none; border: none; cursor: pointer; font-size: 17px; color: var(--taupe-soft); padding: 0; line-height: 1; }
+  .heart-btn.filled { color: #C25B5B; }
+  .listen-btn { background: none; border: 1px solid var(--taupe-line); border-radius: 999px; color: var(--taupe); font-size: 11.5px; padding: 5px 12px; cursor: pointer; font-family: inherit; }
+  .media-card { position: relative; }
+  .media-heart { position: absolute; top: 12px; right: 12px; z-index: 2; }
+  .listening-status { font-size: 11px; color: var(--taupe-soft); margin-top: 4px; }
+  .shifts-list { display: flex; flex-direction: column; gap: 10px; }
+  .shift-row { display: flex; align-items: center; gap: 20px; background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 14px; padding: 16px 20px; cursor: pointer; flex-wrap: wrap; font-family: inherit; text-align: left; width: 100%; }
+  .shift-row:hover { border-color: var(--gold); }
+  .shift-row-main { flex: 1; min-width: 200px; }
+  .shift-method { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--taupe); margin-bottom: 4px; }
+  .shift-identity { font-size: 19px; color: var(--white); }
+  .shift-freq { font-size: 12.5px; color: var(--taupe); margin-top: 2px; }
+  .shift-date { font-size: 12px; color: var(--taupe-soft); white-space: nowrap; }
+  .shift-modal-section { margin-top: 16px; }
+  .shift-modal-section .eyebrow { margin-bottom: 4px; }
+  .shift-modal-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+
+  /* Dedicated pages (Favorites / My Activations / Go Deeper) */
+  .page-view { display: none; }
+  .page-view.active { display: block; }
+  .page-back { display: inline-block; color: var(--gold); font-size: 13px; text-decoration: none; letter-spacing: 0.02em; cursor: pointer; margin-bottom: 28px; }
+  .page-back:hover { text-decoration: underline; }
+  .subsection-head .see-all, .subsection-head .explore-link { cursor: pointer; }
+  .subsection-head h3 { cursor: pointer; }
+
+  /* Go Deeper offer cards */
+  .go-deeper-intro { max-width: 640px; color: var(--taupe); font-size: 15px; line-height: 1.7; }
+  .go-deeper-clarify { max-width: 600px; color: var(--taupe-soft); font-size: 12.5px; line-height: 1.6; margin-top: 16px; }
+  .go-deeper-closing { max-width: 600px; color: var(--taupe-soft); font-size: 13px; line-height: 1.7; margin-top: 8px; }
+  .subsection-copy { color: var(--taupe); font-size: 13.5px; line-height: 1.6; max-width: 600px; margin: -8px 0 22px; }
+  .offer-card { background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 14px; padding: 28px 26px; margin-bottom: 18px; text-align: left; }
+  .offer-card.featured { border-color: var(--gold); background: var(--panel-2); }
+  .offer-card .offer-type { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--gold-soft); margin-bottom: 10px; }
+  .offer-card h3 { font-size: 20px; font-weight: 500; margin: 0 0 6px; color: var(--white); }
+  .offer-card .offer-headline { font-size: 14px; color: var(--gold); margin-bottom: 14px; }
+  .offer-card .offer-desc { font-size: 13.5px; color: var(--taupe); line-height: 1.65; margin: 0 0 14px; max-width: 620px; }
+  .offer-card .offer-benefits { margin: 0 0 20px; padding-left: 18px; color: var(--taupe); font-size: 13px; line-height: 1.8; }
+  .offer-card .offer-price { font-size: 19px; color: var(--white); font-weight: 500; margin-bottom: 16px; }
+  .offer-card .btn-primary { display: inline-block; text-decoration: none; }
+
+  /* Favorites/Activations page toolbars (search, sort, filters) */
+  .page-toolbar { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-bottom: 24px; }
+  .search-input, .sort-select { background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 999px; padding: 9px 16px; font-size: 13px; color: var(--white); font-family: inherit; }
+  .search-input { flex: 1; min-width: 180px; }
+  .search-input::placeholder { color: var(--taupe-soft); }
+  .filter-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .filter-chip { background: none; border: 1px solid var(--taupe-line); border-radius: 999px; padding: 7px 14px; font-size: 12.5px; color: var(--taupe); cursor: pointer; font-family: inherit; }
+  .filter-chip.selected { border-color: var(--gold); color: var(--gold); }
+  .media-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .remove-favorite-btn { background: none; border: 1px solid var(--taupe-line); border-radius: 999px; color: var(--taupe); font-size: 11.5px; padding: 5px 12px; cursor: pointer; font-family: inherit; }
+  .date-added { font-size: 11px; color: var(--taupe-soft); margin-top: 2px; }
+
+  /* My Profile page */
+  .member-pill { cursor: pointer; text-decoration: none; }
+  .member-pill:hover { border-color: var(--gold); color: var(--gold); }
+  .profile-card { background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 14px; padding: 28px 26px; margin-bottom: 24px; text-align: left; }
+  .profile-card:last-child { margin-bottom: 0; }
+  .profile-card-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 22px; }
+  .profile-card-head h3 { font-size: 18px; font-weight: 500; margin: 0; color: var(--white); }
+  .field-row { margin-bottom: 18px; }
+  .field-row:last-child { margin-bottom: 0; }
+  .field-label { display: block; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--taupe); margin-bottom: 6px; }
+  .field-input, .field-select { width: 100%; background: var(--black); border: 1px solid var(--taupe-line); border-radius: 10px; padding: 10px 14px; font-size: 14px; color: var(--white); font-family: inherit; box-sizing: border-box; }
+  .field-hint { font-size: 11.5px; color: var(--taupe-soft); margin-top: 6px; }
+  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .avatar-row { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; flex-wrap: wrap; }
+  .avatar-circle { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #2A2419, #17140F); border: 1px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--gold); font-family: Georgia, serif; flex-shrink: 0; }
+  .avatar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .info-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--taupe-line); font-size: 13.5px; gap: 12px; }
+  .info-row:last-of-type { border-bottom: none; }
+  .info-row .info-label { color: var(--taupe); }
+  .info-row .info-value { color: var(--white); text-align: right; }
+  .btn-disabled { background: none; border: 1px solid var(--taupe-line); border-radius: 10px; padding: 11px 20px; font-size: 13.5px; color: var(--taupe-soft); font-family: inherit; cursor: not-allowed; }
+  .btn-danger-outline { background: none; border: 1px solid #C25B5B; border-radius: 10px; padding: 11px 20px; font-size: 13.5px; color: #C25B5B; font-family: inherit; cursor: pointer; }
+  .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+  .benefits-list { margin: 0; padding-left: 18px; color: var(--taupe); font-size: 13px; line-height: 1.8; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .stat-tile { text-align: center; padding: 6px 8px; }
+  .stat-value { font-size: 26px; font-weight: 500; color: var(--gold); font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; margin-bottom: 6px; }
+  .stat-label { font-size: 11.5px; color: var(--taupe); letter-spacing: 0.02em; line-height: 1.4; }
+  @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+
+<script>
+  // Aug 13 rebuild: this page is the real member "home" experience (matches
+  // the-revolutionary-healer-mockup.html, Quantum Dollars + Go Deeper removed
+  // per Rachael's instruction). It expects an email captured on '/' first --
+  // bounce back there immediately if none is stored, before any content
+  // paints, rather than showing member content with no known member.
+  var RH_EMAIL = localStorage.getItem('rh_member_email');
+  if (!RH_EMAIL) {
+    window.location.href = '/';
+  }
+</script>
+
+<nav>
+  <div class="wrap">
+    <div class="logo serif" onclick="showMain()" style="cursor: pointer;">The Revolutionary<span> Healer</span></div>
+    <div class="navlinks">
+      <a onclick="showPage('my-revolution-page'); return false;">My Revolution</a>
+      <a onclick="showPage('activations-page'); return false;">Activations</a>
+      <a onclick="signOutMember(); return false;">Sign Out</a>
+    </div>
+    <a class="member-pill" onclick="showPage('profile-page'); return false;" id="member-pill-label">My Profile</a>
+  </div>
+</nav>
+
+<div class="trial-banner" id="trial-banner" style="display:none;">
+  <div class="wrap trial-banner-inner">
+    <span class="trial-banner-text">⏳ <span id="trial-days-remaining">2</span> days left in your Full Access trial</span>
+    <button class="trial-banner-cta" onclick="showPage('upgrade-page')">Trial — Upgrade Now →</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="shift-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeShiftModal()">×</button>
+    <div class="eyebrow" style="margin-bottom: 4px;">Your Divine Identity</div>
+    <h2 class="serif" id="shift-modal-identity" style="margin-bottom: 2px;">The Leader</h2>
+    <p style="margin: 0; color: var(--taupe); font-size: 13.5px;">Currently experiencing: <span id="shift-modal-frequency">Hiddenness</span></p>
+    <div class="shift-modal-section">
+      <div class="eyebrow">Your GAP</div>
+      <p style="margin: 0;" id="shift-modal-gap">Your leadership hasn't disappeared &mdash; the GAP is between the leader you already are and the amount of that leadership you currently feel safe letting people see.</p>
+    </div>
+    <div class="shift-modal-section">
+      <div class="eyebrow">What's Maintaining It</div>
+      <p style="margin: 0;" id="shift-modal-maintaining">Your answers suggest part of you connects being fully visible with judgment or increased pressure &mdash; so staying smaller has felt safer than being fully seen.</p>
+    </div>
+    <div class="shift-modal-section" id="shift-modal-highest-leverage-section">
+      <div class="eyebrow">Your Shift</div>
+      <p style="margin: 0;" id="shift-modal-highest-leverage">Visibility, truth and embodied authority.</p>
+    </div>
+    <div class="shift-modal-section">
+      <div class="eyebrow">Primary Activation</div>
+      <p style="margin: 0;"><strong id="shift-modal-activation">Expansion Activation</strong></p>
+    </div>
+    <div class="shift-modal-section" id="shift-modal-deeper-section" style="display: none; border-top: 1px solid var(--taupe-line); padding-top: 16px; margin-top: 20px;">
+      <div class="eyebrow" style="color: var(--gold);">What We Found Deeper</div>
+      <p style="margin: 8px 0 0;">Undercurrent: <strong id="shift-modal-undercurrent">Doubt</strong></p>
+      <p style="margin: 4px 0 10px; font-size: 13px; color: var(--taupe);" id="shift-modal-undercurrent-shows-up">When more people start paying attention, you begin questioning whether you know enough, whether you're ready, and whether you should say less.</p>
+      <p style="margin: 0;">Suggested Activation: <strong id="shift-modal-undercurrent-activation">Removing the Frequency of Doubt</strong></p>
+    </div>
+    <div class="shift-modal-section">
+      <p style="margin: 0;">Progress: <span class="status-pill shifting" id="shift-modal-status">🟡 Shifting</span></p>
+    </div>
+    <div class="shift-modal-actions">
+      <button class="btn-primary">Listen Now</button>
+      <button class="heart-btn filled" onclick="toggleHeart(this)" style="font-size: 20px;">♥</button>
+    </div>
+    <div class="shift-modal-actions" style="margin-top: 10px;">
+      <button class="btn-secondary" onclick="closeShiftModal()" data-prompt="Go deeper into this Gap.">Go Deeper Into This Gap →</button>
+    </div>
+    <div class="shift-modal-actions" style="margin-top: 10px;">
+      <button class="btn-secondary">Update Progress</button>
+    </div>
+    <div id="shift-modal-embodied-ready" style="display: none; margin-top: 20px;">
+      <p style="margin: 0 0 10px; color: var(--gold-soft); font-size: 13.5px;">✨ This Gap may be ready to mark as Embodied.</p>
+      <div class="shift-modal-actions">
+        <button class="btn-secondary" id="shift-modal-embodied-btn">Mark This Shift As Embodied →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="hero" id="hero-section">
+  <div class="wrap">
+    <h1 class="serif">Your Divine Identity is already within you.</h1>
+    <p class="hero-subline">The only question is what's interfering with it.</p>
+    <p class="sub">Identify the GAP. Shift the frequency. Begin your Revolution.</p>
+
+    <div class="starters starters-top">
+      <button class="starter process" id="gap-method-starter-btn">GAP Method</button>
+    </div>
+
+    <div class="chatbox">
+      <textarea id="chat-input" rows="5" placeholder="I feel heavy after my last session, help me clear..."></textarea>
+      <button class="send-btn" id="hero-speak-btn">Speak</button>
+    </div>
+    <div id="hero-chat-reply" style="display:none; max-width:700px; margin: 14px auto 0; background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 14px; padding: 16px 20px; color: var(--white); font-size: 14px; line-height: 1.6; white-space: pre-wrap; text-align: left;"></div>
+  </div>
+</section>
+
+<section class="block" id="my-revolution">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <h2 class="serif">My Revolution</h2>
+        <p>Your personal record of the Gaps you've seen, the shifts you're working through, and what's changing.</p>
+      </div>
+    </div>
+
+    <div class="focus-card" data-role="focus-card">
+      <div class="focus-card-label">🌟 Today's Focus</div>
+      <div class="focus-card-body">
+        <div class="focus-card-identity">
+          <div class="focus-card-kicker">Your Divine Identity</div>
+          <h3 class="serif" data-role="focus-identity">The Leader</h3>
+        </div>
+        <div>
+          <div class="focus-card-kicker">Currently Experiencing</div>
+          <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
+        </div>
+        <div class="status-pill shifting" data-role="focus-status">🟡 Shifting</div>
+      </div>
+      <div class="focus-card-activity" data-role="focus-activity">
+        <div data-role="focus-activity-line">Started August 4, 2026</div>
+      </div>
+      <div class="focus-card-footer">
+        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation">Expansion Activation</strong></div>
+        <button class="btn-primary" onclick="openShiftModal()">Continue Your Revolution</button>
+      </div>
+    </div>
+    <div class="card center" data-role="focus-empty" style="display:none;">
+      <p class="copy" style="margin: 0 0 18px;">You haven't started a Shift yet. Complete the 3 Step GAP Method to create your first one.</p>
+      <button class="btn-primary focus-empty-cta">Start the GAP Method →</button>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head">
+        <h3 onclick="showPage('shifts-page')">✨ My Shifts</h3>
+        <div class="see-all" onclick="showPage('shifts-page')">See all →</div>
+      </div>
+      <div class="shifts-list" data-role="shifts-list"></div>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head">
+        <h3 onclick="showPage('favorites-page')">❤️ Favorites</h3>
+        <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
+      </div>
+      <div class="favorites-row">
+        <div class="fav-card">
+          <div class="fav-thumb glyph-roots"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
+          <div class="fav-body">
+            <div class="fav-title">Nervous System Recalibration</div>
+            <div class="fav-actions">
+              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
+              <button class="listen-btn">Listen Now</button>
+            </div>
+          </div>
+        </div>
+        <div class="fav-card">
+          <div class="fav-thumb glyph-wave"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
+          <div class="fav-body">
+            <div class="fav-title">Removing the Frequency of Doubt</div>
+            <div class="fav-actions">
+              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
+              <button class="listen-btn">Listen Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div>
+</section>
+
+<section class="block page-view" id="my-revolution-page" style="border-bottom: none;">
+  <div class="wrap">
+    <a class="page-back" onclick="showMain(); return false;">← Back to Home</a>
+    <div class="section-head">
+      <div>
+        <h2 class="serif">My Revolution</h2>
+        <p>Your personal record of the Gaps you've seen, the shifts you're working through, and what's changing.</p>
+      </div>
+    </div>
+
+    <div class="focus-card" data-role="focus-card">
+      <div class="focus-card-label">🌟 Today's Focus</div>
+      <div class="focus-card-body">
+        <div class="focus-card-identity">
+          <div class="focus-card-kicker">Your Divine Identity</div>
+          <h3 class="serif" data-role="focus-identity">The Leader</h3>
+        </div>
+        <div>
+          <div class="focus-card-kicker">Currently Experiencing</div>
+          <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
+        </div>
+        <div class="status-pill shifting" data-role="focus-status">🟡 Shifting</div>
+      </div>
+      <div class="focus-card-activity" data-role="focus-activity">
+        <div data-role="focus-activity-line">Started August 4, 2026</div>
+      </div>
+      <div class="focus-card-footer">
+        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation">Expansion Activation</strong></div>
+        <button class="btn-primary" onclick="openShiftModal()">Continue Your Revolution</button>
+      </div>
+    </div>
+    <div class="card center" data-role="focus-empty" style="display:none;">
+      <p class="copy" style="margin: 0 0 18px;">You haven't started a Shift yet. Complete the 3 Step GAP Method to create your first one.</p>
+      <button class="btn-primary focus-empty-cta">Start the GAP Method →</button>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head">
+        <h3 onclick="showPage('shifts-page')">✨ My Shifts</h3>
+        <div class="see-all" onclick="showPage('shifts-page')">See all →</div>
+      </div>
+      <div class="shifts-list" data-role="shifts-list"></div>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head">
+        <h3 onclick="showPage('favorites-page')">❤️ My Favorites</h3>
+        <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
+      </div>
+      <div class="favorites-row">
+        <div class="fav-card">
+          <div class="fav-thumb glyph-roots"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
+          <div class="fav-body">
+            <div class="fav-title">Nervous System Recalibration</div>
+            <div class="fav-actions">
+              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
+              <button class="listen-btn">Listen Now</button>
+            </div>
+          </div>
+        </div>
+        <div class="fav-card">
+          <div class="fav-thumb glyph-wave"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
+          <div class="fav-body">
+            <div class="fav-title">Removing the Frequency of Doubt</div>
+            <div class="fav-actions">
+              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
+              <button class="listen-btn">Listen Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head">
+        <h3 onclick="showPage('activations-page')">🎧 My Activations</h3>
+        <div class="see-all" onclick="showPage('activations-page')">See all →</div>
+      </div>
+      <div class="card-grid">
+        <div class="media-card">
+          <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
+          <div class="media-thumb glyph-roots">
+            <div class="media-tag">Completed</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Nervous System Recalibration</h3>
+            <div class="media-meta">Guided activation</div>
+            <div class="listening-status">Completed</div>
+          </div>
+        </div>
+        <div class="media-card">
+          <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
+          <div class="media-thumb glyph-wave">
+            <div class="media-tag">Completed</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Removing the Frequency of Doubt</h3>
+            <div class="media-meta">Guided activation</div>
+            <div class="listening-status">Completed</div>
+          </div>
+        </div>
+        <div class="media-card">
+          <button class="heart-btn media-heart" onclick="toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-lotus">
+            <div class="media-tag">New</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Activating Your Gifts</h3>
+            <div class="media-meta">Guided activation</div>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block page-view" id="favorites-page" style="border-bottom: none;">
+  <div class="wrap">
+    <a class="page-back" onclick="showPage('my-revolution-page'); return false;">← Back to My Revolution</a>
+    <div class="section-head">
+      <div>
+        <h2 class="serif">My Favorites</h2>
+        <p>These are the activations you've chosen to keep close.</p>
+      </div>
+    </div>
+    <div class="page-toolbar">
+      <input type="search" class="search-input" placeholder="Search your favorites...">
+      <select class="sort-select">
+        <option>Most Recently Favorited</option>
+        <option>Alphabetical</option>
+        <option>Most Listened</option>
+      </select>
+    </div>
+    <div class="card-grid">
+      <div class="media-card">
+        <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
+        <div class="media-thumb glyph-roots"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
+        <div class="media-body">
+          <h3>Nervous System Recalibration</h3>
+          <div class="media-meta">Guided activation</div>
+          <div class="media-actions">
+            <button class="listen-btn">Listen Now</button>
+            <button class="remove-favorite-btn">Remove Favorite</button>
+          </div>
+        </div>
+      </div>
+      <div class="media-card">
+        <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
+        <div class="media-thumb glyph-wave"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
+        <div class="media-body">
+          <h3>Removing the Frequency of Doubt</h3>
+          <div class="media-meta">Guided activation</div>
+          <div class="media-actions">
+            <button class="listen-btn">Listen Now</button>
+            <button class="remove-favorite-btn">Remove Favorite</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block page-view" id="activations-page" style="border-bottom: none;">
+  <div class="wrap">
+    <a class="page-back" onclick="showPage('my-revolution-page'); return false;">← Back to My Revolution</a>
+    <div class="section-head">
+      <div>
+        <h2 class="serif">Activations</h2>
+        <p>Every activation inside Revolutionary Healer &mdash; yours, recommended, and the full library.</p>
+      </div>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head"><h3 style="cursor: default;">🎧 My Activations</h3></div>
+      <p class="subsection-copy">Activations you've completed.</p>
+      <div class="card-grid">
+        <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration">
+          <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
+          <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="media-tag">Completed</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Nervous System Recalibration Activation</h3>
+            <div class="media-meta">Guided activation</div>
+            <div class="listening-status">Completed</div>
+          </div>
+        </div>
+        <div class="media-card">
+          <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
+          <div class="media-thumb glyph-wave">
+            <div class="media-tag">Completed</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Removing the Frequency of Doubt</h3>
+            <div class="media-meta">Guided activation</div>
+            <div class="listening-status">Completed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head"><h3 style="cursor: default;">✨ Recommended Activations</h3></div>
+      <p class="subsection-copy">Suggested by your AI Guide based on your most recent GAP Method result.</p>
+      <div class="card-grid">
+        <div class="media-card" onclick="handleActivationCardClick('activating-your-gifts')" style="cursor: pointer;" data-activation-slug="activating-your-gifts">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-lotus"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="media-tag">New</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Activating Your Gifts Activation</h3>
+            <div class="media-meta">Guided activation</div>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('expansion-activation')" style="cursor: pointer;" data-activation-slug="expansion-activation">
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="media-tag">Recommended</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Expansion Activation</h3>
+            <div class="media-meta">Recommended after your last GAP Method session &mdash; The Leader / Hiddenness</div>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="revolution-subsection" id="gap-method-activations-subsection">
+      <div class="subsection-head"><h3 style="cursor: default;">🔑 GAP Method Activations</h3></div>
+      <p class="subsection-copy">Unlocked with your GAP Method access.</p>
+      <div class="card-grid">
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-guardian')" style="cursor: pointer;" data-activation-slug="gap-method-guardian">
+          <div class="media-thumb glyph-roots">
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Nervous System Recalibration</h3>
+            <p class="media-description">Supports The Guardian in moving out of survival, internal pressure and over-responsibility -- reconnecting with safety, trust, support and the capacity to create without constantly bracing, forcing or carrying everything alone.</p>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-wayshower')" style="cursor: pointer;" data-activation-slug="gap-method-wayshower">
+          <div class="media-thumb glyph-wave">
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Removing the Frequency of Doubt</h3>
+            <p class="media-description">Supports The Wayshower in releasing the frequency of doubt and returning to self-authority, trust and inner conviction -- helping them stop outsourcing their decisions and begin moving from the truth they already carry.</p>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-leader')" style="cursor: pointer;" data-activation-slug="gap-method-leader">
+          <div class="media-thumb glyph-sunburst">
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Expansion Activation: Become Visible &amp; Seen As You Expand Your Light</h3>
+            <p class="media-description">Supports The Leader in becoming visible, expanding their presence and allowing their truth to be seen -- releasing fear-based hiding and moving into confident, embodied and energetically safe leadership.</p>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-messenger')" style="cursor: pointer;" data-activation-slug="gap-method-messenger">
+          <div class="media-thumb glyph-lotus">
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Activating Your Gifts</h3>
+            <p class="media-description">Supports The Messenger in reconnecting with their spiritual gifts, clearing interference and strengthening their ability to recognize and trust what they receive -- restoring clarity, discernment and confidence within their channel.</p>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-creator')" style="cursor: pointer;" data-activation-slug="gap-method-creator">
+          <div class="media-thumb glyph-infinity">
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Freedom Timeline Activation</h3>
+            <p class="media-description">Supports The Creator in releasing control, gripping and pressure around the path of creation -- reconnecting with freedom, possibility, trust and the timeline most aligned with what they are creating.</p>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-healer')" style="cursor: pointer;" data-activation-slug="gap-method-healer">
+          <div class="media-thumb glyph-star">
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Spirit Connection Activation</h3>
+            <p class="media-description">Supports The Healer in restoring connection with God, soul, spirit, body and their own gifts -- moving out of depletion and disconnection and returning to embodied, replenished and divinely connected service.</p>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-expander')" style="cursor: pointer;" data-activation-slug="gap-method-expander">
+          <div class="media-thumb glyph-crystal">
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Success Code Activation</h3>
+            <p class="media-description">Supports The Expander in releasing restriction around success, money, receiving and possibility -- becoming energetically available for greater prosperity, opportunity, capacity and embodied success.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head"><h3 style="cursor: default;">📚 Activation Library</h3></div>
+      <p class="subsection-copy">Every activation unlocked with your Full Access membership.</p>
+      <div class="page-toolbar">
+        <input type="search" class="search-input" placeholder="Search all activations...">
+      </div>
+                        <div class="filter-chips category-chips">
+        <button class="filter-chip selected" data-category="All" onclick="selectCategoryChip(this)">All</button>
+        <button class="filter-chip" data-category="Business + Impact" onclick="selectCategoryChip(this)">Business + Impact</button>
+        <button class="filter-chip" data-category="Money + Receiving" onclick="selectCategoryChip(this)">Money + Receiving</button>
+        <button class="filter-chip" data-category="Gifts + Spirit" onclick="selectCategoryChip(this)">Gifts + Spirit</button>
+        <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy + Frequency</button>
+      </div>
+      <div class="card-grid" id="activation-library-grid">
+        <div class="media-card" onclick="handleActivationCardClick('grounding')" style="cursor: pointer;" data-activation-slug="grounding" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Grounding Activation</h3>
+          <p class="media-description">Anchors your energy fully into your body and the present moment, so you feel calm, stable, and safe to be seen.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('clearing-activation')" style="cursor: pointer;" data-activation-slug="clearing-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Clearing Activation</h3>
+          <p class="media-description">Clears stuck or heavy energy from your field, creating space for clarity and forward movement.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('protection-shielding')" style="cursor: pointer;" data-activation-slug="protection-shielding" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Protection &amp; Shielding Activation</h3>
+          <p class="media-description">Strengthens your energetic boundaries so you can stay open and sensitive without absorbing what isn&#39;t yours.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('pink-cloud-activation')" style="cursor: pointer;" data-activation-slug="pink-cloud-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Pink Cloud Activation</h3>
+            <p class="media-description">Lifts years of dense energy in just a few minutes, helping you transform into a higher frequency.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('clearing-black-magic-attachments-negative-entities')" style="cursor: pointer;" data-activation-slug="clearing-black-magic-attachments-negative-entities" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Clearing Black Magic, Attachments &amp; Negative Entities Activation</h3>
+            <p class="media-description">Clears on a deeper level, releasing black magic, attachments, and negative entities so nothing invisible is left holding you back.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('soul-retrieval')" style="cursor: pointer;" data-activation-slug="soul-retrieval" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-star"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Soul Retrieval Activation</h3>
+          <p class="media-description">Calls back fragmented parts of yourself left behind during past pain, restoring your sense of wholeness.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('light-frequency-activation')" style="cursor: pointer;" data-activation-slug="light-frequency-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Light Frequency Activation: Increase your Light and Shine Like the Sun!</h3>
+          <p class="media-description">Raises your personal frequency so your natural light becomes easier for you, and others, to feel and see.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('lifting-you-higher-activation')" style="cursor: pointer;" data-activation-slug="lifting-you-higher-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Lifting You Higher Activation: Raise your Vibration Above The Matrix Frequencies</h3>
+          <p class="media-description">Lifts your vibration above heavy, collective “matrix” frequencies so you can think, feel, and choose from a higher state.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('expansion-activation')" style="cursor: pointer;" data-activation-slug="expansion-activation" data-category="Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Expansion Activation</h3>
+          <p class="media-description">Supports you in becoming visible and taking up the space your gifts were always meant to fill.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('timeline-collapse-activation')" style="cursor: pointer;" data-activation-slug="timeline-collapse-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-infinity"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Timeline Collapse Activation</h3>
+          <p class="media-description">Collapses old, lower-frequency timelines so you can align with the version of your life that&#39;s already shifting.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('10-min-earth-star-activation')" style="cursor: pointer;" data-activation-slug="10-min-earth-star-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>10 Min Earth Star Activation</h3>
+          <p class="media-description">Activates your Earth Star, the grounding point beneath your feet, deepening your connection to stability and safety.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('intuition-activation')" style="cursor: pointer;" data-activation-slug="intuition-activation" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-eye"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Intuition Activation</h3>
+          <p class="media-description">Strengthens your inner knowing so you can trust the guidance that&#39;s already coming through.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('chakra-balancing-and-activation')" style="cursor: pointer;" data-activation-slug="chakra-balancing-and-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-spiral"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Chakra Balancing and Activation</h3>
+          <p class="media-description">Brings your seven main energy centers back into balance, restoring flow and ease throughout your whole system.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('12-strand-dna-activation')" style="cursor: pointer;" data-activation-slug="12-strand-dna-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-spiral"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>12 Strand DNA Activation</h3>
+          <p class="media-description">Supports the awakening of your fuller energetic blueprint, beyond old limits you were taught to believe were fixed.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('merkabah-activation')" style="cursor: pointer;" data-activation-slug="merkabah-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-spiral"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Merkabah Activation</h3>
+            <p class="media-description">Activates your light body and builds coherence in your merkabah, supporting you in raising your vibration.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('crystalline-dragon-activation')" style="cursor: pointer;" data-activation-slug="crystalline-dragon-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-flame"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Crystalline Dragon Activation</h3>
+            <p class="media-description">Crystallizes your frequency, aligning you more fully with your soul.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('pineal-gland-activation')" style="cursor: pointer;" data-activation-slug="pineal-gland-activation" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-eye"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Pineal Gland Activation</h3>
+          <p class="media-description">Activates your pineal gland, supporting clearer intuition, inner vision, and psychic perception.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('10-min-grounding-meditation')" style="cursor: pointer;" data-activation-slug="10-min-grounding-meditation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>10 Min Grounding Meditation Activation</h3>
+          <p class="media-description">A short guided meditation to settle your nervous system and root back into your body.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('clearing-negative-energy')" style="cursor: pointer;" data-activation-slug="clearing-negative-energy" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Clearing Negative Energy Activation</h3>
+          <p class="media-description">Releases negative or draining energy from your field so you can feel lighter and clearer.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('clearing-religious-vows-contracts')" style="cursor: pointer;" data-activation-slug="clearing-religious-vows-contracts" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Clearing Religious Vows &amp; Contracts Activation</h3>
+          <p class="media-description">Releases old spiritual vows and contracts, from this life or before, that are quietly keeping you small.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration" data-category="Money + Receiving">
+          <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
+          <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="media-tag">Completed</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Nervous System Recalibration Activation</h3>
+          <p class="media-description">Regulates an overworked nervous system, helping your body learn that it&#39;s safe to rest.</p>
+            <div class="listening-status">Completed</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('activating-your-gifts')" style="cursor: pointer;" data-activation-slug="activating-your-gifts" data-category="Gifts + Spirit">
+          <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
+          <div class="media-thumb glyph-lotus"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="media-tag">Completed</div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Activating Your Gifts Activation</h3>
+          <p class="media-description">Reconnects you with the intuitive and psychic gifts you&#39;ve been talking yourself out of.</p>
+            <div class="listening-status">Completed</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('activating-your-channel-to-spirit')" style="cursor: pointer;" data-activation-slug="activating-your-channel-to-spirit" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-eye"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Activating Your Channel To Spirit Activation</h3>
+          <p class="media-description">Opens and strengthens your channel to Spirit, making guidance easier to receive and trust.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('spirit-connection-activation')" style="cursor: pointer;" data-activation-slug="spirit-connection-activation" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-star"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Spirit Connection Activation</h3>
+          <p class="media-description">Reopens your connection to Spirit, so support and guidance feel close again instead of distant.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('meet-your-guides')" style="cursor: pointer;" data-activation-slug="meet-your-guides" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-star"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Meet Your Guides Activation</h3>
+          <p class="media-description">A guided journey to meet and connect with your spirit guides.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('third-eye-activation')" style="cursor: pointer;" data-activation-slug="third-eye-activation" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-eye"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Third Eye Activation</h3>
+          <p class="media-description">Activates your third eye, supporting clearer inner vision and psychic sight.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('clairvoyance-activation')" style="cursor: pointer;" data-activation-slug="clairvoyance-activation" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-eye"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Clairvoyance Activation</h3>
+          <p class="media-description">The capstone activation of this journey, opening and strengthening your clairvoyant sight.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+
+        <div class="media-card" onclick="handleActivationCardClick('remembrance-activation')" style="cursor: pointer;" data-activation-slug="remembrance-activation" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-star"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Remembrance Activation</h3>
+          <p class="media-description">Reconnects you with the deeper truth of who you are beneath the noise, helping you remember your soul&#39;s original frequency.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('sacred-bowl-activation')" style="cursor: pointer;" data-activation-slug="sacred-bowl-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Sacred Bowl Activation</h3>
+          <p class="media-description">Uses sound frequency to clear and reset your energy field, leaving you calmer and more spacious.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('throat-chakra-activation')" style="cursor: pointer;" data-activation-slug="throat-chakra-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-spiral"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Throat Chakra Activation</h3>
+          <p class="media-description">Opens and balances your throat chakra, supporting you in speaking and being heard with more ease and truth.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('10-min-protection-activation')" style="cursor: pointer;" data-activation-slug="10-min-protection-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>10 Min Protection Activation</h3>
+          <p class="media-description">A short practice to strengthen your energetic boundaries, so you feel safe and unaffected by outside energy.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('10-min-star-healing-activation')" style="cursor: pointer;" data-activation-slug="10-min-star-healing-activation" data-category="Gifts + Spirit">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-star"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>10 Min Star Healing Activation</h3>
+          <p class="media-description">A short guided healing connecting you to higher star frequencies, supporting deeper clarity and calm.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('yes-factor-vibe-booster')" style="cursor: pointer;" data-activation-slug="yes-factor-vibe-booster" data-category="Business + Impact, Money + Receiving">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Yes Factor Vibe Booster</h3>
+          <p class="media-description">A quick frequency boost to help you say yes to more of what you want, clearing hesitation and doubt.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('morning-vibe-booster')" style="cursor: pointer;" data-activation-slug="morning-vibe-booster" data-category="Business + Impact, Money + Receiving">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Morning Vibe Booster</h3>
+          <p class="media-description">A short practice to set your frequency for the day, so you start from clarity and calm instead of catching up.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('emerging-your-soul-into-your-business')" style="cursor: pointer;" data-activation-slug="emerging-your-soul-into-your-business" data-category="Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-lotus"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Emerging Your Soul Into Your Business Activation</h3>
+          <p class="media-description">Helps you bring your full soul and energy into how you run your business, instead of operating from strategy alone.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('crystal-business-activation')" style="cursor: pointer;" data-activation-slug="crystal-business-activation" data-category="Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-crystal"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Crystal Business Activation</h3>
+          <p class="media-description">Uses crystalline energy to support clarity, focus, and flow in your business.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('confidence-activation')" style="cursor: pointer;" data-activation-slug="confidence-activation" data-category="Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-flame"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Confidence Activation</h3>
+          <p class="media-description">Strengthens your confidence so you can show up, speak up, and make decisions in your business without second-guessing yourself.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('alignment-activation')" style="cursor: pointer;" data-activation-slug="alignment-activation" data-category="Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-infinity"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Alignment Activation</h3>
+          <p class="media-description">Realigns you with your business&#39;s true direction, clearing static so your next steps feel obvious.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('magnetic-field-activation')" style="cursor: pointer;" data-activation-slug="magnetic-field-activation" data-category="Business + Impact, Money + Receiving">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-spiral"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Magnetic Field Activation</h3>
+          <p class="media-description">Strengthens your personal magnetism so opportunities, clients, and money have an easier path to you.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('million-dollar-blueprint-activation')" style="cursor: pointer;" data-activation-slug="million-dollar-blueprint-activation" data-category="Business + Impact, Money + Receiving">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-star"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Million Dollar Blueprint Activation</h3>
+          <p class="media-description">Activates the identity and frequency of your fully expanded, million-dollar self, so your actions can start matching that reality.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('wealth-frequency-activation')" style="cursor: pointer;" data-activation-slug="wealth-frequency-activation" data-category="Money + Receiving">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-crystal"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Wealth Frequency Activation</h3>
+          <p class="media-description">Recalibrates your nervous system and energy field to receive and hold greater wealth, rather than unconsciously blocking it.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('impact-vibe-booster')" style="cursor: pointer;" data-activation-slug="impact-vibe-booster" data-category="Business + Impact, Money + Receiving">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Impact Vibe Booster</h3>
+          <p class="media-description">A quick frequency boost to reconnect you with the deeper impact your work is here to make.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('leadership-recode-activation')" style="cursor: pointer;" data-activation-slug="leadership-recode-activation" data-category="Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Leadership Recode Activation</h3>
+          <p class="media-description">Recodes old leadership patterns and hesitation, supporting you to lead from your fullest, most embodied authority.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-wayshower')" style="cursor: pointer;" data-activation-slug="gap-method-wayshower" data-category="Gifts + Spirit, Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Removing the Frequency of Doubt</h3>
+          <p class="media-description">Supports The Wayshower in releasing the frequency of doubt and returning to self-authority, trust and inner conviction -- helping them stop outsourcing their decisions and begin moving from the truth they already carry.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-leader')" style="cursor: pointer;" data-activation-slug="gap-method-leader" data-category="Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Expansion Activation: Become Visible &amp; Seen As You Expand Your Light</h3>
+          <p class="media-description">Supports The Leader in becoming visible, expanding their presence and allowing their truth to be seen -- releasing fear-based hiding and moving into confident, embodied and energetically safe leadership.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-creator')" style="cursor: pointer;" data-activation-slug="gap-method-creator" data-category="Business + Impact">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-infinity"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Freedom Timeline Activation</h3>
+          <p class="media-description">Supports The Creator in releasing control, gripping and pressure around the path of creation -- reconnecting with freedom, possibility, trust and the timeline most aligned with what they are creating.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+        <div class="media-card" onclick="handleActivationCardClick('gap-method-expander')" style="cursor: pointer;" data-activation-slug="gap-method-expander" data-category="Money + Receiving">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb glyph-crystal"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Success Code Activation</h3>
+          <p class="media-description">Supports The Expander in releasing restriction around success, money, receiving and possibility -- becoming energetically available for greater prosperity, opportunity, capacity and embodied success.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block page-view" id="activation-detail-page" style="border-bottom: none;">
+  <div class="wrap">
+    <a class="page-back" onclick="showPage('activations-page'); return false;">← Back to Activations</a>
+    <div class="section-head">
+      <div>
+        <h2 class="serif" id="activation-detail-title">Activation</h2>
+        <p id="activation-detail-description">Description coming soon.</p>
+      </div>
+    </div>
+    <div class="activation-player" id="activation-detail-player"></div>
+    <div class="activation-detail-actions">
+      <button class="heart-btn media-heart" id="activation-detail-heart" onclick="toggleHeart(this)" style="position: static;">♡</button>
+      <button class="btn-secondary" onclick="showPage('activations-page'); return false;">Add to My Activations</button>
+    </div>
+  </div>
+</section>
+
+<section class="block page-view" id="shifts-page" style="border-bottom: none;">
+  <div class="wrap">
+    <a class="page-back" onclick="showPage('my-revolution-page'); return false;">← Back to My Revolution</a>
+    <div class="section-head">
+      <div>
+        <h2 class="serif">✨ My Shifts</h2>
+        <p>A history of your transformational milestones</p>
+      </div>
+    </div>
+    <div class="shifts-list" data-role="shifts-list"></div>
+  </div>
+</section>
+
+<section class="block page-view" id="upgrade-page" style="border-bottom: none;">
+  <div class="wrap">
+    <a class="page-back" onclick="showMain(); return false;">← Back to Home</a>
+
+    <div class="section-head">
+      <div>
+        <h2 class="serif">You're on your 3-day Full Access trial.</h2>
+        <p>Everything is already unlocked &mdash; every activation, unlimited chat with your guide, the whole library. Here's what staying looks like.</p>
+      </div>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head"><h3 style="cursor: default;">What's included in Full Access</h3></div>
+      <ul class="benefits-list">
+        <li>Every activation in the library, all 29 and counting</li>
+        <li>Unlimited chat with your AI guide, no chat passes needed</li>
+        <li>The full 3 Step GAP Method, run as many times as you need</li>
+        <li>My Revolution: your Favorites, My Activations, and My Shifts, all in one place</li>
+      </ul>
+    </div>
+
+    <div class="revolution-subsection">
+      <div class="subsection-head"><h3 style="cursor: default;">Choose your plan</h3></div>
+      <div class="offer-card">
+        <div class="offer-type">Monthly</div>
+        <h3>Full Access</h3>
+        <div class="offer-headline">Stay month to month, cancel any time.</div>
+        <div class="offer-price">$30/month</div>
+        <a class="btn-primary" id="upgrade-monthly-btn" href="#" target="_blank" rel="noopener">Upgrade — $30/month →</a>
+      </div>
+      <div class="offer-card featured">
+        <div class="offer-type">Annual · Best value</div>
+        <h3>Full Access</h3>
+        <div class="offer-headline">Pay once a year and save, roughly 2 months free versus monthly.</div>
+        <div class="offer-price">$347/year</div>
+        <a class="btn-primary" id="upgrade-annual-btn" href="#" target="_blank" rel="noopener">Upgrade — $347/year →</a>
+      </div>
+    </div>
+
+    <p class="go-deeper-closing">Your trial keeps working until it ends &mdash; upgrade whenever you're ready, there's no rush.</p>
+  </div>
+</section>
+
+<section class="block page-view" id="profile-page" style="border-bottom: none;">
+  <div class="wrap">
+    <a class="page-back" onclick="showMain(); return false;">← Back to Home</a>
+    <div class="section-head">
+      <div>
+        <h2 class="serif">👤 My Profile</h2>
+        <p id="profile-welcome-line">Welcome back. Member since August 2026.</p>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>🌟 Your Revolution</h3></div>
+      <div class="stats-grid">
+        <div class="stat-tile"><div class="stat-value">12</div><div class="stat-label">Activations Completed</div></div>
+        <div class="stat-tile"><div class="stat-value">4</div><div class="stat-label">Embodied Shifts</div></div>
+        <div class="stat-tile"><div class="stat-value">58</div><div class="stat-label">Days Transforming</div></div>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>👤 Profile</h3></div>
+      <div class="avatar-row">
+        <div class="avatar-circle">R</div>
+        <div class="avatar-actions">
+          <button class="btn-secondary">Upload Photo</button>
+          <button class="btn-secondary">Replace Photo</button>
+          <button class="btn-secondary">Remove Photo</button>
+        </div>
+      </div>
+      <div class="field-row">
+        <label class="field-label">Display Name</label>
+        <input type="text" class="field-input" id="profile-name-input" value="">
+      </div>
+      <div class="field-row">
+        <label class="field-label">Email Address</label>
+        <input type="email" class="field-input" id="profile-email-input" value="">
+        <div class="field-hint">Changing your email requires verification &mdash; we'll send a confirmation link to the new address before it takes effect.</div>
+      </div>
+      <div class="field-grid">
+        <div class="field-row">
+          <label class="field-label">Phone Number (Optional)</label>
+          <input type="tel" class="field-input" placeholder="Add a phone number">
+        </div>
+        <div class="field-row">
+          <label class="field-label">Time Zone (Optional)</label>
+          <select class="field-select">
+            <option>Select your time zone</option>
+            <option>Eastern Time (ET)</option>
+            <option>Central Time (CT)</option>
+            <option>Mountain Time (MT)</option>
+            <option>Pacific Time (PT)</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary">Save Changes</button>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>💜 Membership</h3></div>
+      <div class="info-row"><div class="info-label">Current Plan</div><div class="info-value">Revolutionary Healer Full Access</div></div>
+      <div class="info-row"><div class="info-label">Membership Status</div><div class="info-value"><span class="status-pill embodied">Active</span></div></div>
+      <div class="info-row"><div class="info-label">Member Since</div><div class="info-value">August 3, 2026</div></div>
+      <div class="info-row"><div class="info-label">Renewal Date</div><div class="info-value">September 3, 2026</div></div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="showPage('membership-management-page')">Manage Membership</button>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>💳 Billing</h3></div>
+      <div class="info-row"><div class="info-label">Current Payment Method</div><div class="info-value">Visa ending in 4821</div></div>
+      <div class="info-row"><div class="info-label">Next Payment</div><div class="info-value">September 3, 2026 &mdash; $30.00 USD</div></div>
+      <div class="eyebrow" style="margin: 20px 0 6px;">Billing History</div>
+      <div class="qd-log-row"><div class="desc">Revolutionary Healer Full Access</div><div><div class="delta">$30.00</div><div class="meta">Aug 3</div></div></div>
+      <div class="qd-log-row"><div class="desc">Revolutionary Healer Full Access</div><div><div class="delta">$30.00</div><div class="meta">Jul 3</div></div></div>
+      <div class="btn-row" style="margin-top: 20px;">
+        <button class="btn-secondary">Update Payment Method</button>
+        <button class="btn-disabled" disabled>Download Receipt (coming soon)</button>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>🔒 Security</h3></div>
+      <div class="info-row"><div class="info-label">Password</div><div class="info-value">••••••••</div></div>
+      <div class="btn-row">
+        <button class="btn-secondary">Reset Password</button>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>🛟 Support</h3></div>
+      <p style="color: var(--taupe); font-size: 13.5px; line-height: 1.6; margin: 0 0 18px;">Need help? If you have questions about your membership or need assistance with Revolutionary Healer, we're here to help.</p>
+      <div class="btn-row">
+        <a id="btn-contact-support" class="btn-primary" href="#" style="display: inline-block; text-decoration: none;">Contact Support</a>
+        <button class="btn-disabled" disabled>Frequently Asked Questions (coming soon)</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block page-view" id="membership-management-page" style="border-bottom: none;">
+  <div class="wrap">
+    <a class="page-back" onclick="showPage('profile-page'); return false;">← Back to My Profile</a>
+    <div class="section-head">
+      <div>
+        <h2 class="serif">Manage Membership</h2>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>Current Plan</h3></div>
+      <div class="info-row"><div class="info-label">Plan</div><div class="info-value">Revolutionary Healer Full Access &mdash; Monthly</div></div>
+      <div class="info-row"><div class="info-label">Status</div><div class="info-value"><span class="status-pill embodied">Active</span></div></div>
+      <div class="info-row"><div class="info-label">Price</div><div class="info-value">$30.00 USD / month</div></div>
+      <div class="info-row"><div class="info-label">Renewal Date</div><div class="info-value">September 3, 2026</div></div>
+      <div class="eyebrow" style="margin: 20px 0 10px;">What's Included</div>
+      <ul class="benefits-list">
+        <li>Full access to chat &mdash; the AI Guide and the GAP Method</li>
+        <li>Rachael's entire Kajabi activation library</li>
+        <li>The Healer Calibration</li>
+        <li>My Revolution &mdash; Today's Focus, Favorites, My Activations, My Shifts</li>
+      </ul>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>Change Plan</h3></div>
+      <p style="color: var(--taupe); font-size: 13.5px; line-height: 1.6; margin: 0 0 18px;">Switch to annual billing to save compared to paying monthly.</p>
+      <div class="btn-row">
+        <button class="btn-primary">Upgrade to Annual ($347/yr)</button>
+        <button class="btn-disabled" disabled>Pause Membership (coming soon)</button>
+      </div>
+    </div>
+
+    <div class="profile-card">
+      <div class="profile-card-head"><h3>Cancel Membership</h3></div>
+      <p style="color: var(--taupe); font-size: 13.5px; line-height: 1.6; margin: 0 0 18px;">Cancelling ends your Full Access at the end of the current billing period &mdash; you'll keep access until September 3, 2026.</p>
+      <div class="btn-row">
+        <button class="btn-danger-outline" onclick="return confirm('Cancel your Revolutionary Healer membership? You will keep access until the end of your current billing period.');">Cancel Membership</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="logo serif">The Revolutionary<span> Healer</span></div>
+    <p>therevolutionaryhealer.com</p>
+  </div>
+</footer>
+
+<!-- GAP Method scoped-trial demo (Aug 10): shared toast shown when a GAP
+     trial member clicks a locked (non-GAP) Activation Library card. -->
+<div class="locked-activation-toast" id="locked-activation-toast">
+  <span>🔒 Upgrade to Full Access to unlock this activation.</span>
+  <a onclick="showPage('upgrade-page'); return false;">Upgrade →</a>
+</div>
+
+<script>
+  // --- GAP Method scoped-trial demo (Aug 10) --------------------------------
+  // Static-mockup stand-in for the real server-side entitlement check the
+  // live Next.js app will run (see lib/entitlements.js's deriveEntitlement()/
+  // unlockedActivationSlugs and lib/activations.js's GAP_METHOD_ACTIVATION_SLUGS).
+  // This HTML file has no server/session, so DEMO_ENTITLEMENT_MODE is hand-set
+  // here instead of derived from a real member record:
+  //   'gap-trial' -- member is on the new GAP Method trial (onGapTrial):
+  //                  only the 7 GAP Method activations below are unlocked;
+  //                  the rest of the 29-card Activation Library stays gold-
+  //                  locked. This is the default, since it's the new scoped-
+  //                  trial behavior being demoed.
+  //   'full'      -- member has canUseTier (Full Access / Beta membership):
+  //                  everything is unlocked, no lock badges -- use this to
+  //                  preview the paid-member view.
+  var DEMO_ENTITLEMENT_MODE = 'gap-trial';
+
+  // Mirrors GAP_METHOD_ACTIVATION_SLUGS from healer-app/lib/activations.js --
+  // duplicated here (not imported) since this static HTML mockup has no
+  // module loader/build step.
+  var GAP_METHOD_ACTIVATION_SLUGS_DEMO = [
+    'gap-method-guardian',
+    'gap-method-wayshower',
+    'gap-method-leader',
+    'gap-method-messenger',
+    'gap-method-creator',
+    'gap-method-healer',
+    'gap-method-expander'
+  ];
+
+  function isActivationLockedDemo(slug) {
+    return DEMO_ENTITLEMENT_MODE === 'gap-trial' && GAP_METHOD_ACTIVATION_SLUGS_DEMO.indexOf(slug) === -1;
+  }
+
+  // Wrapper for the 29 Activation Library cards (and the library activations
+  // that also appear as My Activations / Recommended previews) -- gates the
+  // real openActivationDetail() behind the demo entitlement check above.
+  function handleActivationCardClick(slug) {
+    if (isActivationLockedDemo(slug)) {
+      showLockedActivationPrompt(slug);
+      return;
+    }
+    openActivationDetail(slug);
+  }
+
+  function showLockedActivationPrompt(slug) {
+    var toast = document.getElementById('locked-activation-toast');
+    if (!toast) return;
+    toast.classList.add('active');
+    clearTimeout(showLockedActivationPrompt._hideTimer);
+    showLockedActivationPrompt._hideTimer = setTimeout(function() {
+      toast.classList.remove('active');
+    }, 4000);
+  }
+
+  // Show/hide the gold lock badge on every card carrying data-activation-slug
+  // based on the current demo mode -- run once on load.
+  function applyDemoEntitlementLocks() {
+    document.querySelectorAll('[data-activation-slug]').forEach(function(card) {
+      var badge = card.querySelector('.activation-lock-badge');
+      if (!badge) return;
+      badge.style.display = isActivationLockedDemo(card.dataset.activationSlug) ? 'flex' : 'none';
+    });
+    // The "GAP Method Activations" section on the Activations page is only
+    // relevant to members currently on the 3-day GAP Method trial -- once
+    // someone is a full/paying member, those same 7 activations are just
+    // regular unlocked entries inside the Activation Library (4 of the 7
+    // also render there directly -- see lib/activations.js's
+    // showInLibrary), so the dedicated trial-only section should disappear
+    // rather than sit there as a redundant, always-unlocked block.
+    var gapMethodSection = document.getElementById('gap-method-activations-subsection');
+    if (gapMethodSection) {
+      gapMethodSection.style.display = DEMO_ENTITLEMENT_MODE === 'gap-trial' ? '' : 'none';
+    }
+  }
+  applyDemoEntitlementLocks();
+
+  document.querySelectorAll('[data-prompt]').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      if (el.tagName === 'A') e.preventDefault();
+      var input = document.getElementById('chat-input');
+      input.value = el.dataset.prompt;
+      input.focus();
+      input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  });
+
+  // Shift records backing the shift-modal, My Shifts preview/page, and Today's
+  // Focus. "shift-1" is the existing Leader/Hiddenness result (Aug 4, still
+  // Shifting -- this is what the untouched Home preview's Today's Focus card
+  // and shift-row show, so it stays the default when openShiftModal() is
+  // called with no id). "shift-2" is the newer Messenger/Channel Interference
+  // result Rachael gave as her own example (Aug 8, Embodied) -- content drawn
+  // from lib/divineIdentities.js's real Messenger identity data.
+  // Populated from real Airtable Shift records via /api/shifts -- see loadMemberRevolutionData() below.
+  var SHIFTS = [];
+
+  function renderShiftModal(shift) {
+    document.getElementById('shift-modal-identity').textContent = shift.identity || 'Your Divine Identity';
+    document.getElementById('shift-modal-frequency').textContent = shift.frequency || '';
+    document.getElementById('shift-modal-gap').innerHTML = shift.gap || '';
+    document.getElementById('shift-modal-maintaining').innerHTML = shift.maintaining || '';
+    document.getElementById('shift-modal-activation').textContent = shift.activation || '';
+    var statusEl = document.getElementById('shift-modal-status');
+    statusEl.textContent = shift.statusLabel;
+    statusEl.className = 'status-pill ' + shift.statusClass;
+
+    var leverageSection = document.getElementById('shift-modal-highest-leverage-section');
+    if (shift.highestLeverage) {
+      document.getElementById('shift-modal-highest-leverage').textContent = shift.highestLeverage;
+      leverageSection.style.display = '';
+    } else {
+      leverageSection.style.display = 'none';
+    }
+
+    // "What We Found Deeper" -- only shown once a Confirmed Undercurrent
+    // exists for this Shift (see GAP_METHOD_DEEPER_EXPLORATION's "SHIFT CARD
+    // UPDATE" spec). Never shown just because the member clicked "Go Deeper";
+    // it only appears once an undercurrent has actually been confirmed.
+    var deeperSection = document.getElementById('shift-modal-deeper-section');
+    if (shift.undercurrent && shift.undercurrent.frequency) {
+      document.getElementById('shift-modal-undercurrent').textContent = shift.undercurrent.frequency;
+      var showsUpEl = document.getElementById('shift-modal-undercurrent-shows-up');
+      if (shift.undercurrent.showsUp) {
+        showsUpEl.textContent = shift.undercurrent.showsUp;
+        showsUpEl.style.display = '';
+      } else {
+        showsUpEl.style.display = 'none';
+      }
+      document.getElementById('shift-modal-undercurrent-activation').textContent = shift.undercurrent.activation || '';
+      deeperSection.style.display = '';
+    } else {
+      deeperSection.style.display = 'none';
+    }
+
+    // "This Gap may be ready to mark as Embodied" -- only shown once the AI
+    // has flagged readyForEmbodied during conversation (never just because
+    // the Shift is Shifting), and never on an already-Embodied Shift.
+    document.getElementById('shift-modal-embodied-ready').style.display =
+      (shift.statusClass === 'shifting' && shift.readyForEmbodied) ? '' : 'none';
+  }
+
+  function openShiftModal(id) {
+    if (!SHIFTS.length) return;
+    var shift = SHIFTS.find(function(s) { return s.id === id; }) || SHIFTS[0];
+    renderShiftModal(shift);
+    document.getElementById('shift-modal').classList.add('active');
+  }
+  function closeShiftModal() { document.getElementById('shift-modal').classList.remove('active'); }
+
+  // Heart icon: Favorites only, never affects My Activations ownership or
+  // listening history -- see SPEC.md §4.1d.
+  function toggleHeart(btn) {
+    var filled = btn.classList.toggle('filled');
+    btn.textContent = filled ? '♥' : '♡';
+  }
+
+  // My Activations page category chips -- single-select, visual only in this
+  // mockup (no real filtering wired up yet, same non-functional-UI treatment
+  // as the process chips elsewhere).
+  function selectFilterChip(btn) {
+    var siblings = btn.parentElement.querySelectorAll('.filter-chip');
+    siblings.forEach(function(chip) { chip.classList.remove('selected'); });
+    btn.classList.add('selected');
+  }
+
+  // Activation Library category chips -- unlike the status chips above,
+  // these actually filter the 29-card grid by data-category (real
+  // filtering, not just a visual toggle).
+  function selectCategoryChip(btn) {
+    var siblings = btn.parentElement.querySelectorAll('.filter-chip');
+    siblings.forEach(function(chip) { chip.classList.remove('selected'); });
+    btn.classList.add('selected');
+    var category = btn.getAttribute('data-category');
+    var grid = document.getElementById('activation-library-grid');
+    if (!grid) return;
+    var cards = grid.querySelectorAll('.media-card');
+    cards.forEach(function(card) {
+      var cardCategories = (card.getAttribute('data-category') || '').split(',').map(function(c) { return c.trim(); });
+      card.style.display = (category === 'All' || cardCategories.indexOf(category) !== -1) ? '' : 'none';
+    });
+  }
+
+  // --- Dedicated pages: Favorites, My Activations, Go Deeper ---
+  // Clicking "My Revolution" in the nav, or the Favorites/Activations section
+  // headers, swaps the visible content area rather than linking to a real
+  // separate URL -- this is a single-page mockup. In the real Next.js app
+  // these would be real routes (e.g. /favorites, /activations, /go-deeper).
+  var PAGE_IDS = ['my-revolution-page', 'favorites-page', 'activations-page', 'activation-detail-page', 'shifts-page', 'upgrade-page', 'profile-page', 'membership-management-page'];
+
+  // Real Full Access checkout URLs (same offers documented in
+  // step3-activation-products-reference.md's "Full Access Membership offers"
+  // section -- monthly 2151318869, annual 2151318870). Config, not hard-coded
+  // into visible copy, same pattern as GO_DEEPER_OFFERS below.
+  document.getElementById('upgrade-monthly-btn').href = "https://www.rachaelsbutterflyeffect.com/offers/26bJnuRE/checkout";
+  document.getElementById('upgrade-annual-btn').href = "https://www.rachaelsbutterflyeffect.com/offers/3YC8s5FV/checkout";
+
+  // Activation Detail data -- mirrors healer-app/lib/activations.js (day/course
+  // fields intentionally omitted here since the UI never shows where these
+  // came from, per Rachael's Aug 5 request). Six entries have an empty
+  // description -- Rachael is supplying that copy herself; the detail page
+  // falls back to "Description coming soon." for those.
+  var WISTIA_EMBED_BASE = 'https://fast.wistia.net/embed/iframe/';
+  var ACTIVATION_DETAILS = {
+    'grounding': { title: 'Grounding Activation', description: 'Anchors your energy fully into your body and the present moment, so you feel calm, stable, and safe to be seen.', wistiaId: 'shyqht7zcb' },
+    'clearing-activation': { title: 'Clearing Activation', description: 'Clears stuck or heavy energy from your field, creating space for clarity and forward movement.', wistiaId: 'r2e0pk7310' },
+    'protection-shielding': { title: 'Protection & Shielding Activation', description: 'Strengthens your energetic boundaries so you can stay open and sensitive without absorbing what isn\'t yours.', wistiaId: 'vd4qxo80ja' },
+    'pink-cloud-activation': { title: 'Pink Cloud Activation', description: 'Lifts years of dense energy in just a few minutes, helping you transform into a higher frequency.', wistiaId: 'o5jzq5348k' },
+    'clearing-black-magic-attachments-negative-entities': { title: 'Clearing Black Magic, Attachments & Negative Entities Activation', description: 'Clears on a deeper level, releasing black magic, attachments, and negative entities so nothing invisible is left holding you back.', wistiaId: 'i2yl6eyu6z' },
+    'soul-retrieval': { title: 'Soul Retrieval Activation', description: 'Calls back fragmented parts of yourself left behind during past pain, restoring your sense of wholeness.', wistiaId: 'orgyaqzc77' },
+    'light-frequency-activation': { title: 'Light Frequency Activation: Increase your Light and Shine Like the Sun!', description: 'Raises your personal frequency so your natural light becomes easier for you, and others, to feel and see.', wistiaId: 'jl1xaqdfml' },
+    'lifting-you-higher-activation': { title: 'Lifting You Higher Activation: Raise your Vibration Above The Matrix Frequencies', description: 'Lifts your vibration above heavy, collective "matrix" frequencies so you can think, feel, and choose from a higher state.', wistiaId: 'qpicxrk5li' },
+    'expansion-activation': { title: 'Expansion Activation', description: 'Supports you in becoming visible and taking up the space your gifts were always meant to fill.', wistiaId: '1nl08i12gw' },
+    'timeline-collapse-activation': { title: 'Timeline Collapse Activation', description: 'Collapses old, lower-frequency timelines so you can align with the version of your life that\'s already shifting.', wistiaId: 'yary59e1n9' },
+    '10-min-earth-star-activation': { title: '10 Min Earth Star Activation', description: 'Activates your Earth Star, the grounding point beneath your feet, deepening your connection to stability and safety.', wistiaId: '9siz7ohju0' },
+    'intuition-activation': { title: 'Intuition Activation', description: 'Strengthens your inner knowing so you can trust the guidance that\'s already coming through.', wistiaId: 'wat6njkg8r' },
+    'chakra-balancing-and-activation': { title: 'Chakra Balancing and Activation', description: 'Brings your seven main energy centers back into balance, restoring flow and ease throughout your whole system.', wistiaId: 'lw3e35wc2b' },
+    '12-strand-dna-activation': { title: '12 Strand DNA Activation', description: 'Supports the awakening of your fuller energetic blueprint, beyond old limits you were taught to believe were fixed.', wistiaId: 'sop2lqvcka' },
+    'merkabah-activation': { title: 'Merkabah Activation', description: 'Activates your light body and builds coherence in your merkabah, supporting you in raising your vibration.', wistiaId: 'z7z3h0dq9a' },
+    'crystalline-dragon-activation': { title: 'Crystalline Dragon Activation', description: 'Crystallizes your frequency, aligning you more fully with your soul.', wistiaId: 'oiojlhgavp' },
+    'pineal-gland-activation': { title: 'Pineal Gland Activation', description: 'Activates your pineal gland, supporting clearer intuition, inner vision, and psychic perception.', wistiaId: 'wxmipmh1gl' },
+    '10-min-grounding-meditation': { title: '10 Min Grounding Meditation Activation', description: 'A short guided meditation to settle your nervous system and root back into your body.', wistiaId: 'anmfxn0y1d' },
+    'clearing-negative-energy': { title: 'Clearing Negative Energy Activation', description: 'Releases negative or draining energy from your field so you can feel lighter and clearer.', wistiaId: 'uybymae4wk' },
+    'clearing-religious-vows-contracts': { title: 'Clearing Religious Vows & Contracts Activation', description: 'Releases old spiritual vows and contracts, from this life or before, that are quietly keeping you small.', wistiaId: '0o466ciczb' },
+    'nervous-system-recalibration': { title: 'Nervous System Recalibration Activation', description: 'Regulates an overworked nervous system, helping your body learn that it\'s safe to rest.', wistiaId: 'jmmcqyod85' },
+    'activating-your-gifts': { title: 'Activating Your Gifts Activation', description: 'Reconnects you with the intuitive and psychic gifts you\'ve been talking yourself out of.', wistiaId: 'e8a40apyjt' },
+    'activating-your-channel-to-spirit': { title: 'Activating Your Channel To Spirit Activation', description: 'Opens and strengthens your channel to Spirit, making guidance easier to receive and trust.', wistiaId: 'r1e32rdo8s' },
+    'spirit-connection-activation': { title: 'Spirit Connection Activation', description: 'Reopens your connection to Spirit, so support and guidance feel close again instead of distant.', wistiaId: 'lz47as3b06' },
+    'meet-your-guides': { title: 'Meet Your Guides Activation', description: 'A guided journey to meet and connect with your spirit guides.', wistiaId: 'u1o0xz6xcd' },
+    'third-eye-activation': { title: 'Third Eye Activation', description: 'Activates your third eye, supporting clearer inner vision and psychic sight.', wistiaId: 'vjsaxob3o7' },
+    'clairvoyance-activation': { title: 'Clairvoyance Activation', description: 'The capstone activation of this journey, opening and strengthening your clairvoyant sight.', wistiaId: 'lskl2evxzf' },
+    // GAP Method Activations (Aug 10) -- real video found in Kajabi; wistiaId
+    // values mirror healer-app/lib/activations.js's GAP_METHOD_ACTIVATIONS.
+    'gap-method-guardian': { title: 'Nervous System Recalibration', description: 'Supports The Guardian in moving out of survival, internal pressure and over-responsibility -- reconnecting with safety, trust, support and the capacity to create without constantly bracing, forcing or carrying everything alone.', wistiaId: 'jmmcqyod85' },
+    'gap-method-wayshower': { title: 'Removing the Frequency of Doubt', description: 'Supports The Wayshower in releasing the frequency of doubt and returning to self-authority, trust and inner conviction -- helping them stop outsourcing their decisions and begin moving from the truth they already carry.', wistiaId: 'h7j4h7g57o' },
+    'gap-method-leader': { title: 'Expansion Activation: Become Visible & Seen As You Expand Your Light', description: 'Supports The Leader in becoming visible, expanding their presence and allowing their truth to be seen -- releasing fear-based hiding and moving into confident, embodied and energetically safe leadership.', wistiaId: 'goj03wusfn' },
+    'gap-method-messenger': { title: 'Activating Your Gifts', description: 'Supports The Messenger in reconnecting with their spiritual gifts, clearing interference and strengthening their ability to recognize and trust what they receive -- restoring clarity, discernment and confidence within their channel.', wistiaId: 'e8a40apyjt' },
+    'gap-method-creator': { title: 'Freedom Timeline Activation', description: 'Supports The Creator in releasing control, gripping and pressure around the path of creation -- reconnecting with freedom, possibility, trust and the timeline most aligned with what they are creating.', wistiaId: 'zfayyjs4gc' },
+    'gap-method-healer': { title: 'Spirit Connection Activation', description: 'Supports The Healer in restoring connection with God, soul, spirit, body and their own gifts -- moving out of depletion and disconnection and returning to embodied, replenished and divinely connected service.', wistiaId: 'lz47as3b06' },
+    'gap-method-expander': { title: 'Success Code Activation', description: 'Supports The Expander in releasing restriction around success, money, receiving and possibility -- becoming energetically available for greater prosperity, opportunity, capacity and embodied success.', wistiaId: '2mp3dltm3c' }
+  };
+
+  function openActivationDetail(slug) {
+    var a = ACTIVATION_DETAILS[slug];
+    if (!a) { return; }
+    document.getElementById('activation-detail-title').textContent = a.title;
+    document.getElementById('activation-detail-description').textContent = a.description || 'Description coming soon.';
+    document.getElementById('activation-detail-player').innerHTML =
+      '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+    showPage('activation-detail-page');
+  }
+
+  function hideAllPages() {
+    PAGE_IDS.forEach(function(id) { document.getElementById(id).classList.remove('active'); });
+  }
+
+  function showMain() {
+    hideAllPages();
+    document.getElementById('hero-section').style.display = '';
+    document.getElementById('my-revolution').style.display = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function showPage(pageId) {
+    document.getElementById('hero-section').style.display = 'none';
+    document.getElementById('my-revolution').style.display = 'none';
+    hideAllPages();
+    document.getElementById(pageId).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+
+  // My Profile > Support -- configurable, not hard-coded into visible copy,
+  // same pattern as GO_DEEPER_OFFERS above.
+  var SUPPORT_EMAIL = "support@rachaelsbutterflyeffect.com"; // TODO(Rachael): confirm this is the real support inbox to route to.
+  document.getElementById('btn-contact-support').href = "mailto:" + SUPPORT_EMAIL;
+
+  // =====================================================================
+  // LIVE DATA WIRING (Aug 13) -- replaces the static demo content above
+  // with real data for the signed-in member (RH_EMAIL, set at top of body).
+  // =====================================================================
+
+  function formatShiftDate(iso) {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+    } catch (e) { return ''; }
+  }
+
+  function renderFocusAndShifts(shifts) {
+    var hasShifts = shifts.length > 0;
+
+    document.querySelectorAll('[data-role="focus-card"]').forEach(function(card) {
+      card.style.display = hasShifts ? '' : 'none';
+    });
+    document.querySelectorAll('[data-role="focus-empty"]').forEach(function(card) {
+      card.style.display = hasShifts ? 'none' : '';
+    });
+
+    if (hasShifts) {
+      var top = shifts[0];
+      document.querySelectorAll('[data-role="focus-identity"]').forEach(function(el) { el.textContent = top.identity || 'Your Divine Identity'; });
+      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.frequency || ''; });
+      document.querySelectorAll('[data-role="focus-status"]').forEach(function(el) {
+        el.textContent = top.statusLabel;
+        el.className = 'status-pill ' + top.statusClass;
+      });
+      document.querySelectorAll('[data-role="focus-activation"]').forEach(function(el) { el.textContent = top.activation || ''; });
+      document.querySelectorAll('[data-role="focus-activity-line"]').forEach(function(el) { el.textContent = 'Started ' + top.date; });
+    }
+
+    var listHtml = '';
+    shifts.forEach(function(s) {
+      listHtml += '<button class="shift-row" onclick="openShiftModal(\'' + s.id + '\')">' +
+        '<div class="shift-row-main">' +
+          '<div class="shift-method">' + s.method + '</div>' +
+          '<div class="shift-identity serif">' + s.identity + '</div>' +
+          '<div class="shift-freq">Current Frequency: ' + s.frequency + '</div>' +
+        '</div>' +
+        '<div class="shift-date">' + s.date + '</div>' +
+        '<div class="status-pill ' + s.statusClass + '">' + s.statusLabel + '</div>' +
+      '</button>';
+    });
+    if (!listHtml) {
+      listHtml = '<div class="card center"><p class="copy">No Shifts yet. <a href="#" onclick="startGapMethod(); return false;" style="color: var(--gold);">Start the GAP Method</a> to create your first one.</p></div>';
+    }
+    document.querySelectorAll('[data-role="shifts-list"]').forEach(function(el) { el.innerHTML = listHtml; });
+  }
+
+  function startGapMethod() {
+    window.location.href = '/gap-method.html?e=' + encodeURIComponent(RH_EMAIL || '');
+  }
+
+  function signOutMember() {
+    localStorage.removeItem('rh_member_email');
+    window.location.href = '/';
+  }
+
+  async function loadMemberRevolutionData() {
+    if (!RH_EMAIL) return;
+    try {
+      var res = await fetch('/api/shifts?email=' + encodeURIComponent(RH_EMAIL));
+      var data = await res.json();
+      var records = data.shifts || [];
+      SHIFTS.length = 0;
+      records.forEach(function(r) {
+        SHIFTS.push({
+          id: r.id,
+          method: r.methodName || '3 Step GAP Method',
+          identity: r.divineIdentityName,
+          frequency: r.currentFrequency,
+          statusLabel: r.progressStatus === 'embodied' ? '🟢 Embodied' : '🟡 Shifting',
+          statusClass: r.progressStatus === 'embodied' ? 'embodied' : 'shifting',
+          date: formatShiftDate(r.createdAt),
+          gap: r.gapExplanation,
+          maintaining: r.whatWeNoticed,
+          activation: r.recommendedActivation,
+          undercurrent: r.undercurrent ? { frequency: r.undercurrent, activation: r.nextSuggestedActivation } : null,
+          readyForEmbodied: !!r.readyForEmbodied,
+        });
+      });
+      renderFocusAndShifts(SHIFTS);
+    } catch (e) {
+      console.error('Failed to load My Revolution data', e);
+    }
+  }
+
+  function initProfileFields() {
+    if (!RH_EMAIL) return;
+    var nameInput = document.getElementById('profile-name-input');
+    var emailInput = document.getElementById('profile-email-input');
+    var welcomeLine = document.getElementById('profile-welcome-line');
+    var displayName = RH_EMAIL.split('@')[0];
+    if (nameInput) nameInput.value = displayName;
+    if (emailInput) emailInput.value = RH_EMAIL;
+    if (welcomeLine) welcomeLine.textContent = 'Welcome back, ' + displayName + '.';
+  }
+
+  async function sendHeroChat() {
+    var input = document.getElementById('chat-input');
+    var text = (input.value || '').trim();
+    if (!text || !RH_EMAIL) return;
+    var replyBox = document.getElementById('hero-chat-reply');
+    var speakBtn = document.getElementById('hero-speak-btn');
+    speakBtn.disabled = true;
+    replyBox.style.display = '';
+    replyBox.textContent = '...';
+    try {
+      var res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: RH_EMAIL, focusAreaSlug: 'general', message: text, history: [] }),
+      });
+      var data = await res.json();
+      replyBox.textContent = data.reply || data.error || 'Something went wrong.';
+      input.value = '';
+    } catch (e) {
+      replyBox.textContent = 'Something went wrong reaching your guide. Please try again.';
+    } finally {
+      speakBtn.disabled = false;
+    }
+  }
+
+  if (RH_EMAIL) {
+    document.getElementById('gap-method-starter-btn').addEventListener('click', startGapMethod);
+    document.getElementById('hero-speak-btn').addEventListener('click', sendHeroChat);
+    document.getElementById('chat-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
+    });
+    initProfileFields();
+    loadMemberRevolutionData();
+    document.querySelectorAll('.focus-empty-cta').forEach(function(btn) { btn.addEventListener('click', startGapMethod); });
+  }
+</script>
+
+</body>
+</html>
