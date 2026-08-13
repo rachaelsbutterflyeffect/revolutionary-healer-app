@@ -2,6 +2,7 @@
 // Spec ref: SPEC.md §7 (lib/airtable.js) and §8 (data model).
 
 import Airtable from "airtable";
+import crypto from "crypto";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -31,7 +32,17 @@ export const Tables = {
   Healings: "Healings",
   Practices: "Practices",
   Events: "Events",
+  GapMethodResults: "GapMethodResults",
 };
+
+// Lowercase + trim for consistent matching. Spec (Aug 12, Rachael's GAP
+// Method persistence instruction): GAP Method results must be matched on
+// normalized email, since the same person's email can arrive from Kajabi
+// webhooks, this app's own save calls, and (eventually) member login with
+// different casing/whitespace.
+export function normalizeEmail(email) {
+  return typeof email === "string" ? email.trim().toLowerCase() : email;
+}
 
 /** Find a single record by an exact field match. Returns null if not found. */
 export async function findOneByField(table, field, value) {
@@ -74,6 +85,116 @@ export async function logEvent(type, meta, memberRecordId) {
     meta: typeof meta === "string" ? meta : JSON.stringify(meta ?? {}),
     created_at: new Date().toISOString(),
     ...(memberRecordId ? { member: [memberRecordId] } : {}),
+  });
+}
+
+// =============================================================================
+// GAP METHOD RESULTS (Aug 12, Rachael's GAP Method persistence instruction)
+// =============================================================================
+// Persists the 3-step GAP Method diagnostic, keyed by normalized email, so a
+// buyer's Divine Identity / frequency / refined GAP / recommended activation
+// survive across the anonymous funnel session and can later link to their
+// permanent Revolutionary Healer member record without making them redo
+// Steps 1-2. Three write paths into this same table, matched by email:
+//   1. upsertGapMethodResultOnPurchase -- called from the Kajabi webhook the
+//      moment someone buys the $9 GAP Method offer (backend, zero action).
+//   2. saveGapMethodDiagnostic -- called from app/api/gap-method-result/route.ts
+//      once the funnel's Step 3 completes and an email is known (see
+//      public/gap-method.html's buyerEmail / ?e= handling).
+//   3. linkGapMethodResultToMember -- called from the same webhook when a
+//      Full Access purchase event arrives for an email that already has a
+//      GAP Method Results row, so My Revolution can surface the existing
+//      Shift without re-running the diagnostic.
+
+export async function getGapMethodResultByEmail(email) {
+  return findOneByField(Tables.GapMethodResults, "email", normalizeEmail(email));
+}
+
+export async function upsertGapMethodResultOnPurchase({ email, offerId, firstName }) {
+  const normalized = normalizeEmail(email);
+  const existing = await getGapMethodResultByEmail(normalized);
+  // Fresh single-use magic-link token on every purchase event (Aug 13,
+  // Rachael's Kajabi Purchase Webhook architecture request): this token,
+  // never the email itself, is what travels in the link we email the buyer.
+  // /api/gap-method-session/[token]/route.ts resolves it server-side.
+  const sessionToken = crypto.randomBytes(24).toString("hex");
+  const fields = {
+    email: normalized,
+    purchase_offer_id: offerId ?? "",
+    purchased_at: new Date().toISOString(),
+    source: "kajabi_webhook",
+    session_token: sessionToken,
+    token_used: false,
+  };
+  if (firstName) fields.first_name = firstName;
+  // Don't clobber a diagnostic that's already complete or linked to a member
+  // -- a re-purchase (e.g. a refund + repurchase) should just refresh the
+  // purchase timestamp and issue a fresh token, never reset progress that's
+  // already saved.
+  if (!existing || (existing.fields.status !== "diagnostic_complete" && existing.fields.status !== "linked_to_member")) {
+    fields.status = "awaiting_diagnostic";
+  }
+  if (existing) {
+    await base(Tables.GapMethodResults).update(existing.id, fields);
+  } else {
+    await base(Tables.GapMethodResults).create({ ...fields, status: "awaiting_diagnostic" });
+  }
+  return { email: normalized, sessionToken };
+}
+
+// Resolves a magic-link token (from the purchase confirmation email) back to
+// the GapMethodResults record it belongs to, server-side only -- the token is
+// opaque and carries no PII, so it's safe to put in a URL. Does not mark it
+// used; callers decide when a token has been meaningfully redeemed.
+export async function getGapMethodResultByToken(token) {
+  if (!token) return null;
+  return findOneByField(Tables.GapMethodResults, "session_token", token);
+}
+
+export async function markGapMethodTokenUsed(recordId) {
+  return base(Tables.GapMethodResults).update(recordId, { token_used: true });
+}
+
+export async function saveGapMethodDiagnostic({
+  email,
+  divineIdentity,
+  primaryFrequency,
+  focusArea,
+  refinedGap,
+  step1Answers,
+  step2Summary,
+  recommendedActivation,
+  activationWhy,
+}) {
+  const normalized = normalizeEmail(email);
+  const existing = await getGapMethodResultByEmail(normalized);
+  const fields = {
+    email: normalized,
+    divine_identity: divineIdentity ?? "",
+    primary_frequency: primaryFrequency ?? "",
+    focus_area: focusArea ?? "",
+    refined_gap: refinedGap ?? "",
+    step1_answers: typeof step1Answers === "string" ? step1Answers : JSON.stringify(step1Answers ?? {}),
+    step2_summary: typeof step2Summary === "string" ? step2Summary : JSON.stringify(step2Summary ?? {}),
+    recommended_activation: recommendedActivation ?? "",
+    activation_why: activationWhy ?? "",
+    diagnostic_completed_at: new Date().toISOString(),
+    status: "diagnostic_complete",
+  };
+  if (existing) {
+    return base(Tables.GapMethodResults).update(existing.id, fields);
+  }
+  return base(Tables.GapMethodResults).create({ ...fields, source: "diagnostic_save" });
+}
+
+export async function linkGapMethodResultToMember(email, memberRecordId) {
+  const normalized = normalizeEmail(email);
+  const existing = await getGapMethodResultByEmail(normalized);
+  if (!existing) return null;
+  return base(Tables.GapMethodResults).update(existing.id, {
+    linked_member: [memberRecordId],
+    linked_at: new Date().toISOString(),
+    status: "linked_to_member",
   });
 }
 
