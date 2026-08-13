@@ -578,6 +578,9 @@
       <button class="send-btn" id="hero-speak-btn">Speak</button>
     </div>
     <div id="hero-chat-reply" style="display:none; max-width:700px; margin: 14px auto 0; background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 14px; padding: 16px 20px; color: var(--white); font-size: 14px; line-height: 1.6; white-space: pre-wrap; text-align: left;"></div>
+    <div id="hero-gap-embed" style="display:none; max-width:700px; margin: 16px auto 0;">
+      <iframe id="hero-gap-embed-iframe" style="width:100%; min-height:900px; border:1px solid var(--taupe-line); border-radius:14px; background: var(--panel-2);" title="3 Step GAP Method"></iframe>
+    </div>
   </div>
 </section>
 
@@ -612,8 +615,8 @@
       </div>
     </div>
     <div class="card center" data-role="focus-empty" style="display:none;">
-      <p class="copy" style="margin: 0 0 18px;">You haven't started a Shift yet. Complete the 3 Step GAP Method to create your first one.</p>
-      <button class="btn-primary focus-empty-cta">Start the GAP Method →</button>
+      <p class="copy" style="margin: 0 0 18px; text-align:center;">Let's find your first Shift — walk through the 3 Step GAP Method below.</p>
+      <iframe data-role="gap-embed-empty" style="width:100%; min-height:900px; border:1px solid var(--taupe-line); border-radius:14px; background: var(--panel-2); display:none;" title="3 Step GAP Method"></iframe>
     </div>
 
     <div class="revolution-subsection">
@@ -2079,6 +2082,11 @@
       card.style.display = hasShifts ? 'none' : '';
     });
     document.querySelectorAll('[data-role="demo-activity"]').forEach(function(el) { el.style.display = hasShifts ? '' : 'none'; });
+    document.querySelectorAll('[data-role="gap-embed-empty"]').forEach(function(el) {
+      if (hasShifts) { el.style.display = 'none'; return; }
+      if (!el.src) { el.src = '/gap-method.html?e=' + encodeURIComponent(RH_EMAIL || '') + '&embed=1'; }
+      el.style.display = '';
+    });
 
     if (hasShifts) {
       var top = shifts[0];
@@ -2110,8 +2118,28 @@
     document.querySelectorAll('[data-role="shifts-list"]').forEach(function(el) { el.innerHTML = listHtml; });
   }
 
-  function startGapMethod() {
-    window.location.href = '/gap-method.html?e=' + encodeURIComponent(RH_EMAIL || '');
+  function promptGapMethodInChat() {
+    var replyBox = document.getElementById('hero-chat-reply');
+    var embedWrap = document.getElementById('hero-gap-embed');
+    if (embedWrap) embedWrap.style.display = 'none';
+    replyBox.style.display = '';
+    replyBox.textContent = 'Say yes if you would like to start your gap method now.';
+    window.__awaitingGapMethodYes = true;
+    var input = document.getElementById('chat-input');
+    if (input) input.focus();
+  }
+
+  function embedGapMethodInline() {
+    var wrap = document.getElementById('hero-gap-embed');
+    var iframe = document.getElementById('hero-gap-embed-iframe');
+    if (!wrap || !iframe) return;
+    if (!iframe.src) {
+      iframe.src = '/gap-method.html?e=' + encodeURIComponent(RH_EMAIL || '') + '&embed=1';
+    }
+    wrap.style.display = '';
+    var replyBox = document.getElementById('hero-chat-reply');
+    if (replyBox) replyBox.style.display = 'none';
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function signOutMember() {
@@ -2163,6 +2191,18 @@
     var input = document.getElementById('chat-input');
     var text = (input.value || '').trim();
     if (!text || !RH_EMAIL) return;
+    if (window.__awaitingGapMethodYes) {
+      window.__awaitingGapMethodYes = false;
+      input.value = '';
+      if (/^y(es)?\b/i.test(text)) {
+        embedGapMethodInline();
+        return;
+      }
+      var declineBox = document.getElementById('hero-chat-reply');
+      declineBox.style.display = '';
+      declineBox.textContent = "No problem — click GAP Method above whenever you're ready.";
+      return;
+    }
     var replyBox = document.getElementById('hero-chat-reply');
     var speakBtn = document.getElementById('hero-speak-btn');
     speakBtn.disabled = true;
@@ -2184,8 +2224,15 @@
     }
   }
 
+  window.addEventListener('message', function(evt) {
+    if (!evt.data || evt.data.type !== 'gapMethodComplete') return;
+    var heroEmbed = document.getElementById('hero-gap-embed');
+    if (heroEmbed) heroEmbed.style.display = 'none';
+    loadMemberRevolutionData();
+  });
+
   if (RH_EMAIL) {
-    document.getElementById('gap-method-starter-btn').addEventListener('click', startGapMethod);
+    document.getElementById('gap-method-starter-btn')document.getElementById('gap-method-starter-btn').addEventListener('click', promptGapMethodInChat);
     document.getElementById('hero-speak-btn').addEventListener('click', sendHeroChat);
     document.getElementById('chat-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
