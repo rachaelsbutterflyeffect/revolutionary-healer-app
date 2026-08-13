@@ -9,6 +9,7 @@ import base, {
   upsertGapMethodResultOnPurchase,
   linkGapMethodResultToMember,
 } from "@/lib/airtable";
+import { sendGapMethodMagicLink } from "@/lib/email";
 
 // Map of Kajabi offer IDs -> which Airtable flag they should set. Populate once
 // Rachael's offers exist (SPEC.md §9 env vars: MEMBER_OFFER_IDS, TIER_OFFER_IDS).
@@ -41,11 +42,19 @@ const GAP_METHOD_OFFER_IDS = (process.env.GAP_METHOD_OFFER_IDS ?? "2151330100").
 // offer IDs to watch for.
 
 function verifyKajabiSignature(req: NextRequest, rawBody: string): boolean {
-    // TODO: implement Kajabi's actual signature scheme once webhook docs/secret are
-  // confirmed with Rachael's Kajabi account. Never process an unverified webhook
-  // in production.
-  const secret = process.env.KAJABI_WEBHOOK_SECRET;
-    return Boolean(secret);
+  // Kajabi's outbound Purchase Created / Payment Succeeded / Cart Purchase
+  // webhooks are NOT signed (confirmed against Kajabi's own webhook docs --
+  // no HMAC/signature header is sent). The practical way to authenticate an
+  // unsigned webhook is a shared secret baked into the URL Kajabi is
+  // configured to POST to (e.g. .../api/webhooks?secret=xxxx), which Kajabi
+  // sends back verbatim on every call since it just hits the configured URL.
+  // Set KAJABI_WEBHOOK_SECRET in Vercel and use that exact value as the
+  // ?secret= query param when pasting the Purchase Webhook URL into Kajabi
+  // (Sales -> Offers -> offer -> "..." -> Webhooks -> Purchase Webhook URL).
+  const expected = process.env.KAJABI_WEBHOOK_SECRET;
+  if (!expected) return false;
+  const provided = req.nextUrl.searchParams.get("secret");
+  return provided === expected;
 }
 
 export async function POST(req: NextRequest) {
@@ -56,9 +65,19 @@ export async function POST(req: NextRequest) {
   }
 
   const event = JSON.parse(rawBody);
-    const email: string | undefined = event?.member_email ?? event?.email;
-    const offerId: string | undefined = event?.offer_id;
-    const eventType: string | undefined = event?.event_type; // e.g. "purchase", "cancellation"
+  // Real Kajabi Purchase Created webhook shape (per Kajabi's outbound webhook
+  // docs): { id, offer: { id, title }, member: { id, email, name,
+  // first_name, last_name }, ... }. Old flat fallbacks kept in case a
+  // different webhook type (e.g. Payment Succeeded) sends a similar shape.
+    const email: string | undefined = event?.member?.email ?? event?.member_email ?? event?.email;
+    const firstName: string | undefined = event?.member?.first_name ?? event?.first_name;
+    const offerIdRaw: string | number | undefined = event?.offer?.id ?? event?.offer_id;
+    const offerId: string | undefined = offerIdRaw != null ? String(offerIdRaw) : undefined;
+    // Purchase Created webhooks only ever represent a purchase -- Kajabi does
+    // not send a cancellation/refund signal on this webhook type. event_type
+    // is kept as an optional override in case a different Kajabi webhook
+    // (with its own shape) is later pointed at this same endpoint.
+    const eventType: string | undefined = event?.event_type;
 
   if (!email) {
         return NextResponse.json({ error: "no member email in payload" }, { status: 400 });
@@ -91,7 +110,12 @@ export async function POST(req: NextRequest) {
   // This is independent of member_active/tier_active above -- the GAP Method
   // offer is not itself a membership offer.
   if (isGapMethodOffer && !isCancellation) {
-        await upsertGapMethodResultOnPurchase({ email, offerId });
+    const { sessionToken } = await upsertGapMethodResultOnPurchase({ email, offerId, firstName });
+    // Fire-and-forget: don't let an email-provider hiccup fail the webhook
+    // response to Kajabi (which would make Kajabi retry and could double-book).
+    sendGapMethodMagicLink({ email, firstName, sessionToken }).catch((err) => {
+      console.error("sendGapMethodMagicLink failed", err);
+    });
   }
 
   // Auto-link (Aug 12): if this event is a real membership/tier purchase (Full
