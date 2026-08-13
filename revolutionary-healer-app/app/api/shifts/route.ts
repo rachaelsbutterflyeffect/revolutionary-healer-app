@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const records = await getShiftsByEmail(email);
-    const shifts = records.map((r) => ({
+    const shifts = records.map((r: any) => ({
       id: r.id,
       divineIdentityName: r.fields.divine_identity_name ?? "",
       currentFrequency: r.fields.current_frequency ?? "",
