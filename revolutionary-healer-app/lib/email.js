@@ -68,3 +68,50 @@ This link is just for you, so please don't share it.
 
   return { skipped: false };
 }
+
+// Aug 13 (Rachael's Kajabi-linked landing page request): password-reset
+// email for the app's own sign-in system. Same Resend setup as
+// sendGapMethodMagicLink above -- logs a warning and no-ops until
+// RESEND_API_KEY / RESEND_FROM_EMAIL are set in Vercel.
+export async function sendPasswordResetEmail({ email, firstName, resetToken }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL;
+  if (!apiKey || !from) {
+    console.warn(
+      "sendPasswordResetEmail: RESEND_API_KEY / RESEND_FROM_EMAIL not set -- skipping send. " +
+      "Set both in Vercel to actually email password reset links."
+    );
+    return { skipped: true };
+  }
+  if (!email || !resetToken) return { skipped: true };
+
+  const link = `${appBaseUrl()}/reset-password?t=${encodeURIComponent(resetToken)}`;
+  const greeting = firstName ? `Hi ${firstName},` : "Hi,";
+  const subject = "Reset your Revolutionary Healer password";
+  const text = `${greeting}
+
+We got a request to reset your Revolutionary Healer app password. Tap the link below to choose a new one:
+
+${link}
+
+This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
+
+-- The Revolutionary Healer`;
+  const html = `<p>${greeting}</p><p>We got a request to reset your Revolutionary Healer app password. Tap the button below to choose a new one:</p><p><a href="${link}" style="display:inline-block;padding:14px 28px;background:#CFA646;color:#121110;text-decoration:none;border-radius:6px;font-weight:bold;">Reset Password</a></p><p style="color:#8C8272;font-size:13px;">This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p><p>-- The Revolutionary Healer</p>`;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ from, to: email, subject, text, html }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Resend send failed: ${res.status} ${body}`);
+  }
+
+  return { skipped: false };
+}
