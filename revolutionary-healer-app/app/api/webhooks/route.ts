@@ -3,12 +3,24 @@
 // (member_active, tier_active), never one tier field -- the higher tier is additive.
 // Webhook handling must be idempotent (SPEC.md §12 risk: "Billing edge cases").
 import { NextRequest, NextResponse } from "next/server";
-import base, { Tables, getMemberByEmail } from "@/lib/airtable";
+import base, {
+  Tables,
+  getMemberByEmail,
+  upsertGapMethodResultOnPurchase,
+  linkGapMethodResultToMember,
+} from "@/lib/airtable";
 
 // Map of Kajabi offer IDs -> which Airtable flag they should set. Populate once
 // Rachael's offers exist (SPEC.md §9 env vars: MEMBER_OFFER_IDS, TIER_OFFER_IDS).
 const MEMBER_OFFER_IDS = (process.env.MEMBER_OFFER_IDS ?? "").split(",").filter(Boolean);
 const TIER_OFFER_IDS = (process.env.TIER_OFFER_IDS ?? "").split(",").filter(Boolean);
+
+// GAP Method offer(s) -- Aug 12, Rachael's GAP Method persistence instruction.
+// Defaults to the live $9 GAP Method offer id so this works even before
+// Rachael adds the env var in Vercel; add more offer ids to
+// GAP_METHOD_OFFER_IDS (comma-separated) if she ever creates additional GAP
+// Method offers.
+const GAP_METHOD_OFFER_IDS = (process.env.GAP_METHOD_OFFER_IDS ?? "2151330100").split(",").filter(Boolean);
 
 // RETIRED (Aug 12, Rachael's explicit instruction): the $9 GAP Method offer no
 // longer auto-grants a 3-day Full Access trial. Buyers move through the 3-step
@@ -54,6 +66,7 @@ export async function POST(req: NextRequest) {
 
   const isMemberOffer = offerId ? MEMBER_OFFER_IDS.includes(offerId) : true;
     const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
+    const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;
     const isCancellation = eventType === "cancellation" || eventType === "refund";
 
   const existing = await getMemberByEmail(email);
@@ -62,10 +75,31 @@ export async function POST(req: NextRequest) {
   if (isMemberOffer) fields.member_active = !isCancellation;
     if (isTierOffer) fields.tier_active = !isCancellation;
 
+  let memberRecordId: string;
   if (existing) {
         await base(Tables.Members).update(existing.id, fields);
+    memberRecordId = existing.id;
   } else {
-        await base(Tables.Members).create({ email, member_active: !isCancellation, ...fields });
+        const created = await base(Tables.Members).create({ email, member_active: !isCancellation, ...fields });
+    memberRecordId = created.id;
+  }
+
+  // GAP Method persistence (Aug 12, Rachael's GAP Method persistence
+  // instruction): backend, zero-action capture -- the moment someone buys the
+  // $9 GAP Method offer, record their email + purchase against a
+  // GapMethodResults row (email-normalized) before they've done anything else.
+  // This is independent of member_active/tier_active above -- the GAP Method
+  // offer is not itself a membership offer.
+  if (isGapMethodOffer && !isCancellation) {
+        await upsertGapMethodResultOnPurchase({ email, offerId });
+  }
+
+  // Auto-link (Aug 12): if this event is a real membership/tier purchase (Full
+  // Access), and this email already has a GAP Method Results row from an
+  // earlier $9 purchase, link it to the permanent member record now so My
+  // Revolution can surface the existing Shift without re-running Steps 1-2.
+  if ((isMemberOffer || isTierOffer) && !isCancellation) {
+        await linkGapMethodResultToMember(email, memberRecordId);
   }
 
   return NextResponse.json({ ok: true });
