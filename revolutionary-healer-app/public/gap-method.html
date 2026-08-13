@@ -980,6 +980,28 @@
       return '';
     }
   })();
+  var buyerFirstName = '';
+  // Aug 13 (Rachael's Kajabi Purchase Webhook architecture): this token
+  // resolution is the PRIMARY way buyerEmail gets set now -- the ?e= fallback
+  // above is a last resort only. ?t= is an opaque, single-use session token
+  // from the purchase magic-link email, never the email itself, resolved
+  // server-side via /api/gap-method-session so no PII or Airtable
+  // credentials ever touch this page's URL or client-side code.
+  (function() {
+    try {
+      var t = new URLSearchParams(window.location.search).get('t');
+      if (!t) return;
+      fetch('/api/gap-method-session?t=' + encodeURIComponent(t))
+        .then(function(res) { return res.ok ? res.json() : null; })
+        .then(function(data) {
+          if (data && data.email) {
+            buyerEmail = data.email;
+            buyerFirstName = data.firstName || '';
+          }
+        })
+        .catch(function() {});
+    } catch (err) {}
+  })();
 
   // Aug 10 (later) -- phase drives which question source renderQ()/nextQ()/prevQ() use.
   // 'identity' = the 2 new IDENTITY_QUESTIONS (Questions 1-2 of 7). Then d1-domain
