@@ -1,7 +1,3 @@
-// GET /api/shifts?email=... -- returns a member's My Revolution Shift
-// cards. Spec ref: SPEC.md's "Post-Gap Method App Entry Flow" point 3;
-// records are written by lib/airtable.js's createGapMethodShift (wired
-// Aug 13 when a completed GAP Method diagnostic links to a real member).
 import { NextRequest, NextResponse } from "next/server";
 import { getShiftsByEmail } from "@/lib/airtable";
 
@@ -10,7 +6,6 @@ export async function GET(req: NextRequest) {
   if (!email) {
     return NextResponse.json({ error: "Missing email" }, { status: 400 });
   }
-
   try {
     const records = await getShiftsByEmail(email);
     const shifts = records.map((r: any) => ({
@@ -23,6 +18,10 @@ export async function GET(req: NextRequest) {
       recommendedActivation: r.fields.recommended_activation ?? "",
       progressStatus: r.fields.progress_status ?? "shifting",
       createdAt: r.fields.created_at ?? "",
+      methodName: r.fields.method_name ?? "",
+      undercurrent: r.fields.undercurrent ?? "",
+      nextSuggestedActivation: r.fields.next_suggested_activation ?? "",
+      readyForEmbodied: !!r.fields.ready_for_embodied,
     }));
     return NextResponse.json({ shifts });
   } catch (err) {
