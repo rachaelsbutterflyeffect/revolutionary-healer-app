@@ -258,4 +258,43 @@ export async function getShiftsByEmail(email) {
   return records;
 }
 
+
+// =============================================================================
+// MEMBER AUTH (Aug 13, Rachael's Kajabi-linked landing page request)
+// =============================================================================
+// Kajabi does not expose any API to verify a member's real Kajabi password,
+// so sign-in works like this: the very first time a paying member signs in
+// with their email + the password they use in Kajabi, we adopt that as their
+// app password (hash it, store it) since there's nothing to check it
+// against yet. Every sign-in after that verifies against the stored hash.
+// A member who isn't found, or isn't an active paying member, can never
+// bootstrap a password -- see app/api/auth/login/route.ts for that check.
+
+export async function setMemberPassword(recordId, passwordHash) {
+  return base(Tables.Members).update(recordId, {
+    password_hash: passwordHash,
+    reset_token: "",
+    reset_token_expires_at: null,
+  });
+}
+
+export async function createMemberResetToken(recordId, token, expiresAtISO) {
+  return base(Tables.Members).update(recordId, {
+    reset_token: token,
+    reset_token_expires_at: expiresAtISO,
+  });
+}
+
+export async function getMemberByResetToken(token) {
+  if (!token) return null;
+  return findOneByField(Tables.Members, "reset_token", token);
+}
+
+export async function clearMemberResetToken(recordId) {
+  return base(Tables.Members).update(recordId, {
+    reset_token: "",
+    reset_token_expires_at: null,
+  });
+}
+
 export default base;
