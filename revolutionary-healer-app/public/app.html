@@ -624,7 +624,7 @@
       <div class="shifts-list" data-role="shifts-list"></div>
     </div>
 
-    <div class="revolution-subsection">
+    <div class="revolution-subsection" data-role="demo-activity">
       <div class="subsection-head">
         <h3 onclick="showPage('favorites-page')">❤️ Favorites</h3>
         <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
@@ -700,7 +700,7 @@
       <div class="shifts-list" data-role="shifts-list"></div>
     </div>
 
-    <div class="revolution-subsection">
+    <div class="revolution-subsection" data-role="demo-activity">
       <div class="subsection-head">
         <h3 onclick="showPage('favorites-page')">❤️ My Favorites</h3>
         <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
@@ -729,7 +729,7 @@
       </div>
     </div>
 
-    <div class="revolution-subsection">
+    <div class="revolution-subsection" data-role="demo-activity">
       <div class="subsection-head">
         <h3 onclick="showPage('activations-page')">🎧 My Activations</h3>
         <div class="see-all" onclick="showPage('activations-page')">See all →</div>
@@ -1795,7 +1795,7 @@
   //   'full'      -- member has canUseTier (Full Access / Beta membership):
   //                  everything is unlocked, no lock badges -- use this to
   //                  preview the paid-member view.
-  var DEMO_ENTITLEMENT_MODE = 'gap-trial';
+  var DEMO_ENTITLEMENT_MODE = 'full';
 
   // Mirrors GAP_METHOD_ACTIVATION_SLUGS from healer-app/lib/activations.js --
   // duplicated here (not imported) since this static HTML mockup has no
@@ -2078,6 +2078,7 @@
     document.querySelectorAll('[data-role="focus-empty"]').forEach(function(card) {
       card.style.display = hasShifts ? 'none' : '';
     });
+    document.querySelectorAll('[data-role="demo-activity"]').forEach(function(el) { el.style.display = hasShifts ? '' : 'none'; });
 
     if (hasShifts) {
       var top = shifts[0];
