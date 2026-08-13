@@ -159,20 +159,20 @@
       <div id="d1-intro" class="card center">
         <div class="eyebrow">Step 1: Spot the Gap</div>
         <h1 class="serif" style="font-size: 44px;">Let's find what isn't adding up.</h1>
-        <p class="copy">In the next 7 questions, we're going to look at what you want, what keeps happening instead, and where the contradiction is showing up.</p>
+        <p class="copy">In the next 3 questions, we're going to get a first read on who you naturally are and where you want to focus today.</p>
         <p class="copy">Don't overthink your answers. Choose what feels most true right now.</p>
-        <p class="copy">By the end, you'll have a much clearer picture of the Gap you're currently working with — and what to do with it next.</p>
-        <p class="copy" style="margin-bottom: 26px;">7 questions · about 3 minutes</p>
+        <p class="copy">By the end, we'll have a starting point -- then Step 2 is where we actually explore what's happening for you.</p>
+        <p class="copy" style="margin-bottom: 26px;">3 questions · about 1 minute</p>
         <button class="btn-gold" onclick="beginStep1();">Begin Step 1 →</button>
       </div>
 
       <div id="d1-domain" class="card" style="display:none;">
-        <div class="q-label">Question 3 of 7</div>
+        <div class="q-label">Question 3 of 3</div>
         <div class="q-text serif" style="font-size: 18px;">Where are you feeling the gap the most right now?</div>
         <div class="options" id="domain-chips"></div>
         <div class="row-between">
           <button class="btn-text" onclick="backFromDomain();">← Back</button>
-          <button class="btn-gold" id="domain-next" onclick="beginDomainQuiz()" disabled>Next →</button>
+          <button class="btn-gold" id="domain-next" onclick="completeStep1()" disabled>Next →</button>
         </div>
       </div>
 
@@ -189,36 +189,9 @@
       </div>
 
       <div id="d1-results" class="card" style="display:none;">
-        <div class="eyebrow center" style="text-align:center;">Here's what we found.</div>
-
-        <div class="reveal-block" style="text-align:left; margin-top: 22px; margin-bottom: 30px;">
-          <div class="eyebrow">Your Divine Identity</div>
-          <h1 class="serif" id="r-identity-name" style="margin-bottom: 10px;"></h1>
-          <p class="copy" id="r-identity-line" style="font-size: 16px; color: var(--white); margin-bottom: 28px;"></p>
-
-          <div class="eyebrow">The frequency you're experiencing right now</div>
-          <p class="copy" id="r-frequency-sentence" style="font-size: 16px; color: var(--white); margin-bottom: 8px;"></p>
-          <p class="copy" id="r-frequency-explanation" style="margin-bottom: 28px;"></p>
-
-          <div class="eyebrow">👀 Your Gap</div>
-          <p class="copy" id="r-gap-contradiction" style="font-size: 17px; color: var(--white); margin-bottom: 14px;"></p>
-          <p class="copy" id="r-gap-example" style="margin-bottom: 14px;"></p>
-          <p class="copy" style="margin-bottom: 14px;">That's the contradiction.</p>
-          <p class="copy" id="r-gap-restated" style="font-size: 16px; color: var(--white); margin-bottom: 22px;"></p>
-          <p class="copy" style="margin-bottom: 22px;">And now that we can see it, we can go deeper into exactly where it's showing up for you.</p>
-          <button class="btn-gold" onclick="goDay(2)">Go deeper →</button>
-        </div>
-
-        <p class="copy center" id="r-domain" style="margin-bottom: 14px;"></p>
-
-        <div class="reading-card">
-          <div class="reading-label">Your frequency reading</div>
-          <h1 class="serif center" id="r-name" style="text-align:center;"></h1>
-          <div class="code-tags" id="r-codes"></div>
-          <p class="reading-text" id="r-reading"></p>
-        </div>
-
-        <div class="block-row"><div class="label">Your Gap</div><div class="value" id="r-gap"></div></div>
+        <div class="eyebrow center" style="text-align:center;">Step 1 complete</div>
+        <p class="copy serif" id="r-transition-text" style="font-size: 18px; margin-top: 18px; margin-bottom: 30px; white-space: pre-wrap;"></p>
+        <button class="btn-gold" onclick="goDay(2)" style="width:100%;">GO TO STEP 2 →</button>
         <div class="center" style="margin-top:28px;">
           <button class="btn-text" onclick="backToQuizFromResults()">← Back to change an answer</button>
         </div>
@@ -286,7 +259,7 @@
     { key: "business", label: "Business + Visibility" },
     { key: "money", label: "Money" },
     { key: "gifts", label: "Spiritual Gifts" },
-    { key: "healing", label: "Client Result" }
+    { key: "energy", label: "Energy + Frequency" }
   ];
 
   var QUESTION_BANKS = {
@@ -1060,6 +1033,12 @@
     renderQ();
   }
 
+  function completeStep1() {
+    if (!selectedDomain) return;
+    showEl('d1-domain', false);
+    showResults();
+  }
+
   function beginDomainQuiz() {
     if (!selectedDomain) return;
     phase = 'quiz';
@@ -1077,7 +1056,7 @@
 
     if (phase === 'identity') {
       var q = IDENTITY_QUESTIONS[identityCurrent];
-      document.getElementById('q-label').textContent = 'Question ' + (identityCurrent + 1) + ' of 7';
+      document.getElementById('q-label').textContent = 'Question ' + (identityCurrent + 1) + ' of 3';
       document.getElementById('q-text').textContent = q.text;
       personalizeEl.style.display = 'none';
       q.options.forEach(function(opt) {
@@ -1179,30 +1158,12 @@
   }
 
   function showResults() {
-    var reveal = DIVINE_REVEAL[winnerKey];
-    var a = ARCHETYPES[winnerKey];
     var domainLabel = DOMAINS.filter(function(d) { return d.key === selectedDomain; })[0].label;
-
-    document.getElementById('r-identity-name').textContent = reveal.name;
-    document.getElementById('r-identity-line').textContent = reveal.identityLine;
-    document.getElementById('r-frequency-sentence').textContent = "You're " + reveal.name + " currently experiencing the frequency of " + reveal.frequency + ".";
-    document.getElementById('r-frequency-explanation').textContent = reveal.frequencyExplanation;
-    document.getElementById('r-gap-contradiction').innerHTML = reveal.gapReadyLine + '<br>' + reveal.gapStillLine;
-    document.getElementById('r-gap-example').textContent = reveal.gapExample;
-    document.getElementById('r-gap-restated').textContent = reveal.gapRestated;
-
-    document.getElementById('r-domain').textContent = domainLabel;
-    document.getElementById('r-name').textContent = a.name;
-    var codesEl = document.getElementById('r-codes');
-    codesEl.innerHTML = '';
-    a.codes.forEach(function(c) {
-      var t = document.createElement('div');
-      t.className = 'code-tag';
-      t.textContent = c;
-      codesEl.appendChild(t);
-    });
-    document.getElementById('r-reading').innerHTML = a.reading;
-    document.getElementById('r-gap').innerHTML = a.gap;
+    document.getElementById('r-transition-text').textContent =
+      "Okayyyy, I think I have an idea of where we should start. \u{1F440}\n\n" +
+      "You want to look at what's happening around your " + domainLabel + ".\n\n" +
+      "I have an idea of what may be showing up here, but I want to hear what's actually happening for you before I name anything.\n\n" +
+      "Let's explore it.";
     day1Done = true;
     document.getElementById('check1').textContent = '✓';
     showEl('d1-quiz', false);
@@ -1210,13 +1171,10 @@
   }
 
   function backToQuizFromResults() {
-    phase = 'quiz';
-    current = PERSONALIZED_QUESTIONS[selectedDomain].length - 1;
     day1Done = false;
     document.getElementById('check1').textContent = '';
     showEl('d1-results', false);
-    showEl('d1-quiz', true);
-    renderQ();
+    showEl('d1-domain', true);
   }
 
   // Aug 12 (Rachael's explicit request) -- Step 2's chat now runs on the real
@@ -1245,22 +1203,35 @@
     };
   }
 
+  var STEP2_OPENING_QUESTIONS = {
+    business: "What is happening in your business right now that has you feeling like something isn't adding up?",
+    money: "When you look at money right now, what feels different from the way you actually want it to be?",
+    gifts: "When your gifts aren't feeling the way you want them to right now, what is actually happening?\n\nTell me what you notice -- maybe in what you're receiving, what happens afterward, or what you find yourself doing.",
+    energy: "What has been happening in your energy that made you choose Energy + Frequency today?"
+  };
+  var IDENTITY_SLUG_TO_KEY = {
+    guardian: 'overworker',
+    wayshower: 'doubter',
+    leader: 'hidden',
+    messenger: 'foggy',
+    creator: 'gripper',
+    healer: 'disconnected',
+    expander: 'underearner'
+  };
+
   function setupDay2() {
-    var key = winnerKey || 'overworker';
-    var a = ARCHETYPES[key];
-    var reveal = DIVINE_REVEAL[key];
     var domainLabel = selectedDomain ? DOMAINS.filter(function(d) { return d.key === selectedDomain; })[0].label : null;
-    document.getElementById('d2-intro-1').textContent = "In Step 1, we identified that you're " + reveal.name + " currently experiencing the frequency of " + reveal.frequency + ".";
-    document.getElementById('d2-note').textContent = day1Done
-      ? 'Personalized from your step 1 result: ' + a.name + (domainLabel ? ' (' + domainLabel + ')' : '')
-      : 'Complete step 1 first for your real read, showing an example (' + a.name + ') for now.';
+    document.getElementById('d2-intro-1').textContent = "Let's explore what's actually happening" + (domainLabel ? ' around your ' + domainLabel : '') + ".";
+    document.getElementById('d2-note').textContent = 'One question at a time -- answer honestly, there\'s no wrong answer.';
     gapChatHistory = [];
     day2TurnCount = 0;
     document.getElementById('chat-log').innerHTML = '';
     document.getElementById('d2-continue').style.display = 'none';
     document.getElementById('ready-btn-wrap').style.display = 'none';
-    document.getElementById('chat-input').disabled = true;
-    sendToGapChat("(Begin Step 2 now, using the member's Step 1 results as your opening context.)", true, false);
+    document.getElementById('chat-input').disabled = false;
+    var openingQ = STEP2_OPENING_QUESTIONS[selectedDomain] || STEP2_OPENING_QUESTIONS.business;
+    addBotBubble(openingQ);
+    gapChatHistory.push({ role: 'assistant', content: openingQ });
   }
 
   function addTypingBubble() {
@@ -1295,12 +1266,22 @@
       .then(function(data) {
         removeTypingBubble();
         var reply = data.reply || "I didn't quite catch that -- can you say a bit more?";
+        var finalIdentityMatch = reply.match(/\[\[FINAL_IDENTITY:\s*(\w+)\s*\]\]/i);
+        var gotFinalIdentity = false;
+        if (finalIdentityMatch) {
+          var finalSlug = finalIdentityMatch[1].toLowerCase();
+          if (IDENTITY_SLUG_TO_KEY[finalSlug]) {
+            winnerKey = IDENTITY_SLUG_TO_KEY[finalSlug];
+            gotFinalIdentity = true;
+          }
+          reply = reply.replace(finalIdentityMatch[0], '').trim();
+        }
         addBotBubble(reply);
         gapChatHistory.push({ role: 'user', content: userText });
         gapChatHistory.push({ role: 'assistant', content: reply });
         day2TurnCount++;
         var lowered = reply.toLowerCase();
-        var seemsComplete = lowered.indexOf("let's name the gap") !== -1 ||
+        var seemsComplete = gotFinalIdentity || lowered.indexOf("let's name the gap") !== -1 ||
           lowered.indexOf('now let\'s name') !== -1 ||
           lowered.indexOf('begin shifting it') !== -1 ||
           lowered.indexOf('now we can actually see it') !== -1;
