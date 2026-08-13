@@ -247,4 +247,15 @@ export async function createGapMethodShift(gapMethodResultRecord, memberRecordId
   await base(Tables.GapMethodResults).update(gapMethodResultRecord.id, { shift_created: true });
 }
 
+export async function getShiftsByEmail(email) {
+  const normalized = normalizeEmail(email);
+  const records = await base(Tables.Shifts)
+    .select({
+      filterByFormula: `{member_email} = "${normalized}"`,
+      sort: [{ field: "created_at", direction: "desc" }],
+    })
+    .all();
+  return records;
+}
+
 export default base;
