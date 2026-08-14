@@ -478,7 +478,65 @@
   .stat-value { font-size: 26px; font-weight: 500; color: var(--gold); font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; margin-bottom: 6px; }
   .stat-label { font-size: 11.5px; color: var(--taupe); letter-spacing: 0.02em; line-height: 1.4; }
   @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
-</style>
+
+  /* ===== Chat Experience Upgrade + Chat History Drawer (Aug 14) ===== */
+  .rh-chat-shell{max-width:700px;margin:0 auto;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--taupe-line);border-radius:16px;overflow:hidden;}
+  .rh-chat-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--taupe-line);background:var(--panel-2);}
+  .rh-drawer-toggle{background:none;border:none;color:var(--white);font-size:14px;font-weight:600;letter-spacing:.02em;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 2px;}
+  .rh-drawer-toggle:hover{color:var(--gold-soft);}
+  .rh-hamburger{font-size:16px;line-height:1;}
+  .rh-new-chat-icon{width:28px;height:28px;border-radius:50%;border:1px solid var(--taupe-line);background:transparent;color:var(--gold-soft);font-size:17px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .rh-new-chat-icon:hover{background:var(--taupe-line);}
+  .rh-chat-thread{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:16px;max-height:58vh;min-height:220px;scroll-behavior:smooth;}
+  .rh-chat-welcome{margin:auto;text-align:center;max-width:440px;padding:24px 12px;}
+  .rh-chat-welcome h3{font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:22px;margin:0 0 10px;color:var(--white);}
+  .rh-chat-welcome p{color:var(--taupe);font-size:14px;line-height:1.6;margin:0;}
+  .rh-msg{max-width:82%;font-size:14.5px;line-height:1.65;white-space:pre-wrap;word-wrap:break-word;}
+  .rh-msg-user{align-self:flex-end;background:var(--gold);color:var(--black);padding:10px 14px;border-radius:14px 14px 4px 14px;}
+  .rh-msg-assistant{align-self:flex-start;background:transparent;color:var(--white);padding:2px 2px;max-width:92%;position:relative;padding-left:14px;border-left:2px solid var(--taupe-line);}
+  .rh-msg-error{align-self:flex-start;color:var(--taupe);font-style:italic;padding-left:14px;border-left:2px solid var(--gold);}
+  .rh-try-again{margin-top:6px;background:none;border:1px solid var(--gold-soft);color:var(--gold-soft);font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;}
+  .rh-try-again:hover{background:var(--gold-soft);color:var(--black);}
+  .rh-thinking{align-self:flex-start;display:flex;align-items:center;gap:9px;color:var(--taupe);font-size:13.5px;font-style:italic;padding-left:14px;}
+  .rh-thinking-dots{display:flex;gap:3px;flex-shrink:0;}
+  .rh-thinking-dots span{width:5px;height:5px;border-radius:50%;background:var(--gold-soft);animation:rh-pulse 1.1s infinite ease-in-out;}
+  .rh-thinking-dots span:nth-child(2){animation-delay:.18s;}
+  .rh-thinking-dots span:nth-child(3){animation-delay:.36s;}
+  @keyframes rh-pulse{0%,80%,100%{opacity:.25;transform:scale(.8);}40%{opacity:1;transform:scale(1);}}
+  .rh-chat-inputrow{display:flex;align-items:flex-end;gap:10px;padding:12px 14px;border-top:1px solid var(--taupe-line);background:var(--panel-2);}
+  .rh-chat-textarea{flex:1;resize:none;background:var(--black);border:1px solid var(--taupe-line);border-radius:14px;color:var(--white);font-size:14.5px;font-family:inherit;padding:10px 14px;line-height:1.5;min-height:40px;max-height:140px;overflow-y:auto;}
+  .rh-chat-textarea:focus{outline:none;border-color:var(--gold-soft);}
+  .rh-chat-textarea::placeholder{color:var(--taupe-soft);}
+  .rh-send-btn{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--gold);border:none;color:var(--black);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
+  .rh-send-btn:hover{background:var(--gold-soft);}
+  .rh-send-btn:disabled{opacity:.5;cursor:default;}
+  .rh-drawer-overlay{position:fixed;inset:0;background:rgba(18,17,16,.6);z-index:98;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+  .rh-drawer-overlay.rh-open{opacity:1;pointer-events:auto;}
+  .rh-drawer{position:fixed;top:0;left:0;bottom:0;width:300px;max-width:85vw;background:var(--panel);border-right:1px solid var(--taupe-line);z-index:99;transform:translateX(-100%);transition:transform .22s ease;display:flex;flex-direction:column;}
+  .rh-drawer.rh-open{transform:translateX(0);}
+  .rh-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--taupe-line);font-size:15px;color:var(--white);}
+  .rh-drawer-head button{background:none;border:none;color:var(--taupe);font-size:22px;cursor:pointer;line-height:1;}
+  .rh-drawer-newchat{margin:14px 16px;background:transparent;border:1px solid var(--gold-soft);color:var(--gold-soft);border-radius:10px;padding:9px 12px;font-size:13.5px;cursor:pointer;text-align:left;}
+  .rh-drawer-newchat:hover{background:var(--gold-soft);color:var(--black);}
+  .rh-drawer-list{flex:1;overflow-y:auto;padding:0 8px 16px;}
+  .rh-drawer-empty{color:var(--taupe-soft);font-size:13px;padding:12px;}
+  .rh-drawer-group-label{color:var(--taupe-soft);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding:12px 10px 6px;}
+  .rh-drawer-item{position:relative;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 10px;border-radius:9px;cursor:pointer;color:var(--white);font-size:13.5px;}
+  .rh-drawer-item:hover{background:var(--taupe-line);}
+  .rh-drawer-item.rh-active{background:var(--taupe-line);}
+  .rh-drawer-item-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+  .rh-drawer-item-menu{background:none;border:none;color:var(--taupe);font-size:16px;cursor:pointer;padding:2px 6px;flex-shrink:0;}
+  .rh-drawer-item-menu:hover{color:var(--gold-soft);}
+  .rh-drawer-popover{position:absolute;right:6px;top:34px;background:var(--panel-2);border:1px solid var(--taupe-line);border-radius:10px;z-index:5;min-width:130px;box-shadow:0 6px 18px rgba(0,0,0,.4);}
+  .rh-drawer-popover button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--white);font-size:13px;padding:9px 12px;cursor:pointer;}
+  .rh-drawer-popover button:hover{background:var(--taupe-line);}
+  .rh-drawer-popover button.rh-danger{color:#D98B77;}
+  @media (max-width:640px){
+    .rh-chat-shell{border-radius:0;border-left:none;border-right:none;}
+    .rh-chat-thread{max-height:60vh;}
+  }
+
+  </style>
 </head>
 <body>
 
@@ -572,12 +630,40 @@
       <button class="starter process" id="gap-method-starter-btn">GAP Method</button>
     </div>
 
-    <div class="chatbox">
-      <textarea id="chat-input" rows="5" placeholder="I feel heavy after my last session, help me clear..."></textarea>
-      <button class="send-btn" id="hero-speak-btn">Speak</button>
+    <div class="rh-chat-shell" id="rh-chat-shell">
+      <div class="rh-chat-header">
+        <button type="button" class="rh-drawer-toggle" id="rh-drawer-toggle" aria-label="Chat history">
+          <span class="rh-hamburger">&#9776;</span> Revolutionary Healer
+        </button>
+        <button type="button" class="rh-new-chat-icon" id="rh-new-chat-top-btn" title="New chat" aria-label="New chat">+</button>
+      </div>
+      <div class="rh-chat-thread" id="rh-chat-thread">
+        <div class="rh-chat-welcome" id="rh-chat-welcome">
+          <h3>Hiiii &#128064; What are we looking at today?</h3>
+          <p>Continue a shift, tell me what's happening, or bring whatever feels off.</p>
+        </div>
+      </div>
+      <div class="rh-chat-inputrow">
+        <textarea id="chat-input" class="rh-chat-textarea" rows="1" placeholder="What's showing up today?"></textarea>
+        <button type="button" class="rh-send-btn" id="hero-speak-btn" aria-label="Send message">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+        </button>
+      </div>
     </div>
-    <div id="hero-chat-reply" style="display:none; max-width:700px; margin: 14px auto 0; background: var(--panel); border: 1px solid var(--taupe-line); border-radius: 14px; padding: 16px 20px; color: var(--white); font-size: 14px; line-height: 1.6; white-space: pre-wrap; text-align: left;"></div>
-    <div id="hero-gap-embed" style="display:none; max-width:700px; margin: 16px auto 0;">
+
+    <div class="rh-drawer-overlay" id="rh-drawer-overlay"></div>
+    <div class="rh-drawer" id="rh-drawer" aria-hidden="true">
+      <div class="rh-drawer-head">
+        <span class="serif">Revolutionary Healer</span>
+        <button type="button" id="rh-drawer-close" aria-label="Close">&times;</button>
+      </div>
+      <button type="button" class="rh-drawer-newchat" id="rh-new-chat-btn">+ New Chat</button>
+      <div class="rh-drawer-list" id="rh-drawer-list">
+        <div class="rh-drawer-empty">Loading conversations&hellip;</div>
+      </div>
+    </div>
+
+<div id="hero-gap-embed" style="display:none; max-width:700px; margin: 16px auto 0;">
       <iframe id="hero-gap-embed-iframe" style="width:100%; min-height:900px; border:1px solid var(--taupe-line); border-radius:14px; background: var(--panel-2);" title="3 Step GAP Method"></iframe>
     </div>
   </div>
@@ -2130,17 +2216,16 @@
   }
 
   function promptGapMethodInChat() {
-    var replyBox = document.getElementById('hero-chat-reply');
     var embedWrap = document.getElementById('hero-gap-embed');
     if (embedWrap) embedWrap.style.display = 'none';
-    replyBox.style.display = '';
-    replyBox.textContent = 'Say yes if you would like to start your gap method now.';
+    hideRhWelcome();
+    addRhMessage('assistant', "Say yes if you would like to start your GAP Method now.");
     window.__awaitingGapMethodYes = true;
     var input = document.getElementById('chat-input');
     if (input) input.focus();
   }
 
-  function embedGapMethodInline() {
+function embedGapMethodInline() {
     var wrap = document.getElementById('hero-gap-embed');
     var iframe = document.getElementById('hero-gap-embed-iframe');
     if (!wrap || !iframe) return;
@@ -2201,41 +2286,382 @@
   async function sendHeroChat() {
     var input = document.getElementById('chat-input');
     var text = (input.value || '').trim();
-    if (!text || !RH_EMAIL) return;
+    if (!text || !RH_EMAIL || window.__rhSending) return;
+
     if (window.__awaitingGapMethodYes) {
       window.__awaitingGapMethodYes = false;
       input.value = '';
+      autoGrowChatInput();
+      addRhMessage('user', text);
       if (/^y(es)?\b/i.test(text)) {
         embedGapMethodInline();
         return;
       }
-      var declineBox = document.getElementById('hero-chat-reply');
-      declineBox.style.display = '';
-      declineBox.textContent = "No problem — click GAP Method above whenever you're ready.";
+      addRhMessage('assistant', "No problem — click GAP Method above whenever you're ready.");
       return;
     }
-    var replyBox = document.getElementById('hero-chat-reply');
-    var speakBtn = document.getElementById('hero-speak-btn');
-    speakBtn.disabled = true;
-    replyBox.style.display = '';
-    replyBox.textContent = '...';
+
+    rhSendMessage(text);
+  }
+
+  async function rhSendMessage(text) {
+    var input = document.getElementById('chat-input');
+    var sendBtn = document.getElementById('hero-speak-btn');
+    window.__rhSending = true;
+    if (sendBtn) sendBtn.disabled = true;
+    hideRhWelcome();
+    addRhMessage('user', text);
+    input.value = '';
+    autoGrowChatInput();
+    window.__rhLastFailedText = null;
+    var thinkingEl = showRhThinking();
     try {
+      var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text };
+      if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId;
       var res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: RH_EMAIL, focusAreaSlug: 'general', message: text, history: [] }),
+        body: JSON.stringify(payload),
       });
       var data = await res.json();
-      replyBox.textContent = data.reply || data.error || 'Something went wrong.';
-      input.value = '';
+      removeRhThinking(thinkingEl);
+      if (!res.ok || data.error) {
+        window.__rhLastFailedText = text;
+        addRhError();
+      } else {
+        if (data.chatId) {
+          window.__rhActiveChatId = data.chatId;
+          if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} }
+          rhMaybeRefreshDrawerAfterSend();
+        }
+        addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?");
+      }
     } catch (e) {
-      replyBox.textContent = 'Something went wrong reaching your guide. Please try again.';
+      removeRhThinking(thinkingEl);
+      window.__rhLastFailedText = text;
+      addRhError();
     } finally {
-      speakBtn.disabled = false;
+      window.__rhSending = false;
+      if (sendBtn) sendBtn.disabled = false;
     }
   }
 
-  window.addEventListener('message', function(evt) {
+  function rhRetryLastMessage() {
+    var t = window.__rhLastFailedText;
+    if (!t) return;
+    var errNodes = document.querySelectorAll('.rh-msg-error');
+    if (errNodes.length) errNodes[errNodes.length - 1].closest('.rh-thinking, .rh-msg-error') && errNodes[errNodes.length - 1].remove();
+    window.__rhLastFailedText = null;
+    rhSendMessage(t);
+  }
+
+  var RH_THINKING_MESSAGES = [
+    "Give me a second… I want to look at what you actually said.",
+    "One sec — I'm connecting a few dots here.",
+    "Okayyyy, give me a second. I want to make sure I'm looking at the right thing.",
+    "I'm thinking about what would actually serve you here…",
+    "Give me a second — there's something in what you said I want to look at.",
+    "One sec. I want to respond to what's actually happening, not just the surface of it."
+  ];
+
+  function rhThread() { return document.getElementById('rh-chat-thread'); }
+
+  function rhIsNearBottom() {
+    var t = rhThread();
+    if (!t) return true;
+    return (t.scrollHeight - t.scrollTop - t.clientHeight) < 140;
+  }
+
+  function rhScrollToBottom(smooth) {
+    var t = rhThread();
+    if (!t) return;
+    if (smooth) { t.scrollTo({ top: t.scrollHeight, behavior: 'smooth' }); }
+    else { t.scrollTop = t.scrollHeight; }
+  }
+
+  function hideRhWelcome() {
+    var w = document.getElementById('rh-chat-welcome');
+    if (w) w.style.display = 'none';
+  }
+
+  function rhEscapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function addRhMessage(role, text) {
+    var t = rhThread();
+    if (!t) return null;
+    var wasNear = rhIsNearBottom();
+    var el = document.createElement('div');
+    el.className = 'rh-msg ' + (role === 'user' ? 'rh-msg-user' : 'rh-msg-assistant');
+    el.textContent = text;
+    t.appendChild(el);
+    if (role === 'user' || wasNear) rhScrollToBottom(true);
+    return el;
+  }
+
+  function addRhError() {
+    var t = rhThread();
+    if (!t) return;
+    var wasNear = rhIsNearBottom();
+    var wrap = document.createElement('div');
+    wrap.className = 'rh-msg rh-msg-error';
+    var msg = document.createElement('div');
+    msg.textContent = "Something glitched on my end. Try that again for me.";
+    wrap.appendChild(msg);
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'rh-try-again';
+    btn.textContent = 'Try Again';
+    btn.addEventListener('click', rhRetryLastMessage);
+    wrap.appendChild(btn);
+    t.appendChild(wrap);
+    if (wasNear) rhScrollToBottom(true);
+  }
+
+  function showRhThinking() {
+    var t = rhThread();
+    if (!t) return null;
+    var wasNear = rhIsNearBottom();
+    var el = document.createElement('div');
+    el.className = 'rh-thinking';
+    var msg = RH_THINKING_MESSAGES[Math.floor(Math.random() * RH_THINKING_MESSAGES.length)];
+    el.innerHTML = '<span class="rh-thinking-dots"><span></span><span></span><span></span></span><span class="rh-thinking-text"></span>';
+    el.querySelector('.rh-thinking-text').textContent = msg;
+    t.appendChild(el);
+    if (wasNear) rhScrollToBottom(true);
+    return el;
+  }
+
+  function removeRhThinking(el) {
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  function autoGrowChatInput() {
+    var el = document.getElementById('chat-input');
+    if (!el) return;
+    el.style.height = 'auto';
+    var next = Math.min(el.scrollHeight, 140);
+    el.style.height = Math.max(next, 40) + 'px';
+  }
+
+  /* ---------- Drawer / chat history ---------- */
+
+  function rhOpenDrawer() {
+    var d = document.getElementById('rh-drawer');
+    var o = document.getElementById('rh-drawer-overlay');
+    if (!d || !o) return;
+    d.classList.add('rh-open');
+    o.classList.add('rh-open');
+    d.setAttribute('aria-hidden', 'false');
+    rhLoadDrawerList();
+  }
+
+  function rhCloseDrawer() {
+    var d = document.getElementById('rh-drawer');
+    var o = document.getElementById('rh-drawer-overlay');
+    if (!d || !o) return;
+    d.classList.remove('rh-open');
+    o.classList.remove('rh-open');
+    d.setAttribute('aria-hidden', 'true');
+  }
+
+  function rhGroupLabel(iso) {
+    if (!iso) return 'Earlier';
+    var d = new Date(iso);
+    if (isNaN(d)) return 'Earlier';
+    var now = new Date();
+    var startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var startThat = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var diffDays = Math.round((startToday - startThat) / 86400000);
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return d.toLocaleDateString(undefined, { weekday: 'long' });
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  async function rhLoadDrawerList() {
+    var list = document.getElementById('rh-drawer-list');
+    if (!list || !RH_EMAIL) return;
+    try {
+      var res = await fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL));
+      var data = await res.json();
+      window.__rhChatList = data.chats || [];
+      rhRenderDrawerList();
+    } catch (e) {
+      list.innerHTML = '<div class="rh-drawer-empty">Could not load conversations.</div>';
+    }
+  }
+
+  function rhMaybeRefreshDrawerAfterSend() {
+    var d = document.getElementById('rh-drawer');
+    if (d && d.classList.contains('rh-open')) rhLoadDrawerList();
+  }
+
+  function rhRenderDrawerList() {
+    var list = document.getElementById('rh-drawer-list');
+    if (!list) return;
+    var chats = (window.__rhChatList || []).filter(function (c) { return !c.archived; });
+    if (!chats.length) {
+      list.innerHTML = '<div class="rh-drawer-empty">No conversations yet.</div>';
+      return;
+    }
+    chats.sort(function (a, b) {
+      var av = a.lastMessageAt || a.updatedAt || a.createdAt || '';
+      var bv = b.lastMessageAt || b.updatedAt || b.createdAt || '';
+      return bv.localeCompare(av);
+    });
+    var html = '';
+    var lastGroup = null;
+    chats.forEach(function (c) {
+      var g = rhGroupLabel(c.lastMessageAt || c.updatedAt || c.createdAt);
+      if (g !== lastGroup) {
+        html += '<div class="rh-drawer-group-label">' + rhEscapeHtml(g) + '</div>';
+        lastGroup = g;
+      }
+      var active = c.id === window.__rhActiveChatId ? ' rh-active' : '';
+      html += '<div class="rh-drawer-item' + active + '" data-chat-id="' + c.id + '">' +
+        '<span class="rh-drawer-item-title" data-open="' + c.id + '">' + rhEscapeHtml(c.title || 'New Chat') + '</span>' +
+        '<button type="button" class="rh-drawer-item-menu" data-menu="' + c.id + '">⋯</button>' +
+        '</div>';
+    });
+    list.innerHTML = html;
+    list.querySelectorAll('[data-open]').forEach(function (elx) {
+      elx.addEventListener('click', function () { rhSelectChat(elx.getAttribute('data-open')); });
+    });
+    list.querySelectorAll('[data-menu]').forEach(function (elx) {
+      elx.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        rhToggleItemMenu(elx.getAttribute('data-menu'), elx);
+      });
+    });
+  }
+
+  function rhToggleItemMenu(chatId, anchorEl) {
+    var existing = document.querySelector('.rh-drawer-popover');
+    if (existing) existing.remove();
+    if (existing && existing.getAttribute('data-for') === chatId) return;
+    var pop = document.createElement('div');
+    pop.className = 'rh-drawer-popover';
+    pop.setAttribute('data-for', chatId);
+    pop.innerHTML = '<button type="button" data-act="rename">Rename</button>' +
+      '<button type="button" data-act="archive">Archive</button>' +
+      '<button type="button" data-act="delete" class="rh-danger">Delete</button>';
+    anchorEl.closest('.rh-drawer-item').appendChild(pop);
+    pop.querySelector('[data-act="rename"]').addEventListener('click', function (ev) { ev.stopPropagation(); pop.remove(); rhRenameChat(chatId); });
+    pop.querySelector('[data-act="archive"]').addEventListener('click', function (ev) { ev.stopPropagation(); pop.remove(); rhArchiveChat(chatId); });
+    pop.querySelector('[data-act="delete"]').addEventListener('click', function (ev) { ev.stopPropagation(); pop.remove(); rhDeleteChat(chatId); });
+  }
+
+  async function rhRenameChat(chatId) {
+    var current = (window.__rhChatList || []).find(function (c) { return c.id === chatId; });
+    var next = window.prompt('Rename this chat', current ? current.title : '');
+    if (next === null) return;
+    next = next.trim();
+    if (!next) return;
+    try {
+      await fetch('/api/chats/' + encodeURIComponent(chatId), {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title: next })
+      });
+      rhLoadDrawerList();
+    } catch (e) {}
+  }
+
+  async function rhArchiveChat(chatId) {
+    if (!window.confirm('Archive this chat? You can find it again later if needed.')) return;
+    try {
+      await fetch('/api/chats/' + encodeURIComponent(chatId), {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: true })
+      });
+      if (window.__rhActiveChatId === chatId) rhStartNewChat();
+      rhLoadDrawerList();
+    } catch (e) {}
+  }
+
+  async function rhDeleteChat(chatId) {
+    if (!window.confirm('Delete this chat? This cannot be undone.')) return;
+    try {
+      await fetch('/api/chats/' + encodeURIComponent(chatId), { method: 'DELETE' });
+      if (window.__rhActiveChatId === chatId) rhStartNewChat();
+      rhLoadDrawerList();
+    } catch (e) {}
+  }
+
+  function rhStartNewChat() {
+    window.__rhActiveChatId = null;
+    if (RH_EMAIL) { try { localStorage.removeItem('rh_active_chat_' + RH_EMAIL); } catch (e) {} }
+    var t = rhThread();
+    if (t) {
+      t.querySelectorAll('.rh-msg, .rh-thinking').forEach(function (n) { n.remove(); });
+    }
+    var w = document.getElementById('rh-chat-welcome');
+    if (w) w.style.display = '';
+    rhCloseDrawer();
+    var input = document.getElementById('chat-input');
+    if (input) input.focus();
+  }
+
+  async function rhSelectChat(chatId) {
+    if (!chatId) return;
+    rhCloseDrawer();
+    var t = rhThread();
+    if (!t) return;
+    t.querySelectorAll('.rh-msg, .rh-thinking').forEach(function (n) { n.remove(); });
+    var w = document.getElementById('rh-chat-welcome');
+    if (w) w.style.display = 'none';
+    try {
+      var res = await fetch('/api/chats/' + encodeURIComponent(chatId));
+      if (!res.ok) throw new Error('not found');
+      var data = await res.json();
+      window.__rhActiveChatId = chatId;
+      if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, chatId); } catch (e) {} }
+      var msgs = data.messages || [];
+      if (!msgs.length && w) { w.style.display = ''; }
+      msgs.forEach(function (m) {
+        var el = document.createElement('div');
+        el.className = 'rh-msg ' + (m.role === 'assistant' ? 'rh-msg-assistant' : 'rh-msg-user');
+        el.textContent = m.text;
+        t.appendChild(el);
+      });
+      rhScrollToBottom(false);
+    } catch (e) {
+      rhStartNewChat();
+    }
+  }
+
+  function rhInitChatUI() {
+    var input = document.getElementById('chat-input');
+    if (input) {
+      input.addEventListener('input', autoGrowChatInput);
+      autoGrowChatInput();
+    }
+    var toggle = document.getElementById('rh-drawer-toggle');
+    if (toggle) toggle.addEventListener('click', rhOpenDrawer);
+    var closeBtn = document.getElementById('rh-drawer-close');
+    if (closeBtn) closeBtn.addEventListener('click', rhCloseDrawer);
+    var overlay = document.getElementById('rh-drawer-overlay');
+    if (overlay) overlay.addEventListener('click', rhCloseDrawer);
+    var newChatBtn = document.getElementById('rh-new-chat-btn');
+    if (newChatBtn) newChatBtn.addEventListener('click', rhStartNewChat);
+    var newChatTop = document.getElementById('rh-new-chat-top-btn');
+    if (newChatTop) newChatTop.addEventListener('click', rhStartNewChat);
+    document.addEventListener('click', function (ev) {
+      if (!ev.target.closest('.rh-drawer-item-menu') && !ev.target.closest('.rh-drawer-popover')) {
+        var p = document.querySelector('.rh-drawer-popover');
+        if (p) p.remove();
+      }
+    });
+
+    if (RH_EMAIL) {
+      var saved = null;
+      try { saved = localStorage.getItem('rh_active_chat_' + RH_EMAIL); } catch (e) {}
+      if (saved) rhSelectChat(saved);
+    }
+  }
+
+window.addEventListener('message', function(evt) {
     if (!evt.data || evt.data.type !== 'gapMethodComplete') return;
     var heroEmbed = document.getElementById('hero-gap-embed');
     if (heroEmbed) heroEmbed.style.display = 'none';
@@ -2248,6 +2674,7 @@
     document.getElementById('chat-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
     });
+    rhInitChatUI();
     initProfileFields();
     loadProfilePhoto();
     loadMemberRevolutionData();
