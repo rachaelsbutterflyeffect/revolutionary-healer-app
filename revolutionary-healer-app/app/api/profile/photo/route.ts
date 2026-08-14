@@ -8,6 +8,7 @@ import { getMemberByEmail, normalizeEmail } from "@/lib/airtable";
 // see https://airtable.com/developers/web/api/upload-attachment). The
 // Members table's profile_photo field is a single-attachment field; every
 // write here replaces it outright rather than appending.
+// (touch 1786667974847 to force redeploy)
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
