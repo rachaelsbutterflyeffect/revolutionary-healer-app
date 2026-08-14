@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
 
     const { apiKey, baseId } = airtableCreds();
     const res = await fetch(
-      `https://api.airtable.com/v0/${baseId}/${member.id}/profile_photo/uploadAttachment`,
+      `https://api.airtable.com/v0/${baseId}/${member.id}/flda1tG8E0chadCwk/uploadAttachment`,
       {
         method: "POST",
         headers: {
