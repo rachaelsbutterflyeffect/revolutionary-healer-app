@@ -1784,9 +1784,10 @@
       <div class="info-row"><div class="info-label">Current Plan</div><div class="info-value">Revolutionary Healer Full Access</div></div>
       <div class="info-row"><div class="info-label">Membership Status</div><div class="info-value"><span class="status-pill embodied">Active</span></div></div>
       <div class="info-row"><div class="info-label">Member Since</div><div class="info-value">August 3, 2026</div></div>
-      <div class="info-row"><div class="info-label">Renewal Date</div><div class="info-value">September 3, 2026</div></div>
       <div class="btn-row">
-        <button class="btn-primary" onclick="showPage('membership-management-page')">Manage Membership</button>
+        <button class="btn-primary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/account','_blank')">Manage Membership</button>
+        <button class="btn-secondary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/purchase_history','_blank')">Update Payment Method</button>
+        <button class="btn-danger-outline" onclick="if (confirm('This will take you to Kajabi, where you can cancel your Revolutionary Healer membership. You will keep access until the end of your current billing period. Continue?')) { window.open('https://www.rachaelsbutterflyeffect.com/settings/purchase_history','_blank'); }">Cancel Membership</button>
       </div>
     </div>
 
@@ -2739,6 +2740,10 @@ window.addEventListener('message', function(evt) {
       if (statusEl) statusEl.textContent = "Something went wrong. Please try again.";
     });
   }
+
+  window.handleRemovePhotoClick = handleRemovePhotoClick;
+  window.handleResetPasswordClick = handleResetPasswordClick;
+
 
   var profilePhotoInputEl = document.getElementById("profile-photo-input");
   if (profilePhotoInputEl) {
