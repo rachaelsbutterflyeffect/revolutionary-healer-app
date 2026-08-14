@@ -14,6 +14,22 @@
 // "wealth energetics"), so those two stayed distinct.
 export const FOCUS_AREAS = [
   {
+    // Added Aug 14 (bug fix): the homepage hero chat box (public/app.html's
+    // sendHeroChat) has always posted focusAreaSlug: "general" -- there was
+    // never a matching entry here, so getFocusAreaBySlug() returned null and
+    // /api/chat/route.ts's `if (!focusArea) return 404` rejected every single
+    // message sent from the home page before it ever reached Claude. This is
+    // the open-ended entry point (not tied to one of the three focus areas
+    // below), so it gets a general-purpose description rather than a narrow one.
+    slug: "general",
+    name: "Open Coaching",
+    description: "Whatever's live for you right now -- not tied to one specific focus area.",
+    starterPrompts: [
+      "I feel heavy after my last session, help me clear it.",
+      "What's the GAP I'm not seeing right now?",
+    ],
+  },
+  {
     slug: "intuition-channeling",
     name: "Intuition & Channeling Development",
     description: "Clearing the distortion behind self-doubt so you fully trust your own gifts and channel.",
