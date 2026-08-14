@@ -549,6 +549,36 @@
   var RH_EMAIL = localStorage.getItem('rh_member_email');
   if (!RH_EMAIL) {
     window.location.href = '/';
+  } else {
+    // Aug 14 (Rachael's cancellation-lockout request): a stored email used to be
+    // trusted forever once login bootstrap succeeded once -- if Kajabi access was
+    // later cancelled, nothing ever re-checked, so the browser kept working even
+    // after Kajabi removed them from the community. This calls the same entitlement
+    // check /api/auth/login already uses and signs the member out (clearing
+    // localStorage, bouncing to '/') the moment member_active/tier_active/
+    // onBetaMembership all go false. Fails open on network errors -- never lock a
+    // paying member out over a blip. Also grabs the real Airtable join date for
+    // the Membership tab's "Member Since" field while already making this call.
+    fetch('/api/access', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: RH_EMAIL }),
+    }).then(function (r) { return r.json(); }).then(function (data) {
+      var stillEntitled = !!(data && (data.memberActive || data.tierActive || data.onBetaMembership));
+      if (!stillEntitled) {
+        localStorage.removeItem('rh_member_email');
+        window.location.href = '/';
+        return;
+      }
+      window.__RH_MEMBER_SINCE__ = data.memberSince || null;
+      populateMemberSinceIfReady();
+    }).catch(function () {});
+  }
+  function populateMemberSinceIfReady() {
+    var msEl = document.getElementById('member-since-value');
+    if (!msEl || !window.__RH_MEMBER_SINCE__) return;
+    var d = new Date(window.__RH_MEMBER_SINCE__);
+    if (!isNaN(d)) msEl.textContent = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 </script>
 
@@ -1783,7 +1813,7 @@
       <div class="profile-card-head"><h3>💜 Membership</h3></div>
       <div class="info-row"><div class="info-label">Current Plan</div><div class="info-value">Revolutionary Healer Full Access</div></div>
       <div class="info-row"><div class="info-label">Membership Status</div><div class="info-value"><span class="status-pill embodied">Active</span></div></div>
-      <div class="info-row"><div class="info-label">Member Since</div><div class="info-value">August 3, 2026</div></div>
+      <div class="info-row"><div class="info-label">Member Since</div><div class="info-value" id="member-since-value">August 3, 2026</div></div>
       <div class="btn-row">
         <button class="btn-primary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/account','_blank')">Manage Membership</button>
         <button class="btn-secondary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/purchase_history','_blank')">Update Payment Method</button>
@@ -2676,6 +2706,7 @@ window.addEventListener('message', function(evt) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
     });
     rhInitChatUI();
+    populateMemberSinceIfReady();
     initProfileFields();
     loadProfilePhoto();
     loadMemberRevolutionData();
