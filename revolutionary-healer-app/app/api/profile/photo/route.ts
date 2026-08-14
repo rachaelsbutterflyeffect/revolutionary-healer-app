@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
     const { apiKey, baseId } = airtableCreds();
     const res = await fetch(
-      `https://api.airtable.com/v0/${baseId}/${member.id}/flda1tG8E0chadCwk/uploadAttachment`,
+      `https://content.airtable.com/v0/${baseId}/${member.id}/flda1tG8E0chadCwk/uploadAttachment`,
       {
         method: "POST",
         headers: {
@@ -99,7 +99,7 @@ export async function DELETE(req: NextRequest) {
     if (!member) return NextResponse.json({ error: "Member not found." }, { status: 404 });
 
     const { apiKey, baseId } = airtableCreds();
-    const res = await fetch(`https://api.airtable.com/v0/${baseId}/Members/${member.id}`, {
+    const res = await fetch(`https://api.airtable.com/v0/${baseId}/tblst1afWTBfy5OQC/${member.id}`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${apiKey}`,
