@@ -395,7 +395,8 @@ export async function createMessage({ chatId, email, role, text, activationRecom
 // oldest-first) so a very long chat doesn't get fully reloaded on every open;
 // pair with the chat's stored `summary` field for anything older. Spec ref:
 // PART 7 ("Current Chat Context").
-export async function listMessagesByChatId(chatId, { limit = null } = {}) {
+export async function listMessagesByChatId(chatId, options = {}) {
+  const limit = options.limit;
   if (!chatId) return [];
   const records = await base(Tables.ChatMessages)
     .select({
