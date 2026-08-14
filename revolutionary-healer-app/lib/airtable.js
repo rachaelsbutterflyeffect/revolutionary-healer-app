@@ -3,7 +3,6 @@
 
 import Airtable from "airtable";
 import crypto from "crypto";
-import { DIVINE_IDENTITIES } from "./divineIdentities";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -34,7 +33,13 @@ export const Tables = {
   Practices: "Practices",
   Events: "Events",
   GapMethodResults: "GapMethodResults",
-  Shifts: "Shifts",
+  // Aug 13, Rachael's Chat History + Memory Architecture doc: replaces the
+  // single blob-based Chats table (above, kept for backward compat / unused
+  // by the frontend today) with real per-message persistence + cross-chat
+  // memory. See PART 19-20 of that doc.
+  ChatSessions: "ChatSessions",
+  ChatMessages: "ChatMessages",
+  MemberMemories: "MemberMemories",
 };
 
 // Lowercase + trim for consistent matching. Spec (Aug 12, Rachael's GAP
@@ -183,118 +188,171 @@ export async function saveGapMethodDiagnostic({
     diagnostic_completed_at: new Date().toISOString(),
     status: "diagnostic_complete",
   };
-  const saved = existing
-    ? await base(Tables.GapMethodResults).update(existing.id, fields)
-    : await base(Tables.GapMethodResults).create({ ...fields, source: "diagnostic_save" });
-  // Aug 13 (Rachael's My Revolution Shift-card build): if this email is
-  // ALREADY a real member (e.g. they bought Full Access before ever doing
-  // the GAP Method), link + auto-create the Shift card right now instead of
-  // waiting for a future Kajabi webhook event that may never come.
-  const member = await getMemberByEmail(normalized);
-  if (member) {
-    await linkGapMethodResultToMember(normalized, member.id);
+  if (existing) {
+    return base(Tables.GapMethodResults).update(existing.id, fields);
   }
-  return saved;
+  return base(Tables.GapMethodResults).create({ ...fields, source: "diagnostic_save" });
 }
 
 export async function linkGapMethodResultToMember(email, memberRecordId) {
   const normalized = normalizeEmail(email);
   const existing = await getGapMethodResultByEmail(normalized);
   if (!existing) return null;
-  const updated = await base(Tables.GapMethodResults).update(existing.id, {
+  return base(Tables.GapMethodResults).update(existing.id, {
     linked_member: [memberRecordId],
     linked_at: new Date().toISOString(),
     status: "linked_to_member",
   });
-  // Aug 13 (Rachael's My Revolution Shift-card build, SPEC.md's Post-Gap
-  // Method App Entry Flow point 3): the moment a completed GAP Method
-  // diagnostic links to a real member, auto-create the first "Gap Method
-  // Shift" card so My Revolution isn't empty the moment they arrive. Only
-  // fires once per result (shift_created guard) -- a repeat purchase or
-  // webhook replay must never create a second Shift for the same GAP.
-  if (existing.fields.divine_identity && !existing.fields.shift_created) {
-    await createGapMethodShift(existing, memberRecordId);
-  }
-  return updated;
 }
 
-// Maps a GapMethodResults record's completed diagnostic into the first My
-// Revolution "Shift" card (see lib/shifts.js for the card's full pure-logic
-// shape). SHIFT CARD CREATION RULE (SPEC.md): one Shift per distinct GAP --
-// this only ever runs once per GapMethodResults row, guarded by
-// shift_created above, never re-triggered by a later repurchase.
-export async function createGapMethodShift(gapMethodResultRecord, memberRecordId) {
-  const f = gapMethodResultRecord.fields;
-  const identity = DIVINE_IDENTITIES.find((d) => d.displayName === f.divine_identity);
+// =============================================================================
+// CHAT SESSIONS + MESSAGES + MEMBER MEMORY
+// (Aug 13, Rachael's Chat History + Memory Architecture doc)
+// =============================================================================
+// Two separate systems, per that doc's Final Architecture Principle:
+//   - ChatSessions/ChatMessages: the conversation thread, for the USER --
+//     lets her have many named chats, reopen them, rename/archive/delete.
+//   - MemberMemories: persistent cross-chat memory, for REVOLUTIONARY
+//     HEALER -- only confirmed/meaningful info, retrieved by relevance, not
+//     dumped wholesale into every prompt. See lib/memory.js for extraction.
+
+export async function createChatSession({ email, title = "New Chat", focusAreaSlug = "general" }) {
   const now = new Date().toISOString();
-  await base(Tables.Shifts).create({
-    member_email: f.email,
-    member: [memberRecordId],
-    gap_method_result: [gapMethodResultRecord.id],
-    method_name: "3 Step GAP Method",
-    divine_identity_slug: identity?.slug ?? "",
-    divine_identity_name: f.divine_identity ?? "",
-    current_frequency: f.primary_frequency ?? "",
-    focus_area: f.focus_area ?? "",
-    gap_explanation: f.refined_gap ?? "",
-    what_we_noticed: f.activation_why ?? "",
-    recommended_activation: f.recommended_activation ?? "",
-    progress_status: "shifting",
-    ready_for_embodied: false,
+  const record = await base(Tables.ChatSessions).create({
+    title,
+    member_email: normalizeEmail(email),
     created_at: now,
     updated_at: now,
+    last_message_at: now,
+    archived: false,
+    title_is_auto: true,
+    focus_area_slug: focusAreaSlug,
   });
-  await base(Tables.GapMethodResults).update(gapMethodResultRecord.id, { shift_created: true });
+  return record;
 }
 
-export async function getShiftsByEmail(email) {
+export async function getChatSessionById(chatId) {
+  if (!chatId) return null;
+  try {
+    return await base(Tables.ChatSessions).find(chatId);
+  } catch (err) {
+    // Airtable throws NOT_FOUND for a bad/stale id -- treat as "no session"
+    // rather than a hard error, so a stale client-side chatId can't 500 the
+    // whole chat endpoint.
+    return null;
+  }
+}
+
+// Sorted most-recently-active first, per PART 4 ("Recent Conversations").
+// Excludes archived chats by default -- the drawer's main list shouldn't
+// show them, though they still exist and can be un-archived later.
+export async function listChatSessionsByEmail(email, { includeArchived = false } = {}) {
   const normalized = normalizeEmail(email);
-  const records = await base(Tables.Shifts)
-    .select({
-      filterByFormula: `{member_email} = "${normalized}"`,
-      sort: [{ field: "created_at", direction: "desc" }],
-    })
+  const formula = includeArchived
+    ? `{member_email} = "${normalized}"`
+    : `AND({member_email} = "${normalized}", {archived} != 1)`;
+  const records = await base(Tables.ChatSessions)
+    .select({ filterByFormula: formula, sort: [{ field: "last_message_at", direction: "desc" }] })
     .all();
   return records;
 }
 
+export async function updateChatSession(chatId, fields) {
+  return base(Tables.ChatSessions).update(chatId, fields);
+}
 
-// =============================================================================
-// MEMBER AUTH (Aug 13, Rachael's Kajabi-linked landing page request)
-// =============================================================================
-// Kajabi does not expose any API to verify a member's real Kajabi password,
-// so sign-in works like this: the very first time a paying member signs in
-// with their email + the password they use in Kajabi, we adopt that as their
-// app password (hash it, store it) since there's nothing to check it
-// against yet. Every sign-in after that verifies against the stored hash.
-// A member who isn't found, or isn't an active paying member, can never
-// bootstrap a password -- see app/api/auth/login/route.ts for that check.
+export async function renameChatSession(chatId, title) {
+  return base(Tables.ChatSessions).update(chatId, { title, title_is_auto: false });
+}
 
-export async function setMemberPassword(recordId, passwordHash) {
-  return base(Tables.Members).update(recordId, {
-    password_hash: passwordHash,
-    reset_token: "",
-    reset_token_expires_at: null,
+export async function archiveChatSession(chatId, archived = true) {
+  return base(Tables.ChatSessions).update(chatId, { archived });
+}
+
+export async function deleteChatSession(chatId) {
+  const messages = await listMessagesByChatId(chatId);
+  const ids = messages.map((m) => m.id);
+  // Airtable caps batch deletes at 50 records per request.
+  for (let i = 0; i < ids.length; i += 50) {
+    const batch = ids.slice(i, i + 50);
+    if (batch.length) await base(Tables.ChatMessages).destroy(batch);
+  }
+  return base(Tables.ChatSessions).destroy(chatId);
+}
+
+export async function createMessage({ chatId, email, role, text, activationRecommended = "" }) {
+  const record = await base(Tables.ChatMessages).create({
+    chat_session_id: chatId,
+    member_email: normalizeEmail(email),
+    role,
+    message_text: text,
+    created_at: new Date().toISOString(),
+    activation_recommended: activationRecommended,
+  });
+  return record;
+}
+
+// Ascending chronological order (oldest first) -- how a chat reads on screen.
+// `limit` caps how many of the MOST RECENT messages come back (still returned
+// oldest-first) so a very long chat doesn't get fully reloaded on every open;
+// pair with the chat's stored `summary` field for anything older. Spec ref:
+// PART 7 ("Current Chat Context").
+export async function listMessagesByChatId(chatId, { limit = null } = {}) {
+  if (!chatId) return [];
+  const records = await base(Tables.ChatMessages)
+    .select({
+      filterByFormula: `{chat_session_id} = "${chatId}"`,
+      sort: [{ field: "created_at", direction: "asc" }],
+    })
+    .all();
+  if (limit && records.length > limit) {
+    return records.slice(records.length - limit);
+  }
+  return records;
+}
+
+// -----------------------------------------------------------------------
+// Member memory -- persistent, cross-chat. See lib/memory.js for the
+// extraction step that decides WHAT becomes a memory; this file is just
+// storage/retrieval. Spec ref: PART 9-13.
+// -----------------------------------------------------------------------
+
+export async function createMemory({ email, type, topic, statement, status = "hypothesis", sourceChatId = "" }) {
+  const now = new Date().toISOString();
+  return base(Tables.MemberMemories).create({
+    member_email: normalizeEmail(email),
+    type,
+    topic,
+    statement,
+    status,
+    source_chat_id: sourceChatId,
+    created_at: now,
+    updated_at: now,
+    active: true,
   });
 }
 
-export async function createMemberResetToken(recordId, token, expiresAtISO) {
-  return base(Tables.Members).update(recordId, {
-    reset_token: token,
-    reset_token_expires_at: expiresAtISO,
+export async function updateMemory(memoryId, fields) {
+  return base(Tables.MemberMemories).update(memoryId, {
+    ...fields,
+    updated_at: new Date().toISOString(),
   });
 }
 
-export async function getMemberByResetToken(token) {
-  if (!token) return null;
-  return findOneByField(Tables.Members, "reset_token", token);
-}
-
-export async function clearMemberResetToken(recordId) {
-  return base(Tables.Members).update(recordId, {
-    reset_token: "",
-    reset_token_expires_at: null,
-  });
+// Active memories for a member, newest-updated first. Callers (lib/memory.js
+// retrieval) are responsible for narrowing this down to what's actually
+// relevant to the current conversation before it reaches the prompt -- this
+// just returns everything active, per PART 13's "don't dump all memory in"
+// rule living at the retrieval layer, not the storage layer.
+export async function listActiveMemoriesByEmail(email) {
+  const normalized = normalizeEmail(email);
+  const records = await base(Tables.MemberMemories)
+    .select({
+      filterByFormula: `AND({member_email} = "${normalized}", {active} = 1)`,
+      sort: [{ field: "updated_at", direction: "desc" }],
+    })
+    .all();
+  return records;
 }
 
 export default base;
