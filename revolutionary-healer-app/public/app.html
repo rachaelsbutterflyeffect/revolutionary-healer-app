@@ -500,8 +500,7 @@
     <div class="navlinks">
       <a onclick="showPage('my-revolution-page'); return false;">My Revolution</a>
       <a onclick="showPage('activations-page'); return false;">Activations</a>
-      <a onclick="signOutMember(); return false;">Sign Out</a>
-    </div>
+          </div>
     <a class="member-pill" onclick="showPage('profile-page'); return false;" id="member-pill-label">My Profile</a>
   </div>
 </nav>
@@ -837,6 +836,11 @@
 
     <div class="revolution-subsection">
       <div class="subsection-head"><h3 style="cursor: default;">🎧 My Activations</h3></div>
+      <p class="subsection-copy" style="color: var(--taupe);">You haven't completed any activations yet. Explore the Activation Library below to begin.</p>
+    </div>
+
+    <div class="revolution-subsection" style="display:none;">
+      <div class="subsection-head"><h3 style="cursor: default;">🎧 My Activations</h3></div>
       <p class="subsection-copy">Activations you've completed.</p>
       <div class="card-grid">
         <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration">
@@ -867,6 +871,11 @@
     </div>
 
     <div class="revolution-subsection">
+      <div class="subsection-head"><h3 style="cursor: default;">✨ Recommended Activations</h3></div>
+      <p class="subsection-copy" style="color: var(--taupe);">Once you complete your first GAP Method and a few activations, personalized recommendations will appear here.</p>
+    </div>
+
+    <div class="revolution-subsection" style="display:none;">
       <div class="subsection-head"><h3 style="cursor: default;">✨ Recommended Activations</h3></div>
       <p class="subsection-copy">Suggested by your AI Guide based on your most recent GAP Method result.</p>
       <div class="card-grid">
@@ -1223,25 +1232,23 @@
         <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration" data-category="Money + Receiving">
           <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
           <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-            <div class="media-tag">Completed</div>
             <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           </div>
           <div class="media-body">
             <h3>Nervous System Recalibration Activation</h3>
           <p class="media-description">Regulates an overworked nervous system, helping your body learn that it&#39;s safe to rest.</p>
-            <div class="listening-status">Completed</div>
+            <div class="listening-status">Not started</div>
           </div>
         </div>
         <div class="media-card" onclick="handleActivationCardClick('activating-your-gifts')" style="cursor: pointer;" data-activation-slug="activating-your-gifts" data-category="Gifts + Spirit">
           <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
           <div class="media-thumb glyph-lotus"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-            <div class="media-tag">Completed</div>
             <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           </div>
           <div class="media-body">
             <h3>Activating Your Gifts Activation</h3>
           <p class="media-description">Reconnects you with the intuitive and psychic gifts you&#39;ve been talking yourself out of.</p>
-            <div class="listening-status">Completed</div>
+            <div class="listening-status">Not started</div>
           </div>
         </div>
         <div class="media-card" onclick="handleActivationCardClick('activating-your-channel-to-spirit')" style="cursor: pointer;" data-activation-slug="activating-your-channel-to-spirit" data-category="Gifts + Spirit">
@@ -1626,32 +1633,35 @@
 <section class="block page-view" id="profile-page" style="border-bottom: none;">
   <div class="wrap">
     <a class="page-back" onclick="showMain(); return false;">← Back to Home</a>
-    <div class="section-head">
+    <div class="section-head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px;">
       <div>
         <h2 class="serif">👤 My Profile</h2>
         <p id="profile-welcome-line">Welcome back. Member since August 2026.</p>
       </div>
+      <a href="#" onclick="signOutMember(); return false;" style="color: var(--taupe); font-size: 13px; text-decoration: none; white-space: nowrap; padding-top: 4px;">Sign Out</a>
     </div>
 
     <div class="profile-card">
       <div class="profile-card-head"><h3>🌟 Your Revolution</h3></div>
       <div class="stats-grid">
-        <div class="stat-tile"><div class="stat-value">12</div><div class="stat-label">Activations Completed</div></div>
-        <div class="stat-tile"><div class="stat-value">4</div><div class="stat-label">Embodied Shifts</div></div>
-        <div class="stat-tile"><div class="stat-value">58</div><div class="stat-label">Days Transforming</div></div>
+        <div class="stat-tile"><div class="stat-value">0</div><div class="stat-label">Activations Completed</div></div>
+        <div class="stat-tile"><div class="stat-value">0</div><div class="stat-label">Embodied Shifts</div></div>
+        <div class="stat-tile"><div class="stat-value">0</div><div class="stat-label">Days Transforming</div></div>
       </div>
     </div>
 
     <div class="profile-card">
       <div class="profile-card-head"><h3>👤 Profile</h3></div>
       <div class="avatar-row">
-        <div class="avatar-circle">R</div>
+        <div class="avatar-circle" id="profile-avatar-circle">R</div>
         <div class="avatar-actions">
-          <button class="btn-secondary">Upload Photo</button>
-          <button class="btn-secondary">Replace Photo</button>
-          <button class="btn-secondary">Remove Photo</button>
+          <input type="file" id="profile-photo-input" accept="image/*" style="display:none;">
+          <button class="btn-secondary" onclick="document.getElementById('profile-photo-input').click()">Upload Photo</button>
+          <button class="btn-secondary" onclick="document.getElementById('profile-photo-input').click()">Replace Photo</button>
+          <button class="btn-secondary" onclick="handleRemovePhotoClick()">Remove Photo</button>
         </div>
       </div>
+      <p id="profile-photo-status" style="color: var(--taupe); font-size: 13px; margin: 8px 0 0;"></p>
       <div class="field-row">
         <label class="field-label">Display Name</label>
         <input type="text" class="field-input" id="profile-name-input" value="">
@@ -1711,8 +1721,9 @@
       <div class="profile-card-head"><h3>🔒 Security</h3></div>
       <div class="info-row"><div class="info-label">Password</div><div class="info-value">••••••••</div></div>
       <div class="btn-row">
-        <button class="btn-secondary">Reset Password</button>
+        <button class="btn-secondary" onclick="handleResetPasswordClick()">Reset Password</button>
       </div>
+      <p id="reset-password-status" style="color: var(--taupe); font-size: 13px; margin: 10px 0 0;"></p>
     </div>
 
     <div class="profile-card">
@@ -2057,7 +2068,7 @@
 
   // My Profile > Support -- configurable, not hard-coded into visible copy,
   // same pattern as GO_DEEPER_OFFERS above.
-  var SUPPORT_EMAIL = "support@rachaelsbutterflyeffect.com"; // TODO(Rachael): confirm this is the real support inbox to route to.
+  var SUPPORT_EMAIL = "rachaelsbutterflyeffect@gmail.com"; // TODO(Rachael): confirm this is the real support inbox to route to.
   document.getElementById('btn-contact-support').href = "mailto:" + SUPPORT_EMAIL;
 
   // =====================================================================
@@ -2113,7 +2124,7 @@
       '</button>';
     });
     if (!listHtml) {
-      listHtml = '<div class="card center"><p class="copy">No Shifts yet. <a href="#" onclick="startGapMethod(); return false;" style="color: var(--gold);">Start the GAP Method</a> to create your first one.</p></div>';
+      listHtml = '<div class="card center"><p class="copy">No Shifts yet. <a href="#" onclick="showMain(); embedGapMethodInline(); return false;" style="color: var(--gold);">Start the GAP Method</a> to create your first one.</p></div>';
     }
     document.querySelectorAll('[data-role="shifts-list"]').forEach(function(el) { el.innerHTML = listHtml; });
   }
@@ -2238,8 +2249,97 @@
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
     });
     initProfileFields();
+    loadProfilePhoto();
     loadMemberRevolutionData();
-    document.querySelectorAll('.focus-empty-cta').forEach(function(btn) { btn.addEventListener('click', embedGapMethodInline); });
+  function readFileAsDataURL(file) {
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.onload = function() { resolve(reader.result); };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function setAvatarPhoto(url) {
+    var circle = document.getElementById("profile-avatar-circle");
+    if (!circle) return;
+    if (url) {
+      circle.innerHTML = '<img src="' + url + '" alt="Profile photo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+    } else {
+      var initial = (RH_EMAIL || "?").charAt(0).toUpperCase();
+      circle.textContent = initial;
+    }
+  }
+
+  async function loadProfilePhoto() {
+    if (!RH_EMAIL) return;
+    try {
+      var res = await fetch("/api/profile/photo?email=" + encodeURIComponent(RH_EMAIL));
+      var data = await res.json();
+      if (data && data.url) setAvatarPhoto(data.url);
+    } catch (e) { /* best-effort */ }
+  }
+
+  async function handleRemovePhotoClick() {
+    if (!RH_EMAIL) return;
+    var statusEl = document.getElementById("profile-photo-status");
+    if (statusEl) statusEl.textContent = "Removing...";
+    try {
+      var res = await fetch("/api/profile/photo", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: RH_EMAIL }),
+      });
+      if (!res.ok) { if (statusEl) statusEl.textContent = "Something went wrong removing your photo."; return; }
+      setAvatarPhoto(null);
+      if (statusEl) statusEl.textContent = "Photo removed.";
+    } catch (err) {
+      if (statusEl) statusEl.textContent = "Something went wrong. Please try again.";
+    }
+  }
+
+  function handleResetPasswordClick() {
+    if (!RH_EMAIL) return;
+    var statusEl = document.getElementById("reset-password-status");
+    if (statusEl) statusEl.textContent = "Sending reset link...";
+    fetch("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: RH_EMAIL }),
+    }).then(function(res) { return res.json(); }).then(function() {
+      if (statusEl) statusEl.textContent = "Check your email (" + RH_EMAIL + ") for a link to reset your password.";
+    }).catch(function() {
+      if (statusEl) statusEl.textContent = "Something went wrong. Please try again.";
+    });
+  }
+
+  var profilePhotoInputEl = document.getElementById("profile-photo-input");
+  if (profilePhotoInputEl) {
+    profilePhotoInputEl.addEventListener("change", async function(e) {
+      var file = e.target.files && e.target.files[0];
+      if (!file || !RH_EMAIL) return;
+      var statusEl = document.getElementById("profile-photo-status");
+      if (statusEl) statusEl.textContent = "Uploading...";
+      try {
+        var dataUrl = await readFileAsDataURL(file);
+        var base64 = dataUrl.split(",")[1];
+        var res = await fetch("/api/profile/photo", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: RH_EMAIL, contentType: file.type, filename: file.name, fileBase64: base64 }),
+        });
+        var data = await res.json();
+        if (!res.ok) { if (statusEl) statusEl.textContent = data.error || "Upload failed."; return; }
+        setAvatarPhoto(data.url);
+        if (statusEl) statusEl.textContent = "Photo updated.";
+      } catch (err) {
+        if (statusEl) statusEl.textContent = "Something went wrong. Please try again.";
+      }
+      e.target.value = "";
+    });
+  }
+
+    document.querySelectorAll('.focus-empty-cta').forEach(function(btn) { btn.addEventListener('click', function(){ showMain(); embedGapMethodInline(); }); });
   }
 </script>
 
