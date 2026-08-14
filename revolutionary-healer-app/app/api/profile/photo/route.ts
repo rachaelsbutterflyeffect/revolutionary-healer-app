@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    const photo = data?.fields?.profile_photo;
+    const photo = data?.fields?.flda1tG8E0chadCwk;
     const url = Array.isArray(photo) && photo[0]?.url ? photo[0].url : null;
     return NextResponse.json({ ok: true, url });
   } catch (err) {
