@@ -643,14 +643,14 @@
       <p style="margin: 0;">Progress: <span class="status-pill shifting" id="shift-modal-status">● Shifting</span></p>
     </div>
     <div class="shift-modal-actions">
-      <button class="btn-primary">Listen Now</button>
+      <button class="btn-primary" id="shift-modal-listen-btn">Listen Now</button>
       <button class="heart-btn filled" onclick="toggleHeart(this)" style="font-size: 20px;">♥</button>
     </div>
     <div class="shift-modal-actions" style="margin-top: 10px;">
       <button class="btn-secondary" onclick="closeShiftModal()" data-prompt="Go deeper into this Gap.">Go Deeper Into This Gap →</button>
     </div>
     <div class="shift-modal-actions" style="margin-top: 10px;">
-      <button class="btn-secondary">Update Progress</button>
+      <button class="btn-secondary" id="shift-modal-update-progress-btn">Update Progress</button>
     </div>
     <div id="shift-modal-embodied-ready" style="display: none; margin-top: 20px;">
       <p style="margin: 0 0 10px; color: var(--gold-soft); font-size: 13.5px;">✨ This Gap may be ready to mark as Embodied.</p>
@@ -1998,6 +1998,7 @@
   var SHIFTS = [];
 
   function renderShiftModal(shift) {
+    window.__rhCurrentShift = shift;
     document.getElementById('shift-modal-identity').textContent = shift.identity || 'Your Divine Identity';
     document.getElementById('shift-modal-frequency').textContent = shift.frequency || '';
     document.getElementById('shift-modal-gap').innerHTML = shift.gap || '';
@@ -2049,6 +2050,61 @@
     document.getElementById('shift-modal').classList.add('active');
   }
   function closeShiftModal() { document.getElementById('shift-modal').classList.remove('active'); }
+  function rhSlugForActivationTitle(title) {
+    if (!title) return null;
+    var map = window.RH_TITLE_TO_SLUG || {};
+    return map[String(title).trim()] || null;
+  }
+  function rhOpenChatWithMessage(assistantText, opts) {
+    opts = opts || {};
+    closeShiftModal();
+    showMain();
+    hideRhWelcome();
+    addRhMessage('assistant', assistantText);
+    if (opts.shiftId) window.__rhEmbodimentShiftId = opts.shiftId;
+    var chatShell = document.querySelector('.rh-chat-shell');
+    if (chatShell) chatShell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    var input = document.getElementById('chat-input');
+    if (input) input.focus();
+  }
+  document.addEventListener('click', function(e) {
+    var listenBtn = e.target.closest('#shift-modal-listen-btn');
+    if (listenBtn) {
+      var shift = window.__rhCurrentShift;
+      var slug = shift && rhSlugForActivationTitle(shift.activation);
+      closeShiftModal();
+      if (slug && typeof handleActivationCardClick === 'function') handleActivationCardClick(slug);
+      return;
+    }
+    var updateBtn = e.target.closest('#shift-modal-update-progress-btn');
+    if (updateBtn) {
+      var shift2 = window.__rhCurrentShift;
+      if (!shift2) return;
+      rhOpenChatWithMessage(
+        "You're ready to make this shift embodied \u2014 tell me, what's your main shift, and what's making you feel like this is fully embodied?",
+        { shiftId: shift2.id }
+      );
+      return;
+    }
+    var embodiedBtn = e.target.closest('#shift-modal-embodied-btn');
+    if (embodiedBtn) {
+      var shift3 = window.__rhCurrentShift;
+      if (!shift3 || !RH_EMAIL) return;
+      embodiedBtn.disabled = true;
+      fetch('/api/shifts', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: shift3.id, email: RH_EMAIL, progressStatus: 'embodied' })
+      }).then(function(r) { return r.json(); }).then(function() {
+        shift3.statusClass = 'embodied';
+        shift3.statusLabel = '\ud83d\udfe2 Embodied';
+        renderShiftModal(shift3);
+      }).catch(function() {}).finally(function() {
+        embodiedBtn.disabled = false;
+      });
+      return;
+    }
+  });
 
   // Heart icon: Favorites only, never affects My Activations ownership or
   // listening history -- see SPEC.md §4.1d.
@@ -2336,6 +2392,7 @@ function embedGapMethodInline() {
     try {
       var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text };
       if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId;
+      if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId;
       var res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
