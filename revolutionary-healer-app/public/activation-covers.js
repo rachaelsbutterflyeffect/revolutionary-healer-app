@@ -46,6 +46,7 @@
     window.ACTIVATION_COVERS[slug] = COVERS[SLUGMAP[slug]];
   });
   var titleToSlug = {};
+  window.RH_TITLE_TO_SLUG = titleToSlug;
   function setCover(thumb, url) {
     thumb.style.backgroundImage = 'linear-gradient(rgba(10,8,6,0.28), rgba(10,8,6,0.28)), url(' + url + ')';
     thumb.style.backgroundSize = 'cover';
@@ -74,6 +75,20 @@
       var slug = titleToSlug[titleEl.textContent.trim()];
       var url = slug && window.ACTIVATION_COVERS[slug];
       if (url) setCover(thumb, url);
+    });
+    document.querySelectorAll('.fav-card').forEach(function(card) {
+      if (card.__rhWired) return;
+      var titleEl = card.querySelector('.fav-title');
+      if (!titleEl) return;
+      var slug = titleToSlug[titleEl.textContent.trim()];
+      if (!slug) return;
+      card.__rhWired = true;
+      card.style.cursor = 'pointer';
+      card.setAttribute('data-activation-slug', slug);
+      card.addEventListener('click', function(e) {
+        if (e.target.closest('.heart-btn')) return;
+        if (typeof handleActivationCardClick === 'function') handleActivationCardClick(slug);
+      });
     });
   }
   if (document.readyState === 'loading') {
