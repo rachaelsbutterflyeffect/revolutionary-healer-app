@@ -337,4 +337,131 @@ authority. She is becoming more visible as a leader and old hesitation is
 showing up.
 AI recommendation notes: Use for actual leadership behavior and
 self-authority, not as generic business confidence.
+
+MONEY + SUCCESS
+
+Million Dollar Blueprint Activation
+What this activation is for: Use this when you want to work intentionally
+with the identity, decisions and energetic relationship connected to
+building a significantly larger business, including how you respond to
+money, visibility, leadership and opportunity as the scale changes. Aligns
+your business with your million-dollar blueprint.
+When to use this: She is intentionally building toward a multi-6-figure or
+million-dollar business. She notices herself making decisions from the size
+of her current reality rather than where she is intentionally going. When
+someone is playing small in their business and needs to expand into bigger
+manifestations, thoughts, or offers. When someone is limiting themselves
+inside their business and needs to see the truth of what is available to
+them. She wants to examine how she would lead/choose/create differently at
+a significantly larger scale. She is already building a real business and
+wants energetic identity work alongside it. She wants to align her business
+to more wealth and impact.
+AI recommendation notes: Do not recommend simply because someone says she
+wants more money. This is specifically for the million-dollar-business
+identity/vision/blueprint.
+
+Wealth Frequency Activation
+What this activation is for: Use this when money itself starts changing the
+way you think or behave -- for example, money increases and you immediately
+become afraid it will disappear, or money slows down and you start forcing,
+discounting, creating or questioning everything.
+When to use this: Fear immediately after receiving more money. Difficulty
+allowing money to remain without instantly spending/redirecting it. Panicked
+business decisions after a quiet period. Repeated patterns around receiving
+larger amounts. When wealth brings up specific behavioral or energetic
+reactions.
+AI recommendation notes: Avoid generic "receive and hold wealth" language --
+Rachael prefers specific descriptions of what someone actually does around
+money. Do not describe this activation as "recalibrating the nervous
+system" unless it literally teaches physiological regulation --
+nervous-system language is explicitly not to be used as a catch-all
+explanation.
+
+DEEPER / ADVANCED ENERGETIC WORK
+
+Timeline Collapse Activation
+What this activation is for: Use this when you can clearly see that you are
+still making choices from an older version of your life even though
+something different is already becoming available.
+When to use this: An old identity keeps shaping current decisions. A past
+chapter is still defining what she expects next. She keeps recreating an
+old outcome even though circumstances have changed. She intentionally works
+with timeline concepts and wants to move away from an old path. She is
+ready to collapse time around the thing she is creating.
+AI recommendation notes: Don't recommend this activation every time someone
+says they want faster results.
+
+THE GAP / DIVINE IDENTITY ACTIVATIONS
+
+Nervous System Recalibration Activation
+What this activation is for: Use this when you have been living in
+constant doing, taking responsibility, solving, carrying, producing and
+rarely letting yourself stop without immediately feeling like something
+should be getting done.
+When to use this: You feel guilty resting. You cannot stop working even
+when nothing urgent is happening. You automatically take responsibility for
+everyone around you. A quiet day makes you restless. You believe everything
+will fall apart if you stop managing it. You are exhausted but still
+looking for the next thing to do.
+AI recommendation notes: Recommend based on over-responsibility/overworking
+behavior, not generic dysregulation -- though it could be suggested if other
+things are not helping them become more regulated. Especially relevant to
+the Over-Responsibility pattern, regardless of Divine Identity.
+
+Removing the Frequency of Doubt
+What this activation is for: Use this when you actually receive an answer,
+idea or knowing -- and then immediately begin questioning it, asking other
+people what they think, researching for more proof or waiting for someone
+else to validate what you already knew.
+When to use this: You were clear before asking everyone else. You keep
+reopening decisions you already made. You receive intuitive guidance and
+immediately question whether you made it up. You know what you want but
+keep looking for external confirmation. You repeatedly delay because you
+want one more opinion.
+AI recommendation notes: Do NOT restrict this to The Wayshower. Doubt is a
+current pattern, not an identity trait. Recommend based on evidence of
+second-guessing/out-sourcing authority.
+
+Expansion Activation: Become Visible & Seen As You Expand Your Light
+What this activation is for: Use this when being seen is not necessarily
+the problem -- staying seen once visibility starts creating real momentum
+is. This activation supports the user in continuing to show up as
+attention, recognition and reach increase rather than becoming quieter,
+safer or less consistent once people are actually watching.
+When to use this: A post performs well and she disappears afterward. More
+people begin following and she suddenly questions her content. More people
+are watching and she edits herself more. Increased visibility creates an
+urge to change direction. She wants sustained visibility, not one moment of
+being seen.
+AI recommendation notes: Do NOT restrict to The Leader. Especially useful
+for Hiddenness patterns where the issue is pulling back after visibility
+begins working. (Note: distinct from the plain "Expansion Activation" in
+the library, which is about a different visibility angle -- see BUSINESS +
+VISIBILITY above.)
+
+Freedom Timeline Activation
+What this activation is for: Use this when creating something has turned
+into gripping the exact path, timing or outcome so tightly that the process
+no longer has room to move.
+When to use this: She is trying to control exactly how something has to
+happen. She keeps forcing one path despite new information. She becomes
+anxious when plans change. She is micromanaging every step of creation. She
+knows what she wants but is overly attached to one specific route for
+getting there.
+AI recommendation notes: Do NOT restrict to The Creator. Recommend when
+Control is actually present.
+
+Success Code Activation
+What this activation is for: Use this when more success, money,
+opportunities or recognition are becoming available but the user repeatedly
+limits how much she allows herself to pursue, receive or continue with.
+When to use this: She reaches a certain level and then stops. More money
+comes in and she immediately changes behavior in ways that reduce momentum.
+Opportunities increase and she begins saying no to things she genuinely
+wants. She talks herself out of bigger possibilities because they seem
+unrealistic. She repeatedly creates a ceiling and then operates beneath it.
+AI recommendation notes: Do NOT restrict to The Expander. Recommend when
+Restriction/limitation around success is actually supported by the
+conversation. Also, wherever possible, define "success" through the
+specific thing she is limiting rather than using the word alone.
 `;
