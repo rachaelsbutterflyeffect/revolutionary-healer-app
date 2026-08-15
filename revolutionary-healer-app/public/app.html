@@ -2193,7 +2193,23 @@
     'gap-method-messenger': { title: 'Activating Your Gifts', description: 'Supports The Messenger in reconnecting with their spiritual gifts, clearing interference and strengthening their ability to recognize and trust what they receive -- restoring clarity, discernment and confidence within their channel.', wistiaId: 'e8a40apyjt' },
     'gap-method-creator': { title: 'Freedom Timeline Activation', description: 'Supports The Creator in releasing control, gripping and pressure around the path of creation -- reconnecting with freedom, possibility, trust and the timeline most aligned with what they are creating.', wistiaId: 'zfayyjs4gc' },
     'gap-method-healer': { title: 'Spirit Connection Activation', description: 'Supports The Healer in restoring connection with God, soul, spirit, body and their own gifts -- moving out of depletion and disconnection and returning to embodied, replenished and divinely connected service.', wistiaId: 'lz47as3b06' },
-    'gap-method-expander': { title: 'Success Code Activation', description: 'Supports The Expander in releasing restriction around success, money, receiving and possibility -- becoming energetically available for greater prosperity, opportunity, capacity and embodied success.', wistiaId: '2mp3dltm3c' }
+    'gap-method-expander': { title: 'Success Code Activation', description: 'Supports The Expander in releasing restriction around success, money, receiving and possibility -- becoming energetically available for greater prosperity, opportunity, capacity and embodied success.', wistiaId: '2mp3dltm3c' },
+    'yes-factor-vibe-booster': { title: 'Yes Factor Vibe Booster', description: 'A quick frequency boost to help you say yes to more of what you want, clearing hesitation and doubt.', wistiaId: '' },
+    'morning-vibe-booster': { title: 'Morning Vibe Booster', description: 'A short practice to set your frequency for the day, so you start from clarity and calm instead of catching up.', wistiaId: '' },
+    'emerging-your-soul-into-your-business': { title: 'Emerging Your Soul Into Your Business Activation', description: 'Helps you bring your full soul and energy into how you run your business, instead of operating from strategy alone.', wistiaId: '3g89a3ywtw' },
+    'crystal-business-activation': { title: 'Crystal Business Activation', description: 'Uses crystalline energy to support clarity, focus, and flow in your business.', wistiaId: '5ltmas4g41' },
+    'confidence-activation': { title: 'Confidence Activation', description: 'Strengthens your confidence so you can show up, speak up, and make decisions in your business without second-guessing yourself.', wistiaId: 'ox4ioruu21' },
+    'alignment-activation': { title: 'Alignment Activation', description: 'Realigns you with your business\'s true direction, clearing static so your next steps feel obvious.', wistiaId: 't0zbc376s5' },
+    'magnetic-field-activation': { title: 'Magnetic Field Activation', description: 'Strengthens your personal magnetism so opportunities, clients, and money have an easier path to you.', wistiaId: 'ec6hfbojkc' },
+    'million-dollar-blueprint-activation': { title: 'Million Dollar Blueprint Activation', description: 'Activates the identity and frequency of your fully expanded, million-dollar self, so your actions can start matching that reality.', wistiaId: 'e53te4l2k4' },
+    'impact-vibe-booster': { title: 'Impact Vibe Booster', description: 'A quick frequency boost to reconnect you with the deeper impact your work is here to make.', wistiaId: 'zky4ia10gw' },
+    'leadership-recode-activation': { title: 'Leadership Recode Activation', description: 'Recodes old leadership patterns and hesitation, supporting you to lead from your fullest, most embodied authority.', wistiaId: '' },
+    'remembrance-activation': { title: 'Remembrance Activation', description: 'Reconnects you with the deeper truth of who you are beneath the noise, helping you remember your soul\'s original frequency.', wistiaId: '' },
+    '10-min-star-healing-activation': { title: '10 Min Star Healing Activation', description: 'A short guided healing connecting you to higher star frequencies, supporting deeper clarity and calm.', wistiaId: '' },
+    'sacred-bowl-activation': { title: 'Sacred Bowl Activation', description: 'Uses sound frequency to clear and reset your energy field, leaving you calmer and more spacious.', wistiaId: '' },
+    'throat-chakra-activation': { title: 'Throat Chakra Activation', description: 'Opens and balances your throat chakra, supporting you in speaking and being heard with more ease and truth.', wistiaId: 'r8u3s5n30g' },
+    '10-min-protection-activation': { title: '10 Min Protection Activation', description: 'A short practice to strengthen your energetic boundaries, so you feel safe and unaffected by outside energy.', wistiaId: '' }
+
   };
 
   function openActivationDetail(slug) {
@@ -2201,8 +2217,13 @@
     if (!a) { return; }
     document.getElementById('activation-detail-title').textContent = a.title;
     document.getElementById('activation-detail-description').textContent = a.description || 'Description coming soon.';
-    document.getElementById('activation-detail-player').innerHTML =
-      '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+    if (a.wistiaId) {
+      document.getElementById('activation-detail-player').innerHTML =
+        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+    } else {
+      document.getElementById('activation-detail-player').innerHTML =
+        '<div style="padding:40px 20px;text-align:center;color:#c9b8a8;">Video coming soon.</div>';
+    }
     showPage('activation-detail-page');
   }
 
