@@ -715,7 +715,7 @@
       distortion: "The belief that your connection is something that happens to you, not something you can reliably open.",
       gap: "Between hoping your gifts show up and being able to open the connection on command.",
       identity: "I am someone whose connection can't be relied on.",
-      activation: { title: "Spirit Connection Activation", type: "Guided activation", duration: "18 min", teaser: "An attunement designed to steady and strengthen your connection." },
+      activation: { title: "Remembrance Activation", type: "Guided activation", duration: "15 min", teaser: "A guided return to remembrance of who you are beneath the disconnection." },
       checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/PcMoRCSS/checkout"
     },
     underearner: {
@@ -732,6 +732,27 @@
       activation: { title: "Success Code Activation", type: "Guided activation", duration: "12 min", teaser: "A guided activation that recodes what you believe you're allowed to receive." },
       checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/PsLWTYDM/checkout"
     }
+  };
+
+  // Aug 15 (Rachael's explicit request) -- The Healer's Disconnection no longer maps
+  // to one fixed "Spirit Connection Activation." Which activation is right depends on
+  // how the Disconnection is actually presenting in the Step 2 conversation, not on
+  // Divine Identity alone (see DISCONNECTION SUB-PATTERN rule in lib/processes.js's
+  // GAP Method system prompt). The Step 2 AI determines which of these 5 patterns
+  // fits and emits [[SUB_ACTIVATION: key]], caught in sendToGapChat() below and
+  // stored in subActivationKey. setupDay3() uses it in place of
+  // ARCHETYPES.disconnected.activation whenever winnerKey === 'disconnected'. If the
+  // AI never emits one (edge case), remembrance is the fallback since
+  // disconnection-from-self is the most foundational form of Disconnection --
+  // never Spirit Connection Activation, which is retired and must never be
+  // recommended again.
+  var DISCONNECTION_SUB_ACTIVATIONS = {
+    remembrance: { title: "Remembrance Activation", type: "Guided activation", duration: "15 min", teaser: "Use this when the disconnection is from yourself, your soul, your identity, or your own deeper knowing. This activation is designed to bring you back into full remembrance of who you are." },
+    gifts: { title: "Activating Your Gifts Activation", type: "Guided activation", duration: "12 min", teaser: "Use this when your spiritual gifts feel inaccessible, dormant, or disconnected. This activation is designed to help you reopen and reconnect with the gifts already within you." },
+    doubt: { title: "Removing the Frequency of Doubt", type: "Guided activation", duration: "12 min", teaser: "Use this when guidance is already coming through but you're having a hard time trusting it. This activation is designed to help you release doubt and trust what you're already receiving." },
+    intuition: { title: "Intuition Activation", type: "Guided activation", duration: "12 min", teaser: "Use this when you have a specific desire to develop and strengthen your intuitive knowing. This activation is designed to help you build a clearer, more reliable intuitive channel." },
+    thirdEye: { title: "Third Eye Activation", type: "Guided activation", duration: "14 min", teaser: "Use this when you're working toward specific visual or psychic development. This activation is designed to open and strengthen your third eye." },
+    clairvoyance: { title: "Clairvoyance Activation", type: "Guided activation", duration: "14 min", teaser: "Use this when you're working toward specific visual or psychic development, especially clear seeing. This activation is designed to strengthen your clairvoyant sight." }
   };
 
   // Aug 10 (later) -- Step 1 restructured from 5 to 7 questions per Rachael's request:
@@ -967,6 +988,7 @@
   var answers = [];
   var day1Done = false;
   var winnerKey = null;
+  var subActivationKey = null;
 
   // GAP Method persistence (Aug 12, Rachael's GAP Method persistence
   // instruction): if this session arrived with an identified buyer email
@@ -1250,6 +1272,7 @@
     document.getElementById('d2-note').textContent = 'One question at a time -- answer honestly, there\'s no wrong answer.';
     gapChatHistory = [];
     day2TurnCount = 0;
+    subActivationKey = null;
     document.getElementById('chat-log').innerHTML = '';
     document.getElementById('d2-continue').style.display = 'none';
     document.getElementById('ready-btn-wrap').style.display = 'none';
@@ -1300,6 +1323,14 @@
             gotFinalIdentity = true;
           }
           reply = reply.replace(finalIdentityMatch[0], '').trim();
+        }
+        var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i);
+        if (subActivationMatch) {
+          var subKeyFound = subActivationMatch[1].toLowerCase();
+          if (DISCONNECTION_SUB_ACTIVATIONS[subKeyFound]) {
+            subActivationKey = subKeyFound;
+          }
+          reply = reply.replace(subActivationMatch[0], '').trim();
         }
         addBotBubble(reply);
         gapChatHistory.push({ role: 'user', content: userText });
@@ -1386,10 +1417,18 @@
     // Rachael's rule that the description must connect directly to the
     // specific pattern from Step 2, not describe the activation in vague
     // energetic terms alone.
-    document.getElementById('a-tag').textContent = a.activation.type;
-    document.getElementById('a-title').textContent = a.activation.title;
-    document.getElementById('a-meta').textContent = a.activation.type + ' · ' + a.activation.duration;
-    document.getElementById('a-teaser').textContent = reveal.activationReason;
+    var activationData = a.activation;
+    var activationTeaser = reveal.activationReason;
+    if (key === 'disconnected') {
+      var subKey2 = (subActivationKey && DISCONNECTION_SUB_ACTIVATIONS[subActivationKey]) ? subActivationKey : 'remembrance';
+      var sub = DISCONNECTION_SUB_ACTIVATIONS[subKey2];
+      activationData = { title: sub.title, type: sub.type, duration: sub.duration };
+      activationTeaser = sub.teaser;
+    }
+    document.getElementById('a-tag').textContent = activationData.type;
+    document.getElementById('a-title').textContent = activationData.title;
+    document.getElementById('a-meta').textContent = activationData.type + ' · ' + activationData.duration;
+    document.getElementById('a-teaser').textContent = activationTeaser;
     document.getElementById('check3').textContent = '✓';
 
     // Save this diagnostic result server-side (Aug 12 persistence instruction)
@@ -1408,8 +1447,8 @@
           primaryFrequency: reveal.frequency,
           focusArea: domainLabel,
           refinedGap: reveal.gapRestated,
-          recommendedActivation: a.activation.title,
-          activationWhy: reveal.activationReason,
+          recommendedActivation: activationData.title,
+          activationWhy: activationTeaser,
           step1Answers: JSON.stringify(identityAnswers)
         })
       }).then(function() { notifyEmbedParent(); }).catch(function() { notifyEmbedParent(); });
