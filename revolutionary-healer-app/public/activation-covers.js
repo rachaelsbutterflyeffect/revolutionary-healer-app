@@ -106,7 +106,7 @@
     var cards = document.querySelectorAll('[onclick*="handleActivationCardClick"]');
     cards.forEach(function(card) {
       var onclickAttr = card.getAttribute("onclick") || "";
-      var match = onclickAttr.match(/handleActivationCardClick\([^,]*,\s*['"]([^'"]+)['"]/);
+      var match = onclickAttr.match(/handleActivationCardClick\(['\"]([^'\"]+)['\"]/);
       if (!match) return;
       var slug = match[1];
       var url = window.ACTIVATION_COVERS[slug];
