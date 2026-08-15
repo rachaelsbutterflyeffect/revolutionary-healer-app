@@ -90,6 +90,20 @@
         if (typeof handleActivationCardClick === 'function') handleActivationCardClick(slug);
       });
     });
+    document.querySelectorAll('.media-card:not([onclick])').forEach(function(card) {
+      if (card.__rhWired) return;
+      var titleEl = card.querySelector('h3, .media-title');
+      if (!titleEl) return;
+      var slug = titleToSlug[titleEl.textContent.trim()];
+      if (!slug) return;
+      card.__rhWired = true;
+      card.style.cursor = 'pointer';
+      card.setAttribute('data-activation-slug', slug);
+      card.addEventListener('click', function(e) {
+        if (e.target.closest('.heart-btn')) return;
+        if (typeof handleActivationCardClick === 'function') handleActivationCardClick(slug);
+      });
+    });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', apply);
