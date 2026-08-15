@@ -154,4 +154,82 @@ into your reality.
 AI recommendation notes: Great recommendation when the user explicitly says
 "I don't want to unpack this, I just want something," or who are asking for
 sexual healing, creation expression or past trauma clearing.
+
+GIFTS + INTUITION
+
+Intuition Activation
+What this activation is for: Use this when you want to work directly with
+your inner knowing, particularly when you keep getting an answer internally
+and then immediately looking outside yourself to see whether someone else
+agrees. This will support you if you are looking outside yourself for
+answers and are ready to look within, knowing your intuition will never
+lead you in the wrong direction.
+When to use this: Before making an intuitive decision. When you keep asking
+other people what they think. When you received a clear internal answer and
+then began questioning it. When you want to practice recognizing how your
+own knowing comes through.
+AI recommendation notes: Excellent for self-trust around intuitive knowing.
+Distinguish from Removing the Frequency of Doubt: Intuition Activation
+strengthens connection to knowing; Doubt specifically works with the pattern
+of questioning/out-sourcing after knowing.
+
+Activating Your Gifts Activation
+What this activation is for: Use this when your gifts feel quiet, distant or
+inaccessible, especially when the deeper issue seems to be that you have
+spent so long questioning, suppressing or dismissing what comes through that
+you barely recognize it anymore.
+When to use this: "I used to feel more connected to my gifts." "I don't know
+what my gifts are anymore." "Nothing seems to come through." Gifts that feel
+inconsistent. Returning to gifts after a long period of not using them. When
+she keeps dismissing intuitive information before exploring it.
+AI recommendation notes: Good broad gift-reconnection activation. Do not use
+when the issue is specifically clairvoyance/third eye/channel to Spirit if a
+more targeted activation fits.
+
+Activating Your Channel To Spirit Activation
+What this activation is for: Use this when you want to intentionally work
+with your connection to Spirit and strengthen your ability to receive
+spiritual guidance through your channel. It activates all your clair
+abilities, which rebalances and reharmonizes your energetic channel.
+When to use this: Before channeling. When spiritual connection feels quiet.
+When practicing receiving guidance. Before client work involving channeling.
+When she wants to strengthen her relationship with Spirit.
+AI recommendation notes: Rachael's framework places God/Spirit first. Do not
+default to spirit-guide language. Do not claim messages are definitely
+coming from Spirit.
+
+Third Eye Activation
+What this activation is for: Use this when you want to work specifically
+with the energetic center associated with inner vision, imagery and psychic
+sight. This will help you experience clarity in your vision, connect you to
+your inner wisdom, and foresight.
+When to use this: When developing visual intuition. Before clairvoyance
+exercises. When inner imagery is the gift she specifically wants to
+strengthen. Connects you to your higher vision. When she wants focused
+third-eye work rather than general gifts work.
+AI recommendation notes: More targeted than Activating Your Gifts. Do not
+connect physical headaches/vision symptoms to a "blocked third eye."
+
+Clairvoyance Activation
+What this activation is for: A focused activation for people intentionally
+developing clairvoyant sight and learning to work with visual information
+that comes through intuitively.
+When to use this: When clairvoyance is the specific gift she is practicing.
+When she wants to have more powerful client work. When she receives
+intuitive information visually. When strengthening images, symbols or inner
+sight. Later in a gifts-development journey when broader intuitive
+foundations already exist.
+AI recommendation notes: Use specifically for clairvoyance, not as generic
+intuition support.
+
+Remembrance Activation
+What this activation is for: Use this when you feel disconnected from who
+you know yourself to be underneath roles, expectations, noise and everything
+you have been told you should become.
+When to use this: During identity transitions. When she says, "I don't feel
+like myself." When she has been living according to outside expectations.
+During deeper soul work. When reconnecting with gifts/purpose after a long
+period of disconnection.
+AI recommendation notes: This is identity/soul reconnection, not
+automatically a solution for confusion.
 `;
