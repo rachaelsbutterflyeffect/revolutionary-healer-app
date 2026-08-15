@@ -451,8 +451,10 @@
   .fav-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
   .heart-btn { background: none; border: none; cursor: pointer; font-size: 17px; color: var(--teal-soft); padding: 0; line-height: 1; text-shadow: 0 0 6px rgba(63,168,163,0.55); }
   .heart-btn.filled { color: var(--teal); text-shadow: 0 0 6px rgba(1,103,108,0.7), 0 0 14px rgba(63,168,163,0.6); }
-  .app-emoji-icon { width: 1em; height: 1em; min-width: 15px; min-height: 15px; vertical-align: -0.15em; display: inline-block; object-fit: contain; }
-  .heart-glow-emoji { color: var(--teal); text-shadow: 0 0 6px rgba(1,103,108,0.75), 0 0 14px rgba(63,168,163,0.65); }
+  .app-emoji-icon { width: 22px; height: 22px; min-width: 22px; min-height: 22px; vertical-align: -6px; display: inline-block; object-fit: contain; margin-right: 1px; }
+  @media (max-width: 640px) { .app-emoji-icon { width: 26px; height: 26px; min-width: 26px; min-height: 26px; vertical-align: -7px; } }
+  .heart-glow-emoji { color: var(--teal); font-size: 1.3em; text-shadow: 0 0 6px rgba(1,103,108,0.75), 0 0 14px rgba(63,168,163,0.65); }
+  @media (max-width: 640px) { .heart-glow-emoji { font-size: 1.5em; } }
   .listen-btn { background: none; border: 1px solid var(--taupe-line); border-radius: 999px; color: var(--taupe); font-size: 11.5px; padding: 5px 12px; cursor: pointer; font-family: inherit; }
   .media-card { position: relative; }
   .media-heart { position: absolute; top: 12px; right: 12px; z-index: 2; }
