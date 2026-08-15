@@ -11,6 +11,8 @@
 // If future transcripts conflict with this file, THIS FILE WINS (newest
 // version of her work).
 
+import { ACTIVATION_GUIDE } from "./activationGuide";
+
 const DISCLAIMER =
   "This is educational energy work, not medical or mental-health treatment. If you are in crisis or have a medical concern, please contact a qualified professional.";
 
@@ -312,6 +314,8 @@ VOICE: ${VOICE}
 HARD GUARDRAILS -- LANGUAGE TO NEVER USE: ${HARD_GUARDRAILS}
 
 DIVINE IDENTITY TERMINOLOGY (applies everywhere, not just the Gap Method): ${DIVINE_IDENTITY_TERMINOLOGY}
+
+RACHAEL'S ACTIVATION GUIDE (only recommend an activation when the ACTIVATION RECOMMENDATION mode above is genuinely warranted -- see the guide for what each activation is for, when to use it, and specific per-activation recommendation notes; this list will grow over time): ${ACTIVATION_GUIDE}
 
 DECISION ORDER FOR EVERY MESSAGE: ${DECISION_ORDER}
 
