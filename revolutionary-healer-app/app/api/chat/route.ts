@@ -11,6 +11,9 @@ import { retrieveContextForFocusArea } from "@/lib/retrieval";
 import { getEntitlementForEmail } from "@/lib/entitlements";
 import {
   logEvent,
+  getShiftById,
+  updateShiftFields,
+  normalizeEmail,
   createChatSession,
   getChatSessionById,
   listMessagesByChatId,
@@ -55,6 +58,7 @@ export async function POST(req: NextRequest) {
     chatId: chatIdInput = null,
     processSlug = null,
     gapMethodResult = null,
+    shiftId = null,
   } = await req.json();
 
   if (!email || !focusAreaSlug || !message) {
@@ -79,6 +83,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "not entitled", entitlement }, { status: 403 });
   }
 
+  // Shift Progress Check-In (Aug 15, Rachael's "Update Progress" button):
+  // when present, this message belongs to a conversation specifically about
+  // whether a Shift is ready to be marked Embodied -- see lib/shifts.js's
+  // EMBODIED STATUS rules. Verify the shift actually belongs to this member
+  // before trusting it for anything.
+  let embodimentShift: any = null;
+  if (shiftId) {
+    const s = await getShiftById(shiftId);
+    if (s && normalizeEmail(s.fields.member_email) === normalizeEmail(email)) {
+      embodimentShift = s;
+    }
+  }
+
   let session = chatIdInput ? await getChatSessionById(chatIdInput) : null;
   if (!session) {
     session = await createChatSession({ email, focusAreaSlug });
@@ -94,13 +111,17 @@ export async function POST(req: NextRequest) {
   ]);
 
   const chatSummary = session.fields.summary || "";
-  const systemPrompt = buildSystemPrompt(focusArea, {
+  let systemPrompt = buildSystemPrompt(focusArea, {
     retrievedContext,
     process,
     gapMethodResult,
     chatSummary,
     memberMemories,
   });
+  if (embodimentShift) {
+    const f = embodimentShift.fields;
+    systemPrompt += `\n\n=== SHIFT PROGRESS CHECK-IN (Update Progress button) ===\nThe member clicked "Update Progress" on this Shift: ${f.divine_identity_name || "their Shift"} / ${f.current_frequency || ""}. GAP: ${f.gap_explanation || ""}. Recommended Activation: ${f.recommended_activation || ""}.\n\nThey were just greeted with: "You're ready to make this shift embodied \u2014 tell me, what's your main shift, and what's making you feel like this is fully embodied?" Continue that conversation.\n\nNever mark a Shift Embodied simply because the member listened to an activation. Watch for meaningful evidence the contradiction is no longer driving the same behavior -- e.g. responding differently to the old trigger, taking the action they previously avoided, no longer reopening the same decision, speaking or showing up differently, a change in the repeated pattern, or feeling the old thought/emotion without automatically following the old behavior.\n\nThen ask them directly: "Do you feel like this shift is complete?"\n\nIf they say yes: tell them plainly, using almost exactly this phrase -- "I've updated your card to mark this as Embodied" -- and then celebrate them thoroughly, reflecting back where they started and how far they've come.\n\nIf they say no, or the pattern still feels active: don't say anything about updating their card -- keep supporting them, and let them know it's okay to keep working with this Shift.`;
+  }
 
   const historyForClaude = priorMessages.map((m: any) => ({
     role: m.fields.role === "assistant" ? "assistant" : "user",
@@ -124,6 +145,14 @@ export async function POST(req: NextRequest) {
     .join("\n");
 
   await createMessage({ chatId, email, role: "assistant", text: replyText });
+
+  if (embodimentShift && /updated your card[\s\S]{0,60}embodied/i.test(replyText)) {
+    try {
+      await updateShiftFields(embodimentShift.id, { progress_status: "embodied", ready_for_embodied: true });
+    } catch (err) {
+      console.error("Failed to auto-update Shift to Embodied", err);
+    }
+  }
 
   const now = new Date().toISOString();
   const sessionUpdates: Record<string, any> = { updated_at: now, last_message_at: now };
