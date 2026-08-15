@@ -65,10 +65,12 @@
       if (!thumb) return;
       setCover(thumb, url);
     });
-    document.querySelectorAll('.fav-card').forEach(function(card) {
-      var thumb = card.querySelector('.fav-thumb');
-      var titleEl = card.querySelector('.fav-title');
-      if (!thumb || !titleEl) return;
+    document.querySelectorAll('.fav-thumb, .media-thumb').forEach(function(thumb) {
+      if ((thumb.style.backgroundImage || '').indexOf('data:image') >= 0) return;
+      var container = thumb.closest('.fav-card') || thumb.parentElement;
+      if (!container) return;
+      var titleEl = container.querySelector('.fav-title, h3, .media-title');
+      if (!titleEl) return;
       var slug = titleToSlug[titleEl.textContent.trim()];
       var url = slug && window.ACTIVATION_COVERS[slug];
       if (url) setCover(thumb, url);
