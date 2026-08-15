@@ -506,26 +506,14 @@ export const GAP_METHOD_ACTIVATIONS = [
     // Impact per Rachael's request.
     libraryCategories: ["Business + Impact"],
   },
-  {
-    slug: "gap-method-healer", icon: "star",
-    title: "Spirit Connection Activation",
-    divineIdentitySlug: "healer",
-    mediaType: "video",
-    // Found Aug 10: identical title already exists with a real, published
-    // video in the 30-day course -- see ACTIVATIONS above, slug
-    // "spirit-connection-activation" (day 26, kajabiLessonId 2186068094).
-    // Exact title match, reused rather than left empty.
-    wistiaId: "lz47as3b06",
-    sourceCourseId: 2147937485,
-    sourceCourseTitle: "Activate Your Clairvoyance in 30 Days!",
-    sourceLessonId: 2186068094,
-    sourceLessonTitle: "Spirit Connection Activation",
-    sourceAdminUrl: "https://app.kajabi.com/admin/posts/2186068094/edit",
-    kajabiProductId: "2149532208",
-    adminUrl: "https://app.kajabi.com/admin/products/2149532208",
-    description:
-      "Supports The Healer in restoring connection with God, soul, spirit, body and their own gifts -- moving out of depletion and disconnection and returning to embodied, replenished and divinely connected service.",
-  },
+  // Aug 15 (Rachael's explicit request) -- the "gap-method-healer" entry that
+  // used to live here was removed entirely, not repurposed. Spirit Connection
+  // Activation must never be recommended again, and The Healer no longer has
+  // one fixed personalized activation -- which one is right now depends on how
+  // her Disconnection is actually presenting in conversation (see
+  // DISCONNECTION_SUB_ACTIVATIONS in public/gap-method.html and the healer
+  // entry's recommendationLanguage in lib/divineIdentities.js). GAP_METHOD_ACTIVATIONS
+  // below intentionally has 6 entries now, not 7.
   {
     slug: "gap-method-expander", icon: "crystal",
     title: "Success Code Activation",
