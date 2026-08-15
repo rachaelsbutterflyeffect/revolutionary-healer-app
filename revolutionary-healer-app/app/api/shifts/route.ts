@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getShiftsByEmail } from "@/lib/airtable";
+import { getShiftsByEmail, getShiftById, updateShiftFields, normalizeEmail } from "@/lib/airtable";
 
 export async function GET(req: NextRequest) {
   const email = req.nextUrl.searchParams.get("email");
@@ -27,5 +27,34 @@ export async function GET(req: NextRequest) {
   } catch (err) {
     console.error("GET /api/shifts failed", err);
     return NextResponse.json({ error: "Something went wrong loading your Shifts." }, { status: 500 });
+  }
+}
+
+
+export async function PATCH(req: NextRequest) {
+  const { id, email, progressStatus, readyForEmbodied } = await req.json();
+  if (!id || !email) {
+    return NextResponse.json({ error: "Missing id or email" }, { status: 400 });
+  }
+  try {
+    const shift = await getShiftById(id);
+    if (!shift || normalizeEmail(shift.fields.member_email) !== normalizeEmail(email)) {
+      return NextResponse.json({ error: "Shift not found" }, { status: 404 });
+    }
+    const fields: Record<string, any> = {};
+    if (progressStatus === "embodied" || progressStatus === "shifting") {
+      fields.progress_status = progressStatus;
+    }
+    if (typeof readyForEmbodied === "boolean") {
+      fields.ready_for_embodied = readyForEmbodied;
+    }
+    if (Object.keys(fields).length === 0) {
+      return NextResponse.json({ error: "Nothing to update" }, { status: 400 });
+    }
+    await updateShiftFields(id, fields);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("PATCH /api/shifts failed", err);
+    return NextResponse.json({ error: "Something went wrong updating your Shift." }, { status: 500 });
   }
 }
