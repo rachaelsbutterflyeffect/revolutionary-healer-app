@@ -449,8 +449,10 @@
   .fav-body { padding: 12px 14px 14px; }
   .fav-title { font-size: 13.5px; color: var(--white); margin-bottom: 10px; line-height: 1.3; }
   .fav-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .heart-btn { background: none; border: none; cursor: pointer; font-size: 17px; color: var(--teal-soft); padding: 0; line-height: 1; }
-  .heart-btn.filled { color: var(--teal); }
+  .heart-btn { background: none; border: none; cursor: pointer; font-size: 17px; color: var(--teal-soft); padding: 0; line-height: 1; text-shadow: 0 0 6px rgba(63,168,163,0.55); }
+  .heart-btn.filled { color: var(--teal); text-shadow: 0 0 6px rgba(1,103,108,0.7), 0 0 14px rgba(63,168,163,0.6); }
+  .app-emoji-icon { width: 1em; height: 1em; min-width: 15px; min-height: 15px; vertical-align: -0.15em; display: inline-block; object-fit: contain; }
+  .heart-glow-emoji { color: var(--teal); text-shadow: 0 0 6px rgba(1,103,108,0.75), 0 0 14px rgba(63,168,163,0.65); }
   .listen-btn { background: none; border: 1px solid var(--taupe-line); border-radius: 999px; color: var(--taupe); font-size: 11.5px; padding: 5px 12px; cursor: pointer; font-family: inherit; }
   .media-card { position: relative; }
   .media-heart { position: absolute; top: 12px; right: 12px; z-index: 2; }
@@ -696,7 +698,7 @@
       <button class="btn-secondary" id="shift-modal-update-progress-btn">Update Progress</button>
     </div>
     <div id="shift-modal-embodied-ready" style="display: none; margin-top: 20px;">
-      <p style="margin: 0 0 10px; color: var(--gold-soft); font-size: 13.5px;">✨ This Gap may be ready to mark as Embodied.</p>
+      <p style="margin: 0 0 10px; color: var(--gold-soft); font-size: 13.5px;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> This Gap may be ready to mark as Embodied.</p>
       <div class="shift-modal-actions">
         <button class="btn-secondary" id="shift-modal-embodied-btn">Mark This Shift As Embodied →</button>
       </div>
@@ -707,7 +709,7 @@
 <section class="hero" id="hero-section">
   <div class="wrap">
     <h1 class="serif">Your Divine Identity is already within you.</h1>
-    <div class="hero-divider"><span class="hero-divider-star">✦</span></div>
+    <div class="hero-divider"><span class="hero-divider-star"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""></span></div>
   <p class="hero-subline">The only question is what's interfering with it.</p>
     <p class="sub">Identify the GAP. Shift the frequency. Begin your Revolution.</p>
 
@@ -764,7 +766,7 @@
     </div>
 
     <div class="focus-card" data-role="focus-card">
-      <div class="focus-card-label">🌟 Today's Focus</div>
+      <div class="focus-card-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
       <div class="focus-card-body">
         <div class="focus-card-identity">
           <div class="focus-card-kicker">Your Divine Identity</div>
@@ -791,7 +793,7 @@
 
     <div class="revolution-subsection">
       <div class="subsection-head">
-        <h3 onclick="showPage('shifts-page')">✨ My Shifts</h3>
+        <h3 onclick="showPage('shifts-page')"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
         <div class="see-all" onclick="showPage('shifts-page')">See all →</div>
       </div>
       <div class="shifts-list" data-role="shifts-list"></div>
@@ -799,7 +801,7 @@
 
     <div class="revolution-subsection" data-role="demo-activity">
       <div class="subsection-head">
-        <h3 onclick="showPage('favorites-page')">❤️ Favorites</h3>
+        <h3 onclick="showPage('favorites-page')"><span class="heart-glow-emoji">♥</span> Favorites</h3>
         <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
       </div>
       <div class="favorites-row">
@@ -840,7 +842,7 @@
     </div>
 
     <div class="focus-card" data-role="focus-card">
-      <div class="focus-card-label">🌟 Today's Focus</div>
+      <div class="focus-card-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
       <div class="focus-card-body">
         <div class="focus-card-identity">
           <div class="focus-card-kicker">Your Divine Identity</div>
@@ -867,7 +869,7 @@
 
     <div class="revolution-subsection">
       <div class="subsection-head">
-        <h3 onclick="showPage('shifts-page')">✨ My Shifts</h3>
+        <h3 onclick="showPage('shifts-page')"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
         <div class="see-all" onclick="showPage('shifts-page')">See all →</div>
       </div>
       <div class="shifts-list" data-role="shifts-list"></div>
@@ -875,7 +877,7 @@
 
     <div class="revolution-subsection" data-role="demo-activity">
       <div class="subsection-head">
-        <h3 onclick="showPage('favorites-page')">❤️ My Favorites</h3>
+        <h3 onclick="showPage('favorites-page')"><span class="heart-glow-emoji">♥</span> My Favorites</h3>
         <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
       </div>
       <div class="favorites-row">
@@ -904,7 +906,7 @@
 
     <div class="revolution-subsection" data-role="demo-activity">
       <div class="subsection-head">
-        <h3 onclick="showPage('activations-page')">🎧 My Activations</h3>
+        <h3 onclick="showPage('activations-page')"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Activations</h3>
         <div class="see-all" onclick="showPage('activations-page')">See all →</div>
       </div>
       <div class="card-grid">
@@ -1006,12 +1008,12 @@
     </div>
 
     <div class="revolution-subsection">
-      <div class="subsection-head"><h3 style="cursor: default;">🎧 My Activations</h3></div>
+      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Activations</h3></div>
       <p class="subsection-copy" style="color: var(--taupe);">You haven't completed any activations yet. Explore the Activation Library below to begin.</p>
     </div>
 
     <div class="revolution-subsection" style="display:none;">
-      <div class="subsection-head"><h3 style="cursor: default;">🎧 My Activations</h3></div>
+      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Activations</h3></div>
       <p class="subsection-copy">Activations you've completed.</p>
       <div class="card-grid">
         <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration">
@@ -1042,12 +1044,12 @@
     </div>
 
     <div class="revolution-subsection">
-      <div class="subsection-head"><h3 style="cursor: default;">✨ Recommended Activations</h3></div>
+      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Recommended Activations</h3></div>
       <p class="subsection-copy" style="color: var(--taupe);">Once you complete your first GAP Method and a few activations, personalized recommendations will appear here.</p>
     </div>
 
     <div class="revolution-subsection" style="display:none;">
-      <div class="subsection-head"><h3 style="cursor: default;">✨ Recommended Activations</h3></div>
+      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Recommended Activations</h3></div>
       <p class="subsection-copy">Suggested by your AI Guide based on your most recent GAP Method result.</p>
       <div class="card-grid">
         <div class="media-card" onclick="handleActivationCardClick('activating-your-gifts')" style="cursor: pointer;" data-activation-slug="activating-your-gifts">
@@ -1077,7 +1079,7 @@
     </div>
 
     <div class="revolution-subsection" id="gap-method-activations-subsection">
-      <div class="subsection-head"><h3 style="cursor: default;">🔑 GAP Method Activations</h3></div>
+      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> GAP Method Activations</h3></div>
       <p class="subsection-copy">Unlocked with your GAP Method access.</p>
       <div class="card-grid">
         <div class="media-card" onclick="handleActivationCardClick('gap-method-guardian')" style="cursor: pointer;" data-activation-slug="gap-method-guardian">
@@ -1138,7 +1140,7 @@
     </div>
 
     <div class="revolution-subsection">
-      <div class="subsection-head"><h3 style="cursor: default;">📚 Activation Library</h3></div>
+      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Activation Library</h3></div>
       <p class="subsection-copy">Every activation unlocked with your Full Access membership.</p>
                         <div class="filter-chips category-chips">
         <button class="filter-chip selected" data-category="All" onclick="selectCategoryChip(this)">All</button>
@@ -1620,7 +1622,7 @@
     <a class="page-back" onclick="showPage('my-revolution-page'); return false;">← Back to My Revolution</a>
     <div class="section-head">
       <div>
-        <h2 class="serif">✨ My Shifts</h2>
+        <h2 class="serif"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h2>
         <p>A history of your transformational milestones</p>
       </div>
     </div>
@@ -1676,14 +1678,14 @@
     <a class="page-back" onclick="showMain(); return false;">← Back to Home</a>
     <div class="section-head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px;">
       <div>
-        <h2 class="serif">👤 My Profile</h2>
+        <h2 class="serif"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Profile</h2>
         <p id="profile-welcome-line">Welcome back. Member since August 2026.</p>
       </div>
       <a href="#" onclick="signOutMember(); return false;" style="color: var(--taupe); font-size: 13px; text-decoration: none; white-space: nowrap; padding-top: 4px;">Sign Out</a>
     </div>
 
     <div class="profile-card">
-      <div class="profile-card-head"><h3>🌟 Your Revolution</h3></div>
+      <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Your Revolution</h3></div>
       <div class="stats-grid">
         <div class="stat-tile"><div class="stat-value">0</div><div class="stat-label">Activations Completed</div></div>
         <div class="stat-tile"><div class="stat-value">0</div><div class="stat-label">Embodied Shifts</div></div>
@@ -1692,7 +1694,7 @@
     </div>
 
     <div class="profile-card">
-      <div class="profile-card-head"><h3>👤 Profile</h3></div>
+      <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Profile</h3></div>
       <div class="avatar-row">
         <div class="avatar-circle" id="profile-avatar-circle">R</div>
         <div class="avatar-actions">
@@ -1735,7 +1737,7 @@
     </div>
 
     <div class="profile-card">
-      <div class="profile-card-head"><h3>💜 Membership</h3></div>
+      <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Membership</h3></div>
       <div class="info-row"><div class="info-label">Current Plan</div><div class="info-value">Revolutionary Healer Full Access</div></div>
       <div class="info-row"><div class="info-label">Membership Status</div><div class="info-value"><span class="status-pill embodied">Active</span></div></div>
       <div class="info-row"><div class="info-label">Member Since</div><div class="info-value" id="member-since-value">August 3, 2026</div></div>
@@ -1747,7 +1749,7 @@
     </div>
 
     <div class="profile-card">
-      <div class="profile-card-head"><h3>💳 Billing</h3></div>
+      <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Billing</h3></div>
       <div class="info-row"><div class="info-label">Current Payment Method</div><div class="info-value">Visa ending in 4821</div></div>
       <div class="info-row"><div class="info-label">Next Payment</div><div class="info-value">September 3, 2026 &mdash; $30.00 USD</div></div>
       <div class="eyebrow" style="margin: 20px 0 6px;">Billing History</div>
@@ -1760,7 +1762,7 @@
     </div>
 
     <div class="profile-card">
-      <div class="profile-card-head"><h3>🔒 Security</h3></div>
+      <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Security</h3></div>
       <div class="info-row"><div class="info-label">Password</div><div class="info-value">••••••••</div></div>
       <div class="btn-row">
         <button class="btn-secondary" onclick="handleResetPasswordClick()">Reset Password</button>
@@ -1769,7 +1771,7 @@
     </div>
 
     <div class="profile-card">
-      <div class="profile-card-head"><h3>🛟 Support</h3></div>
+      <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Support</h3></div>
       <p style="color: var(--taupe); font-size: 13.5px; line-height: 1.6; margin: 0 0 18px;">Need help? If you have questions about your membership or need assistance with Revolutionary Healer, we're here to help.</p>
       <div class="btn-row">
         <a id="btn-contact-support" class="btn-primary" href="#" style="display: inline-block; text-decoration: none;">Contact Support</a>
@@ -1832,7 +1834,7 @@
 <!-- GAP Method scoped-trial demo (Aug 10): shared toast shown when a GAP
      trial member clicks a locked (non-GAP) Activation Library card. -->
 <div class="locked-activation-toast" id="locked-activation-toast">
-  <span>🔒 Upgrade to Full Access to unlock this activation.</span>
+  <span><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Upgrade to Full Access to unlock this activation.</span>
   <a onclick="showPage('upgrade-page'); return false;">Upgrade →</a>
 </div>
 
