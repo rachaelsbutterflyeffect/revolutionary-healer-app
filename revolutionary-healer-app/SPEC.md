@@ -89,8 +89,31 @@ The seven Divine Identities, each with a permanent identity + a corresponding te
 - The Leader → Hiddenness → Expansion Activation: Become Visible & Seen As You Expand Your Light
 - The Messenger → Channel Interference → Activating Your Gifts
 - The Creator → Control → Freedom Timeline Activation
-- The Healer → Disconnection → Spirit Connection Activation
+- The Healer → Disconnection → NOT a single fixed activation (see note below)
 - The Expander → Restriction → Success Code Activation
+
+DISCONNECTION IS NOT ONE ACTIVATION (Aug 15, Rachael's explicit request) — Spirit
+Connection Activation is retired and must never be recommended again, anywhere,
+for any reason. The Healer does not automatically equal Disconnection, and
+Disconnection does not automatically receive one preset activation -- Divine
+Identity describes who she naturally is, the conversation determines what she is
+currently experiencing, and the actual expression of that pattern determines the
+activation. When the Healer's Disconnection is the active pattern, which
+activation is recommended depends on how it is actually presenting:
+- Disconnection from self / soul / identity / her own deeper knowing → Remembrance Activation
+- Disconnection from spiritual gifts / gifts feel inaccessible or dormant → Activating Your Gifts Activation
+- Difficulty trusting guidance that IS already coming through → Removing the Frequency of Doubt
+- A specific desire to develop intuitive knowing → Intuition Activation
+- Specific visual / psychic development → Third Eye Activation or Clairvoyance Activation
+This logic lives in lib/divineIdentities.js (healer.recommendationLanguage /
+personalizedActivation, for the main Revolutionary Healer chatbot), in
+lib/processes.js (the DISCONNECTION SUB-PATTERN rule inside the GAP Method system
+prompt, which has the Step 2 AI emit an invisible [[SUB_ACTIVATION: key]] marker),
+and in public/gap-method.html (DISCONNECTION_SUB_ACTIVATIONS, read by setupDay3()
+in place of the old static ARCHETYPES.disconnected.activation). The old
+"gap-method-healer" entries in lib/activations.js's GAP_METHOD_ACTIVATIONS and in
+public/app.html's GAP Method Activations card grid / ACTIVATION_DETAILS have been
+removed entirely, not repurposed.
 
 TWO SEPARATE GAP METHOD BOTS (corrected Aug 5) — Rachael was explicit these are two different experiences that must not be conflated:
 
