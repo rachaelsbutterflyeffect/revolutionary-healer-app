@@ -232,4 +232,109 @@ During deeper soul work. When reconnecting with gifts/purpose after a long
 period of disconnection.
 AI recommendation notes: This is identity/soul reconnection, not
 automatically a solution for confusion.
+
+BUSINESS + VISIBILITY
+
+Expansion Activation
+What this activation is for: Use this when you know your work is meant to
+reach more people but you keep becoming smaller, quieter or less direct once
+more people actually begin paying attention.
+When to use this: You are posting but editing out the thing you actually
+want to say. Your audience starts growing and you suddenly disappear. More
+people are watching and your message becomes safer. You know you want your
+work seen but keep minimizing it. You find yourself pulling back after
+something performs well.
+AI recommendation notes: This is about visibility/presence. Use specific
+behavioral evidence. Do not automatically recommend because someone wants
+more followers.
+
+Emerging Your Soul Into Your Business Activation
+What this activation is for: Use this when your business feels like it has
+slowed down or it no longer feels like it contains enough of you -- your
+gifts, ideas, voice, spiritual work or what you actually want to create.
+When you are outsourcing your strategy, programs and prices, this activation
+will help you align back to the wisdom your soul wants to birth through your
+business.
+When to use this: Business feels overly strategy-driven. She has been
+following someone else's blueprint. Her offers work but feel disconnected
+from her. She wants to bring more of her actual gifts into her work. She
+wants to rebrand, shift her business or make a big change in her work. She
+is changing direction and wants her business to reflect who she is now.
+AI recommendation notes: Recommend for soul/business integration, not simply
+because sales are slow -- but if her soul is not part of her business, sales
+may also slow down.
+
+Crystal Business Activation
+What this activation is for: An energetic business activation using
+crystalline energy as part of Rachael's spiritual framework, intended for
+times when the user wants energetic support around clarity and movement in
+her business. Use when the business feels stagnant, or the frequency of the
+social media, offers or business feels off.
+When to use this: Before planning/creating. During a business reset. When
+the user enjoys crystalline energy work. When she wants an energetic
+business practice without a deep coaching process. When her business feels
+stagnant, slow moving or off on some level.
+AI recommendation notes: Do not use "crystal energy" as an explanation for
+why business results are or are not happening.
+
+Confidence Activation
+What this activation is for: Use this when you know what you want to do but
+you keep shrinking, questioning or hesitating the moment you have to
+actually be the person who does it. This activation is directly connected
+to visibility and receiving through your business.
+When to use this: Before going live. Before speaking about an offer. Before
+raising a price you have already decided on. Before a sales call. When you
+keep editing your message because you are worried how it will be received.
+When the decision is clear but self-doubt keeps interrupting action.
+AI recommendation notes: Confidence is appropriate when the user has clarity
+but struggles with backing herself. Do not use as a generic fix when she is
+legitimately uncertain.
+
+Alignment Activation
+What this activation is for: Use this when your business has become noisy
+enough that you can no longer tell what direction actually feels like
+yours. This is where your soul, business and authentic expression fully
+become aligned.
+When to use this: Too many offers/projects. Too many outside opinions. She
+is considering several directions and cannot hear herself. She has been
+following strategies that no longer fit. Before making a larger directional
+business decision.
+AI recommendation notes: Do not use "alignment" generically. There should be
+actual competing directions/noise present.
+
+Magnetic Field Activation
+What this activation is for: Use this when you want to intentionally work
+with the energetic presence behind attracting clients, opportunities and
+money rather than trying to manufacture everything through more effort.
+When to use this: After noticing yourself forcing sales. Before
+launching/offering something. When you have clear messaging/action already
+happening and want energetic support alongside it. When you want to work
+with receptivity and magnetism rather than continually adding more tasks.
+AI recommendation notes: Do not recommend instead of fixing obvious
+marketing/sales problems. Energy supports action; it does not replace
+functional business infrastructure.
+
+Impact Vibe Booster
+What this activation is for: Use this when you have become so focused on
+numbers, content, sales or what everyone thinks that you have lost
+connection with the actual people your work is here to change.
+When to use this: Before creating content. Before launching. When
+engagement numbers are affecting motivation. When business has started
+feeling transactional. When she wants to reconnect with why the work
+matters.
+AI recommendation notes: Good when the user is overly focused on
+metrics/results and has temporarily disconnected from the human outcome of
+her work.
+
+Leadership Recode Activation
+What this activation is for: Use this when you know you are meant to lead
+but still find yourself waiting for agreement, permission or proof before
+fully standing behind what you see.
+When to use this: She keeps softening her message. She looks to
+peers/mentors before trusting her own perspective. She has an original idea
+but hesitates to lead with it. She is ready to make decisions from her own
+authority. She is becoming more visible as a leader and old hesitation is
+showing up.
+AI recommendation notes: Use for actual leadership behavior and
+self-authority, not as generic business confidence.
 `;
