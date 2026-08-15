@@ -265,6 +265,30 @@ export async function getShiftsByEmail(email) {
   return records;
 }
 
+export async function getShiftById(shiftId) {
+  if (!shiftId) return null;
+  try {
+    return await base(Tables.Shifts).find(shiftId);
+  } catch (err) {
+    // Airtable throws NOT_FOUND for a bad/stale id -- treat as "no shift"
+    // rather than a hard error.
+    return null;
+  }
+}
+
+// Update a Shift's progress fields (Aug 15, Rachael's "Update Progress" /
+// "Mark This Shift As Embodied" wiring): the only two fields either the
+// member's manual "Mark This Shift As Embodied" button or the AI's
+// in-conversation embodiment confirmation (see app/api/chat/route.ts) are
+// expected to write are progress_status and ready_for_embodied -- see
+// lib/shifts.js's EMBODIED STATUS rules for when each should be set.
+export async function updateShiftFields(shiftId, fields) {
+  return base(Tables.Shifts).update(shiftId, {
+    ...fields,
+    updated_at: new Date().toISOString(),
+  });
+}
+
 // =============================================================================
 // MEMBER AUTH (Aug 13, Rachael's Kajabi-linked landing page request)
 // =============================================================================
