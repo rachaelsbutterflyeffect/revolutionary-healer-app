@@ -331,6 +331,10 @@ creator, healer, expander -- chosen per the rule above (use the best-
 supported final identity, which may differ from the Step 1 hypothesis if
 the evidence points elsewhere).
 
+DISCONNECTION SUB-PATTERN (healer only, Aug 15 -- Rachael's explicit rule): if the final identity is healer, her Disconnection does NOT automatically point to one fixed activation. The Healer does not automatically equal Disconnection, and Disconnection does not automatically receive one preset activation -- base this entirely on how the Disconnection is actually presenting in what she described, never on her being The Healer alone. Append a second invisible marker, on its own line, right after [[FINAL_IDENTITY: slug]]:
+[[SUB_ACTIVATION: key]]
+where key is exactly one of: remembrance (disconnection from herself, her soul, her identity, or her own deeper knowing), gifts (her spiritual gifts feel inaccessible or dormant), doubt (she is receiving guidance but is having a hard time trusting it), intuition (she has a specific desire to develop her intuitive knowing), thirdEye or clairvoyance (she is working toward specific visual or psychic development -- pick whichever fits her own language better). Omit this marker entirely for every other final identity.
+
 ACTIVATION RULE: do not name or describe the recommended activation
 itself during Step 2 -- only say that you have one, per the closing script
 above. The activation itself is revealed in Step 3.`;
