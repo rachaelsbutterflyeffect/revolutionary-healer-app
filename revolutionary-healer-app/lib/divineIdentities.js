@@ -399,14 +399,14 @@ export const DIVINE_IDENTITIES = [
       "What helps you feel most connected to yourself and God?",
     ],
     recommendationLanguage:
-      "Spirit Connection Activation supports you in restoring connection with God, your soul, your body and the gifts already present within you. This activation can help you move out of depletion and disconnection and return to embodied, replenished spiritual connection.",
+      "The Healer's Disconnection does not point to one fixed activation -- which one is right depends on how the disconnection is actually presenting, never on being The Healer alone. If she is disconnected from herself, her soul, her identity or her own deeper knowing, this points to Remembrance Activation. If her spiritual gifts feel inaccessible or dormant, this points to Activating Your Gifts Activation. If she is receiving guidance but is having difficulty trusting it, this points to Removing the Frequency of Doubt. If she has a specific desire to develop her intuitive knowing, this points to Intuition Activation. If she is working toward specific visual or psychic development, this points to Third Eye Activation or Clairvoyance Activation. Let the conversation determine which of these fits -- The Healer does not automatically equal Disconnection, and Disconnection does not automatically receive one preset activation.",
     personalizedActivation: {
-      name: "Spirit Connection Activation",
+      name: "Determined by how Disconnection presents (see recommendationLanguage)",
       description:
-        "Supports The Healer in restoring connection with God, soul, spirit, body and their own gifts -- moving out of depletion and disconnection and returning to embodied, replenished and divinely connected service.",
-      kajabiOfferId: "2151318711",
-      checkoutUrl: "https://www.rachaelsbutterflyeffect.com/offers/PcMoRCSS/checkout",
-      offerStatus: "draft", // TODO(Rachael): publish in Kajabi admin
+        "The Healer does not have one fixed personalized activation. Disconnection from self, soul, identity or deeper knowing points to Remembrance Activation. Disconnection from spiritual gifts, or gifts feeling inaccessible or dormant, points to Activating Your Gifts Activation. Difficulty trusting guidance that is already coming through points to Removing the Frequency of Doubt. A specific desire to develop intuitive knowing points to Intuition Activation. A specific desire for visual or psychic development points to Third Eye Activation or Clairvoyance Activation. The actual expression of the pattern in the conversation determines which activation is recommended -- never her Divine Identity alone.",
+      kajabiOfferId: null, // retired Aug 15 (Rachael's explicit request) -- Spirit Connection Activation must never be recommended again; no single fixed activation replaces it, see recommendationLanguage above
+      checkoutUrl: null,
+      offerStatus: "n/a", // dynamic -- selection depends on conversation content, not a single offer
     },
   },
   {
