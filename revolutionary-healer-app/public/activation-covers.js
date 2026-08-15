@@ -95,35 +95,42 @@
 };
 
   window.ACTIVATION_COVERS = {};
-  Object.keys(SLUG_TO_IMG).forEach(function(slug) {
-    var imgKey = SLUG_TO_IMG[slug];
-    if (COVERS[imgKey]) {
-      window.ACTIVATION_COVERS[slug] = COVERS[imgKey];
-    }
-  });
-
-  function applyCovers() {
+(function() {
+  var titleToSlug = {};
+  function apply() {
     var cards = document.querySelectorAll('[onclick*="handleActivationCardClick"]');
-    cards.forEach(function(card) {
-      var onclickAttr = card.getAttribute("onclick") || "";
-      var match = onclickAttr.match(/handleActivationCardClick\(['\"]([^'\"]+)['\"]/);
-      if (!match) return;
-      var slug = match[1];
+    cards.forEach(function(el) {
+      var m = el.getAttribute('onclick').match(/handleActivationCardClick\('([^']+)'\)/);
+      if (!m) return;
+      var slug = m[1];
+      var h3 = el.querySelector('h3');
+      if (h3) titleToSlug[h3.textContent.trim()] = slug;
       var url = window.ACTIVATION_COVERS[slug];
       if (!url) return;
-      var thumb = card.querySelector(".media-thumb, .fav-thumb") || card;
-      thumb.style.backgroundImage = 'url("' + url + '")';
-      thumb.style.backgroundSize = "cover";
-      thumb.style.backgroundPosition = "center";
+      var thumb = el.querySelector('.media-thumb, .fav-thumb');
+      if (!thumb) return;
+      setCover(thumb, url);
+    });
+    document.querySelectorAll('.fav-card').forEach(function(card) {
+      var thumb = card.querySelector('.fav-thumb');
+      var titleEl = card.querySelector('.fav-title');
+      if (!thumb || !titleEl) return;
+      var slug = titleToSlug[titleEl.textContent.trim()];
+      var url = slug && window.ACTIVATION_COVERS[slug];
+      if (url) setCover(thumb, url);
     });
   }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyCovers);
-  } else {
-    applyCovers();
+  function setCover(thumb, url) {
+    thumb.style.backgroundImage = 'linear-gradient(rgba(10,8,6,0.28), rgba(10,8,6,0.28)), url(' + url + ')';
+    thumb.style.backgroundSize = 'cover';
+    thumb.style.backgroundPosition = 'center';
   }
-
-  var observer = new MutationObserver(function() { applyCovers(); });
-  observer.observe(document.body, { childList: true, subtree: true });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', apply);
+  } else {
+    apply();
+  }
+  document.addEventListener('click', function() { setTimeout(apply, 150); });
+  var mo = new MutationObserver(function() { apply(); });
+  mo.observe(document.body, { childList: true, subtree: true });
 })();
