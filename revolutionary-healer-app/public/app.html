@@ -233,12 +233,12 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    border: 1px solid var(--gold);
+    border: 1px solid #FFC94D;
     display: flex;
     align-items: center;
     justify-content: center;
   }
-  .play-dot svg { fill: var(--gold); }
+  .play-dot svg { fill: #FFC94D; }
   .media-tag {
     position: absolute;
     top: 12px;
@@ -384,7 +384,7 @@
   .focus-card-identity h3 { font-size: 28px; font-weight: 400; margin: 0; color: var(--white); }
   .focus-card-freq-value { font-size: 16px; color: var(--gold-soft); }
   .status-pill { font-size: 12px; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--taupe-line); color: var(--white); white-space: nowrap; }
-  .status-pill.shifting { border-color: #C9A227; background: rgba(201,162,39,0.12); }
+  .status-pill.shifting { border-color: #2dd4bf; background: rgba(45,212,191,0.14); color: #2dd4bf; }
   .status-pill.embodied { border-color: #4C8B5B; background: rgba(76,139,91,0.14); }
   .focus-card-activity { font-size: 12.5px; color: var(--taupe); display: flex; flex-direction: column; gap: 4px; margin-bottom: 20px; }
   .focus-card-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding-top: 16px; border-top: 1px solid var(--taupe-line); }
@@ -488,7 +488,7 @@
   @media (max-width: 640px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
 
   /* ===== Chat Experience Upgrade + Chat History Drawer (Aug 14) ===== */
-  .rh-chat-shell{max-width:700px;margin:0 auto;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--taupe-line);border-radius:16px;overflow:hidden;}
+  .rh-chat-shell{max-width:700px;margin:0 auto;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--taupe-line);border-radius:16px;overflow:hidden;box-shadow: 0 0 24px rgba(45,212,191,0.35), 0 0 60px rgba(45,212,191,0.15);}
   .rh-chat-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--taupe-line);background:var(--panel-2);}
   .rh-drawer-toggle{background:none;border:none;color:var(--white);font-size:14px;font-weight:600;letter-spacing:.02em;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 2px;}
   .rh-drawer-toggle:hover{color:var(--gold-soft);}
@@ -593,12 +593,12 @@
 
 <nav>
   <div class="wrap">
-    <div class="logo serif" onclick="showMain()" style="cursor: pointer;"><span style="font-family:Georgia,'Iowan Old Style',serif;color:var(--gold);font-weight:600;letter-spacing:0.02em;margin-right:10px;">RH</span>The Revolutionary<span> Healer</span></div>
+    <div class="logo serif" onclick="showMain()" style="cursor: pointer;">The Revolutionary<span> Healer</span></div>
     <div class="navlinks">
       <a onclick="showPage('my-revolution-page'); return false;">My Revolution</a>
       <a onclick="showPage('activations-page'); return false;">Activations</a>
           </div>
-    <a class="member-pill" onclick="showPage('profile-page'); return false;" id="member-pill-label"><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;border:1px solid var(--taupe-line);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 4-6 8-6s8 2 8 6"></path></svg><span style="position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:#2dd4bf;border:2px solid var(--black);"></span></span></a>
+    <a class="member-pill" onclick="showPage('profile-page'); return false;" id="member-pill-label">My Profile</a>
   </div>
 </nav>
 
@@ -638,7 +638,7 @@
       <p style="margin: 0;">Suggested Activation: <strong id="shift-modal-undercurrent-activation">Removing the Frequency of Doubt</strong></p>
     </div>
     <div class="shift-modal-section">
-      <p style="margin: 0;">Progress: <span class="status-pill shifting" id="shift-modal-status">🟡 Shifting</span></p>
+      <p style="margin: 0;">Progress: <span class="status-pill shifting" id="shift-modal-status">● Shifting</span></p>
     </div>
     <div class="shift-modal-actions">
       <button class="btn-primary">Listen Now</button>
@@ -728,7 +728,7 @@
           <div class="focus-card-kicker">Currently Experiencing</div>
           <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
         </div>
-        <div class="status-pill shifting" data-role="focus-status">🟡 Shifting</div>
+        <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
       </div>
       <div class="focus-card-activity" data-role="focus-activity">
         <div data-role="focus-activity-line">Started August 4, 2026</div>
@@ -804,7 +804,7 @@
           <div class="focus-card-kicker">Currently Experiencing</div>
           <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
         </div>
-        <div class="status-pill shifting" data-role="focus-status">🟡 Shifting</div>
+        <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
       </div>
       <div class="focus-card-activity" data-role="focus-activity">
         <div data-role="focus-activity-line">Started August 4, 2026</div>
@@ -2296,7 +2296,7 @@ function embedGapMethodInline() {
           method: r.methodName || '3 Step GAP Method',
           identity: r.divineIdentityName,
           frequency: r.currentFrequency,
-          statusLabel: r.progressStatus === 'embodied' ? '🟢 Embodied' : '🟡 Shifting',
+          statusLabel: r.progressStatus === 'embodied' ? '🟢 Embodied' : '● Shifting',
           statusClass: r.progressStatus === 'embodied' ? 'embodied' : 'shifting',
           date: formatShiftDate(r.createdAt),
           gap: r.gapExplanation,
