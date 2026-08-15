@@ -173,6 +173,36 @@ Distinguish from Removing the Frequency of Doubt: Intuition Activation
 strengthens connection to knowing; Doubt specifically works with the pattern
 of questioning/out-sourcing after knowing.
 
+Creator Within Activation
+What this activation is for: Use this when you know you are the creator of
+your reality, but your mind keeps trying to figure out exactly how
+everything has to happen before you let yourself move. This activation is
+for reconnecting with yourself as the source of your creations -- trusting
+your own wisdom, opening your mind to possibilities you cannot fully explain
+yet, and allowing yourself to create from what feels true instead of only
+from what already looks logical or proven.
+When to use this: You have an idea or desire but keep trying to figure out
+every step before you begin. You know what you want to create, but your
+mind keeps asking, "How is that actually going to happen?" Something feels
+possible for other people but harder to imagine happening for someone like
+you. You keep looking outside yourself for the right answer, strategy or
+way to do it. You received an idea clearly and then immediately started
+analyzing or second-guessing it. You are overthinking a creation instead of
+actually creating it. You want to open yourself to possibilities you cannot
+currently see from where you are standing.
+AI recommendation notes: Recommend when the user is clearly stuck in trying
+to mentally solve or control the path of creation, especially when she
+already has an idea, desire or internal knowing. This is especially useful
+when the issue is: trying to figure out how, over-reliance on logic, looking
+outside herself for the answer, believing something can happen for other
+people but not for her, or difficulty trusting herself as the creator of
+what she wants next. Do not automatically recommend this for general
+indecision -- if the user genuinely does not know what she wants, explore
+first. Do not confuse this with Intuition Activation: Intuition is more
+about recognizing and trusting inner guidance, while Creator Within is
+about trusting herself as the creator and allowing a creation to unfold
+without needing to mentally control the entire path.
+
 Activating Your Gifts Activation
 What this activation is for: Use this when your gifts feel quiet, distant or
 inaccessible, especially when the deeper issue seems to be that you have
@@ -247,6 +277,39 @@ something performs well.
 AI recommendation notes: This is about visibility/presence. Use specific
 behavioral evidence. Do not automatically recommend because someone wants
 more followers.
+
+Visibility Activation
+What this activation is for: Use this when you are ready for more people to
+see you, hear you, recognize your work and experience what you came here to
+share. This activation is for becoming more available to the opportunities
+that can come from being seen -- more people finding your work, sharing it,
+talking about it, reaching out, inviting you into rooms, buying from you or
+being changed by what you are saying -- without automatically shrinking once
+more attention arrives.
+When to use this: You know your work is meant to reach more people. You are
+about to launch, teach, post, speak or put something important in front of
+a bigger audience. More people start paying attention and you suddenly want
+to soften or change your message. A post performs really well and your next
+instinct is to disappear. You want people sharing your work, recognizing
+your name or referring others to you. You are ready for more inquiries,
+opportunities, invitations or attention around your work. You find yourself
+editing the strongest parts of what you want to say once more people are
+watching. You want to become more comfortable with the possibility that
+visibility could create opportunities you never planned for.
+AI recommendation notes: Recommend when the user is working with being seen,
+recognized, heard or discovered in a meaningful way. Visibility should be
+understood through actual outcomes such as more people seeing her content,
+shares, referrals, inquiries, invitations, audience growth, people
+recognizing her work, people associating her name with a specific result, or
+clients finding her. Do not recommend merely because someone says she wants
+more followers -- look for the actual role visibility is playing in what she
+wants or what she is pulling away from. Also distinguish this from the older
+visibility/hiddenness activation if that remains in the library: Visibility
+Activation is broader and more forward-facing ("I am ready for more people
+to see me and for being seen to create opportunities"), while the
+Hiddenness-focused activation is more specifically about visibility already
+working but pulling back once it creates momentum -- if both remain, choose
+based on that distinction.
 
 Emerging Your Soul Into Your Business Activation
 What this activation is for: Use this when your business feels like it has
@@ -376,6 +439,39 @@ money. Do not describe this activation as "recalibrating the nervous
 system" unless it literally teaches physiological regulation --
 nervous-system language is explicitly not to be used as a catch-all
 explanation.
+
+More Than Enough Activation
+What this activation is for: Use this when you can imagine having enough,
+but having more than enough brings up a completely different response. This
+activation is for becoming more available to having more money, support,
+opportunities, time, clients, love or goodness than you immediately need --
+without automatically bracing for it to disappear, looking for the catch,
+or deciding that amount of receiving happens for other people but not for
+you.
+When to use this: Money comes in and part of you immediately expects
+something to take it away. You can picture having enough to cover
+everything, but having a lot left over feels unfamiliar. Something really
+good happens and your mind immediately starts wondering what is going to go
+wrong. You receive more support than you are used to and feel uncomfortable
+simply receiving it. You keep creating exactly enough for the next bill,
+launch or goal, but rarely let yourself imagine having plenty beyond it.
+Business starts moving and you immediately start doing more because you are
+afraid the momentum will disappear. You notice yourself thinking, "That
+kind of life happens for other people, but probably not for someone like
+me." You want to become more comfortable with having more without
+immediately needing to control, spend, justify or reduce it.
+AI recommendation notes: This is broader than a money activation. Recommend
+when the user is showing a pattern around having more than she needs and
+becoming uncomfortable with the amount of receiving, support, opportunity
+or goodness available -- possible areas include money, clients,
+opportunities, time, support, love, resources and ease. Look for actual
+evidence that "more" changes her behavior, for example: more money arrives
+and she immediately panics about losing it; business gets busy and she
+creates unnecessary work; support is offered and she struggles to accept
+it; something good happens and she waits for the other shoe to drop. Do not
+reduce this to generic "abundance" language, and do not tell the user she
+is "unsafe with overflow" simply because she wants more -- explore what she
+actually does, thinks or expects when more becomes available.
 
 DEEPER / ADVANCED ENERGETIC WORK
 
