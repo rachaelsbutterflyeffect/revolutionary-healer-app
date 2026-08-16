@@ -758,6 +758,7 @@
     }).catch(function () {});
   }
   function populateMemberSinceIfReady() {
+    if (window.__RH_MEMBER_SINCE__ && typeof updateProfileStats === 'function') { updateProfileStats(); }
     var msEl = document.getElementById('member-since-value');
     if (!msEl || !window.__RH_MEMBER_SINCE__) return;
     var d = new Date(window.__RH_MEMBER_SINCE__);
@@ -1126,75 +1127,15 @@
       </div>
     </div>
 
-    <div class="revolution-subsection">
-      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Activations</h3></div>
-      <p class="subsection-copy" style="color: var(--taupe);">You haven't completed any activations yet. Explore the Activation Library below to begin.</p>
-    </div>
-
-    <div class="revolution-subsection" style="display:none;">
-      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Activations</h3></div>
-      <p class="subsection-copy">Activations you've completed.</p>
-      <div class="card-grid">
-        <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration">
-          <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
-          <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-            <div class="media-tag">Completed</div>
-            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          </div>
-          <div class="media-body">
-            <h3>Nervous System Recalibration Activation</h3>
-            <div class="media-meta">Guided activation</div>
-            <div class="listening-status">Completed</div>
-          </div>
-        </div>
-        <div class="media-card">
-          <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
-          <div class="media-thumb glyph-wave">
-            <div class="media-tag">Completed</div>
-            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          </div>
-          <div class="media-body">
-            <h3>Removing the Frequency of Doubt</h3>
-            <div class="media-meta">Guided activation</div>
-            <div class="listening-status">Completed</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="revolution-subsection">
+    <div class="revolution-subsection" id="recommended-activations-empty">
       <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Recommended Activations</h3></div>
-      <p class="subsection-copy" style="color: var(--taupe);">Once you complete your first GAP Method and a few activations, personalized recommendations will appear here.</p>
+      <p class="subsection-copy" style="color: var(--taupe);">Once you complete your first GAP Method, personalized recommendations will appear here.</p>
     </div>
 
-    <div class="revolution-subsection" style="display:none;">
+    <div class="revolution-subsection" id="recommended-activations-filled" style="display:none;">
       <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Recommended Activations</h3></div>
       <p class="subsection-copy">Suggested by your AI Guide based on your most recent GAP Method result.</p>
-      <div class="card-grid">
-        <div class="media-card" onclick="handleActivationCardClick('activating-your-gifts')" style="cursor: pointer;" data-activation-slug="activating-your-gifts">
-          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
-          <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-            <div class="media-tag">New</div>
-            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          </div>
-          <div class="media-body">
-            <h3>Activating Your Gifts Activation</h3>
-            <div class="media-meta">Guided activation</div>
-            <div class="listening-status">Not started</div>
-          </div>
-        </div>
-        <div class="media-card" onclick="handleActivationCardClick('expansion-activation')" style="cursor: pointer;" data-activation-slug="expansion-activation">
-          <div class="media-thumb glyph-sunburst"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
-            <div class="media-tag">Recommended</div>
-            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          </div>
-          <div class="media-body">
-            <h3>Expansion Activation</h3>
-            <div class="media-meta">Recommended after your last GAP Method session &mdash; The Leader / Hiddenness</div>
-            <div class="listening-status">Not started</div>
-          </div>
-        </div>
-      </div>
+      <div class="card-grid" id="recommended-activations-grid"></div>
     </div>
 
     <div class="revolution-subsection" id="gap-method-activations-subsection">
@@ -1731,7 +1672,7 @@
     </div>
     <div class="activation-detail-actions">
       <button class="heart-btn media-heart" id="activation-detail-heart" onclick="toggleHeart(this)" style="position: static;">♡</button>
-      <button class="btn-secondary" onclick="showPage('activations-page'); return false;">Add to My Activations</button>
+      <button class="btn-secondary" id="activation-detail-mark-listened-btn" onclick="if (window.__rhCurrentActivationSlug) { markActivationCompleted(window.__rhCurrentActivationSlug); this.textContent = '✓ Marked as Listened'; this.disabled = true; }">Mark as Listened</button>
     </div>
   </div>
 </section>
@@ -1806,9 +1747,9 @@
     <div class="profile-card">
       <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Your Revolution</h3></div>
       <div class="stats-grid">
-        <div class="stat-tile"><div class="stat-value">0</div><div class="stat-label">Activations Completed</div></div>
-        <div class="stat-tile"><div class="stat-value">0</div><div class="stat-label">Embodied Shifts</div></div>
-        <div class="stat-tile"><div class="stat-value">0</div><div class="stat-label">Days Transforming</div></div>
+        <div class="stat-tile"><div class="stat-value" id="stat-activations-completed">0</div><div class="stat-label">Activations Completed</div></div>
+        <div class="stat-tile"><div class="stat-value" id="stat-embodied-shifts">0</div><div class="stat-label">Embodied Shifts</div></div>
+        <div class="stat-tile"><div class="stat-value" id="stat-days-transforming">0</div><div class="stat-label">Days Transforming</div></div>
       </div>
     </div>
 
@@ -1819,7 +1760,6 @@
         <div class="avatar-actions">
           <input type="file" id="profile-photo-input" accept="image/*" style="display:none;">
           <button class="btn-secondary" onclick="document.getElementById('profile-photo-input').click()">Upload Photo</button>
-          <button class="btn-secondary" onclick="document.getElementById('profile-photo-input').click()">Replace Photo</button>
           <button class="btn-secondary" onclick="handleRemovePhotoClick()">Remove Photo</button>
         </div>
       </div>
@@ -1864,19 +1804,6 @@
         <button class="btn-primary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/account','_blank')">Manage Membership</button>
         <button class="btn-secondary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/purchase_history','_blank')">Update Payment Method</button>
         <button class="btn-danger-outline" onclick="if (confirm('This will take you to Kajabi, where you can cancel your Revolutionary Healer membership. You will keep access until the end of your current billing period. Continue?')) { window.open('https://www.rachaelsbutterflyeffect.com/settings/purchase_history','_blank'); }">Cancel Membership</button>
-      </div>
-    </div>
-
-    <div class="profile-card">
-      <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Billing</h3></div>
-      <div class="info-row"><div class="info-label">Current Payment Method</div><div class="info-value">Visa ending in 4821</div></div>
-      <div class="info-row"><div class="info-label">Next Payment</div><div class="info-value">September 3, 2026 &mdash; $30.00 USD</div></div>
-      <div class="eyebrow" style="margin: 20px 0 6px;">Billing History</div>
-      <div class="qd-log-row"><div class="desc">Revolutionary Healer Full Access</div><div><div class="delta">$30.00</div><div class="meta">Aug 3</div></div></div>
-      <div class="qd-log-row"><div class="desc">Revolutionary Healer Full Access</div><div><div class="delta">$30.00</div><div class="meta">Jul 3</div></div></div>
-      <div class="btn-row" style="margin-top: 20px;">
-        <button class="btn-secondary">Update Payment Method</button>
-        <button class="btn-disabled" disabled>Download Receipt (coming soon)</button>
       </div>
     </div>
 
@@ -2352,7 +2279,11 @@
       fill.style.width = pct + '%';
       curEl.textContent = rhFormatTime(audio.currentTime);
     });
-    audio.addEventListener('ended', function() { setPlayIcon(false); fill.style.width = '0%'; });
+    audio.addEventListener('ended', function() {
+      setPlayIcon(false);
+      fill.style.width = '0%';
+      if (window.__rhCurrentActivationSlug) { markActivationCompleted(window.__rhCurrentActivationSlug); }
+    });
     track.addEventListener('click', function(e) {
       var rect = track.getBoundingClientRect();
       var pct = (e.clientX - rect.left) / rect.width;
@@ -2367,6 +2298,14 @@
     var a = ACTIVATION_DETAILS[slug];
     if (!a) { return; }
     window.__rhCurrentActivation = a;
+    window.__rhCurrentActivationSlug = slug;
+    if (typeof applyCompletionBadges === 'function') { applyCompletionBadges(); }
+    var markBtn = document.getElementById('activation-detail-mark-listened-btn');
+    if (markBtn) {
+      var alreadyDone = typeof getCompletedActivationSlugs === 'function' && getCompletedActivationSlugs().indexOf(slug) !== -1;
+      markBtn.textContent = alreadyDone ? '✓ Marked as Listened' : 'Mark as Listened';
+      markBtn.disabled = alreadyDone;
+    }
     document.getElementById('activation-detail-title').textContent = a.title;
     document.getElementById('activation-detail-description').textContent = a.description || 'Description coming soon.';
     renderRhActivationPlayer(a);
@@ -2480,6 +2419,104 @@
       listHtml = '<div class="card center"><p class="copy">No Shifts yet. <a href="#" onclick="showMain(); embedGapMethodInline(); return false;" style="color: var(--gold);">Start the GAP Method</a> to create your first one.</p></div>';
     }
     document.querySelectorAll('[data-role="shifts-list"]').forEach(function(el) { el.innerHTML = listHtml; });
+
+    updateRecommendedActivations(shifts);
+    updateProfileStats();
+  }
+
+  // ============================================================
+  // Activation completion tracking + live Profile stats (Aug 16,
+  // Rachael's request). "Embodied Shifts" and "Days Transforming" pull from
+  // real data that was already available (shift progressStatus, member join
+  // date) but never wired to these tiles. "Activations Completed" has no
+  // cross-device Airtable field yet, so for now it's tracked per-browser via
+  // localStorage (same pattern as the active-chat-id tracking above) --
+  // marked automatically when the custom audio player finishes, or manually
+  // via "Mark as Listened" on the activation detail page. A future step would
+  // move this into Airtable so it syncs across devices.
+  function getCompletedActivationSlugs() {
+    if (!RH_EMAIL) { return []; }
+    try {
+      return JSON.parse(localStorage.getItem('rh_completed_activations_' + RH_EMAIL) || '[]');
+    } catch (e) { return []; }
+  }
+
+  function markActivationCompleted(slug) {
+    if (!RH_EMAIL || !slug) { return; }
+    var list = getCompletedActivationSlugs();
+    if (list.indexOf(slug) === -1) {
+      list.push(slug);
+      try { localStorage.setItem('rh_completed_activations_' + RH_EMAIL, JSON.stringify(list)); } catch (e) {}
+    }
+    applyCompletionBadges();
+    updateProfileStats();
+  }
+
+  function applyCompletionBadges() {
+    var completed = getCompletedActivationSlugs();
+    document.querySelectorAll('[data-activation-slug]').forEach(function(card) {
+      var slug = card.getAttribute('data-activation-slug');
+      var statusEl = card.querySelector('.listening-status');
+      if (statusEl) { statusEl.textContent = completed.indexOf(slug) !== -1 ? 'Completed' : 'Not started'; }
+    });
+  }
+
+  function updateProfileStats() {
+    var completedEl = document.getElementById('stat-activations-completed');
+    var embodiedEl = document.getElementById('stat-embodied-shifts');
+    var daysEl = document.getElementById('stat-days-transforming');
+    if (completedEl) { completedEl.textContent = String(getCompletedActivationSlugs().length); }
+    if (embodiedEl) { embodiedEl.textContent = String(SHIFTS.filter(function(s) { return s.statusClass === 'embodied'; }).length); }
+    if (daysEl && window.__RH_MEMBER_SINCE__) {
+      var d = new Date(window.__RH_MEMBER_SINCE__);
+      if (!isNaN(d)) {
+        var days = Math.floor((Date.now() - d.getTime()) / 86400000) + 1;
+        daysEl.textContent = String(Math.max(1, days));
+      }
+    }
+  }
+
+  // Matches a shift's recommended-activation display name (e.g.
+  // "Expansion Activation") back to its slug via the same ACTIVATION_DETAILS
+  // map used to render the detail page, so recommended cards can be cloned
+  // straight from the already-correct Activation Library markup.
+  function getActivationSlugByTitle(title) {
+    if (!title) { return null; }
+    var norm = title.trim().toLowerCase();
+    for (var slug in ACTIVATION_DETAILS) {
+      if (ACTIVATION_DETAILS[slug].title && ACTIVATION_DETAILS[slug].title.trim().toLowerCase() === norm) { return slug; }
+    }
+    return null;
+  }
+
+  function updateRecommendedActivations(shifts) {
+    var grid = document.getElementById('recommended-activations-grid');
+    var emptyBlock = document.getElementById('recommended-activations-empty');
+    var filledBlock = document.getElementById('recommended-activations-filled');
+    if (!grid || !emptyBlock || !filledBlock) { return; }
+    var slugs = [];
+    if (shifts && shifts.length) {
+      var latest = shifts[0];
+      var primarySlug = getActivationSlugByTitle(latest.activation);
+      if (primarySlug) { slugs.push(primarySlug); }
+      if (latest.undercurrent && latest.undercurrent.activation) {
+        var underSlug = getActivationSlugByTitle(latest.undercurrent.activation);
+        if (underSlug && slugs.indexOf(underSlug) === -1) { slugs.push(underSlug); }
+      }
+    }
+    grid.innerHTML = '';
+    slugs.forEach(function(slug) {
+      var source = document.querySelector('#activation-library-grid [data-activation-slug="' + slug + '"]');
+      if (source) { grid.appendChild(source.cloneNode(true)); }
+    });
+    applyCompletionBadges();
+    if (grid.children.length) {
+      emptyBlock.style.display = 'none';
+      filledBlock.style.display = '';
+    } else {
+      filledBlock.style.display = 'none';
+      emptyBlock.style.display = '';
+    }
   }
 
   function promptGapMethodInChat() {
@@ -2948,6 +2985,8 @@ window.addEventListener('message', function(evt) {
     initProfileFields();
     loadProfilePhoto();
     loadMemberRevolutionData();
+    applyCompletionBadges();
+    updateProfileStats();
   function readFileAsDataURL(file) {
     return new Promise(function(resolve, reject) {
       var reader = new FileReader();
