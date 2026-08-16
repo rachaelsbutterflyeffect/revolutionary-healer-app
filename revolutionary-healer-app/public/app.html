@@ -2428,13 +2428,17 @@
   // Activation completion tracking + live Profile stats (Aug 16,
   // Rachael's request). "Embodied Shifts" and "Days Transforming" pull from
   // real data that was already available (shift progressStatus, member join
-  // date) but never wired to these tiles. "Activations Completed" has no
-  // cross-device Airtable field yet, so for now it's tracked per-browser via
-  // localStorage (same pattern as the active-chat-id tracking above) --
-  // marked automatically when the custom audio player finishes, or manually
-  // via "Mark as Listened" on the activation detail page. A future step would
-  // move this into Airtable so it syncs across devices.
+  // date) but never wired to these tiles. "Activations Completed" now syncs
+  // to the ActivationCompletions table in Airtable via /api/activation-completions
+  // (added Aug 16), so it's the same across every device a member logs into --
+  // localStorage is kept only as an instant-UI cache / offline fallback.
+  // Marked automatically when the custom audio player finishes, or manually
+  // via "Mark as Listened" on the activation detail page.
+  var COMPLETED_ACTIVATION_SLUGS = [];
+  var completedActivationsLoaded = false;
+
   function getCompletedActivationSlugs() {
+    if (completedActivationsLoaded) { return COMPLETED_ACTIVATION_SLUGS; }
     if (!RH_EMAIL) { return []; }
     try {
       return JSON.parse(localStorage.getItem('rh_completed_activations_' + RH_EMAIL) || '[]');
@@ -2443,13 +2447,40 @@
 
   function markActivationCompleted(slug) {
     if (!RH_EMAIL || !slug) { return; }
-    var list = getCompletedActivationSlugs();
+    var list = getCompletedActivationSlugs().slice();
     if (list.indexOf(slug) === -1) {
       list.push(slug);
+      COMPLETED_ACTIVATION_SLUGS = list;
+      completedActivationsLoaded = true;
       try { localStorage.setItem('rh_completed_activations_' + RH_EMAIL, JSON.stringify(list)); } catch (e) {}
+      fetch('/api/activation-completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: RH_EMAIL, activationSlug: slug })
+      }).catch(function(e) {});
     }
     applyCompletionBadges();
     updateProfileStats();
+  }
+
+  // Loads the member's real completion history from Airtable on page load
+  // and merges in anything tracked locally that hasn't synced yet, so the
+  // stat/badges are correct across devices from the first paint onward.
+  async function loadCompletedActivations() {
+    if (!RH_EMAIL) return;
+    try {
+      var res = await fetch('/api/activation-completions?email=' + encodeURIComponent(RH_EMAIL));
+      var data = await res.json();
+      var slugs = data.slugs || [];
+      var local = [];
+      try { local = JSON.parse(localStorage.getItem('rh_completed_activations_' + RH_EMAIL) || '[]'); } catch (e) {}
+      local.forEach(function(s) { if (slugs.indexOf(s) === -1) { slugs.push(s); } });
+      COMPLETED_ACTIVATION_SLUGS = slugs;
+      completedActivationsLoaded = true;
+      try { localStorage.setItem('rh_completed_activations_' + RH_EMAIL, JSON.stringify(slugs)); } catch (e) {}
+      applyCompletionBadges();
+      updateProfileStats();
+    } catch (e) {}
   }
 
   function applyCompletionBadges() {
@@ -2987,6 +3018,7 @@ window.addEventListener('message', function(evt) {
     loadMemberRevolutionData();
     applyCompletionBadges();
     updateProfileStats();
+    loadCompletedActivations();
   function readFileAsDataURL(file) {
     return new Promise(function(resolve, reject) {
       var reader = new FileReader();
