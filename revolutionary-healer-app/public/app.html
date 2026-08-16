@@ -717,6 +717,18 @@
   // bounce back there immediately if none is stored, before any content
   // paints, rather than showing member content with no known member.
   var RH_EMAIL = localStorage.getItem('rh_member_email');
+  // Aug 16 (Rachael's 5-day auto-logout request): members can save this page
+  // to their phone home screen like an app, so a stored login could otherwise
+  // last forever. Forces re-entry of email + password every 5 days, same as
+  // if they'd been fully signed out -- independent of the cancellation check
+  // below, which only covers Kajabi access being revoked.
+  var RH_LOGIN_AT = Number(localStorage.getItem('rh_member_login_at') || 0);
+  var RH_FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
+  if (RH_EMAIL && (!RH_LOGIN_AT || (Date.now() - RH_LOGIN_AT) >= RH_FIVE_DAYS_MS)) {
+    localStorage.removeItem('rh_member_email');
+    localStorage.removeItem('rh_member_login_at');
+    RH_EMAIL = null;
+  }
   if (!RH_EMAIL) {
     window.location.href = '/';
   } else {
@@ -737,6 +749,7 @@
       var stillEntitled = !!(data && (data.memberActive || data.tierActive || data.onBetaMembership));
       if (!stillEntitled) {
         localStorage.removeItem('rh_member_email');
+        localStorage.removeItem('rh_member_login_at');
         window.location.href = '/';
         return;
       }
@@ -2494,6 +2507,7 @@ function embedGapMethodInline() {
 
   function signOutMember() {
     localStorage.removeItem('rh_member_email');
+    localStorage.removeItem('rh_member_login_at');
     window.location.href = '/';
   }
 
