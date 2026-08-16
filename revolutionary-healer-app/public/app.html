@@ -449,11 +449,11 @@
   .fav-body { padding: 12px 14px 14px; }
   .fav-title { font-size: 13.5px; color: var(--white); margin-bottom: 10px; line-height: 1.3; }
   .fav-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-  .heart-btn { background: none; border: none; cursor: pointer; font-size: 17px; color: var(--teal-soft); padding: 0; line-height: 1; text-shadow: 0 0 6px rgba(63,168,163,0.55); }
-  .heart-btn.filled { color: var(--teal); text-shadow: 0 0 6px rgba(1,103,108,0.7), 0 0 14px rgba(63,168,163,0.6); }
+  .heart-btn { background: none; border: none; cursor: pointer; font-size: 17px; color: var(--teal-soft); padding: 0; line-height: 1; text-shadow: 0 0 3px rgba(255,255,255,0.5), 0 0 8px rgba(94,234,212,0.8), 0 0 16px rgba(63,168,163,0.75); }
+  .heart-btn.filled { color: #5EEAD4; text-shadow: 0 0 4px #fff, 0 0 10px #5EEAD4, 0 0 20px rgba(63,168,163,0.9), 0 0 34px rgba(1,103,108,0.8); }
   .app-emoji-icon { width: 22px; height: 22px; min-width: 22px; min-height: 22px; vertical-align: -6px; display: inline-block; object-fit: contain; margin-right: 1px; }
   @media (max-width: 640px) { .app-emoji-icon { width: 26px; height: 26px; min-width: 26px; min-height: 26px; vertical-align: -7px; } }
-  .heart-glow-emoji { color: var(--teal); font-size: 1.3em; text-shadow: 0 0 6px rgba(1,103,108,0.75), 0 0 14px rgba(63,168,163,0.65); }
+  .heart-glow-emoji { color: #5EEAD4; font-size: 1.3em; text-shadow: 0 0 4px #fff, 0 0 10px #5EEAD4, 0 0 20px rgba(63,168,163,0.9), 0 0 34px rgba(1,103,108,0.8); }
   @media (max-width: 640px) { .heart-glow-emoji { font-size: 1.5em; } }
   .listen-btn { background: none; border: 1px solid var(--taupe-line); border-radius: 999px; color: var(--taupe); font-size: 11.5px; padding: 5px 12px; cursor: pointer; font-family: inherit; }
   .media-card { position: relative; }
@@ -961,14 +961,6 @@
         <h2 class="serif">My Favorites</h2>
         <p>These are the activations you've chosen to keep close.</p>
       </div>
-    </div>
-    <div class="page-toolbar">
-      <input type="search" class="search-input" placeholder="Search your favorites...">
-      <select class="sort-select">
-        <option>Most Recently Favorited</option>
-        <option>Alphabetical</option>
-        <option>Most Listened</option>
-      </select>
     </div>
     <div class="card-grid">
       <div class="media-card">
