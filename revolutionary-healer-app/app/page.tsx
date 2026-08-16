@@ -301,54 +301,25 @@ gap: 18,
 }}
 >
 <Mockup label="My Revolution">
-<div style={{ fontSize: 13, color: MUTED, marginBottom: 8 }}>Your current Shift</div>
-<div style={{ background: BG, border: `1px solid ${BORDER}`, borderRadius: 10, padding: 12 }}>
-<div style={{ fontSize: 13, fontWeight: 600, color: GOLD, marginBottom: 4 }}>The Leader</div>
-<div style={{ fontSize: 12, color: MUTED, lineHeight: 1.5 }}>
-Current frequency: Hiddenness → moving toward Visibility
-</div>
-</div>
+<img
+src="/images/App%20Sneak%20peak%203.jpg"
+alt="My Revolution screen inside the app"
+style={{ width: "100%", height: 260, objectFit: "cover", objectPosition: "top", borderRadius: 10, border: `1px solid ${BORDER}`, display: "block" }}
+/>
 </Mockup>
-<Mockup label="3-Step GAP Method">
-<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-{["Step 1 · Diagnose", "Step 2 · Discover", "Step 3 · Your Shift"].map((s) => (
-<div
-key={s}
-style={{
-background: BG,
-border: `1px solid ${BORDER}`,
-borderRadius: 8,
-padding: "8px 10px",
-fontSize: 12,
-color: TEXT,
-}}
->
-{s}
-</div>
-))}
-</div>
+<Mockup label="Your AI Guide">
+<img
+src="/images/app%20sneak%20peak%201.jpg"
+alt="Home screen and AI chat companion inside the app"
+style={{ width: "100%", height: 260, objectFit: "cover", objectPosition: "top", borderRadius: 10, border: `1px solid ${BORDER}`, display: "block" }}
+/>
 </Mockup>
 <Mockup label="Activation Library">
-<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-{["Embodiment", "Frequency Shifts", "Deep Healing"].map((s) => (
-<div
-key={s}
-style={{
-background: BG,
-border: `1px solid ${BORDER}`,
-borderRadius: 8,
-padding: "8px 10px",
-fontSize: 12,
-color: TEXT,
-display: "flex",
-justifyContent: "space-between",
-}}
->
-<span>{s}</span>
-<span style={{ color: TEAL_SOFT }}>▶</span>
-</div>
-))}
-</div>
+<img
+src="/images/App%20Sneak%20Peak%202.jpg"
+alt="Activation Library screen inside the app"
+style={{ width: "100%", height: 260, objectFit: "cover", objectPosition: "top", borderRadius: 10, border: `1px solid ${BORDER}`, display: "block" }}
+/>
 </Mockup>
 </div>
 </div>
