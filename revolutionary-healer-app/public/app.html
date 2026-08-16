@@ -10,6 +10,7 @@
 <meta name="theme-color" content="#0a0806">
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Revolutionary Healer — App Mockup</title>
 <style>
   :root {
@@ -591,6 +592,117 @@
   @media (max-width:640px){
     .rh-chat-shell{border-radius:0;border-left:none;border-right:none;}
     .rh-chat-thread{max-height:60vh;}
+  }
+
+  /* ============================================================
+     RESPONSIVE: MOBILE (phones, up to 640px)
+     Added Aug 16 -- Rachael reported text too small to read on
+     mobile. Root cause was a missing viewport meta tag (now added
+     above), which made phones render the whole desktop layout at
+     ~980px wide and shrink it to fit. This block re-tunes font
+     sizes, spacing, and layout (single-column grids, stacked nav,
+     full-width buttons) for real phone-width rendering. Desktop
+     styles above are untouched.
+     ============================================================ */
+  @media (max-width: 640px) {
+    .wrap { padding: 0 18px; }
+
+    /* nav: stack logo above links so nothing gets crushed */
+    nav { padding: 16px 0; }
+    nav .wrap { flex-wrap: wrap; justify-content: center; gap: 10px; text-align: center; }
+    .logo { flex: 1 1 100%; text-align: center; font-size: 17px; }
+    .navlinks { gap: 22px; font-size: 12.5px; justify-content: center; flex: 1 1 auto; }
+    .member-pill { font-size: 12px; padding: 7px 14px; }
+
+    /* hero */
+    .hero { padding: 44px 0 40px; }
+    h1 { font-size: 28px; line-height: 1.3; max-width: 100%; }
+    .hero-subline { font-size: 14px; }
+    .hero p.sub { font-size: 15px; line-height: 1.55; margin-bottom: 32px; }
+    .focus-pill { font-size: 12.5px; padding: 8px 14px; }
+
+    .chatbox { padding: 14px 14px 14px 18px; border-radius: 16px; }
+    .chatbox textarea { font-size: 16px; height: calc(16px * 1.5 * 3); }
+    .send-btn { padding: 12px 18px; font-size: 14px; }
+    .starter { font-size: 12px; padding: 7px 13px; }
+
+    /* sections */
+    section.block { padding: 48px 0; }
+    .section-head { flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .section-head h2 { font-size: 21px; }
+    .section-head p { font-size: 13.5px; }
+
+    /* activation cards: single column, taller thumbs, bigger text */
+    .card-grid { grid-template-columns: 1fr; gap: 16px; }
+    .media-thumb { height: 190px; }
+    .media-body { padding: 16px; }
+    .media-body h3 { font-size: 16.5px; }
+    .media-meta, .media-description { font-size: 13.5px; }
+
+    .focus-card { padding: 22px 18px; margin-bottom: 28px; }
+    .focus-card-body { gap: 20px; }
+    .focus-card-freq-value { font-size: 17px; }
+
+    .shift-row { padding: 15px 16px; gap: 14px; }
+    .shift-identity { font-size: 18px; }
+    .shift-method { font-size: 12px; }
+
+    .stat-value { font-size: 22px; }
+
+    .field-grid { grid-template-columns: 1fr; gap: 16px; }
+    .field-select { font-size: 16px; padding: 12px 14px; }
+    .avatar-circle { width: 56px; height: 56px; font-size: 19px; }
+
+    .modal-card { padding: 24px 20px; max-width: 94vw; }
+    .shift-modal-actions button { flex: 1 1 100%; font-size: 14px; padding: 13px 18px; }
+    .activation-detail-actions { flex-wrap: wrap; }
+    .activation-detail-actions .btn-secondary { flex: 1 1 auto; font-size: 14px; padding: 12px 16px; }
+    .offer-card { padding: 22px 18px; }
+    .subsection-head { flex-wrap: wrap; gap: 8px; }
+    .subsection-head h3 { font-size: 15px; }
+
+    .explore-card { padding: 22px 18px; }
+    .explore-card h3 { font-size: 16.5px; }
+    .explore-card p { font-size: 14px; }
+
+    .page-toolbar { gap: 10px; }
+    .filter-chip { font-size: 13.5px; padding: 9px 16px; }
+
+    .go-deeper-intro, .go-deeper-clarify, .go-deeper-closing, .subsection-copy, .offer-benefits, .offer-card .offer-desc { font-size: 14px; }
+
+    /* chat widget */
+    .rh-chat-welcome h3 { font-size: 19px; }
+    .rh-chat-welcome p { font-size: 14.5px; }
+    .rh-msg { font-size: 15px; max-width: 90%; }
+    .rh-chat-textarea { font-size: 16px; }
+    .rh-drawer-toggle { font-size: 13.5px; }
+
+    footer p { font-size: 13px; }
+
+    #hero-gap-embed { max-width: 100%; }
+    #hero-gap-embed-iframe { min-height: 700px; }
+  }
+
+  /* ============================================================
+     RESPONSIVE: TABLET (iPad-ish, 641px - 1024px)
+     A middle-ground layout: bigger and roomier than mobile, but
+     simplified from the 3/4-column desktop grid so cards and text
+     don't feel cramped on a ~768-1024px screen.
+     ============================================================ */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .wrap { padding: 0 28px; }
+
+    h1 { font-size: 36px; }
+    .hero { padding: 72px 0 60px; }
+
+    .card-grid { grid-template-columns: repeat(2, 1fr); gap: 18px; }
+    .media-thumb { height: 160px; }
+
+    .section-head h2 { font-size: 24px; }
+
+    .field-grid { grid-template-columns: 1fr 1fr; }
+
+    .rh-chat-shell { max-width: 640px; }
   }
 
   </style>
