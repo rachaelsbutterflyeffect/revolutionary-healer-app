@@ -1,9 +1,11 @@
 // Airtable client + typed accessors.
 // Spec ref: SPEC.md §7 (lib/airtable.js) and §8 (data model).
 
+
 import Airtable from "airtable";
 import crypto from "crypto";
 import { DIVINE_IDENTITIES } from "./divineIdentities";
+
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -25,6 +27,7 @@ function getBase() {
 }
 const base = (...args) => getBase()(...args);
 
+
 export const Tables = {
   Members: "Members",
   Chats: "Chats",
@@ -35,6 +38,10 @@ export const Tables = {
   Events: "Events",
   GapMethodResults: "GapMethodResults",
   Shifts: "Shifts",
+  // Aug 16, Rachael's request: server-side "Activations Completed" tracking
+  // (one record per completed activation), replaces the previous
+  // localStorage-only stopgap.
+  ActivationCompletions: "ActivationCompletions",
   // Aug 13, Rachael's Chat History + Memory Architecture doc: replaces the
   // single blob-based Chats table (above, kept for backward compat / unused
   // by the frontend today) with real per-message persistence + cross-chat
@@ -44,6 +51,7 @@ export const Tables = {
   MemberMemories: "MemberMemories",
 };
 
+
 // Lowercase + trim for consistent matching. Spec (Aug 12, Rachael's GAP
 // Method persistence instruction): GAP Method results must be matched on
 // normalized email, since the same person's email can arrive from Kajabi
@@ -52,6 +60,7 @@ export const Tables = {
 export function normalizeEmail(email) {
   return typeof email === "string" ? email.trim().toLowerCase() : email;
 }
+
 
 /** Find a single record by an exact field match. Returns null if not found. */
 export async function findOneByField(table, field, value) {
@@ -64,13 +73,16 @@ export async function findOneByField(table, field, value) {
   return records[0] ?? null;
 }
 
+
 export async function getMemberByEmail(email) {
   return findOneByField(Tables.Members, "email", email);
 }
 
+
 export async function getChatsByEmail(email) {
   return findOneByField(Tables.Chats, "email", email);
 }
+
 
 export async function upsertChats(email, convos) {
   const existing = await getChatsByEmail(email);
@@ -81,12 +93,14 @@ export async function upsertChats(email, convos) {
   return base(Tables.Chats).create({ email, ...fields });
 }
 
+
 export async function listActiveFocusAreas() {
   const records = await base(Tables.FocusAreas)
     .select({ filterByFormula: "{active} = 1", sort: [{ field: "display_order", direction: "asc" }] })
     .all();
   return records.map((r) => r.fields);
 }
+
 
 export async function logEvent(type, meta, memberRecordId) {
   return base(Tables.Events).create({
@@ -96,6 +110,7 @@ export async function logEvent(type, meta, memberRecordId) {
     ...(memberRecordId ? { member: [memberRecordId] } : {}),
   });
 }
+
 
 // =============================================================================
 // GAP METHOD RESULTS (Aug 12, Rachael's GAP Method persistence instruction)
@@ -115,9 +130,11 @@ export async function logEvent(type, meta, memberRecordId) {
 //      GAP Method Results row, so My Revolution can surface the existing
 //      Shift without re-running the diagnostic.
 
+
 export async function getGapMethodResultByEmail(email) {
   return findOneByField(Tables.GapMethodResults, "email", normalizeEmail(email));
 }
+
 
 export async function upsertGapMethodResultOnPurchase({ email, offerId, firstName }) {
   const normalized = normalizeEmail(email);
@@ -151,6 +168,7 @@ export async function upsertGapMethodResultOnPurchase({ email, offerId, firstNam
   return { email: normalized, sessionToken };
 }
 
+
 // Resolves a magic-link token (from the purchase confirmation email) back to
 // the GapMethodResults record it belongs to, server-side only -- the token is
 // opaque and carries no PII, so it's safe to put in a URL. Does not mark it
@@ -160,9 +178,11 @@ export async function getGapMethodResultByToken(token) {
   return findOneByField(Tables.GapMethodResults, "session_token", token);
 }
 
+
 export async function markGapMethodTokenUsed(recordId) {
   return base(Tables.GapMethodResults).update(recordId, { token_used: true });
 }
+
 
 export async function saveGapMethodDiagnostic({
   email,
@@ -204,6 +224,7 @@ export async function saveGapMethodDiagnostic({
   return saved;
 }
 
+
 export async function linkGapMethodResultToMember(email, memberRecordId) {
   const normalized = normalizeEmail(email);
   const existing = await getGapMethodResultByEmail(normalized);
@@ -224,6 +245,7 @@ export async function linkGapMethodResultToMember(email, memberRecordId) {
   }
   return updated;
 }
+
 
 // Maps a GapMethodResults record's completed diagnostic into the first My
 // Revolution "Shift" card (see lib/shifts.js for the card's full pure-logic
@@ -254,6 +276,7 @@ export async function createGapMethodShift(gapMethodResultRecord, memberRecordId
   await base(Tables.GapMethodResults).update(gapMethodResultRecord.id, { shift_created: true });
 }
 
+
 export async function getShiftsByEmail(email) {
   const normalized = normalizeEmail(email);
   const records = await base(Tables.Shifts)
@@ -263,6 +286,31 @@ export async function getShiftsByEmail(email) {
     })
     .all();
   return records;
+}
+
+
+// Aug 16, Rachael's request: log + read per-member Activation completions
+// so the "Activations Completed" Profile stat and the Completed/Not started
+// badges sync across every device a member logs into.
+export async function logActivationCompleted(email, activationSlug) {
+  const normalized = normalizeEmail(email);
+  return base(Tables.ActivationCompletions).create({
+    member_email: normalized,
+    activation_slug: activationSlug,
+    completed_at: new Date().toISOString(),
+  });
+}
+
+export async function getCompletedActivationSlugsByEmail(email) {
+  const normalized = normalizeEmail(email);
+  const records = await base(Tables.ActivationCompletions)
+    .select({
+      filterByFormula: `{member_email} = "${normalized}"`,
+      sort: [{ field: "completed_at", direction: "desc" }],
+    })
+    .all();
+  const slugs = records.map((r) => r.fields.activation_slug).filter(Boolean);
+  return Array.from(new Set(slugs));
 }
 
 export async function getShiftById(shiftId) {
@@ -275,6 +323,7 @@ export async function getShiftById(shiftId) {
     return null;
   }
 }
+
 
 // Update a Shift's progress fields (Aug 15, Rachael's "Update Progress" /
 // "Mark This Shift As Embodied" wiring): the only two fields either the
@@ -289,6 +338,7 @@ export async function updateShiftFields(shiftId, fields) {
   });
 }
 
+
 // =============================================================================
 // MEMBER AUTH (Aug 13, Rachael's Kajabi-linked landing page request)
 // =============================================================================
@@ -300,6 +350,7 @@ export async function updateShiftFields(shiftId, fields) {
 // A member who isn't found, or isn't an active paying member, can never
 // bootstrap a password -- see app/api/auth/login/route.ts for that check.
 
+
 export async function setMemberPassword(recordId, passwordHash) {
   return base(Tables.Members).update(recordId, {
     password_hash: passwordHash,
@@ -308,6 +359,7 @@ export async function setMemberPassword(recordId, passwordHash) {
   });
 }
 
+
 export async function createMemberResetToken(recordId, token, expiresAtISO) {
   return base(Tables.Members).update(recordId, {
     reset_token: token,
@@ -315,10 +367,12 @@ export async function createMemberResetToken(recordId, token, expiresAtISO) {
   });
 }
 
+
 export async function getMemberByResetToken(token) {
   if (!token) return null;
   return findOneByField(Tables.Members, "reset_token", token);
 }
+
 
 export async function clearMemberResetToken(recordId) {
   return base(Tables.Members).update(recordId, {
@@ -326,6 +380,7 @@ export async function clearMemberResetToken(recordId) {
     reset_token_expires_at: null,
   });
 }
+
 
 // =============================================================================
 // CHAT SESSIONS + MESSAGES + MEMBER MEMORY
@@ -337,6 +392,7 @@ export async function clearMemberResetToken(recordId) {
 //   - MemberMemories: persistent cross-chat memory, for REVOLUTIONARY
 //     HEALER -- only confirmed/meaningful info, retrieved by relevance, not
 //     dumped wholesale into every prompt. See lib/memory.js for extraction.
+
 
 export async function createChatSession({ email, title = "New Chat", focusAreaSlug = "general" }) {
   const now = new Date().toISOString();
@@ -353,6 +409,7 @@ export async function createChatSession({ email, title = "New Chat", focusAreaSl
   return record;
 }
 
+
 export async function getChatSessionById(chatId) {
   if (!chatId) return null;
   try {
@@ -364,6 +421,7 @@ export async function getChatSessionById(chatId) {
     return null;
   }
 }
+
 
 // Sorted most-recently-active first, per PART 4 ("Recent Conversations").
 // Excludes archived chats by default -- the drawer's main list shouldn't
@@ -379,17 +437,21 @@ export async function listChatSessionsByEmail(email, { includeArchived = false }
   return records;
 }
 
+
 export async function updateChatSession(chatId, fields) {
   return base(Tables.ChatSessions).update(chatId, fields);
 }
+
 
 export async function renameChatSession(chatId, title) {
   return base(Tables.ChatSessions).update(chatId, { title, title_is_auto: false });
 }
 
+
 export async function archiveChatSession(chatId, archived = true) {
   return base(Tables.ChatSessions).update(chatId, { archived });
 }
+
 
 export async function deleteChatSession(chatId) {
   const messages = await listMessagesByChatId(chatId);
@@ -402,6 +464,7 @@ export async function deleteChatSession(chatId) {
   return base(Tables.ChatSessions).destroy(chatId);
 }
 
+
 export async function createMessage({ chatId, email, role, text, activationRecommended = "" }) {
   const record = await base(Tables.ChatMessages).create({
     chat_session_id: chatId,
@@ -413,6 +476,7 @@ export async function createMessage({ chatId, email, role, text, activationRecom
   });
   return record;
 }
+
 
 // Ascending chronological order (oldest first) -- how a chat reads on screen.
 // `limit` caps how many of the MOST RECENT messages come back (still returned
@@ -434,11 +498,13 @@ export async function listMessagesByChatId(chatId, options = {}) {
   return records;
 }
 
+
 // -----------------------------------------------------------------------
 // Member memory -- persistent, cross-chat. See lib/memory.js for the
 // extraction step that decides WHAT becomes a memory; this file is just
 // storage/retrieval. Spec ref: PART 9-13.
 // -----------------------------------------------------------------------
+
 
 export async function createMemory({ email, type, topic, statement, status = "hypothesis", sourceChatId = "" }) {
   const now = new Date().toISOString();
@@ -455,12 +521,14 @@ export async function createMemory({ email, type, topic, statement, status = "hy
   });
 }
 
+
 export async function updateMemory(memoryId, fields) {
   return base(Tables.MemberMemories).update(memoryId, {
     ...fields,
     updated_at: new Date().toISOString(),
   });
 }
+
 
 // Active memories for a member, newest-updated first. Callers (lib/memory.js
 // retrieval) are responsible for narrowing this down to what's actually
@@ -477,5 +545,6 @@ export async function listActiveMemoriesByEmail(email) {
     .all();
   return records;
 }
+
 
 export default base;
