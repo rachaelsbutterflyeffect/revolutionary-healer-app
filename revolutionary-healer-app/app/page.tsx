@@ -167,7 +167,7 @@ onChange={(e) => setEmail(e.target.value)}
 placeholder="you@example.com"
 style={{
 background: "#141210",
-border: `1px solid ${BORDER}`,
+border: `1px solid ${TEAL_SOFT}`,
 borderRadius: 10,
 padding: "12px 14px",
 color: TEXT,
@@ -182,7 +182,7 @@ onChange={(e) => setPassword(e.target.value)}
 placeholder="Password"
 style={{
 background: "#141210",
-border: `1px solid ${BORDER}`,
+border: `1px solid ${TEAL_SOFT}`,
 borderRadius: 10,
 padding: "12px 14px",
 color: TEXT,
