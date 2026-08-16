@@ -1,7 +1,9 @@
 "use client";
 
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
 
 const GOLD = "#CFA646";
 const BG = "#121110";
@@ -10,8 +12,10 @@ const BORDER = "#3A342B";
 const TEXT = "#F6F2E9";
 const MUTED = "#A9997F";
 
+
 const MONTHLY_CHECKOUT = "https://www.rachaelsbutterflyeffect.com/offers/26bJnuRE/checkout";
 const ANNUAL_CHECKOUT = "https://www.rachaelsbutterflyeffect.com/offers/3YC8s5FV/checkout";
+
 
 function Mockup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -32,28 +36,39 @@ function Mockup({ label, children }: { label: string; children: React.ReactNode 
   );
 }
 
+
 export default function Home() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
+
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [signInError, setSignInError] = useState("");
   const [signingIn, setSigningIn] = useState(false);
 
+
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotMessage, setForgotMessage] = useState("");
   const [forgotSending, setForgotSending] = useState(false);
 
+
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("rh_member_email") : null;
-    if (stored) {
+    const loginAt = typeof window !== "undefined" ? Number(localStorage.getItem("rh_member_login_at") || 0) : 0;
+    const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
+    if (stored && loginAt && Date.now() - loginAt < fiveDaysMs) {
       router.replace("/app.html");
     } else {
+      if (stored) {
+        localStorage.removeItem("rh_member_email");
+        localStorage.removeItem("rh_member_login_at");
+      }
       setChecking(false);
     }
   }, [router]);
+
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
@@ -73,6 +88,7 @@ export default function Home() {
         return;
       }
       localStorage.setItem("rh_member_email", data.email || trimmedEmail);
+      localStorage.setItem("rh_member_login_at", String(Date.now()));
       router.replace("/app.html");
     } catch {
       setSignInError("Something went wrong. Please try again.");
@@ -80,6 +96,7 @@ export default function Home() {
       setSigningIn(false);
     }
   }
+
 
   async function handleForgot(e: React.FormEvent) {
     e.preventDefault();
@@ -102,9 +119,11 @@ export default function Home() {
     }
   }
 
+
   if (checking) {
     return <div style={{ minHeight: "100vh", background: BG }} />;
   }
+
 
   return (
     <div
@@ -133,6 +152,7 @@ export default function Home() {
         </p>
       </div>
 
+
       {/* SIGN IN */}
       <div style={{ maxWidth: 420, margin: "0 auto", padding: "0 24px 56px" }}>
         <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 26 }}>
@@ -140,6 +160,7 @@ export default function Home() {
           <p style={{ color: MUTED, fontSize: 13, marginBottom: 18 }}>
             Use the same email and password you use inside Kajabi.
           </p>
+
 
           {!showForgot ? (
             <form onSubmit={handleSignIn} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -271,6 +292,7 @@ export default function Home() {
         </div>
       </div>
 
+
       {/* INSIDE THE APP PREVIEW */}
       <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px 60px" }}>
         <div style={{ textAlign: "center", marginBottom: 26 }}>
@@ -337,6 +359,7 @@ export default function Home() {
         </div>
       </div>
 
+
       {/* PRICING */}
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px" }}>
         <div style={{ textAlign: "center", marginBottom: 26 }}>
@@ -383,6 +406,7 @@ export default function Home() {
               Get monthly access →
             </a>
           </div>
+
 
           <div
             style={{
