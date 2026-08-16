@@ -14,6 +14,8 @@
     --gold: #CFA646;
     --gold-soft: #E4C77A;
     --white: #F6F2E9;
+  --teal: #01676C;
+  --teal-soft: #3FA8A3;
   }
   * { box-sizing: border-box; }
   body {
@@ -35,10 +37,10 @@
     border-radius: 999px; padding: 8px 16px; cursor: pointer; font-family: inherit; display: flex; align-items: center; gap: 6px;
   }
   .day-tab.active { background: var(--gold); border-color: var(--gold); color: #241C0A; font-weight: 600; }
-  .day-tab .check { color: var(--gold); }
+  .day-tab .check { color: var(--teal-soft); }
   .day-tab.active .check { color: #241C0A; }
 
-  .access-note { text-align: center; font-size: 12px; color: var(--gold-soft); margin-top: 12px; line-height: 1.5; }
+  .access-note { text-align: center; font-size: 12px; color: var(--teal-soft); margin-top: 12px; line-height: 1.5; }
   .access-note a { color: var(--gold-soft); }
 
   .stage { padding: 56px 0 80px; }
@@ -77,7 +79,7 @@
   .domain-chip .tick { color: var(--gold); opacity: 0; }
   .domain-chip.selected .tick { opacity: 1; }
 
-  .quote-block { border-left: 2px solid var(--gold); padding: 2px 0 2px 14px; margin: 0 0 22px; text-align: left; font-size: 13.5px; color: var(--taupe); font-style: italic; line-height: 1.6; }
+  .quote-block { border-left: 2px solid var(--teal); padding: 2px 0 2px 14px; margin: 0 0 22px; text-align: left; font-size: 13.5px; color: var(--taupe); font-style: italic; line-height: 1.6; }
 
   .block-row { border-top: 1px solid var(--taupe-line); padding: 16px 0; text-align: left; }
   .block-row:first-of-type { border-top: none; }
