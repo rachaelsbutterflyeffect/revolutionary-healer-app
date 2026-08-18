@@ -878,7 +878,8 @@
       </div>
     </div>
 
-<div id="hero-gap-embed" style="display:none; max-width:700px; margin: 16px auto 0;">
+<div id="hero-gap-embed" style="display:none; max-width:700px; margin: 16px auto 0; position:relative;">
+      <button id="hero-gap-embed-close" onclick="closeHeroGapEmbed()" aria-label="Close GAP Method" style="position:absolute; top:-14px; right:-14px; width:32px; height:32px; border-radius:50%; background:var(--panel); border:1px solid var(--taupe-line); color:var(--taupe); font-size:15px; line-height:1; cursor:pointer; z-index:5; display:flex; align-items:center; justify-content:center;">✕</button>
       <iframe id="hero-gap-embed-iframe" style="width:100%; min-height:900px; border:1px solid var(--taupe-line); border-radius:14px; background: var(--panel-2);" title="3 Step GAP Method"></iframe>
     </div>
   </div>
@@ -2573,6 +2574,13 @@ function embedGapMethodInline() {
     wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  function closeHeroGapEmbed() {
+    var wrap = document.getElementById('hero-gap-embed');
+    var iframe = document.getElementById('hero-gap-embed-iframe');
+    if (iframe) iframe.src = 'about:blank';
+    if (wrap) wrap.style.display = 'none';
+  }
+
   function signOutMember() {
     localStorage.removeItem('rh_member_email');
     localStorage.removeItem('rh_member_login_at');
@@ -3006,7 +3014,7 @@ window.addEventListener('message', function(evt) {
   });
 
   if (RH_EMAIL) {
-    document.getElementById('gap-method-starter-btn').addEventListener('click', promptGapMethodInChat);
+    document.getElementById('gap-method-starter-btn').addEventListener('click', embedGapMethodInline);
     document.getElementById('hero-speak-btn').addEventListener('click', sendHeroChat);
     document.getElementById('chat-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
