@@ -2220,7 +2220,13 @@
     var a = window.__rhCurrentActivation;
     if (!a) { return; }
     var playerEl = document.getElementById('activation-detail-player');
-    if (a.wistiaId) {
+    if (a.wistiaId && a.audioOnly) {
+      playerEl.innerHTML =
+        '<div class="audio-cover-player" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
+        '<div class="audio-cover-overlay"><div class="audio-playing-badge" style="color:#F6F2E9;font-size:14px;letter-spacing:0.04em;">&#9654; Now Playing</div></div>' +
+        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
+        '</div>';
+    } else if (a.wistiaId) {
       playerEl.innerHTML =
         '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
     } else if (a.audioSrc) {
