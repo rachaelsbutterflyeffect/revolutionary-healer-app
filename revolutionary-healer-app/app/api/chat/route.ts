@@ -1,4 +1,4 @@
-§§—// Claude call: system prompt + (RAG) + persisted chat history + persistent
+// Claude call: system prompt + (RAG) + persisted chat history + persistent
 // member memory. Spec ref: SPEC.md §7 and Rachael's Aug 13 Chat History +
 // Memory Architecture doc (rewrite of the previous stateless version, which
 // always sent history: [] and never persisted a single message anywhere).
