@@ -1,4 +1,4 @@
-// Claude call: system prompt + (RAG) + persisted chat history + persistent
+§§—// Claude call: system prompt + (RAG) + persisted chat history + persistent
 // member memory. Spec ref: SPEC.md §7 and Rachael's Aug 13 Chat History +
 // Memory Architecture doc (rewrite of the previous stateless version, which
 // always sent history: [] and never persisted a single message anywhere).
@@ -9,10 +9,13 @@ import { getProcessBySlug } from "@/lib/processes";
 import { buildSystemPrompt } from "@/lib/prompts";
 import { retrieveContextForFocusArea } from "@/lib/retrieval";
 import { getEntitlementForEmail } from "@/lib/entitlements";
+import { getDivineIdentityBySlug } from "@/lib/divineIdentities";
 import {
   logEvent,
   getShiftById,
+  getShiftsByEmail,
   updateShiftFields,
+  createShiftFromChat,
   normalizeEmail,
   createChatSession,
   getChatSessionById,
@@ -105,10 +108,25 @@ export async function POST(req: NextRequest) {
   const priorMessages = await listMessagesByChatId(chatId, { limit: RECENT_MESSAGE_LIMIT });
   const priorMessageCount = priorMessages.length;
 
-  const [retrievedContext, memberMemories] = await Promise.all([
-    retrieveContextForFocusArea(focusAreaSlug, message),
-    getRelevantMemoriesForPrompt(email),
+  const [retrievedContext, memberMemories, existingShiftRecords] = await Promise.all([
+      retrieveContextForFocusArea(focusAreaSlug, message),
+      getRelevantMemoriesForPrompt(email),
+      getShiftsByEmail(email),
+    
   ]);
+
+  // SHIFT + ACTIVATION FOLLOW-THROUGH (Aug 20, Rachael's spec): give the AI
+  // visibility into the member's existing Shifts so it can check whether a
+  // new discovery continues one of them (see lib/prompts.js) instead of
+  // creating a duplicate card for the same contradiction. Each line's id is
+  // what the AI must copy exactly into an [[UPDATE_SHIFT: ...]] marker.
+  const existingShifts = (existingShiftRecords || [])
+    .map((s: any) => {
+          const f = s.fields || {};
+          const gapPreview = (f.gap_explanation || "").slice(0, 300);
+          return `- id: ${s.id} | focus: ${f.focus_area || "(none)"} | Divine Identity: ${f.divine_identity_name || "(none)"} | Current Frequency: ${f.current_frequency || "(none)"} | status: ${f.progress_status || "shifting"} | Gap: ${gapPreview}`;
+    })
+    .join("\n");
 
   const chatSummary = session.fields.summary || "";
   let systemPrompt = buildSystemPrompt(focusArea, {
@@ -117,6 +135,7 @@ export async function POST(req: NextRequest) {
     gapMethodResult,
     chatSummary,
     memberMemories,
+    existingShifts,
   });
   if (embodimentShift) {
     const f = embodimentShift.fields;
@@ -139,10 +158,71 @@ export async function POST(req: NextRequest) {
     messages: [...historyForClaude, { role: "user", content: message }],
   });
 
-  const replyText = response.content
+  const rawReplyText = response.content
     .filter((block: any) => block.type === "text")
     .map((block: any) => block.text)
     .join("\n");
+
+  // SHIFT + ACTIVATION FOLLOW-THROUGH (Aug 20, Rachael's spec): detect the
+  // AI's invisible [[SAVE_SHIFT: ...]] / [[UPDATE_SHIFT: ...]] confirmation
+  // markers -- see lib/prompts.js for exactly when the model is allowed to
+  // emit these (only on the turn right after the member gives explicit
+  // permission to save a newly-named Gap). Strip the marker out of what the
+  // member actually sees and what gets persisted -- it must never be visible.
+  let replyText = rawReplyText;
+  const saveShiftMatch = rawReplyText.match(/\[\[SAVE_SHIFT:\s*(\{[\s\S]*?\})\s*\]\]\s*$/);
+  const updateShiftMatch = rawReplyText.match(/\[\[UPDATE_SHIFT:\s*(\{[\s\S]*?\})\s*\]\]\s*$/);
+  if (saveShiftMatch || updateShiftMatch) {
+      replyText = rawReplyText
+        .replace(/\n?\[\[SAVE_SHIFT:[\s\S]*?\]\]\s*$/, "")
+        .replace(/\n?\[\[UPDATE_SHIFT:[\s\S]*?\]\]\s*$/, "")
+        .trim();
+  }
+
+  if (saveShiftMatch) {
+      try {
+            const payload = JSON.parse(saveShiftMatch[1]);
+            const identity = payload.divineIdentitySlug ? getDivineIdentityBySlug(payload.divineIdentitySlug) : null;
+            await createShiftFromChat({
+                    email,
+                    memberRecordId: record?.id,
+                    chatId,
+                    divineIdentitySlug: identity ? identity.slug : "",
+                    divineIdentityName: identity ? identity.displayName : (payload.divineIdentityName || ""),
+                    currentFrequency: payload.currentFrequency || "",
+                    focusArea: payload.focusArea || focusArea.name,
+                    gapExplanation: payload.gap || "",
+                    whatWeNoticed: [payload.howItShowsUp, payload.primaryShift ? `Primary Shift: ${payload.primaryShift}` : ""]
+                              .filter(Boolean)
+                              .join("\n\n"),
+                    recommendedActivation: payload.recommendedActivation || "",
+            });
+      } catch (err) {
+            console.error("Failed to parse/save SAVE_SHIFT marker", err);
+      }
+  } else if (updateShiftMatch) {
+      try {
+            const payload = JSON.parse(updateShiftMatch[1]);
+            const belongsToMember = (existingShiftRecords || []).some((s: any) => s.id === payload.shiftId);
+            if (payload.shiftId && belongsToMember) {
+                    const fields: Record<string, any> = {};
+                    if (payload.gap) fields.gap_explanation = payload.gap;
+                    if (payload.howItShowsUp || payload.primaryShift) {
+                              fields.what_we_noticed = [payload.howItShowsUp, payload.primaryShift ? `Primary Shift: ${payload.primaryShift}` : ""]
+                                .filter(Boolean)
+                                .join("\n\n");
+                    }
+                    if (payload.currentFrequency) fields.current_frequency = payload.currentFrequency;
+                    if (payload.recommendedActivation) fields.recommended_activation = payload.recommendedActivation;
+                    if (Object.keys(fields).length) {
+                              await updateShiftFields(payload.shiftId, fields);
+                    }
+            }
+      } catch (err) {
+            console.error("Failed to parse/save UPDATE_SHIFT marker", err);
+      }
+  }
+  
 
   await createMessage({ chatId, email, role: "assistant", text: replyText });
 
