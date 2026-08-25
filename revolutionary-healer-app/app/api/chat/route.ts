@@ -169,15 +169,16 @@ export async function POST(req: NextRequest) {
   // emit these (only on the turn right after the member gives explicit
   // permission to save a newly-named Gap). Strip the marker out of what the
   // member actually sees and what gets persisted -- it must never be visible.
-  let replyText = rawReplyText;
-  const saveShiftMatch = rawReplyText.match(/\[\[SAVE_SHIFT:\s*(\{[\s\S]*?\})\s*\]\]\s*$/);
-  const updateShiftMatch = rawReplyText.match(/\[\[UPDATE_SHIFT:\s*(\{[\s\S]*?\})\s*\]\]\s*$/);
-  if (saveShiftMatch || updateShiftMatch) {
-      replyText = rawReplyText
-        .replace(/\n?\[\[SAVE_SHIFT:[\s\S]*?\]\]\s*$/, "")
-        .replace(/\n?\[\[UPDATE_SHIFT:[\s\S]*?\]\]\s*$/, "")
-        .trim();
-  }
+let replyText = rawReplyText;
+  const markerLineRegex = /\n?\[\[([A-Z_]+):\s*([\s\S]*?)\]\]\s*$/;
+  const markers: Record<string, string> = {};
+  let strippedText = rawReplyText;
+  let markerMatch = strippedText.match(markerLineRegex);
+  while (markerMatch) { const markerName = markerMatch[1]; const markerPayload = markerMatch[2]; if (!(markerName in markers)) markers[markerName] = markerPayload.trim(); strippedText = strippedText.slice(0, markerMatch.index).replace(/\s+$/, ""); markerMatch = strippedText.match(markerLineRegex); }
+  replyText = strippedText.trim();
+  const saveShiftMatch = markers.SAVE_SHIFT ? [rawReplyText, markers.SAVE_SHIFT] : null;
+  const updateShiftMatch = markers.UPDATE_SHIFT ? [rawReplyText, markers.UPDATE_SHIFT] : null;
+  const openActivationSlug = markers.OPEN_ACTIVATION ? markers.OPEN_ACTIVATION.trim() : null;
 
   if (saveShiftMatch) {
       try {
@@ -268,5 +269,5 @@ export async function POST(req: NextRequest) {
     record?.id
   );
 
-  return NextResponse.json({ reply: replyText, chatId });
+  return NextResponse.json({ reply: replyText, chatId, openActivationSlug });
 }
