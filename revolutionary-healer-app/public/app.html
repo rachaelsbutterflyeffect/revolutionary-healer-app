@@ -2423,7 +2423,7 @@
       '</button>';
     });
     if (!listHtml) {
-      listHtml = '<div class="card center"><p class="copy">No Shifts yet. <a href="#" onclick="showMain(); embedGapMethodInline(); return false;" style="color: var(--gold);">Start the GAP Method</a> to create your first one.</p></div>';
+      listHtml = '<div class="card center"><p class="copy">No Shifts yet. <a href="#" onclick="showMain(); startGapMethodInChat(); return false;" style="color: var(--gold);">Start the GAP Method</a> to create your first one.</p></div>';
     }
     document.querySelectorAll('[data-role="shifts-list"]').forEach(function(el) { el.innerHTML = listHtml; });
 
@@ -2580,6 +2580,26 @@ function embedGapMethodInline() {
     wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  function startGapMethodInChat() {
+      var embedWrap = document.getElementById('hero-gap-embed');
+      if (embedWrap) embedWrap.style.display = 'none';
+      var replyBox = document.getElementById('hero-chat-reply');
+      if (replyBox) { replyBox.style.display = ''; replyBox.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+      rhSendMessage('Begin the GAP Method for me.', '3-step-gap-method');
+  }
+
+  function addRhActivationButton(container, slug) {
+      if (!container) return;
+      var a = (typeof ACTIVATION_DETAILS !== 'undefined') ? ACTIVATION_DETAILS[slug] : null;
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'rh-activation-btn';
+      btn.textContent = (a && a.title) ? ('Open ' + a.title + ' →') : 'Open Your Activation →';
+      btn.style.cssText = 'display:block;margin-top:12px;padding:10px 18px;border-radius:8px;border:none;background:var(--gold);color:#1a1a1a;font-weight:600;cursor:pointer;';
+      btn.addEventListener('click', function () { handleActivationCardClick(slug); });
+      container.appendChild(btn);
+  }
+
   function closeHeroGapEmbed() {
     var wrap = document.getElementById('hero-gap-embed');
     var iframe = document.getElementById('hero-gap-embed-iframe');
@@ -2644,7 +2664,7 @@ function embedGapMethodInline() {
       autoGrowChatInput();
       addRhMessage('user', text);
       if (/^y(es)?\b/i.test(text)) {
-        embedGapMethodInline();
+        startGapMethodInChat();
         return;
       }
       addRhMessage('assistant', "No problem — click GAP Method above whenever you're ready.");
@@ -2654,7 +2674,7 @@ function embedGapMethodInline() {
     rhSendMessage(text);
   }
 
-  async function rhSendMessage(text) {
+  async function rhSendMessage(text, processSlug) {
     var input = document.getElementById('chat-input');
     var sendBtn = document.getElementById('hero-speak-btn');
     window.__rhSending = true;
@@ -2669,6 +2689,7 @@ function embedGapMethodInline() {
       var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text };
       if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId;
       if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId;
+      if (processSlug) payload.processSlug = processSlug;
       var res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -2685,7 +2706,8 @@ function embedGapMethodInline() {
           if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} }
           rhMaybeRefreshDrawerAfterSend();
         }
-        addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?");
+var assistantEl =         addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?");
+        if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug);
       }
     } catch (e) {
       removeRhThinking(thinkingEl);
@@ -3020,7 +3042,7 @@ window.addEventListener('message', function(evt) {
   });
 
   if (RH_EMAIL) {
-    document.getElementById('gap-method-starter-btn').addEventListener('click', embedGapMethodInline);
+    document.getElementById('gap-method-starter-btn').addEventListener('click', startGapMethodInChat);
     document.getElementById('hero-speak-btn').addEventListener('click', sendHeroChat);
     document.getElementById('chat-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
@@ -3125,7 +3147,7 @@ window.addEventListener('message', function(evt) {
     });
   }
 
-    document.querySelectorAll('.focus-empty-cta').forEach(function(btn) { btn.addEventListener('click', function(){ showMain(); embedGapMethodInline(); }); });
+    document.querySelectorAll('.focus-empty-cta').forEach(function(btn) { btn.addEventListener('click', function(){ showMain(); startGapMethodInChat(); }); });
   }
 </script>
 
