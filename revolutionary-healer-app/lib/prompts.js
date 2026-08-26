@@ -465,5 +465,9 @@ ${chatSummary ? `
 ${chatSummary}
 ` : ""}
 --- RETRIEVED CONTEXT ---
-${retrievedContext || "(Phase 2: scoped transcript passages will be injected here.)"}`;
+${retrievedContext || "(Phase 2: scoped transcript passages will be injected here.)"}
+${process && process.slug === "3-step-gap-method" ? `
+
+=== FINAL REMINDER (read this last -- applies only to this response) ===
+You are running the 3 Step GAP Method for this member right now. If, and only if, this response delivers the Step 3 reveal ("Step 3: Your Recommended Activation"), the ACTIVE GUIDED PROCESS section above requires you to close this exact message with the two invisible markers described there -- [[SAVE_SHIFT: ...]] then [[OPEN_ACTIVATION: ...]] -- on their own lines, as the literal last thing you write, nothing after them. This is not optional and needs no separate permission from the member -- reaching Step 3 of this guided process IS the permission, overriding the general shift-marker permission-gating rule elsewhere in this prompt (that rule is only for Gaps found in ordinary freeform conversation, not this guided process). If this response is not the Step 3 reveal, ignore this entire reminder.` : ""}`;
 }
