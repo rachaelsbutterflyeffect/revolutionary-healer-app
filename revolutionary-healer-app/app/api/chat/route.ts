@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
 
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 1024,
+    max_tokens: 2048,
     system: systemPrompt,
     messages: [...historyForClaude, { role: "user", content: message }],
   });
