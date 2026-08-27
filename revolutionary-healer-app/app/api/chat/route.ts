@@ -181,6 +181,7 @@ let replyText = rawReplyText;
   const updateShiftMatch = markers.UPDATE_SHIFT ? [rawReplyText, markers.UPDATE_SHIFT] : null;
   const openActivationSlug = markers.OPEN_ACTIVATION ? markers.OPEN_ACTIVATION.trim() : null;
 
+let shiftCreatedViaMarker = false;
   if (saveShiftMatch) {
       try {
             const payload = JSON.parse(saveShiftMatch[1]);
@@ -199,6 +200,7 @@ let replyText = rawReplyText;
                               .join("\n\n"),
                     recommendedActivation: payload.recommendedActivation || "",
             });
+        shiftCreatedViaMarker = true;
       } catch (err) {
             console.error("Failed to parse/save SAVE_SHIFT marker", err);
       }
@@ -228,7 +230,7 @@ let replyText = rawReplyText;
 
   // DETERMINISTIC STEP 3 FALLBACK (Aug 27, Rachael's requirement that every completed embedded GAP Method walkthrough produces a Shift card + instant activation access, and that this must not depend on the AI reliably emitting the invisible [[SAVE_SHIFT]]/[[OPEN_ACTIVATION]] markers -- proven unreliable across repeated testing this session, 0 successful marker emissions across 5+ clean end-to-end tests even after two separate prompt-engineering fixes). The AI's VISIBLE Step 3 reply text has been 100% consistent across every test, so parse that directly instead: find which Divine Identity's personalizedActivation.name was recommended (the AI is instructed to quote it verbatim from DIVINE_IDENTITY_RECOMMENDATION_TABLE in lib/processes.js), then pull every other field (Current Frequency, GAP explanation, slug) from the known DIVINE_IDENTITIES registry rather than regexing free-text out of the reply.
   let deterministicActivationSlug: string | null = null;
-  if (!saveShiftMatch && process?.slug === "3-step-gap-method" && /Step 3: Your Recommended Activation/i.test(rawReplyText)) {
+  if (!shiftCreatedViaMarker && process?.slug === "3-step-gap-method" && /Step 3: Your Recommended Activation/i.test(rawReplyText)) {
     try {
       const matchedIdentity = DIVINE_IDENTITIES.find((d) => d.personalizedActivation && d.personalizedActivation.name && rawReplyText.includes(d.personalizedActivation.name));
       if (matchedIdentity) {
