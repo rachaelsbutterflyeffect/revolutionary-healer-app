@@ -10,6 +10,7 @@ import { buildSystemPrompt } from "@/lib/prompts";
 import { retrieveContextForFocusArea } from "@/lib/retrieval";
 import { getEntitlementForEmail } from "@/lib/entitlements";
 import { getDivineIdentityBySlug } from "@/lib/divineIdentities";
+import { DIVINE_IDENTITIES } from "@/lib/divineIdentities";
 import {
   logEvent,
   getShiftById,
@@ -225,6 +226,30 @@ let replyText = rawReplyText;
   }
   
 
+  // DETERMINISTIC STEP 3 FALLBACK (Aug 27, Rachael's requirement that every completed embedded GAP Method walkthrough produces a Shift card + instant activation access, and that this must not depend on the AI reliably emitting the invisible [[SAVE_SHIFT]]/[[OPEN_ACTIVATION]] markers -- proven unreliable across repeated testing this session, 0 successful marker emissions across 5+ clean end-to-end tests even after two separate prompt-engineering fixes). The AI's VISIBLE Step 3 reply text has been 100% consistent across every test, so parse that directly instead: find which Divine Identity's personalizedActivation.name was recommended (the AI is instructed to quote it verbatim from DIVINE_IDENTITY_RECOMMENDATION_TABLE in lib/processes.js), then pull every other field (Current Frequency, GAP explanation, slug) from the known DIVINE_IDENTITIES registry rather than regexing free-text out of the reply.
+  let deterministicActivationSlug: string | null = null;
+  if (!saveShiftMatch && process?.slug === "3-step-gap-method" && /Step 3: Your Recommended Activation/i.test(rawReplyText)) {
+    try {
+      const matchedIdentity = DIVINE_IDENTITIES.find((d) => d.personalizedActivation && d.personalizedActivation.name && rawReplyText.includes(d.personalizedActivation.name));
+      if (matchedIdentity) {
+        await createShiftFromChat({
+          email,
+          memberRecordId: record?.id,
+          chatId,
+          divineIdentitySlug: matchedIdentity.slug,
+          divineIdentityName: matchedIdentity.displayName,
+          currentFrequency: matchedIdentity.currentFrequency,
+          focusArea: focusArea.name,
+          gapExplanation: matchedIdentity.gapExplanation,
+          recommendedActivation: matchedIdentity.personalizedActivation.name,
+        });
+        deterministicActivationSlug = `gap-method-${matchedIdentity.slug}`;
+      }
+    } catch (err) {
+      console.error("Failed to create deterministic Step 3 Shift", err);
+    }
+  }
+  
   await createMessage({ chatId, email, role: "assistant", text: replyText });
 
   if (embodimentShift && /updated your card[\s\S]{0,60}embodied/i.test(replyText)) {
@@ -269,5 +294,5 @@ let replyText = rawReplyText;
     record?.id
   );
 
-  return NextResponse.json({ reply: replyText, chatId, openActivationSlug });
+  return NextResponse.json({ reply: replyText, chatId, openActivationSlug: openActivationSlug || deterministicActivationSlug });
 }
