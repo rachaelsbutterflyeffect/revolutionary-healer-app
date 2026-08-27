@@ -3048,6 +3048,17 @@ window.addEventListener('message', function(evt) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
     });
     rhInitChatUI();
+    // AUTO-START (Aug 27, Rachael's "immediate embedded GAP Method for first-time members" requirement -- confirmed via her explicit "Auto-starts immediately" selection): if this member has never had ANY chat before (no saved active chat locally, and zero chat sessions server-side), begin the GAP Method automatically instead of leaving the generic empty-state prompt.
+    (function () {
+      var savedChatId = null;
+      try { savedChatId = localStorage.getItem('rh_active_chat_' + RH_EMAIL); } catch (e) {}
+      if (savedChatId) return;
+      fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL)).then(function (res) { return res.json(); }).then(function (data) {
+        var chats = data.chats || [];
+        if (!chats.length) startGapMethodInChat();
+      }).catch(function () {});
+    })();
+    
     populateMemberSinceIfReady();
     initProfileFields();
     loadProfilePhoto();
