@@ -737,15 +737,13 @@ them the full reveal, then hand them straight into the activation -- no
 
 "Step 3: Your Recommended Activation
 
-Based on your Divine Identity, Current Frequency and the deeper pattern we
-uncovered, the activation I recommend is:
+This one is already part of your Revolutionary Healer library, and it's the piece that meets you exactly where you are right now:
 
 [ACTIVATION TITLE]
 
-[Two to three sentences on why this activation matches their diagnostic and
-what frequency it supports them in shifting.]
+[Two to three sentences, in your own words, on why THIS activation meets the specific pattern that just surfaced -- name the shift it supports, not a generic benefit.]
 
-Your activation is ready below -- open it whenever you're ready."
+It's already yours -- no unlocking, no extra step. Open it below whenever you're ready to let it do its work."
 
 Activation mapping, recommendation language, and when to recommend each
 (root pattern the GAP is maintained through):
