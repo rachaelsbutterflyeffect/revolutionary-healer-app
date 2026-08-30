@@ -800,6 +800,20 @@
 #hero-gap-embed .qd-log-empty { color: var(--taupe-soft); font-size: 13px; padding: 14px 0; text-align: center; }
 #hero-gap-embed .view { display: none; }
 #hero-gap-embed .view.active { display: block; }
+
+#hero-gap-embed *, #hero-gap-embed *::before, #hero-gap-embed *::after { box-sizing: border-box; }
+#hero-gap-embed .topbar { position: static; }
+#hero-gap-embed .chat-input-row textarea { font-size: 16px; }
+@media (max-width: 640px) {
+  #hero-gap-embed .wrap { padding: 0 14px; }
+  #hero-gap-embed .card { padding: 22px 16px; }
+  #hero-gap-embed .card h1.serif { font-size: 26px !important; }
+  #hero-gap-embed .day-tabs { flex-wrap: wrap; gap: 6px; }
+  #hero-gap-embed .day-tab { font-size: 11px; padding: 7px 11px; }
+  #hero-gap-embed .chat-log { max-height: 280px; -webkit-overflow-scrolling: touch; }
+  #hero-gap-embed .bubble { max-width: 92%; font-size: 13.5px; }
+  #hero-gap-embed .stage { padding: 20px 0 40px; }
+}
 </style>
   <link rel="stylesheet" href="/bg.css">
 </head>
