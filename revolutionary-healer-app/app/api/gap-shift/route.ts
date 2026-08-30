@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (!email || !divineIdentitySlug) {
     return NextResponse.json(
       { error: "email and divineIdentitySlug are required" },
-      { status: 4route.ts00 }
+      { status: 400 }
     );
   }
 
