@@ -4439,9 +4439,16 @@ var DOMAINS = [
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: RH_EMAIL, message: userText, history: gapChatHistory, gapContext: buildGapContext() })
-    }).then(function(res) { return res.json(); })
-      .then(function(data) {
+    }).then(function(res) { return res.json().then(function(body) { return { ok: res.ok, status: res.status, body: body }; }); })
+      .then(function(result) {
         removeTypingBubble();
+        if (!result.ok) {
+          console.error('gap-chat-member request failed', result.status, result.body);
+          addBotBubble("Sorry, something glitched on my end there -- can you try sending that again?");
+          input.disabled = false;
+          return;
+        }
+        var data = result.body;
         var reply = data.reply || "I didn't quite catch that -- can you say a bit more?";
         var finalIdentityMatch = reply.match(/\[\[FINAL_IDENTITY:\s*(\w+)\s*\]\]/i);
         var gotFinalIdentity = false;
