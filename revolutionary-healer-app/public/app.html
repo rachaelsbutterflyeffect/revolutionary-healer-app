@@ -766,11 +766,11 @@
 #hero-gap-embed .bubble { max-width: 85%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
 #hero-gap-embed .bubble.bot { align-self: flex-start; background: var(--panel-2); border: 1px solid var(--taupe-line); color: var(--white); }
 #hero-gap-embed .bubble.user { align-self: flex-end; background: var(--gold); color: #241C0A; }
-#hero-gap-embed .chat-input-row { display: flex; gap: 10px; border-top: 1px solid var(--taupe-line); padding-top: 18px; align-items: flex-end; }
-#hero-gap-embed .chat-input-row textarea { flex: 1; background: var(--panel-2); border: 1px solid var(--taupe-line); border-radius: 10px; padding: 12px 14px; color: var(--white); font-size: 15px; line-height: 1.5; font-family: inherit; outline: none; resize: none; min-height: 76px; max-height: 220px; box-sizing: border-box; }
-#hero-gap-embed .chat-input-row textarea::placeholder { color: var(--taupe-soft); }
-#hero-gap-embed .chat-input-row textarea:focus { border-color: var(--gold); }
-#hero-gap-embed .chat-input-row button { align-self: flex-end; background: var(--gold); color: #241C0A; border: none; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
+#hero-gap-embed .gap-chat-input-row { display: flex; gap: 10px; border-top: 1px solid var(--taupe-line); padding-top: 18px; align-items: flex-end; }
+#hero-gap-embed .gap-chat-input-row textarea { flex: 1; background: var(--panel-2); border: 1px solid var(--taupe-line); border-radius: 10px; padding: 12px 14px; color: var(--white); font-size: 15px; line-height: 1.5; font-family: inherit; outline: none; resize: none; min-height: 76px; max-height: 220px; box-sizing: border-box; }
+#hero-gap-embed .gap-chat-input-row textarea::placeholder { color: var(--taupe-soft); }
+#hero-gap-embed .gap-chat-input-row textarea:focus { border-color: var(--gold); }
+#hero-gap-embed .gap-chat-input-row button { align-self: flex-end; background: var(--gold); color: #241C0A; border: none; border-radius: 10px; padding: 12px 20px; font-size: 14px; font-weight: 600; font-family: inherit; cursor: pointer; }
 #hero-gap-embed .activation-card { border: 1px solid var(--gold); background: var(--panel-2); border-radius: 14px; padding: 26px 24px; text-align: center; margin-top: 8px; }
 #hero-gap-embed .activation-tag { display: inline-block; font-size: 10.5px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--gold-soft); border: 1px solid var(--gold); border-radius: 999px; padding: 3px 12px; margin-bottom: 14px; }
 #hero-gap-embed .trial-banner { border: 1px solid var(--gold); background: #2A2314; border-radius: 12px; padding: 18px 20px; margin-top: 22px; text-align: left; }
@@ -1042,8 +1042,8 @@
         <p class="copy" style="margin-bottom: 20px;">This is where the pattern stops being just a label and starts becoming something you can actually recognize.</p>
         <p class="note" id="d2-note"></p>
         <div class="chat-log" id="chat-log"></div>
-        <div class="chat-input-row">
-          <textarea id="chat-input" rows="3" placeholder="Type anything to continue the conversation..." oninput="gapAutoGrowChatInput(this);" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendChat();}"></textarea>
+        <div class="gap-chat-input-row">
+          <textarea id="gap-chat-input" rows="3" placeholder="Type anything to continue the conversation..." oninput="gapAutoGrowChatInput(this);" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendChat();}"></textarea>
           <button onclick="sendChat()">Send</button>
         </div>
         <div class="center" id="ready-btn-wrap" style="margin-top:14px; display:none;">
@@ -2174,7 +2174,7 @@
   document.querySelectorAll('[data-prompt]').forEach(function(el) {
     el.addEventListener('click', function(e) {
       if (el.tagName === 'A') e.preventDefault();
-      var input = document.getElementById('chat-input');
+      var input = document.getElementById('gap-chat-input');
       input.value = el.dataset.prompt;
       input.focus();
       input.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2258,7 +2258,7 @@
     if (opts.shiftId) window.__rhEmbodimentShiftId = opts.shiftId;
     var chatShell = document.querySelector('.rh-chat-shell');
     if (chatShell) chatShell.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    var input = document.getElementById('chat-input');
+    var input = document.getElementById('gap-chat-input');
     if (input) input.focus();
   }
   document.addEventListener('click', function(e) {
@@ -2773,7 +2773,7 @@
     hideRhWelcome();
     addRhMessage('assistant', "Say yes if you would like to start your GAP Method now.");
     window.__awaitingGapMethodYes = true;
-    var input = document.getElementById('chat-input');
+    var input = document.getElementById('gap-chat-input');
     if (input) input.focus();
   }
 
@@ -2866,7 +2866,7 @@ function closeHeroGapEmbed() {
   }
 
   async function sendHeroChat() {
-    var input = document.getElementById('chat-input');
+    var input = document.getElementById('gap-chat-input');
     var text = (input.value || '').trim();
     if (!text || !RH_EMAIL || window.__rhSending) return;
 
@@ -2887,7 +2887,7 @@ function closeHeroGapEmbed() {
   }
 
   async function rhSendMessage(text, processSlug) {
-    var input = document.getElementById('chat-input');
+    var input = document.getElementById('gap-chat-input');
     var sendBtn = document.getElementById('hero-speak-btn');
     window.__rhSending = true;
     if (sendBtn) sendBtn.disabled = true;
@@ -3025,7 +3025,7 @@ function rhThread() { return window.__rhGapMethodActive ? document.getElementByI
   }
 
   function autoGrowChatInput() {
-    var el = document.getElementById('chat-input');
+    var el = document.getElementById('gap-chat-input');
     if (!el) return;
     el.style.height = 'auto';
     var next = Math.min(el.scrollHeight, 140);
@@ -3184,7 +3184,7 @@ function rhThread() { return window.__rhGapMethodActive ? document.getElementByI
     var w = document.getElementById('rh-chat-welcome');
     if (w) w.style.display = '';
     rhCloseDrawer();
-    var input = document.getElementById('chat-input');
+    var input = document.getElementById('gap-chat-input');
     if (input) input.focus();
   }
 
@@ -3217,7 +3217,7 @@ function rhThread() { return window.__rhGapMethodActive ? document.getElementByI
   }
 
   function rhInitChatUI() {
-    var input = document.getElementById('chat-input');
+    var input = document.getElementById('gap-chat-input');
     if (input) {
       input.addEventListener('input', autoGrowChatInput);
       autoGrowChatInput();
@@ -3256,7 +3256,7 @@ window.addEventListener('message', function(evt) {
   if (RH_EMAIL) {
     document.getElementById('gap-method-starter-btn').addEventListener('click', startGapMethodInChat);
     document.getElementById('hero-speak-btn').addEventListener('click', sendHeroChat);
-    document.getElementById('chat-input').addEventListener('keydown', function(e) {
+    document.getElementById('gap-chat-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
     });
     rhInitChatUI();
@@ -4391,7 +4391,7 @@ var DOMAINS = [
     document.getElementById('chat-log').innerHTML = '';
     document.getElementById('d2-continue').style.display = 'none';
     document.getElementById('ready-btn-wrap').style.display = 'none';
-    document.getElementById('chat-input').disabled = false;
+    document.getElementById('gap-chat-input').disabled = false;
     var openingQ = STEP2_OPENING_QUESTIONS[selectedDomain] || STEP2_OPENING_QUESTIONS.business;
     addBotBubble(openingQ);
     gapChatHistory.push({ role: 'assistant', content: openingQ });
@@ -4417,7 +4417,7 @@ var DOMAINS = [
   // forceComplete=true always reveals the Step 3 continue button once the
   // reply comes back, regardless of the completion heuristic below.
   function sendToGapChat(userText, isKickoff, forceComplete) {
-    var input = document.getElementById('chat-input');
+    var input = document.getElementById('gap-chat-input');
     if (!isKickoff) addUserBubble(userText);
     input.disabled = true;
     addTypingBubble();
@@ -4497,7 +4497,7 @@ var DOMAINS = [
   }
 
   function sendChat() {
-    var input = document.getElementById('chat-input');
+    var input = document.getElementById('gap-chat-input');
     var text = input.value.trim();
     if (!text || input.disabled) return;
     input.value = '';
