@@ -4631,8 +4631,23 @@ var DOMAINS = [
           whatWeNoticed: (a && a.frequency) ? a.frequency : '',
           recommendedActivation: (a && a.activation && a.activation.title) ? a.activation.title : '',
         })
-      }).catch(function(e) { console.error('autoCreateMemberShift failed', e); });
-    } catch (e) { console.error('autoCreateMemberShift failed', e); }
+      }).then(function(res) {
+        return res.json().catch(function() { return null; }).then(function(body) {
+          return { ok: res.ok, status: res.status, body: body };
+        });
+      }).then(function(result) {
+        if (!result.ok) {
+          console.error('autoCreateMemberShift: server rejected the request', result.status, result.body);
+          window.__gapShiftAutoCreated = false;
+        }
+      }).catch(function(e) {
+        console.error('autoCreateMemberShift failed', e);
+        window.__gapShiftAutoCreated = false;
+      });
+    } catch (e) {
+      console.error('autoCreateMemberShift failed', e);
+      window.__gapShiftAutoCreated = false;
+    }
   }
 </script>
 
