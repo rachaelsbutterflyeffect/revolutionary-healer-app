@@ -1066,6 +1066,14 @@ export function buildGapFunnelSystemPrompt(gapContext) {
   }`;
 }
 
+export function buildGapMemberSystemPrompt(gapContext) {
+  return `${GAP_METHOD_SCRIPT_MEMBER}${
+    gapContext
+      ? `\n\n${GAP_METHOD_RESULT_NOTE}\n\n=== GAP METHOD RESULT (STEP 1) ===\n${JSON.stringify(gapContext, null, 2)}`
+      : ""
+  }`;
+}
+
 export const PROCESSES = [
   {
     slug: "3-step-gap-method",
