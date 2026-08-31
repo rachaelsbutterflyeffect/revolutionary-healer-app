@@ -2788,7 +2788,7 @@
     hideRhWelcome();
     addRhMessage('assistant', "Say yes if you would like to start your GAP Method now.");
     window.__awaitingGapMethodYes = true;
-    var input = document.getElementById('gap-chat-input');
+    var input = document.getElementById('chat-input');
     if (input) input.focus();
   }
 
@@ -3271,7 +3271,7 @@ window.addEventListener('message', function(evt) {
   if (RH_EMAIL) {
     document.getElementById('gap-method-starter-btn').addEventListener('click', startGapMethodInChat);
     document.getElementById('hero-speak-btn').addEventListener('click', sendHeroChat);
-    document.getElementById('gap-chat-input').addEventListener('keydown', function(e) {
+    document.getElementById('chat-input').addEventListener('keydown', function(e) {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendHeroChat(); }
     });
     rhInitChatUI();
