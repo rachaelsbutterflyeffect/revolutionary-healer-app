@@ -2881,7 +2881,7 @@ function closeHeroGapEmbed() {
   }
 
   async function sendHeroChat() {
-    var input = document.getElementById('gap-chat-input');
+    var input = document.getElementById('chat-input');
     var text = (input.value || '').trim();
     if (!text || !RH_EMAIL || window.__rhSending) return;
 
