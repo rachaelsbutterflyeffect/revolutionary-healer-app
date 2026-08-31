@@ -2902,7 +2902,7 @@ function closeHeroGapEmbed() {
   }
 
   async function rhSendMessage(text, processSlug) {
-    var input = document.getElementById('gap-chat-input');
+    var input = document.getElementById('chat-input');
     var sendBtn = document.getElementById('hero-speak-btn');
     window.__rhSending = true;
     if (sendBtn) sendBtn.disabled = true;
@@ -3040,7 +3040,7 @@ function rhThread() { return window.__rhGapMethodActive ? document.getElementByI
   }
 
   function autoGrowChatInput() {
-    var el = document.getElementById('gap-chat-input');
+    var el = document.getElementById('chat-input');
     if (!el) return;
     el.style.height = 'auto';
     var next = Math.min(el.scrollHeight, 140);
@@ -3199,7 +3199,7 @@ function rhThread() { return window.__rhGapMethodActive ? document.getElementByI
     var w = document.getElementById('rh-chat-welcome');
     if (w) w.style.display = '';
     rhCloseDrawer();
-    var input = document.getElementById('gap-chat-input');
+    var input = document.getElementById('chat-input');
     if (input) input.focus();
   }
 
@@ -3232,7 +3232,7 @@ function rhThread() { return window.__rhGapMethodActive ? document.getElementByI
   }
 
   function rhInitChatUI() {
-    var input = document.getElementById('gap-chat-input');
+    var input = document.getElementById('chat-input');
     if (input) {
       input.addEventListener('input', autoGrowChatInput);
       autoGrowChatInput();
