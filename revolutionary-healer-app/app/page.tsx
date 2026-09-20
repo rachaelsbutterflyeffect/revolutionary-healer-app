@@ -12,7 +12,7 @@ const MUTED = "#A9997F";
 const TEAL = "#01676C";
 const TEAL_SOFT = "#3FA8A3";
 
-const MONTHLY_CHECKOUT = "https://www.rachaelsbutterflyeffect.com/offers/26bJnuRE/checkout";
+const MONTHLY_CHECKOUT = "https://www.rachaelsbutterflyeffect.com/offers/rkwoQv2s/checkout";
 const ANNUAL_CHECKOUT = "https://www.rachaelsbutterflyeffect.com/offers/3YC8s5FV/checkout";
 
 function Mockup({ label, children }: { label: string; children: React.ReactNode }) {
@@ -334,19 +334,36 @@ style={{ width: "100%", height: 260, objectFit: "cover", objectPosition: "top", 
 <div
 style={{
 background: CARD,
-border: `1px solid ${BORDER}`,
+border: `1px solid ${GOLD}`,
 borderRadius: 16,
 padding: 28,
 display: "flex",
 flexDirection: "column",
 gap: 14,
+position: "relative",
 }}
 >
+<div
+style={{
+position: "absolute",
+top: -12,
+left: 20,
+background: TEAL,
+color: TEXT,
+fontSize: 11,
+fontWeight: 700,
+padding: "4px 10px",
+borderRadius: 999,
+letterSpacing: "0.04em",
+}}
+>
+7-DAY TRIAL
+</div>
 <div style={{ fontSize: 13, color: MUTED, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-Monthly
+Try It First
 </div>
 <div style={{ fontSize: 34, fontWeight: 700 }}>
-$30<span style={{ fontSize: 15, color: MUTED, fontWeight: 400 }}> /month</span>
+$9<span style={{ fontSize: 15, color: MUTED, fontWeight: 400 }}> for 7 days</span>
 </div>
 <p style={{ color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
 Full access to the app, the GAP Method, and the entire Activation Library.
@@ -357,9 +374,9 @@ target="_blank"
 rel="noopener noreferrer"
 style={{
 textAlign: "center",
-background: "transparent",
-color: GOLD,
-border: `1px solid ${GOLD}`,
+background: TEAL,
+color: TEXT,
+border: `1px solid ${TEAL}`,
 borderRadius: 10,
 padding: "13px 22px",
 fontSize: 14,
@@ -367,8 +384,11 @@ fontWeight: 700,
 textDecoration: "none",
 }}
 >
-Get monthly access →
+Start my 7-day trial →
 </a>
+<p style={{ color: MUTED, fontSize: 11, lineHeight: 1.5, marginTop: -4 }}>
+You'll be charged $9 today for 7 days of full access. After your trial, you'll be automatically charged $30/month until you cancel. Cancel any time.
+</p>
 </div>
 
 <div
