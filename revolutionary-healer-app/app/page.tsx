@@ -328,7 +328,7 @@ style={{ width: "100%", height: 260, objectFit: "cover", objectPosition: "top", 
 <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px" }}>
 <div style={{ textAlign: "center", marginBottom: 26 }}>
 <div style={{ fontSize: 20, fontWeight: 600 }}>Step into the app</div>
-<p style={{ color: MUTED, fontSize: 14, marginTop: 6 }}>Choose your plan — full access, no trial.</p>
+<p style={{ color: MUTED, fontSize: 14, marginTop: 6 }}>Start with a 7-day trial, or go straight to full access.</p>
 </div>
 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
 <div
