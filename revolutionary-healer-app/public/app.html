@@ -11,7 +11,7 @@
 
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>The Revolutionary Healer — App Mockup</title>
+<title>The Revolutionary Healer</title>
 <style>
   :root {
     --black: #121110;
@@ -391,7 +391,7 @@
   .explore-card p { font-size: 13.5px; color: var(--taupe); line-height: 1.6; margin: 0 0 18px; }
   .explore-link { font-size: 13px; color: var(--gold); }
 
-  footer { padding: 40px 0 60px; text-align: center; }
+  footer { padding: 40px 0 60px; text-align: center; position: relative; z-index: 2; margin-top: 24px; clear: both; }
   footer .logo { justify-content: center; display: flex; margin-bottom: 10px; }
   footer p { color: var(--taupe-soft); font-size: 12.5px; letter-spacing: 0.03em; }
 
@@ -1094,7 +1094,7 @@
 
         <div class="reveal-block" id="d3-upsell-block" style="text-align:left; margin-top: 8px;">
           <div class="eyebrow">Ready for your full transformation?</div>
-          <p class="copy" style="margin-bottom: 20px;">This activation is what I'd recommend you work with next -- it's not included in what you've already unlocked. Your recommended activation, Rachael's full Activation Library, and ongoing AI support all live inside The Revolutionary Healer, so this is where the real shift happens.</p>
+                    <p class="copy" style="margin-bottom: 20px;">This activation is what I'd recommend you work with next. Your recommended activation, Rachael's full Activation Library, and ongoing AI support all live inside The Revolutionary Healer, so this is where the real shift happens.</p>
           <a href="javascript:void(0)" class="btn-gold" onclick="handleGapListenNowClick()">Listen now →</a>
 <div id="d3-embed-confirmation" style="display:none; text-align:center; margin-top: 18px;"><p class="copy" style="color: var(--gold-soft); margin:0;">✓ Your Shift has been saved to My Revolution.</p></div>
         </div>
@@ -2103,13 +2103,6 @@
   </div>
 </footer>
 
-<!-- GAP Method scoped-trial demo (Aug 10): shared toast shown when a GAP
-     trial member clicks a locked (non-GAP) Activation Library card. -->
-<div class="locked-activation-toast" id="locked-activation-toast">
-  <span><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Upgrade to Full Access to unlock this activation.</span>
-  <a onclick="showPage('upgrade-page'); return false;">Upgrade →</a>
-</div>
-
 <script>
   // --- GAP Method scoped-trial demo (Aug 10) --------------------------------
   // Static-mockup stand-in for the real server-side entitlement check the
@@ -2825,14 +2818,17 @@ function startGapMethodInChat() {
   }
 
 function closeHeroGapEmbed() {
-      if (window.__rhGapMethodActive) {
-              var ok = window.confirm("Close this GAP Method session? You can start it again anytime from the GAP Method button.");
-              if (!ok) return;
-      }
       window.__rhGapMethodActive = false;
       var wrap = document.getElementById('hero-gap-embed');
       if (wrap) wrap.style.display = 'none';
 }
+
+document.addEventListener('keydown', function(e) {
+if (e.key === 'Escape') {
+var wrap = document.getElementById('hero-gap-embed');
+if (wrap && wrap.style.display !== 'none') { closeHeroGapEmbed(); }
+}
+});
 
   function signOutMember() {
     localStorage.removeItem('rh_member_email');
@@ -4170,6 +4166,7 @@ var DOMAINS = [
   function showEl(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; }
 
   function goDay(n) {
+if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.textContent !== '✓') { n = 2; } }
     [1,2,3].forEach(function(i) {
       document.getElementById('view-day' + i).classList.toggle('active', i === n);
       document.getElementById('tab-day' + i).classList.toggle('active', i === n);
@@ -4196,7 +4193,7 @@ var DOMAINS = [
     DOMAINS.forEach(function(d) {
       var b = document.createElement('button');
       b.className = 'domain-chip' + (selectedDomain === d.key ? ' selected' : '');
-      b.innerHTML = '<span>' + d.label + '</span><span class="tick">✓</span>';
+            b.innerHTML = '<span>' + d.label + '</span><span class="tick">' + (selectedDomain === d.key ? '✓' : '') + '</span>';
       b.onclick = function() { selectedDomain = d.key; renderDomainChips(); document.getElementById('domain-next').disabled = false; };
       el.appendChild(b);
     });
@@ -4483,6 +4480,7 @@ var DOMAINS = [
           document.getElementById('ready-btn-wrap').style.display = 'none';
           document.getElementById('check2').textContent = '✓';
           document.getElementById('d2-continue').style.display = 'block';
+if (forceComplete) { goDay(3); }
         } else {
           input.disabled = false;
           input.focus();
