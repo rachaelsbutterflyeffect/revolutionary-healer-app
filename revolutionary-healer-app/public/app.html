@@ -2964,7 +2964,7 @@ var assistantEl =         addRhMessage('assistant', data.reply || "I didn't quit
     "One sec. I want to respond to what's actually happening, not just the surface of it."
   ];
 
-function rhThread() { return window.__rhGapMethodActive ? document.getElementById('gap-embed-thread') : document.getElementById('rh-chat-thread'); }
+function rhThread() { return document.getElementById('rh-chat-thread'); }
 
   function rhIsNearBottom() {
     var t = rhThread();
