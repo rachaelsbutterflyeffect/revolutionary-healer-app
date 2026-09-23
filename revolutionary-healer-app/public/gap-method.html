@@ -1324,10 +1324,7 @@
             winnerKey = IDENTITY_SLUG_TO_KEY[finalSlug];
             gotFinalIdentity = true;
           }
-          reply = reply.replace(finalIdentityMatch[0], '').trim();
-        }
-        var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i);
-        if (subActivationMatch) {
+                    reply = reply.replace(finalIdentityMatch[0], '').trim(); } if (!reply) { reply = "Thank you for sharing all of that with me -- I can see clearly what's here for you."; } var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i); (subActivationMatch) {
           var subKeyFound = subActivationMatch[1].toLowerCase();
           if (DISCONNECTION_SUB_ACTIVATIONS[subKeyFound]) {
             subActivationKey = subKeyFound;
@@ -1343,11 +1340,7 @@
           lowered.indexOf('now let\'s name') !== -1 ||
           lowered.indexOf('begin shifting it') !== -1 ||
           lowered.indexOf('now we can actually see it') !== -1;
-        if (forceComplete || seemsComplete || day2TurnCount >= 7) {
-          input.disabled = true;
-          document.getElementById('ready-btn-wrap').style.display = 'none';
-          document.getElementById('check2').textContent = '✓';
-          document.getElementById('d2-continue').style.display = 'block';
+                if (forceComplete || seemsComplete || day2TurnCount >= 7) { input.disabled = true; document.getElementById('ready-btn-wrap').style.display = 'none'; document.getElementById('check2').textContent = '✓'; document.getElementById('d2-continue').style.display = 'block'; if (forceComplete) { goDay(3); }
         } else {
           input.disabled = false;
           input.focus();
