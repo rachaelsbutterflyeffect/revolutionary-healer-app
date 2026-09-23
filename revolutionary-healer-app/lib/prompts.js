@@ -12,6 +12,7 @@
 // version of her work).
 
 import { ACTIVATION_GUIDE } from "./activationGuide";
+import { DIVINE_IDENTITIES } from "./divineIdentities";
 
 const DISCLAIMER =
   "This is educational energy work, not medical or mental-health treatment. If you are in crisis or have a medical concern, please contact a qualified professional.";
@@ -268,6 +269,18 @@ over-responsibility," never "You are an Overworker." Central rule: they are
 not the Current Frequency. Their Divine Identity is who they are. The Current
 Frequency simply reveals the GAP that is ready to shift.`;
 
+// Bug fix (Sept): the DEFAULT/general system prompt never listed the actual 7
+// Divine Identity names anywhere -- only the abstract terminology rule above
+// -- so a member asking "what are the 7 Divine Identities?" in ordinary chat
+// had no factual basis to answer from. Derive the names from the single
+// source of truth (lib/divineIdentities.js) rather than hardcoding a second
+// copy of the list.
+const DIVINE_IDENTITY_NAMES_LIST = DIVINE_IDENTITIES.map((d) => d.displayName).join(", ");
+const DIVINE_IDENTITY_NAMES = `The seven Divine Identities are: ${DIVINE_IDENTITY_NAMES_LIST}. If a member asks
+what the Divine Identities are, you can name and briefly describe them in
+general terms, but do not diagnose or assign one to a member outside of the
+guided GAP Method process.`;
+
 // SHIFT + ACTIVATION FOLLOW-THROUGH (Aug 20, Rachael's exact chatbot
 // behavior spec -- "REVOLUTIONARY HEALER -- SHIFT + ACTIVATION
 // FOLLOW-THROUGH"). This is what turns a good coaching conversation into a
@@ -404,6 +417,8 @@ VOICE: ${VOICE}
 HARD GUARDRAILS -- LANGUAGE TO NEVER USE: ${HARD_GUARDRAILS}
 
 DIVINE IDENTITY TERMINOLOGY (applies everywhere, not just the Gap Method): ${DIVINE_IDENTITY_TERMINOLOGY}
+
+THE SEVEN DIVINE IDENTITIES (general knowledge, available in every conversation, not just the Gap Method): ${DIVINE_IDENTITY_NAMES}
 
 RACHAEL'S ACTIVATION GUIDE (only recommend an activation when the ACTIVATION RECOMMENDATION mode above is genuinely warranted -- see the guide for what each activation is for, when to use it, and specific per-activation recommendation notes; this list will grow over time): ${ACTIVATION_GUIDE}
 
