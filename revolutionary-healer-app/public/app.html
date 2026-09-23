@@ -2617,7 +2617,7 @@
     });
 
     if (hasShifts) {
-      var top = shifts[0];
+            var top = shifts[0]; try { var pinnedShiftId = sessionStorage.getItem('rhFocusShiftId'); if (pinnedShiftId) { var pinnedShift = shifts.filter(function(s) { return String(s.id) === String(pinnedShiftId); })[0]; if (pinnedShift) { top = pinnedShift; } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } catch (e) {}
       document.querySelectorAll('[data-role="focus-identity"]').forEach(function(el) { el.textContent = top.identity || 'Your Divine Identity'; });
       document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.frequency || ''; });
       document.querySelectorAll('[data-role="focus-status"]').forEach(function(el) {
@@ -2907,40 +2907,7 @@ if (wrap && wrap.style.display !== 'none') { closeHeroGapEmbed(); }
     input.value = '';
     autoGrowChatInput();
     window.__rhLastFailedText = null;
-    var thinkingEl = showRhThinking();
-    try {
-      var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text };
-      if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId;
-      if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId;
-      if (processSlug) payload.processSlug = processSlug;
-      var res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      var data = await res.json();
-      removeRhThinking(thinkingEl);
-      if (!res.ok || data.error) {
-        window.__rhLastFailedText = text;
-        addRhError();
-      } else {
-        if (data.chatId) {
-          window.__rhActiveChatId = data.chatId;
-          if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} }
-          rhMaybeRefreshDrawerAfterSend();
-        }
-var assistantEl =         addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?");
-        if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug);
-      }
-    } catch (e) {
-      removeRhThinking(thinkingEl);
-      window.__rhLastFailedText = text;
-      addRhError();
-    } finally {
-      window.__rhSending = false;
-      if (sendBtn) sendBtn.disabled = false;
-    }
-  }
+        var thinkingEl = showRhThinking(); var rhAbortController = new AbortController(); var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, 30000); try { var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text }; if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId; if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId; if (processSlug) payload.processSlug = processSlug; var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal }); clearTimeout(rhAbortTimeout); var data = await res.json(); removeRhThinking(thinkingEl); if (!res.ok || data.error) { window.__rhLastFailedText = text; addRhError(); } else { if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); } var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?"); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); } } catch (e) { clearTimeout(rhAbortTimeout); removeRhThinking(thinkingEl); window.__rhLastFailedText = text; if (e && e.name === 'AbortError') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); } } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; } }
 
   function rhRetryLastMessage() {
     var t = window.__rhLastFailedText;
@@ -2998,14 +2965,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     return el;
   }
 
-  function addRhError() {
-    var t = rhThread();
-    if (!t) return;
-    var wasNear = rhIsNearBottom();
-    var wrap = document.createElement('div');
-    wrap.className = 'rh-msg rh-msg-error';
-    var msg = document.createElement('div');
-    msg.textContent = "Something glitched on my end. Try that again for me.";
+    function addRhError(customMessage) { var t = rhThread(); if (!t) return; var wasNear = rhIsNearBottom(); var wrap = document.createElement('div'); wrap.className = 'rh-msg rh-msg-error'; var msg = document.createElement('div'); msg.textContent = customMessage || "Something glitched on my end. Try that again for me.";
     wrap.appendChild(msg);
     var btn = document.createElement('button');
     btn.type = 'button';
@@ -4344,12 +4304,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     showEl('d1-results', true);
   }
 
-  function backToQuizFromResults() {
-    day1Done = false;
-    document.getElementById('check1').textContent = '';
-    showEl('d1-results', false);
-    showEl('d1-domain', true);
-  }
+    function backToQuizFromResults() { day1Done = false; document.getElementById('check1').textContent = ''; showEl('d1-results', false); showEl('d1-domain', true); window.__gapShiftAutoCreated = false; gapChatHistory = []; day2TurnCount = 0; winnerKey = null; var check2ResetEl = document.getElementById('check2'); if (check2ResetEl) check2ResetEl.textContent = ''; }
 
   // Aug 12 (Rachael's explicit request) -- Step 2's chat now runs on the real
   // Claude-backed GAP_METHOD_SCRIPT_FUNNEL_UPSELL script (lib/processes.js)
@@ -4456,10 +4411,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
             winnerKey = IDENTITY_SLUG_TO_KEY[finalSlug];
             gotFinalIdentity = true;
           }
-          reply = reply.replace(finalIdentityMatch[0], '').trim();
-        }
-        var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i);
-        if (subActivationMatch) {
+                    reply = reply.replace(finalIdentityMatch[0], '').trim(); } if (!reply) { reply = "Thank you for sharing all of that with me -- I can see clearly what's here for you."; } var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i); (subActivationMatch) {
           var subKeyFound = subActivationMatch[1].toLowerCase();
           if (DISCONNECTION_SUB_ACTIVATIONS[subKeyFound]) {
             subActivationKey = subKeyFound;
@@ -4487,11 +4439,7 @@ if (forceComplete) { goDay(3); }
           document.getElementById('ready-btn-wrap').style.display = (day2TurnCount >= 2) ? 'block' : 'none';
         }
       })
-      .catch(function() {
-        removeTypingBubble();
-        addBotBubble("Sorry -- I had trouble connecting just then. Mind sending that again?");
-        input.disabled = false;
-      });
+            .catch(function() { removeTypingBubble(); addBotBubble("Sorry -- I had trouble connecting just then. Mind sending that again?"); input.disabled = false; if (forceComplete) { document.getElementById('ready-btn-wrap').style.display = 'block'; } });
   }
 
   function addBotBubble(text) {
