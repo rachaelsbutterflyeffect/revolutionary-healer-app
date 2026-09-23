@@ -4637,7 +4637,7 @@ if (forceComplete) { goDay(3); }
         if (!result.ok) {
           console.error('autoCreateMemberShift: server rejected the request', result.status, result.body);
           window.__gapShiftAutoCreated = false;
-        }
+        } else { if (typeof loadMemberRevolutionData === 'function') loadMemberRevolutionData(); }
       }).catch(function(e) {
         console.error('autoCreateMemberShift failed', e);
         window.__gapShiftAutoCreated = false;
