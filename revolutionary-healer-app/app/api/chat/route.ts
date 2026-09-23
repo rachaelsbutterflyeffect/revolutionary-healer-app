@@ -42,6 +42,30 @@ const RECENT_MESSAGE_LIMIT = 20;
 // the context window.
 const SUMMARY_TRIGGER_COUNT = 12;
 
+// Bug fix (Sept): none of the calls in this route had a timeout, so a hang
+// anywhere in the chain blocked the member's "thinking" indicator forever
+// with no client-visible error. The Claude call itself gets a bound via the
+// SDK's own per-request timeout option (see below); everything after the
+// reply is already generated is non-critical persistence/bookkeeping, so
+// it's bounded individually with this helper -- a timeout there just skips
+// that one side effect instead of blocking or failing the member's response.
+const CHAT_TIMEOUT_MS = 45000;
+const BOOKKEEPING_TIMEOUT_MS = 10000;
+
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+      ),
+    ]);
+  } catch (err) {
+    console.error(`Bookkeeping step "${label}" failed or timed out`, err);
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   // gapMethodResult (added Aug 10, widened same day): optional structured
   // output from the 3 Step GAP Method -- Step 1's Divine Identity + confirmed
@@ -159,12 +183,23 @@ export async function POST(req: NextRequest) {
   // even if the model call itself fails.
   await createMessage({ chatId, email, role: "user", text: message });
 
-  const response = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: 4096,
-    system: systemPrompt,
-    messages: [...historyForClaude, { role: "user", content: message }],
-  });
+  let response;
+  try {
+    response = await anthropic.messages.create(
+      {
+        model: MODEL,
+        max_tokens: 4096,
+        system: systemPrompt,
+        messages: [...historyForClaude, { role: "user", content: message }],
+      },
+      { timeout: CHAT_TIMEOUT_MS }
+    );
+  } catch (err) {
+    return NextResponse.json(
+      { error: "The response took too long. Please try again." },
+      { status: 504 }
+    );
+  }
 
   const rawReplyText = response.content
     .filter((block: any) => block.type === "text")
@@ -259,7 +294,15 @@ let shiftCreatedViaMarker = false;
     }
   }
   
-  await createMessage({ chatId, email, role: "assistant", text: replyText });
+  // Bug fix (Sept): everything below persists non-critical bookkeeping after
+  // the reply is already generated. None of it should ever be able to block
+  // or fail the member's response, so each step is individually bounded --
+  // a hang or failure there just skips that one side effect.
+  await withTimeout(
+    createMessage({ chatId, email, role: "assistant", text: replyText }),
+    BOOKKEEPING_TIMEOUT_MS,
+    "createMessage(assistant)"
+  );
 
   if (embodimentShift && /updated your card[\s\S]{0,60}embodied/i.test(replyText)) {
     try {
@@ -279,23 +322,31 @@ let shiftCreatedViaMarker = false;
     sessionUpdates.title = await generateChatTitle(message);
   }
 
-  await updateChatSession(chatId, sessionUpdates);
+  await withTimeout(updateChatSession(chatId, sessionUpdates), BOOKKEEPING_TIMEOUT_MS, "updateChatSession");
 
   // Rolling summary for long threads (PART 7) and member-memory extraction
   // (PART 9-13). Both are best-effort and swallow their own errors -- Vercel
   // serverless has no reliable fire-and-forget without extra infra, so these
   // are awaited inline rather than risking losing them.
   if (priorMessageCount + 2 >= SUMMARY_TRIGGER_COUNT) {
-    const newSummary = await updateRollingSummary({
-      previousSummary: chatSummary,
-      userText: message,
-      assistantText: replyText,
-    });
+    const newSummary = await withTimeout(
+      updateRollingSummary({ previousSummary: chatSummary, userText: message, assistantText: replyText }),
+      BOOKKEEPING_TIMEOUT_MS,
+      "updateRollingSummary"
+    );
     if (newSummary) {
-      await updateChatSession(chatId, { summary: newSummary });
+      await withTimeout(
+        updateChatSession(chatId, { summary: newSummary }),
+        BOOKKEEPING_TIMEOUT_MS,
+        "updateChatSession(summary)"
+      );
     }
   }
-  await extractMemoriesFromExchange({ email, chatId, userText: message, assistantText: replyText });
+  await withTimeout(
+    extractMemoriesFromExchange({ email, chatId, userText: message, assistantText: replyText }),
+    BOOKKEEPING_TIMEOUT_MS,
+    "extractMemoriesFromExchange"
+  );
 
   await logEvent(
     "chat_message",
