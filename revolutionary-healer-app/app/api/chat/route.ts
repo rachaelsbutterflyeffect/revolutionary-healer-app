@@ -109,12 +109,19 @@ export async function POST(req: NextRequest) {
   const priorMessages = await listMessagesByChatId(chatId, { limit: RECENT_MESSAGE_LIMIT });
   const priorMessageCount = priorMessages.length;
 
-  const [retrievedContext, memberMemories, existingShiftRecords] = await Promise.all([
+  const [retrievedContext, rawMemberMemories, existingShiftRecords] = await Promise.all([
       retrieveContextForFocusArea(focusAreaSlug, message),
       getRelevantMemoriesForPrompt(email),
       getShiftsByEmail(email),
     
   ]);
+  const isGapMethodProcess = process?.slug === "3-step-gap-method";
+  // GAP Method Step 2/3 narrative must be grounded only in the current,
+  // just-completed exchange -- not cross-chat memory or an older rolling
+  // summary from earlier in this same thread (QA, Sept 2026: the narrative
+  // was describing an unrelated background conversation while the
+  // deterministic header/activation, which don't depend on this, stayed correct).
+  const memberMemories = isGapMethodProcess ? "" : rawMemberMemories;
 
   // SHIFT + ACTIVATION FOLLOW-THROUGH (Aug 20, Rachael's spec): give the AI
   // visibility into the member's existing Shifts so it can check whether a
@@ -129,7 +136,7 @@ export async function POST(req: NextRequest) {
     })
     .join("\n");
 
-  const chatSummary = session.fields.summary || "";
+  const chatSummary = isGapMethodProcess ? "" : (session.fields.summary || "");
   let systemPrompt = buildSystemPrompt(focusArea, {
     retrievedContext,
     process,
