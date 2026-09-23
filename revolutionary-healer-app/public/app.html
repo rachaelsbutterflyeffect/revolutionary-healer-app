@@ -4404,21 +4404,25 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
         var data = result.body;
         var reply = data.reply || "I didn't quite catch that -- can you say a bit more?";
         var finalIdentityMatch = reply.match(/\[\[FINAL_IDENTITY:\s*(\w+)\s*\]\]/i);
-        var gotFinalIdentity = false;
-        if (finalIdentityMatch) {
-          var finalSlug = finalIdentityMatch[1].toLowerCase();
-          if (IDENTITY_SLUG_TO_KEY[finalSlug]) {
-            winnerKey = IDENTITY_SLUG_TO_KEY[finalSlug];
-            gotFinalIdentity = true;
-          }
-                    reply = reply.replace(finalIdentityMatch[0], '').trim(); } if (!reply) { reply = "Thank you for sharing all of that with me -- I can see clearly what's here for you."; } var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i); (subActivationMatch) {
-          var subKeyFound = subActivationMatch[1].toLowerCase();
-          if (DISCONNECTION_SUB_ACTIVATIONS[subKeyFound]) {
-            subActivationKey = subKeyFound;
-          }
-          reply = reply.replace(subActivationMatch[0], '').trim();
-        }
-        addBotBubble(reply);
+var gotFinalIdentity = false;
+if (finalIdentityMatch) {
+var finalSlug = finalIdentityMatch[1].toLowerCase();
+if (IDENTITY_SLUG_TO_KEY[finalSlug]) {
+winnerKey = IDENTITY_SLUG_TO_KEY[finalSlug];
+gotFinalIdentity = true;
+}
+reply = reply.replace(finalIdentityMatch[0], '').trim();
+}
+if (!reply) { reply = "Thank you for sharing all of that with me -- I can see clearly what's here for you."; }
+var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i);
+if (subActivationMatch) {
+var subKeyFound = subActivationMatch[1].toLowerCase();
+if (DISCONNECTION_SUB_ACTIVATIONS[subKeyFound]) {
+subActivationKey = subKeyFound;
+}
+reply = reply.replace(subActivationMatch[0], '').trim();
+}
+addBotBubble(reply);
         gapChatHistory.push({ role: 'user', content: userText });
         gapChatHistory.push({ role: 'assistant', content: reply });
         day2TurnCount++;
