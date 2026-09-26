@@ -115,3 +115,43 @@ This link expires in 1 hour. If you didn't request this, you can safely ignore t
 
   return { skipped: false };
 }
+
+// Sept 26 (webhook-hardening request): fire-and-forget internal alert to
+// Rachael's own inbox when something needs a human -- e.g. a purchase
+// webhook that failed 3x in a row and probably left a buyer locked out (see
+// app/api/cron/retry-webhooks/route.ts, which is the only caller today).
+// Same Resend setup and same "never throw on missing config" contract as
+// the other senders in this file -- an alerting system that can crash its
+// own caller defeats the point of having it.
+export async function sendOpsAlert({ subject, message }) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM_EMAIL;
+  const to = "rachaelsbutterflyeffect@gmail.com";
+  if (!apiKey || !from) {
+    console.warn(
+      "sendOpsAlert: RESEND_API_KEY / RESEND_FROM_EMAIL not set -- skipping send. " +
+      "Set both in Vercel to actually receive ops alert emails."
+    );
+    return { skipped: true };
+  }
+
+  const fullSubject = `[Revolutionary Healer Alert] ${subject}`;
+  const text = message;
+  const html = `<p>${String(message).replace(/\n/g, "<br/>")}</p>`;
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ from, to, subject: fullSubject, text, html }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Resend send failed: ${res.status} ${body}`);
+  }
+
+  return { skipped: false };
+}
