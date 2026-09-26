@@ -61,7 +61,12 @@ export async function GET(req: NextRequest) {
     const currentAttempts = Number(f.attempt_count ?? 0);
 
     try {
-      const result = await processKajabiPurchase({ email, offerId, eventType });
+      // Note: WebhookEvents rows don't store the buyer's first name, so
+      // firstName is explicitly undefined here -- processKajabiPurchase
+      // (lib/airtable.js) requires the key to be present (even if its value
+      // is undefined) since it has no default value in its destructured
+      // parameter, which TypeScript then infers as a required property.
+      const result = await processKajabiPurchase({ email, firstName: undefined, offerId, eventType });
       await updateWebhookEvent(row.id, {
         outcome: result.outcome,
         member_record_id: result.memberRecordId,
