@@ -76,33 +76,17 @@ export async function POST(req: NextRequest) {
     }
 
     const event = JSON.parse(rawBody);
-    // Real Kajabi Purchase Created webhook shape (per Kajabi's outbound webhook
-    // docs): { id, offer: { id, title }, member: { id, email, name,
-    // first_name, last_name }, ... }. Old flat fallbacks kept in case a
-    // different webhook type (e.g. Payment Succeeded) sends a similar shape.
     const emailRaw: string | undefined = event?.member?.email ?? event?.member_email ?? event?.email;
-    // Normalize once, here, and use ONLY this value everywhere below -- the
-    // raw payload's casing can differ from what the buyer later types
-    // signing in (lib/airtable.js's normalizeEmail is what getMemberByEmail /
-    // the login route already key off of).
     const email = normalizeEmail(emailRaw);
     const firstName: string | undefined = event?.member?.first_name ?? event?.first_name;
     const offerIdRaw: string | number | undefined = event?.offer?.id ?? event?.offer_id;
     const offerId: string | undefined = offerIdRaw != null ? String(offerIdRaw) : undefined;
-    // Purchase Created webhooks only ever represent a purchase -- Kajabi does
-    // not send a cancellation/refund signal on this webhook type. event_type
-    // is kept as an optional override in case a different Kajabi webhook
-    // (with its own shape) is later pointed at this same endpoint.
     const eventType: string | undefined = event?.event_type;
 
     if (!email) {
       return NextResponse.json({ error: "no member email in payload" }, { status: 400 });
     }
 
-    // Idempotency key: prefer Kajabi's own purchase/event id; fall back to a
-    // deterministic synthetic key (plain string concatenation, not a hash --
-    // kept simple and readable for debugging in Airtable) so idempotency
-    // still holds even if a payload ever omits an id.
     const purchaseId: string = String(
       event?.id ?? event?.purchase?.id ?? `${email}:${offerId ?? "unknown"}:${eventType ?? "purchase"}`
     );
@@ -118,8 +102,6 @@ export async function POST(req: NextRequest) {
       existingEvent &&
       (existingEvent.fields?.outcome === "created" || existingEvent.fields?.outcome === "already_existed")
     ) {
-      // Duplicate delivery of an already-successfully-processed event --
-      // never reprocess a purchase Kajabi (or a flaky network) redelivers.
       return NextResponse.json({ ok: true, idempotent: true });
     }
 
@@ -148,9 +130,6 @@ export async function POST(req: NextRequest) {
           });
         }
       } catch (logErr) {
-        // Processing succeeded but logging that success failed -- log to
-        // console and move on. This must never turn a successful purchase
-        // into a failed-looking webhook response.
         console.error("Failed to log successful WebhookEvents row", logErr);
       }
 
@@ -181,24 +160,15 @@ export async function POST(req: NextRequest) {
           });
         }
       } catch (logErr) {
-        // This is the scenario the whole system exists to prevent: a real
-        // purchase failed AND we couldn't even log the failure. Console log
-        // is the last line of defense here.
         console.error(
           "Failed to log FAILED WebhookEvents row -- this purchase may go unnoticed until manually checked",
           logErr
         );
       }
 
-      // Always 200: we own retries via the cron job, not Kajabi's own
-      // (unknown) retry behavior -- see file header comment.
       return NextResponse.json({ ok: true, loggedFailure: true });
     }
   } catch (outerErr) {
-    // Outermost safety net -- something unexpected happened (e.g. malformed
-    // JSON before we even got to processing). Never let this route throw:
-    // our own alerting/retry system depends on it always accepting the
-    // delivery from Kajabi.
     console.error("Unexpected error in webhook route", outerErr);
     return NextResponse.json({ ok: true, loggedFailure: true });
   }
