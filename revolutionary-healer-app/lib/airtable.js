@@ -3,6 +3,7 @@
 
 import Airtable from "airtable";
 import crypto from "crypto";
+import { sendGapMethodMagicLink } from "./email";
 import { DIVINE_IDENTITIES } from "./divineIdentities";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
@@ -46,6 +47,7 @@ export const Tables = {
     ChatSessions: "ChatSessions",
     ChatMessages: "ChatMessages",
     MemberMemories: "MemberMemories",
+    WebhookEvents: "WebhookEvents",
 };
 
 // Lowercase + trim for consistent matching. Spec (Aug 12, Rachael's GAP
@@ -569,6 +571,114 @@ export async function listActiveMemoriesByEmail(email) {
     })
     .all();
     return records;
+}
+
+// =============================================================================
+// WEBHOOK EVENT LOG (Sept 26, webhook-hardening request)
+// =============================================================================
+// Every inbound Kajabi purchase/cancellation webhook is logged here, keyed by
+// a stable purchase_id (idempotency key), so a failure to create/update a
+// Members record can never happen silently again: it's recorded with
+// outcome "failed", retried automatically by app/api/cron/retry-webhooks,
+// and escalated to a human via sendOpsAlert (lib/email.js) after 3 failed
+// attempts (outcome "alerted"). See app/api/webhooks/route.ts.
+
+const MEMBER_OFFER_IDS = (process.env.MEMBER_OFFER_IDS ?? "").split(",").filter(Boolean);
+const TIER_OFFER_IDS = (process.env.TIER_OFFER_IDS ?? "").split(",").filter(Boolean);
+const GAP_METHOD_OFFER_IDS = (process.env.GAP_METHOD_OFFER_IDS ?? "2151330100").split(",").filter(Boolean);
+
+export async function getWebhookEventByPurchaseId(purchaseId) {
+    return findOneByField(Tables.WebhookEvents, "purchase_id", purchaseId);
+}
+
+export async function createWebhookEvent({
+    purchaseId,
+    email,
+    offerId,
+    eventType,
+    outcome,
+    attemptCount = 1,
+    errorMessage = "",
+    memberRecordId = "",
+    rawPayload = "",
+}) {
+    const now = new Date().toISOString();
+    const fields = {
+        purchase_id: purchaseId,
+        email: email ?? "",
+        offer_id: offerId ?? "",
+        event_type: eventType ?? "",
+        outcome,
+        attempt_count: attemptCount,
+        error_message: errorMessage,
+        member_record_id: memberRecordId,
+        raw_payload: rawPayload,
+        received_at: now,
+        last_attempt_at: now,
+    };
+    if (outcome === "failed") {
+        fields.next_retry_at = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    }
+    return base(Tables.WebhookEvents).create(fields);
+}
+
+export async function updateWebhookEvent(recordId, fields) {
+    return base(Tables.WebhookEvents).update(recordId, {
+        ...fields,
+        last_attempt_at: new Date().toISOString(),
+    });
+}
+
+export async function listWebhookEventsDueForRetry() {
+    return base(Tables.WebhookEvents)
+    .select({
+        filterByFormula: `AND({outcome} = "failed", {attempt_count} < 3, IS_BEFORE({next_retry_at}, NOW()))`,
+    })
+    .all();
+}
+
+// Extracted from app/api/webhooks/route.ts (Sept 26, webhook-hardening
+// request) so it's importable both from the webhook route itself AND from
+// the retry cron (app/api/cron/retry-webhooks/route.ts) without duplicating
+// the Kajabi offer-id / entitlement / GAP Method logic in two places. Throws
+// on any Airtable failure -- the caller (webhook route or retry cron) is
+// responsible for catching the error and logging it to WebhookEvents.
+export async function processKajabiPurchase({ email, firstName, offerId, eventType }) {
+    const normalizedEmail = normalizeEmail(email);
+    const isMemberOffer = offerId ? MEMBER_OFFER_IDS.includes(offerId) : true;
+    const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
+    const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;
+    const isCancellation = eventType === "cancellation" || eventType === "refund";
+
+    const existing = await getMemberByEmail(normalizedEmail);
+    const fields = {};
+    if (isMemberOffer) fields.member_active = !isCancellation;
+    if (isTierOffer) fields.tier_active = !isCancellation;
+
+    let memberRecordId;
+    let outcome;
+    if (existing) {
+        await base(Tables.Members).update(existing.id, fields);
+        memberRecordId = existing.id;
+        outcome = "already_existed";
+    } else {
+        const created = await base(Tables.Members).create({ email: normalizedEmail, member_active: !isCancellation, ...fields });
+        memberRecordId = created.id;
+        outcome = "created";
+    }
+
+    if (isGapMethodOffer && !isCancellation) {
+        const { sessionToken } = await upsertGapMethodResultOnPurchase({ email: normalizedEmail, offerId, firstName });
+        sendGapMethodMagicLink({ email: normalizedEmail, firstName, sessionToken }).catch((err) => {
+            console.error("sendGapMethodMagicLink failed", err);
+        });
+    }
+
+    if ((isMemberOffer || isTierOffer) && !isCancellation) {
+        await linkGapMethodResultToMember(normalizedEmail, memberRecordId);
+    }
+
+    return { memberRecordId, outcome };
 }
 
 export default base;
