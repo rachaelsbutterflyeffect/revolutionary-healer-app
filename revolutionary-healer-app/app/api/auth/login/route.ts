@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const member = await getMemberByEmail(email);
     if (!member) {
       return NextResponse.json(
-        { error: "We couldn't find access for that email. Use the same email you purchased with." },
+        { error: "We don't see a purchase for that email. Double-check you're using the exact email you purchased with, or reach out for help." },
         { status: 401 }
       );
     }
