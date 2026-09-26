@@ -2,26 +2,35 @@
 // Decided platform per SPEC.md §6: Kajabi. Entitlement in Airtable is a set of flags
 // (member_active, tier_active), never one tier field -- the higher tier is additive.
 // Webhook handling must be idempotent (SPEC.md §12 risk: "Billing edge cases").
+//
+// Sept 26 (webhook-hardening request): a real buyer paid via Kajabi and the
+// purchase webhook silently never created her Airtable Members record -- she
+// was locked out with no alert to anyone. Every inbound webhook is now logged
+// to the WebhookEvents table (lib/airtable.js), keyed by an idempotency key
+// (purchaseId), so:
+//   - a duplicate delivery of an already-successfully-processed event is a
+//     safe no-op, and
+//   - a failure is never silent: it's recorded with outcome "failed" and
+//     retried automatically by app/api/cron/retry-webhooks/route.ts, which
+//     escalates to a human via sendOpsAlert (lib/email.js) after 3 failed
+//     attempts (outcome "alerted").
+// The actual Members-upsert / GAP Method logic that used to live inline here
+// now lives in lib/airtable.js's processKajabiPurchase(), so the retry cron
+// can call the exact same code path without duplicating it.
+//
+// This route ALWAYS returns 200 to Kajabi, even when OUR OWN processing
+// fails, because Kajabi's retry behavior on a non-200 response is
+// undocumented/unknown -- we own retries ourselves via the cron job, so
+// returning a 500 here would just add an unpredictable variable on top of a
+// problem we already handle deliberately.
 import { NextRequest, NextResponse } from "next/server";
-import base, {
-  Tables,
-  getMemberByEmail,
-  upsertGapMethodResultOnPurchase,
-  linkGapMethodResultToMember,
+import {
+  normalizeEmail,
+  processKajabiPurchase,
+  getWebhookEventByPurchaseId,
+  createWebhookEvent,
+  updateWebhookEvent,
 } from "@/lib/airtable";
-import { sendGapMethodMagicLink } from "@/lib/email";
-
-// Map of Kajabi offer IDs -> which Airtable flag they should set. Populate once
-// Rachael's offers exist (SPEC.md §9 env vars: MEMBER_OFFER_IDS, TIER_OFFER_IDS).
-const MEMBER_OFFER_IDS = (process.env.MEMBER_OFFER_IDS ?? "").split(",").filter(Boolean);
-const TIER_OFFER_IDS = (process.env.TIER_OFFER_IDS ?? "").split(",").filter(Boolean);
-
-// GAP Method offer(s) -- Aug 12, Rachael's GAP Method persistence instruction.
-// Defaults to the live $9 GAP Method offer id so this works even before
-// Rachael adds the env var in Vercel; add more offer ids to
-// GAP_METHOD_OFFER_IDS (comma-separated) if she ever creates additional GAP
-// Method offers.
-const GAP_METHOD_OFFER_IDS = (process.env.GAP_METHOD_OFFER_IDS ?? "2151330100").split(",").filter(Boolean);
 
 // RETIRED (Aug 12, Rachael's explicit instruction): the $9 GAP Method offer no
 // longer auto-grants a 3-day Full Access trial. Buyers move through the 3-step
@@ -38,8 +47,8 @@ const GAP_METHOD_OFFER_IDS = (process.env.GAP_METHOD_OFFER_IDS ?? "2151330100").
 // the $9 archetype activation offers should also increment the member's
 // quantum_dollars field by QUANTUM_DOLLARS_PER_ACTIVATION. Needs an offer-id -> "this
 // is an activation purchase, not a membership" mapping (separate from
-// MEMBER_OFFER_IDS/TIER_OFFER_IDS above) once Rachael confirms the activation
-// offer IDs to watch for.
+// MEMBER_OFFER_IDS/TIER_OFFER_IDS, now in lib/airtable.js) once Rachael confirms the
+// activation offer IDs to watch for.
 
 function verifyKajabiSignature(req: NextRequest, rawBody: string): boolean {
   // Kajabi's outbound Purchase Created / Payment Succeeded / Cart Purchase
@@ -58,18 +67,25 @@ function verifyKajabiSignature(req: NextRequest, rawBody: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-    const rawBody = await req.text();
+  let rawBody = "";
+  try {
+    rawBody = await req.text();
 
-  if (!verifyKajabiSignature(req, rawBody)) {
-        return NextResponse.json({ error: "invalid signature" }, { status: 401 });
-  }
+    if (!verifyKajabiSignature(req, rawBody)) {
+      return NextResponse.json({ error: "invalid signature" }, { status: 401 });
+    }
 
-  const event = JSON.parse(rawBody);
-  // Real Kajabi Purchase Created webhook shape (per Kajabi's outbound webhook
-  // docs): { id, offer: { id, title }, member: { id, email, name,
-  // first_name, last_name }, ... }. Old flat fallbacks kept in case a
-  // different webhook type (e.g. Payment Succeeded) sends a similar shape.
-    const email: string | undefined = event?.member?.email ?? event?.member_email ?? event?.email;
+    const event = JSON.parse(rawBody);
+    // Real Kajabi Purchase Created webhook shape (per Kajabi's outbound webhook
+    // docs): { id, offer: { id, title }, member: { id, email, name,
+    // first_name, last_name }, ... }. Old flat fallbacks kept in case a
+    // different webhook type (e.g. Payment Succeeded) sends a similar shape.
+    const emailRaw: string | undefined = event?.member?.email ?? event?.member_email ?? event?.email;
+    // Normalize once, here, and use ONLY this value everywhere below -- the
+    // raw payload's casing can differ from what the buyer later types
+    // signing in (lib/airtable.js's normalizeEmail is what getMemberByEmail /
+    // the login route already key off of).
+    const email = normalizeEmail(emailRaw);
     const firstName: string | undefined = event?.member?.first_name ?? event?.first_name;
     const offerIdRaw: string | number | undefined = event?.offer?.id ?? event?.offer_id;
     const offerId: string | undefined = offerIdRaw != null ? String(offerIdRaw) : undefined;
@@ -79,52 +95,111 @@ export async function POST(req: NextRequest) {
     // (with its own shape) is later pointed at this same endpoint.
     const eventType: string | undefined = event?.event_type;
 
-  if (!email) {
-        return NextResponse.json({ error: "no member email in payload" }, { status: 400 });
+    if (!email) {
+      return NextResponse.json({ error: "no member email in payload" }, { status: 400 });
+    }
+
+    // Idempotency key: prefer Kajabi's own purchase/event id; fall back to a
+    // deterministic synthetic key (plain string concatenation, not a hash --
+    // kept simple and readable for debugging in Airtable) so idempotency
+    // still holds even if a payload ever omits an id.
+    const purchaseId: string = String(
+      event?.id ?? event?.purchase?.id ?? `${email}:${offerId ?? "unknown"}:${eventType ?? "purchase"}`
+    );
+
+    let existingEvent: any = null;
+    try {
+      existingEvent = await getWebhookEventByPurchaseId(purchaseId);
+    } catch (err) {
+      console.error("getWebhookEventByPurchaseId failed", err);
+    }
+
+    if (
+      existingEvent &&
+      (existingEvent.fields?.outcome === "created" || existingEvent.fields?.outcome === "already_existed")
+    ) {
+      // Duplicate delivery of an already-successfully-processed event --
+      // never reprocess a purchase Kajabi (or a flaky network) redelivers.
+      return NextResponse.json({ ok: true, idempotent: true });
+    }
+
+    try {
+      const result = await processKajabiPurchase({ email, firstName, offerId, eventType });
+
+      try {
+        if (existingEvent) {
+          await updateWebhookEvent(existingEvent.id, {
+            outcome: result.outcome,
+            member_record_id: result.memberRecordId,
+            email,
+            offer_id: offerId ?? "",
+            event_type: eventType ?? "",
+          });
+        } else {
+          await createWebhookEvent({
+            purchaseId,
+            email,
+            offerId,
+            eventType,
+            outcome: result.outcome,
+            memberRecordId: result.memberRecordId,
+            attemptCount: 1,
+            rawPayload: rawBody,
+          });
+        }
+      } catch (logErr) {
+        // Processing succeeded but logging that success failed -- log to
+        // console and move on. This must never turn a successful purchase
+        // into a failed-looking webhook response.
+        console.error("Failed to log successful WebhookEvents row", logErr);
+      }
+
+      return NextResponse.json({ ok: true });
+    } catch (err: any) {
+      const errorMessage = String(err?.message ?? err);
+      console.error("processKajabiPurchase failed", errorMessage);
+
+      try {
+        if (existingEvent) {
+          await updateWebhookEvent(existingEvent.id, {
+            outcome: "failed",
+            attempt_count: (existingEvent.fields?.attempt_count ?? 0) + 1,
+            error_message: errorMessage,
+            next_retry_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+            raw_payload: rawBody,
+          });
+        } else {
+          await createWebhookEvent({
+            purchaseId,
+            email,
+            offerId,
+            eventType,
+            outcome: "failed",
+            attemptCount: 1,
+            errorMessage,
+            rawPayload: rawBody,
+          });
+        }
+      } catch (logErr) {
+        // This is the scenario the whole system exists to prevent: a real
+        // purchase failed AND we couldn't even log the failure. Console log
+        // is the last line of defense here.
+        console.error(
+          "Failed to log FAILED WebhookEvents row -- this purchase may go unnoticed until manually checked",
+          logErr
+        );
+      }
+
+      // Always 200: we own retries via the cron job, not Kajabi's own
+      // (unknown) retry behavior -- see file header comment.
+      return NextResponse.json({ ok: true, loggedFailure: true });
+    }
+  } catch (outerErr) {
+    // Outermost safety net -- something unexpected happened (e.g. malformed
+    // JSON before we even got to processing). Never let this route throw:
+    // our own alerting/retry system depends on it always accepting the
+    // delivery from Kajabi.
+    console.error("Unexpected error in webhook route", outerErr);
+    return NextResponse.json({ ok: true, loggedFailure: true });
   }
-
-  const isMemberOffer = offerId ? MEMBER_OFFER_IDS.includes(offerId) : true;
-    const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
-    const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;
-    const isCancellation = eventType === "cancellation" || eventType === "refund";
-
-  const existing = await getMemberByEmail(email);
-    const fields: Record<string, any> = {};
-
-  if (isMemberOffer) fields.member_active = !isCancellation;
-    if (isTierOffer) fields.tier_active = !isCancellation;
-
-  let memberRecordId: string;
-  if (existing) {
-        await base(Tables.Members).update(existing.id, fields);
-    memberRecordId = existing.id;
-  } else {
-        const created = await base(Tables.Members).create({ email, member_active: !isCancellation, ...fields });
-    memberRecordId = created.id;
-  }
-
-  // GAP Method persistence (Aug 12, Rachael's GAP Method persistence
-  // instruction): backend, zero-action capture -- the moment someone buys the
-  // $9 GAP Method offer, record their email + purchase against a
-  // GapMethodResults row (email-normalized) before they've done anything else.
-  // This is independent of member_active/tier_active above -- the GAP Method
-  // offer is not itself a membership offer.
-  if (isGapMethodOffer && !isCancellation) {
-    const { sessionToken } = await upsertGapMethodResultOnPurchase({ email, offerId, firstName });
-    // Fire-and-forget: don't let an email-provider hiccup fail the webhook
-    // response to Kajabi (which would make Kajabi retry and could double-book).
-    sendGapMethodMagicLink({ email, firstName, sessionToken }).catch((err) => {
-      console.error("sendGapMethodMagicLink failed", err);
-    });
-  }
-
-  // Auto-link (Aug 12): if this event is a real membership/tier purchase (Full
-  // Access), and this email already has a GAP Method Results row from an
-  // earlier $9 purchase, link it to the permanent member record now so My
-  // Revolution can surface the existing Shift without re-running Steps 1-2.
-  if ((isMemberOffer || isTierOffer) && !isCancellation) {
-        await linkGapMethodResultToMember(email, memberRecordId);
-  }
-
-  return NextResponse.json({ ok: true });
 }
