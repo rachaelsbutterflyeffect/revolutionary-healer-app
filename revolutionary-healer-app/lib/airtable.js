@@ -186,7 +186,7 @@ export async function createGapMethodShift(gapMethodResultRecord, memberRecordId
         member_email: f.email,
         member: [memberRecordId],
         gap_method_result: [gapMethodResultRecord.id],
-        method_name: "3 Step GAP Method",
+        method_name: "GAP Method",
         divine_identity_slug: identity?.slug ?? "",
         divine_identity_name: f.divine_identity ?? "",
         current_frequency: f.primary_frequency ?? "",
