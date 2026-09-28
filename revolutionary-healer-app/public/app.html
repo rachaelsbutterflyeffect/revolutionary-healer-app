@@ -3254,7 +3254,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     var newChatTop = document.getElementById('rh-new-chat-top-btn');
     if (newChatTop) newChatTop.addEventListener('click', rhStartNewChat);
     var shiftMenuBtn = document.getElementById('shift-modal-menu-btn');
-    if (shiftMenuBtn) shiftMenuBtn.addEventListener('click', function (ev) { ev.stopPropagation(); toggleShiftModalMenu(); });
+    if (shiftMenuBtn) shiftMenuBtn.addEventListener('click', function (ev) { ev.stopPropagation(); rhDeleteShift(); });
     document.addEventListener('click', function (ev) {
       if (!ev.target.closest('.rh-drawer-item-menu') && !ev.target.closest('.rh-drawer-popover')) {
         var p = document.querySelector('.rh-drawer-popover');
