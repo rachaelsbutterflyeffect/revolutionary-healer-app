@@ -2896,7 +2896,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
       records.forEach(function(r) {
         SHIFTS.push({
           id: r.id,
-          method: r.methodName || '3 Step GAP Method',
+          method: r.methodName || 'GAP Method',
           identity: r.divineIdentityName,
           frequency: r.currentFrequency,
           statusLabel: r.progressStatus === 'embodied' ? '🟢 Embodied' : '● Shifting',
@@ -4628,7 +4628,7 @@ if (forceComplete) { goDay(3); }
           divineIdentitySlug: identitySlug,
           divineIdentityName: a ? a.name : '',
           currentFrequency: a ? a.label : '',
-          focusArea: '3 Step GAP Method',
+          focusArea: 'GAP Method',
           gapExplanation: a ? a.reading : '',
           whatWeNoticed: (a && a.frequency) ? a.frequency : '',
           recommendedActivation: (a && a.activation && a.activation.title) ? a.activation.title : '',
