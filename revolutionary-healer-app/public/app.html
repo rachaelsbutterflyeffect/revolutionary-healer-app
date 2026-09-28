@@ -548,6 +548,9 @@
   .rh-chat-header-actions{display:flex;align-items:center;gap:8px;}
   .rh-chat-close-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--taupe-line);background:transparent;color:var(--taupe);font-size:18px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .rh-chat-close-btn:hover{background:var(--taupe-line);color:var(--gold-soft);}
+  .rh-chat-bubble{display:none;position:fixed;right:24px;bottom:24px;width:56px;height:56px;border-radius:50%;background:var(--gold);border:none;color:var(--black);font-size:26px;line-height:1;align-items:center;justify-content:center;cursor:pointer;z-index:60;box-shadow:0 6px 18px rgba(0,0,0,.35);}
+  .rh-chat-bubble.rh-visible{display:flex;}
+  .rh-chat-bubble:hover{background:var(--gold-soft);}
   .shift-modal-headerbar{float:right;position:relative;display:flex;align-items:center;gap:6px;}
   .shift-modal-headerbar .modal-close{float:none;}
   .rh-chat-thread{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:16px;max-height:58vh;min-height:220px;scroll-behavior:smooth;}
@@ -1120,6 +1123,8 @@
 </div>
   </div>
 </section>
+
+<button type="button" class="rh-chat-bubble" id="rh-chat-bubble" title="Open chat" aria-label="Open chat">&#128172;</button>
 
 <section class="block" id="my-revolution">
   <div class="wrap">
@@ -2280,17 +2285,33 @@
   }
   async function rhDeleteShift() {
     var shift = window.__rhCurrentShift;
-    if (!shift || !RH_EMAIL) return;
+    if (!shift || !RH_EMAIL) {
+      alert('Something went wrong -- please close and reopen this Shift, then try again.');
+      return;
+    }
     if (!window.confirm('Delete this Shift? This cannot be undone.')) return;
     try {
-      await fetch('/api/shifts', {
+      var res = await fetch('/api/shifts', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: shift.id, email: RH_EMAIL })
       });
+      if (!res.ok) {
+        var errMsg = 'Something went wrong deleting this Shift. Please try again.';
+        try {
+          var errBody = await res.json();
+          if (errBody && errBody.error) errMsg = errBody.error;
+        } catch (parseErr) {}
+        alert(errMsg);
+        return;
+      }
+      var idx = SHIFTS.findIndex(function(s) { return s.id === shift.id; });
+      if (idx !== -1) SHIFTS.splice(idx, 1);
       closeShiftModal();
       if (typeof loadMemberRevolutionData === 'function') loadMemberRevolutionData();
-    } catch (e) {}
+    } catch (e) {
+      alert('Something went wrong deleting this Shift. Please check your connection and try again.');
+    }
   }
   function rhSlugForActivationTitle(title) {
     if (!title) return null;
@@ -2867,6 +2888,17 @@ function rhCloseChatPanel() {
   var hero = document.getElementById('hero-section');
   if (hero) hero.style.display = 'none';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  var bubble = document.getElementById('rh-chat-bubble');
+  if (bubble) bubble.classList.add('rh-visible');
+}
+
+function rhReopenChatPanel() {
+  var hero = document.getElementById('hero-section');
+  if (hero) hero.style.display = '';
+  var bubble = document.getElementById('rh-chat-bubble');
+  if (bubble) bubble.classList.remove('rh-visible');
+  var chatShell = document.querySelector('.rh-chat-shell');
+  if (chatShell) chatShell.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 document.addEventListener('keydown', function(e) {
@@ -3255,6 +3287,8 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     if (newChatTop) newChatTop.addEventListener('click', rhStartNewChat);
     var chatCloseBtn = document.getElementById('rh-chat-close-btn');
     if (chatCloseBtn) chatCloseBtn.addEventListener('click', rhCloseChatPanel);
+    var chatBubble = document.getElementById('rh-chat-bubble');
+    if (chatBubble) chatBubble.addEventListener('click', rhReopenChatPanel);
     var shiftMenuBtn = document.getElementById('shift-modal-menu-btn');
     if (shiftMenuBtn) shiftMenuBtn.addEventListener('click', function (ev) { ev.stopPropagation(); toggleShiftModalMenu(); });
     document.addEventListener('click', function (ev) {
@@ -3778,8 +3812,8 @@ var DOMAINS = [
       name: "The Guardian",
       codes: ["Survival", "Overworking", "Stop-and-start energy"],
       reading: "This is the frequency of someone who has never been taught how to receive without earning it first. You throw everything you have at the goal, and when it doesn't land right away, you throw more. It looks like productivity from the outside. From the inside, it's survival wearing the costume of ambition. This is why your results come in bursts instead of building, you're spending energy faster than you're letting it return to you.",
-      frequency: "survival, not flow, so your action creates results that stall and start over instead of building.",
-      label: "survival",
+      frequency: "you've been carrying more than was ever actually yours to carry.",
+      label: "Over-Responsibility",
       powerQuestion: "What part of you still believes rest isn't safe until everything is done?",
       deepenPrompt: "Where are you seeing a start-stop energy show up, in your business and in other areas of your life?",
       distortion: "The belief that if you just push harder and do more, the results have to come, so rest or receiving feels dangerous.",
@@ -3792,8 +3826,8 @@ var DOMAINS = [
       name: "The Wayshower",
       codes: ["Lack of trust", "Second-guessing", "Doubt", "Disempowerment"],
       reading: "This is the frequency of someone who knows more than they let themselves say out loud. You feel it first, then you talk yourself out of it, then someone else says the exact thing you already knew and gets the credit for it. This shows up as hesitation right before the moment that mattered, the caption you didn't post, the read you didn't trust, the offer you didn't make. It's not that your knowing is wrong. It's that you've been waiting for permission to believe it.",
-      frequency: "self-doubt that overrides your own knowing before you ever act on it.",
-      label: "self-doubt",
+      frequency: "you know what you know, and then a few minutes later you've talked yourself out of it.",
+      label: "Doubt",
       powerQuestion: "What part of you still doubts how powerful you are?",
       deepenPrompt: "Where are you seeing yourself second-guess what you already know, in your business and in other areas of your life?",
       distortion: "The belief that your own knowing isn't valid until someone or something else confirms it.",
@@ -3806,8 +3840,8 @@ var DOMAINS = [
       name: "The Leader",
       codes: ["Fear", "Fear of visibility", "Playing small"],
       reading: "This is the frequency of someone whose gifts are already fully formed and still waiting for an invitation that isn't coming, because you're the one who has to send it. You stay one step behind the moment that would actually change things: the post you save as a draft, the offer you soften before you send it, the room you shrink in before anyone even asks you to. Staying hidden has kept you safe. It has also kept you exactly where you are.",
-      frequency: "staying hidden, even though your gifts are already fully ready.",
-      label: "staying hidden",
+      frequency: "you're willing to be seen, and then you find a way to pull back right as the visibility starts to build.",
+      label: "Fear of Being Seen",
       powerQuestion: "What part of you still believes it's safer to stay hidden than to be fully seen?",
       deepenPrompt: "Where are you playing small right now, in your business and in other areas of your life?",
       distortion: "The belief that being fully seen makes you a target, so staying small feels safer than being visible.",
@@ -3820,8 +3854,8 @@ var DOMAINS = [
       name: "The Messenger",
       codes: ["Confusion", "Ungrounded", "Scattered", "Dysfunction in thinking", "Fogginess through channel"],
       reading: "This is the frequency of someone whose channel is genuinely open, it's just been running through static for so long you've started to doubt the signal is even there. Some days everything is crystal clear. Other days you can't find your own next step in a room you know by heart. This shows up as half-finished ideas, a business that changes direction every few weeks, and a gift you can't quite call in on command, even though you know, somewhere, that it's real.",
-      frequency: "scatter and static that make clarity come and go instead of staying steady.",
-      label: "scatter and static",
+      frequency: "there's static between what you're receiving and how clearly you're able to trust and translate it.",
+      label: "Channel Interference",
       powerQuestion: "What part of you still believes clarity has to be earned instead of received?",
       deepenPrompt: "Where do you feel the most scattered or foggy right now, in your business and in other areas of your life?",
       distortion: "The belief that if your mind won't settle, your gifts aren't reliable.",
@@ -3834,8 +3868,8 @@ var DOMAINS = [
       name: "The Creator",
       codes: ["Control", "Lack"],
       reading: "This is the frequency of someone who learned early that if they didn't hold on tightly, it would disappear. So you control the outcome, the timeline, the exact way it's supposed to look, because loosening your grip feels like losing the thing altogether. This shows up as overplanning, overworking a single decision, and a nervous system that can't quite settle even when things are going well. The tighter the grip, the less room there is for anything new to actually arrive.",
-      frequency: "gripping and control, born from a belief that there isn't enough.",
-      label: "gripping and control",
+      frequency: "you're gripping the outcome so tightly that you're squeezing out the very flow you're trying to create.",
+      label: "Control",
       powerQuestion: "What part of you still believes you have to control everything to be safe?",
       deepenPrompt: "Where are you gripping the tightest to control an outcome right now, in your business and in other areas of your life?",
       distortion: "The belief that if you let go of control, even for a second, everything collapses into lack.",
@@ -3848,8 +3882,8 @@ var DOMAINS = [
       name: "The Healer",
       codes: ["Disconnection", "Inconsistent spiritual gifts"],
       reading: "This is the frequency of someone whose gift is completely real and completely unreliable, on some days it's undeniable, other days the line goes quiet and nothing you do brings it back. This shows up as brilliant sessions followed by ones where you're guessing, downloads that arrive fully formed and then disappear for weeks, a gift you've stopped fully trusting because you can't predict when it'll show up. The gift was never the problem. The connection to it was never taught to be reliable.",
-      frequency: "inconsistency, on in one moment and completely offline the next.",
-      label: "inconsistency",
+      frequency: "you've drifted from the deeper part of yourself this all is meant to flow through.",
+      label: "Disconnection",
       powerQuestion: "What part of you still believes your connection isn't something you can trust to show up?",
       deepenPrompt: "Where do you notice your connection go quiet, in your business and in other areas of your life?",
       distortion: "The belief that your connection is something that happens to you, not something you can reliably open.",
@@ -3862,8 +3896,8 @@ var DOMAINS = [
       name: "The Expander",
       codes: ["Underearning", "Undercharging", "Money guilt", "Capped receiving"],
       reading: "This is the frequency of someone whose gifts are worth more than they're letting themselves charge for them. You do the math before you send the price, and you round it down. You over-deliver to justify what you did charge, then wonder why you're exhausted and still not where you want to be financially. This shows up as pricing that stays years behind your actual skill, a business that grows in clients but not in income, and a quiet flinch every time someone asks what you charge. It was never about the money. It's the belief that you have to earn every dollar twice before you're allowed to keep it.",
-      frequency: "underearning, so your income stays capped below what your gifts are actually worth.",
-      label: "underearning",
+      frequency: "part of you is still keeping the door only cracked open instead of letting the fullness of this in.",
+      label: "Restriction",
       powerQuestion: "What part of you still believes you have to earn every dollar twice before you're allowed to keep it?",
       deepenPrompt: "Where are you seeing yourself undercharge or hold back from receiving, in your business and in other areas of your life?",
       distortion: "The belief that charging your full worth makes you greedy, so you discount yourself before anyone even asks.",
@@ -4000,7 +4034,7 @@ var DOMAINS = [
     },
     hidden: {
       name: "The Leader",
-      frequency: "Hiddenness",
+      frequency: "Fear of Being Seen",
       identityLine: "You're here to be seen, recognized, and trusted for what you see.",
       gapLine: "Somewhere between knowing you're meant to lead and actually letting yourself be fully seen, you've been making yourself easier to overlook.",
       frequencyExplanation: "Your ability to lead hasn't disappeared. But right now, some of that leadership is going into staying smaller, quieter and safer than what you're actually capable of.",
