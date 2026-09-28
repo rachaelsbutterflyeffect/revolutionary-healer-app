@@ -289,6 +289,17 @@ export const ACTIVATIONS = [
   // Business instead. Description confidence: best-guess placeholder, no
   // lesson body pulled, same caveat as other recent additions.
   { day: 45, slug: "leadership-recode-activation", categories: ["Business + Impact"], icon: "wave", title: "Leadership Recode Activation", kajabiTitle: "Leadership Recode Activation", mediaType: "video", wistiaId: "k0cog9tlea", kajabiLessonId: 2198687747, adminUrl: "https://app.kajabi.com/admin/posts/2198687747/edit", sourceCourseId: 2149506712, sourceCourseTitle: "The Living Room Library", description: "Recodes old leadership patterns and hesitation, supporting you to lead from your fullest, most embodied authority." },
+  // Added Sept (GAP Method distortion/routing upgrade): these 3 activations
+  // are named in the new routing table (lib/gapDistortions.js's
+  // DISTORTION_ROUTING) but did not exist anywhere in this registry before
+  // -- confirmed by a prior audit against both this ACTIVATIONS array and
+  // GAP_METHOD_ACTIVATIONS below. wistiaId values are PLACEHOLDERS ONLY,
+  // flagged for Rachael to replace with the real Wistia ID once she's
+  // identified or recorded the actual lesson for each -- inventing a
+  // fake-but-plausible-looking ID would be worse than an honest placeholder.
+  { day: 46, slug: "creator-within-activation", categories: ["Business + Impact"], icon: "spiral", title: "Creator Within Activation", kajabiTitle: "Creator Within Activation", mediaType: "video", wistiaId: "PLACEHOLDER_NEEDS_REAL_WISTIA_ID", description: "Supports releasing control and gripping around outcomes by reconnecting you with the creative power already inside you -- so you can build from trust instead of force." },
+  { day: 47, slug: "more-than-enough-activation", categories: ["Money + Receiving"], icon: "crystal", title: "More Than Enough Activation", kajabiTitle: "More Than Enough Activation", mediaType: "video", wistiaId: "PLACEHOLDER_NEEDS_REAL_WISTIA_ID", description: "Supports releasing scarcity and the belief that there won't be enough, so you can receive money, opportunity and support without immediately bracing or overgiving it back out." },
+  { day: 48, slug: "visibility-activation", categories: ["Business + Impact"], icon: "sunburst", title: "Visibility Activation", kajabiTitle: "Visibility Activation", mediaType: "video", wistiaId: "PLACEHOLDER_NEEDS_REAL_WISTIA_ID", description: "Supports staying visible once real momentum starts building, instead of pulling back right as attention and opportunity begin to arrive." },
 ];
 
 export function getActivationBySlug(slug) {
