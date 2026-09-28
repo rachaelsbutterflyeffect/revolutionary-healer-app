@@ -3,6 +3,7 @@
 // Memory Architecture doc (rewrite of the previous stateless version, which
 // always sent history: [] and never persisted a single message anywhere).
 import { NextRequest, NextResponse } from "next/server";
+import { waitUntil } from "@vercel/functions";
 import Anthropic from "@anthropic-ai/sdk";
 import { getFocusAreaBySlug } from "@/lib/focusAreas";
 import { getProcessBySlug } from "@/lib/processes";
@@ -10,7 +11,13 @@ import { buildSystemPrompt } from "@/lib/prompts";
 import { retrieveContextForFocusArea } from "@/lib/retrieval";
 import { getEntitlementForEmail } from "@/lib/entitlements";
 import { getDivineIdentityBySlug } from "@/lib/divineIdentities";
-import { DIVINE_IDENTITIES } from "@/lib/divineIdentities";
+import {
+  DISTORTION_REGISTRY,
+  validateDistortionList,
+  validateTopic,
+  pickActivations,
+  getActivationTitleForSlug,
+} from "@/lib/gapDistortions";
 import {
   logEvent,
   getShiftById,
@@ -51,6 +58,11 @@ const SUMMARY_TRIGGER_COUNT = 12;
 // that one side effect instead of blocking or failing the member's response.
 const CHAT_TIMEOUT_MS = 45000;
 const BOOKKEEPING_TIMEOUT_MS = 10000;
+// Small, focused call used only to re-prompt the model for a corrected
+// [[DISTORTIONS: ...]] / [[TOPIC: ...]] marker pair when its first attempt
+// failed validation (see GAP METHOD DISTORTION ROUTING below). Kept short so
+// a hung retry can't meaningfully delay the member's already-delivered reply.
+const DISTORTION_RETRY_TIMEOUT_MS = 12000;
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T | null> {
   try {
@@ -65,6 +77,15 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
     return null;
   }
 }
+
+// Honest, non-technical, member-facing copy for the rare case where the GAP
+// Method's Step 3 distortion marker fails validation twice in a row (see
+// GAP METHOD DISTORTION ROUTING below). Per Rachael's explicit "never
+// silently default" rule, this replaces the reply outright rather than
+// guessing an activation -- the member is told plainly and invited to
+// continue, never shown a broken or generic result.
+const DISTORTION_VALIDATION_ERROR_COPY =
+  "Something didn't come through clearly on my end just now -- let's try that last part again. Can you tell me a little more about what's been going on for you here? I want to make sure I reflect this back to you accurately before we move on.";
 
 export async function POST(req: NextRequest) {
   // gapMethodResult (added Aug 10, widened same day): optional structured
@@ -171,7 +192,7 @@ export async function POST(req: NextRequest) {
   });
   if (embodimentShift) {
     const f = embodimentShift.fields;
-    systemPrompt += `\n\n=== SHIFT PROGRESS CHECK-IN (Update Progress button) ===\nThe member clicked "Update Progress" on this Shift: ${f.divine_identity_name || "their Shift"} / ${f.current_frequency || ""}. GAP: ${f.gap_explanation || ""}. Recommended Activation: ${f.recommended_activation || ""}.\n\nThey were just greeted with: "You're ready to make this shift embodied \u2014 tell me, what's your main shift, and what's making you feel like this is fully embodied?" Continue that conversation.\n\nNever mark a Shift Embodied simply because the member listened to an activation. Watch for meaningful evidence the contradiction is no longer driving the same behavior -- e.g. responding differently to the old trigger, taking the action they previously avoided, no longer reopening the same decision, speaking or showing up differently, a change in the repeated pattern, or feeling the old thought/emotion without automatically following the old behavior.\n\nThen ask them directly: "Do you feel like this shift is complete?"\n\nIf they say yes: tell them plainly, using almost exactly this phrase -- "I've updated your card to mark this as Embodied" -- and then celebrate them thoroughly, reflecting back where they started and how far they've come.\n\nIf they say no, or the pattern still feels active: don't say anything about updating their card -- keep supporting them, and let them know it's okay to keep working with this Shift.`;
+    systemPrompt += `\n\n=== SHIFT PROGRESS CHECK-IN (Update Progress button) ===\nThe member clicked "Update Progress" on this Shift: ${f.divine_identity_name || "their Shift"} / ${f.current_frequency || ""}. GAP: ${f.gap_explanation || ""}. Recommended Activation: ${f.recommended_activation || ""}.\n\nThey were just greeted with: "You're ready to make this shift embodied — tell me, what's your main shift, and what's making you feel like this is fully embodied?" Continue that conversation.\n\nNever mark a Shift Embodied simply because the member listened to an activation. Watch for meaningful evidence the contradiction is no longer driving the same behavior -- e.g. responding differently to the old trigger, taking the action they previously avoided, no longer reopening the same decision, speaking or showing up differently, a change in the repeated pattern, or feeling the old thought/emotion without automatically following the old behavior.\n\nThen ask them directly: "Do you feel like this shift is complete?"\n\nIf they say yes: tell them plainly, using almost exactly this phrase -- "I've updated your card to mark this as Embodied" -- and then celebrate them thoroughly, reflecting back where they started and how far they've come.\n\nIf they say no, or the pattern still feels active: don't say anything about updating their card -- keep supporting them, and let them know it's okay to keep working with this Shift.`;
   }
 
   const historyForClaude = priorMessages.map((m: any) => ({
@@ -205,14 +226,19 @@ export async function POST(req: NextRequest) {
     .filter((block: any) => block.type === "text")
     .map((block: any) => block.text)
     .join("\n");
-
   // SHIFT + ACTIVATION FOLLOW-THROUGH (Aug 20, Rachael's spec): detect the
   // AI's invisible [[SAVE_SHIFT: ...]] / [[UPDATE_SHIFT: ...]] confirmation
   // markers -- see lib/prompts.js for exactly when the model is allowed to
   // emit these (only on the turn right after the member gives explicit
   // permission to save a newly-named Gap). Strip the marker out of what the
   // member actually sees and what gets persisted -- it must never be visible.
-let replyText = rawReplyText;
+  //
+  // GENERALIZED (Sept, GAP Method distortion/routing upgrade): this same
+  // loop now also strips the GAP Method's [[DISTORTIONS: ...]] / [[TOPIC: ...]]
+  // markers (see GAP METHOD DISTORTION ROUTING below) -- it was already
+  // generic over any `[[NAME: payload]]` trailing marker, so no regex change
+  // was needed, just new marker names for it to catch.
+  let replyText = rawReplyText;
   const markerLineRegex = /\n?\[\[([A-Z_]+):\s*([\s\S]*?)\]\]\s*$/;
   const markers: Record<string, string> = {};
   let strippedText = rawReplyText;
@@ -221,13 +247,128 @@ let replyText = rawReplyText;
   replyText = strippedText.trim();
   const saveShiftMatch = markers.SAVE_SHIFT ? [rawReplyText, markers.SAVE_SHIFT] : null;
   const updateShiftMatch = markers.UPDATE_SHIFT ? [rawReplyText, markers.UPDATE_SHIFT] : null;
-  const openActivationSlug = markers.OPEN_ACTIVATION ? markers.OPEN_ACTIVATION.trim() : null;
+
+  // ===========================================================================
+  // GAP METHOD DISTORTION ROUTING (Sept, replaces the old fixed
+  // identity->activation table + fragile "does the visible reply text contain
+  // this exact activation name string" fallback).
+  //
+  // WHY: the old system looked up a Step 3 activation from a per-identity
+  // fixed table (DIVINE_IDENTITY_RECOMMENDATION_TABLE in lib/processes.js),
+  // so two members with the same Divine Identity always got routed toward
+  // the same activation regardless of what Step 2 actually surfaced. It also
+  // depended on the model's [[OPEN_ACTIVATION]] marker, which proved
+  // unreliable in testing (0 successful emissions across 5+ clean
+  // end-to-end tests), with a fallback that string-matched the visible Step
+  // 3 reply text against DIVINE_IDENTITIES[].personalizedActivation.name --
+  // impossible for Healer, whose activation was never a single fixed name.
+  //
+  // NEW DESIGN: lib/processes.js's GAP_METHOD_SCRIPT_MEMBER now instructs the
+  // model to privately detect 2-4 distortions from the fixed 16-item
+  // registry (lib/gapDistortions.js) actually evidenced in the Step 1/Step 2
+  // conversation, plus a coarse topic signal, and emit them as
+  // [[DISTORTIONS: Name One, Name Two]] / [[TOPIC: money_business|general]]
+  // on the same Step 3 message. CODE (not the model) then validates those
+  // names against the registry and looks up the actual activation via
+  // lib/gapDistortions.js's DISTORTION_ROUTING table + topic-gating rules --
+  // this is what actually decides `openActivationSlug`, never a trusted
+  // free-text activation name from the model. Per Rachael's explicit "never
+  // silently default" requirement: a missing/malformed/invalid marker gets
+  // exactly one automatic re-prompt, and if that also fails, the member sees
+  // an honest, visible "let's try that again" message instead of a guessed
+  // or generic activation.
+  let deterministicActivationSlug: string | null = null;
+  let distortionRoutingErrorOccurred = false;
+  const isStep3Reveal = isGapMethodProcess && /Step 3: Your Recommended Activation/i.test(rawReplyText);
+
+  if (isStep3Reveal) {
+    let distortionsCheck = validateDistortionList(markers.DISTORTIONS || "");
+    let topicCheck = validateTopic(markers.TOPIC || "");
+
+    if (!distortionsCheck.valid || !topicCheck.valid) {
+      // Exactly one automatic re-prompt, per spec -- a short, isolated
+      // follow-up call asking ONLY for the corrected markers, not a full
+      // re-run of the Step 3 narrative the member already received.
+      try {
+        const retryResponse = await anthropic.messages.create(
+          {
+            model: MODEL,
+            max_tokens: 200,
+            system: systemPrompt,
+            messages: [
+              ...historyForClaude,
+              { role: "user", content: message },
+              { role: "assistant", content: rawReplyText },
+              {
+                role: "user",
+                content: `Your previous message did not include a valid distortion marker. Reply with ONLY the two markers below, nothing else -- no other text:\n[[DISTORTIONS: Name One, Name Two]]\n[[TOPIC: money_business or general]]\n\nYou must pick 2 to 4 names, most-evidenced first, EXACTLY as spelled from this fixed list (do not invent or reword any name): ${DISTORTION_REGISTRY.join(", ")}.`,
+              },
+            ],
+          },
+          { timeout: DISTORTION_RETRY_TIMEOUT_MS }
+        );
+        const retryRawText = retryResponse.content
+          .filter((block: any) => block.type === "text")
+          .map((block: any) => block.text)
+          .join("\n");
+        const retryMarkers: Record<string, string> = {};
+        let retryRemaining = retryRawText;
+        let retryMatch = retryRemaining.match(markerLineRegex);
+        while (retryMatch) {
+          if (!(retryMatch[1] in retryMarkers)) retryMarkers[retryMatch[1]] = retryMatch[2].trim();
+          retryRemaining = retryRemaining.slice(0, retryMatch.index).replace(/\s+$/, "");
+          retryMatch = retryRemaining.match(markerLineRegex);
+        }
+        distortionsCheck = validateDistortionList(retryMarkers.DISTORTIONS || "");
+        topicCheck = validateTopic(retryMarkers.TOPIC || "");
+      } catch (err) {
+        console.error("GAP Method distortion marker retry failed", err);
+      }
+    }
+
+    if (!distortionsCheck.valid || !topicCheck.valid) {
+      distortionRoutingErrorOccurred = true;
+      console.error("GAP Method distortion marker validation failed twice", {
+        distortionsRaw: markers.DISTORTIONS,
+        topicRaw: markers.TOPIC,
+      });
+      replyText = DISTORTION_VALIDATION_ERROR_COPY;
+    } else {
+      const routing = pickActivations(distortionsCheck.distortions, topicCheck.topic);
+      if (!routing) {
+        // Every entry in DISTORTION_ROUTING always has at least one
+        // topic-eligible candidate today, so this should be unreachable --
+        // but per the "never silently default" rule, treat it the same as
+        // a validation failure rather than guessing, in case the routing
+        // table and the model's registry ever drift apart.
+        distortionRoutingErrorOccurred = true;
+        console.error("GAP Method distortion routing produced no eligible activation", {
+          distortions: distortionsCheck.distortions,
+          topic: topicCheck.topic,
+        });
+        replyText = DISTORTION_VALIDATION_ERROR_COPY;
+      } else {
+        deterministicActivationSlug = routing.primarySlug;
+      }
+    }
+  }
+
+  const openActivationSlug = distortionRoutingErrorOccurred ? null : deterministicActivationSlug;
 
 let shiftCreatedViaMarker = false;
-  if (saveShiftMatch) {
+  if (saveShiftMatch && !distortionRoutingErrorOccurred) {
       try {
             const payload = JSON.parse(saveShiftMatch[1]);
             const identity = payload.divineIdentitySlug ? getDivineIdentityBySlug(payload.divineIdentitySlug) : null;
+            // Identity is a starting frame, not the verdict: divineIdentityName/
+            // currentFrequency/gap/howItShowsUp still come from the model's own
+            // account of THIS conversation. The recommended activation, however,
+            // is never trusted from the model's free text -- when the code-side
+            // distortion routing above succeeded, its resolved title always
+            // overrides whatever the model put in this JSON payload.
+            const resolvedActivationTitle = deterministicActivationSlug
+              ? getActivationTitleForSlug(deterministicActivationSlug)
+              : null;
             await createShiftFromChat({
                     email,
                     memberRecordId: record?.id,
@@ -240,7 +381,7 @@ let shiftCreatedViaMarker = false;
                     whatWeNoticed: [payload.howItShowsUp, payload.primaryShift ? `Primary Shift: ${payload.primaryShift}` : ""]
                               .filter(Boolean)
                               .join("\n\n"),
-                    recommendedActivation: payload.recommendedActivation || "",
+                    recommendedActivation: resolvedActivationTitle || payload.recommendedActivation || "",
             });
         shiftCreatedViaMarker = true;
       } catch (err) {
@@ -268,41 +409,6 @@ let shiftCreatedViaMarker = false;
             console.error("Failed to parse/save UPDATE_SHIFT marker", err);
       }
   }
-  
-
-  // DETERMINISTIC STEP 3 FALLBACK (Aug 27, Rachael's requirement that every completed embedded GAP Method walkthrough produces a Shift card + instant activation access, and that this must not depend on the AI reliably emitting the invisible [[SAVE_SHIFT]]/[[OPEN_ACTIVATION]] markers -- proven unreliable across repeated testing this session, 0 successful marker emissions across 5+ clean end-to-end tests even after two separate prompt-engineering fixes). The AI's VISIBLE Step 3 reply text has been 100% consistent across every test, so parse that directly instead: find which Divine Identity's personalizedActivation.name was recommended (the AI is instructed to quote it verbatim from DIVINE_IDENTITY_RECOMMENDATION_TABLE in lib/processes.js), then pull every other field (Current Frequency, GAP explanation, slug) from the known DIVINE_IDENTITIES registry rather than regexing free-text out of the reply.
-  let deterministicActivationSlug: string | null = null;
-  if (!shiftCreatedViaMarker && process?.slug === "3-step-gap-method" && /Step 3: Your Recommended Activation/i.test(rawReplyText)) {
-    try {
-      const matchedIdentity = DIVINE_IDENTITIES.find((d) => d.personalizedActivation && d.personalizedActivation.name && rawReplyText.includes(d.personalizedActivation.name));
-      if (matchedIdentity) {
-        await createShiftFromChat({
-          email,
-          memberRecordId: record?.id,
-          chatId,
-          divineIdentitySlug: matchedIdentity.slug,
-          divineIdentityName: matchedIdentity.displayName,
-          currentFrequency: matchedIdentity.currentFrequency,
-          focusArea: focusArea.name,
-          gapExplanation: matchedIdentity.gapExplanation,
-          recommendedActivation: matchedIdentity.personalizedActivation.name,
-        });
-        deterministicActivationSlug = `gap-method-${matchedIdentity.slug}`;
-      }
-    } catch (err) {
-      console.error("Failed to create deterministic Step 3 Shift", err);
-    }
-  }
-  
-  // Bug fix (Sept): everything below persists non-critical bookkeeping after
-  // the reply is already generated. None of it should ever be able to block
-  // or fail the member's response, so each step is individually bounded --
-  // a hang or failure there just skips that one side effect.
-  await withTimeout(
-    createMessage({ chatId, email, role: "assistant", text: replyText }),
-    BOOKKEEPING_TIMEOUT_MS,
-    "createMessage(assistant)"
-  );
 
   if (embodimentShift && /updated your card[\s\S]{0,60}embodied/i.test(replyText)) {
     try {
@@ -311,48 +417,72 @@ let shiftCreatedViaMarker = false;
       console.error("Failed to auto-update Shift to Embodied", err);
     }
   }
-
+  // Bug fix (Sept): everything below persists non-critical bookkeeping that
+  // the RESPONSE PAYLOAD below does not depend on (reply text, chatId, and
+  // openActivationSlug are all already finalized above). None of it should
+  // ever be able to block or delay the member's response, so it now runs in
+  // a Vercel `waitUntil` background task -- the response is returned to the
+  // member first, and this continues executing after the function would
+  // otherwise have ended. Each step keeps its own individual timeout/try-
+  // catch exactly as before, so one failure still can't take down another.
   const now = new Date().toISOString();
   const sessionUpdates: Record<string, any> = { updated_at: now, last_message_at: now };
+  const shouldAutoTitle = session.fields.title_is_auto !== false && priorMessageCount === 0;
 
-  // Auto-title after the first full exchange -- never overwrites a manual
-  // rename (title_is_auto flips to false the moment a member renames a chat,
-  // see lib/airtable.js's renameChatSession).
-  if (session.fields.title_is_auto !== false && priorMessageCount === 0) {
-    sessionUpdates.title = await generateChatTitle(message);
-  }
-
-  await withTimeout(updateChatSession(chatId, sessionUpdates), BOOKKEEPING_TIMEOUT_MS, "updateChatSession");
-
-  // Rolling summary for long threads (PART 7) and member-memory extraction
-  // (PART 9-13). Both are best-effort and swallow their own errors -- Vercel
-  // serverless has no reliable fire-and-forget without extra infra, so these
-  // are awaited inline rather than risking losing them.
-  if (priorMessageCount + 2 >= SUMMARY_TRIGGER_COUNT) {
-    const newSummary = await withTimeout(
-      updateRollingSummary({ previousSummary: chatSummary, userText: message, assistantText: replyText }),
-      BOOKKEEPING_TIMEOUT_MS,
-      "updateRollingSummary"
-    );
-    if (newSummary) {
+  waitUntil(
+    (async () => {
       await withTimeout(
-        updateChatSession(chatId, { summary: newSummary }),
+        createMessage({ chatId, email, role: "assistant", text: replyText }),
         BOOKKEEPING_TIMEOUT_MS,
-        "updateChatSession(summary)"
+        "createMessage(assistant)"
       );
-    }
-  }
-  await withTimeout(
-    extractMemoriesFromExchange({ email, chatId, userText: message, assistantText: replyText }),
-    BOOKKEEPING_TIMEOUT_MS,
-    "extractMemoriesFromExchange"
+
+      // Auto-title after the first full exchange -- never overwrites a manual
+      // rename (title_is_auto flips to false the moment a member renames a
+      // chat, see lib/airtable.js's renameChatSession). Has its own timeout
+      // wrapper (it calls Claude via lib/memory.js's generateChatTitle,
+      // which previously had none at all) even though it now only ever runs
+      // in the background, for consistency/safety with every other call here.
+      if (shouldAutoTitle) {
+        const title = await withTimeout(generateChatTitle(message), BOOKKEEPING_TIMEOUT_MS, "generateChatTitle");
+        if (title) sessionUpdates.title = title;
+      }
+
+      await withTimeout(updateChatSession(chatId, sessionUpdates), BOOKKEEPING_TIMEOUT_MS, "updateChatSession");
+
+      // Rolling summary for long threads (PART 7) and member-memory extraction
+      // (PART 9-13). Both are best-effort and swallow their own errors.
+      if (priorMessageCount + 2 >= SUMMARY_TRIGGER_COUNT) {
+        const newSummary = await withTimeout(
+          updateRollingSummary({ previousSummary: chatSummary, userText: message, assistantText: replyText }),
+          BOOKKEEPING_TIMEOUT_MS,
+          "updateRollingSummary"
+        );
+        if (newSummary) {
+          await withTimeout(
+            updateChatSession(chatId, { summary: newSummary }),
+            BOOKKEEPING_TIMEOUT_MS,
+            "updateChatSession(summary)"
+          );
+        }
+      }
+      await withTimeout(
+        extractMemoriesFromExchange({ email, chatId, userText: message, assistantText: replyText }),
+        BOOKKEEPING_TIMEOUT_MS,
+        "extractMemoriesFromExchange"
+      );
+
+      await withTimeout(
+        logEvent(
+          "chat_message",
+          { focusAreaSlug, processSlug: process?.slug ?? null, chatId },
+          record?.id
+        ),
+        BOOKKEEPING_TIMEOUT_MS,
+        "logEvent"
+      );
+    })()
   );
 
-  await logEvent(
-    "chat_message",
-    { focusAreaSlug, processSlug: process?.slug ?? null, chatId },
-    record?.id
-  );
-
-  return NextResponse.json({ reply: replyText, chatId, openActivationSlug: openActivationSlug || deterministicActivationSlug });
+  return NextResponse.json({ reply: replyText, chatId, openActivationSlug });
 }
