@@ -1310,7 +1310,7 @@
             winnerKey = IDENTITY_SLUG_TO_KEY[finalSlug];
             gotFinalIdentity = true;
           }
-                    reply = reply.replace(finalIdentityMatch[0], '').trim(); } if (!reply) { reply = "Thank you for sharing all of that with me -- I can see clearly what's here for you."; } var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i); if (subActivationMatch) {          v
+                    reply = reply.replace(finalIdentityMatch[0], '').trim(); } if (!reply) { reply = "Thank you for sharing all of that with me -- I can see clearly what's here for you."; } var subActivationMatch = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i); if (subActivationMatch) {          
           var subKeyFound = subActivationMatch[1].toLowerCase();
           if (DISCONNECTION_SUB_ACTIVATIONS[subKeyFound]) {
             subActivationKey = subKeyFound;
