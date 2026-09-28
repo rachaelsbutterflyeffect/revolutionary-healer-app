@@ -291,6 +291,15 @@ export async function updateShiftFields(shiftId, fields) {
     });
 }
 
+// Hard-delete a Shift record (QA fix, Sep 2026: "My Revolution" Shift detail
+// view had no delete/archive option). The Shifts table's progress_status
+// singleSelect only has "shifting"/"embodied" options -- no "archived" --
+// so this deletes the record outright rather than flipping a status field.
+// Ownership (member_email match) is verified by the caller before this runs.
+export async function deleteShift(shiftId) {
+    return base(Tables.Shifts).destroy(shiftId);
+}
+
 export async function setMemberPassword(recordId, passwordHash) {
     return base(Tables.Members).update(recordId, {
         password_hash: passwordHash,
