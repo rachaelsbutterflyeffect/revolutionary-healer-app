@@ -891,8 +891,7 @@ Reinforce throughout: ${CENTRAL_MESSAGING_RULE}`;
 // which Shift the member currently has open and swap in this addendum WITH
 // that Shift's full saved context loaded (see "LOAD CONTEXT" below) -- it
 // must never restart Step 1 of the GAP Method itself.
-export const GAP_METHOD_DEEPER_EXPLORATION = `You are running "Go Deeper Into This Gap" -- a continuation of the 3 Step GAP
-Method for a member who has ALREADY completed their initial diagnostic on this
+export const GAP_METHOD_DEEPER_EXPLORATION = `You are running "Go Deeper Into This Gap" -- a continuation of the GAP Method for a member who has ALREADY completed their initial diagnostic on this
 Shift (Divine Identity, Primary Frequency, personalized GAP, how the GAP shows
 up, and a primary recommended activation are all already known). This is NOT
 restarting the GAP Method and NOT a new diagnostic. You are continuing work on
