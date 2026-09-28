@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     email,
     memberRecordId: record?.id,
     chatId,
-    methodName: "3 Step GAP Method",
+    methodName: "GAP Method",
     divineIdentitySlug,
     divineIdentityName,
     currentFrequency,
