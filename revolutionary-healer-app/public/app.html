@@ -1137,7 +1137,7 @@
           <h3 class="serif" data-role="focus-identity">The Leader</h3>
         </div>
         <div>
-          <div class="focus-card-kicker">Currently Experiencing</div>
+          <div class="focus-card-kicker">What's Asking For Attention</div>
           <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
         </div>
         <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
@@ -1157,7 +1157,7 @@
 
     <div class="revolution-subsection">
       <div class="subsection-head">
-        <h3 onclick="showPage('shifts-page')"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
+        <h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
       </div>
       <div class="shifts-list" data-role="shifts-list"></div>
     </div>
@@ -2667,7 +2667,7 @@
     if (hasShifts) {
             var top = shifts[0]; try { var pinnedShiftId = sessionStorage.getItem('rhFocusShiftId'); if (pinnedShiftId) { var pinnedShift = shifts.filter(function(s) { return String(s.id) === String(pinnedShiftId); })[0]; if (pinnedShift) { top = pinnedShift; } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } catch (e) {}
       document.querySelectorAll('[data-role="focus-identity"]').forEach(function(el) { el.textContent = top.identity || 'Your Divine Identity'; });
-      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.frequency || ''; });
+      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.maintaining || top.gap || top.frequency || ''; });
       document.querySelectorAll('[data-role="focus-status"]').forEach(function(el) {
         el.textContent = top.statusLabel;
         el.className = 'status-pill ' + top.statusClass;
