@@ -885,7 +885,7 @@
   <div class="wrap">
     <div class="logo serif" onclick="showMain()" style="cursor: pointer;">The Revolutionary<span> Healer</span></div>
     <div class="navlinks">
-      <a onclick="showPage('my-revolution-page'); return false;">My Revolution</a>
+      <a onclick="showMain(); return false;">My Revolution</a>
       <a onclick="showPage('activations-page'); return false;">Activations</a>
           </div>
     <a class="member-pill" onclick="showPage('profile-page'); return false;" id="member-pill-label">My Profile</a>
@@ -1137,7 +1137,7 @@
           <h3 class="serif" data-role="focus-identity">The Leader</h3>
         </div>
         <div>
-          <div class="focus-card-kicker">Currently Experiencing</div>
+          <div class="focus-card-kicker">What's Asking For Attention</div>
           <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
         </div>
         <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
@@ -1157,7 +1157,7 @@
 
     <div class="revolution-subsection">
       <div class="subsection-head">
-        <h3 onclick="showPage('shifts-page')"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
+        <h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
       </div>
       <div class="shifts-list" data-role="shifts-list"></div>
     </div>
@@ -1194,128 +1194,9 @@
     </div>
 </section>
 
-<section class="block page-view" id="my-revolution-page" style="border-bottom: none;">
-  <div class="wrap">
-    <a class="page-back" onclick="showMain(); return false;">← Back to Home</a>
-    <div class="section-head">
-      <div>
-        <h2 class="serif">My Revolution</h2>
-        <p>Your personal record of the Gaps you've seen, the shifts you're working through, and what's changing.</p>
-      </div>
-    </div>
-
-    <div class="focus-card" data-role="focus-card">
-      <div class="focus-card-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
-      <div class="focus-card-body">
-        <div class="focus-card-identity">
-          <div class="focus-card-kicker">Your Divine Identity</div>
-          <h3 class="serif" data-role="focus-identity">The Leader</h3>
-        </div>
-        <div>
-          <div class="focus-card-kicker">Currently Experiencing</div>
-          <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
-        </div>
-        <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
-      </div>
-      <div class="focus-card-activity" data-role="focus-activity">
-        <div data-role="focus-activity-line">Started August 4, 2026</div>
-      </div>
-      <div class="focus-card-footer">
-        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation">Expansion Activation</strong></div>
-        <button class="btn-primary" onclick="openShiftModal()">Continue Your Revolution</button>
-      </div>
-    </div>
-    <div class="card center" data-role="focus-empty" style="display:none;">
-      <p class="copy" style="margin: 0 0 18px;">You haven't started a Shift yet. Complete the GAP Method to create your first one.</p>
-      <button class="btn-primary focus-empty-cta">Start the GAP Method →</button>
-    </div>
-
-    <div class="revolution-subsection">
-      <div class="subsection-head">
-        <h3 onclick="showPage('shifts-page')"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
-      </div>
-      <div class="shifts-list" data-role="shifts-list"></div>
-    </div>
-
-    <div class="revolution-subsection" data-role="demo-activity">
-      <div class="subsection-head">
-        <h3 onclick="showPage('favorites-page')"><span class="heart-glow-emoji">♥</span> My Favorites</h3>
-        <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
-      </div>
-      <div class="favorites-row">
-        <div class="fav-card">
-          <div class="fav-thumb glyph-roots"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-          <div class="fav-body">
-            <div class="fav-title">Nervous System Recalibration</div>
-            <div class="fav-actions">
-              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
-              <button class="listen-btn">Listen Now</button>
-            </div>
-          </div>
-        </div>
-        <div class="fav-card">
-          <div class="fav-thumb glyph-wave"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-          <div class="fav-body">
-            <div class="fav-title">Removing the Frequency of Doubt</div>
-            <div class="fav-actions">
-              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
-              <button class="listen-btn">Listen Now</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="revolution-subsection" data-role="demo-activity">
-      <div class="subsection-head">
-        <h3 onclick="showPage('activations-page')"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Activations</h3>
-        <div class="see-all" onclick="showPage('activations-page')">See all →</div>
-      </div>
-      <div class="card-grid">
-        <div class="media-card">
-          <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
-          <div class="media-thumb glyph-roots">
-            <div class="media-tag">Completed</div>
-            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          </div>
-          <div class="media-body">
-            <h3>Nervous System Recalibration</h3>
-            <div class="media-meta">Guided activation</div>
-            <div class="listening-status">Completed</div>
-          </div>
-        </div>
-        <div class="media-card">
-          <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
-          <div class="media-thumb glyph-wave">
-            <div class="media-tag">Completed</div>
-            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          </div>
-          <div class="media-body">
-            <h3>Removing the Frequency of Doubt</h3>
-            <div class="media-meta">Guided activation</div>
-            <div class="listening-status">Completed</div>
-          </div>
-        </div>
-        <div class="media-card">
-          <button class="heart-btn media-heart" onclick="toggleHeart(this)">♡</button>
-          <div class="media-thumb glyph-lotus">
-            <div class="media-tag">New</div>
-            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
-          </div>
-          <div class="media-body">
-            <h3>Activating Your Gifts</h3>
-            <div class="media-meta">Guided activation</div>
-            <div class="listening-status">Not started</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <section class="block page-view" id="favorites-page" style="border-bottom: none;">
   <div class="wrap">
-    <a class="page-back" onclick="showPage('my-revolution-page'); return false;">← Back to My Revolution</a>
+    <a class="page-back" onclick="showMain(); return false;">← Back to My Revolution</a>
     <div class="section-head">
       <div>
         <h2 class="serif">My Favorites</h2>
@@ -1353,7 +1234,7 @@
 
 <section class="block page-view" id="activations-page" style="border-bottom: none;">
   <div class="wrap">
-    <a class="page-back" onclick="showPage('my-revolution-page'); return false;">← Back to My Revolution</a>
+    <a class="page-back" onclick="showMain(); return false;">← Back to My Revolution</a>
     <div class="section-head">
       <div>
         <h2 class="serif">Activations</h2>
@@ -1911,19 +1792,6 @@
   </div>
 </section>
 
-<section class="block page-view" id="shifts-page" style="border-bottom: none;">
-  <div class="wrap">
-    <a class="page-back" onclick="showPage('my-revolution-page'); return false;">← Back to My Revolution</a>
-    <div class="section-head">
-      <div>
-        <h2 class="serif"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h2>
-        <p>A history of your transformational milestones</p>
-      </div>
-    </div>
-    <div class="shifts-list" data-role="shifts-list"></div>
-  </div>
-</section>
-
 <section class="block page-view" id="upgrade-page" style="border-bottom: none;">
   <div class="wrap">
     <a class="page-back" onclick="showMain(); return false;">← Back to Home</a>
@@ -2399,7 +2267,7 @@
   // headers, swaps the visible content area rather than linking to a real
   // separate URL -- this is a single-page mockup. In the real Next.js app
   // these would be real routes (e.g. /favorites, /activations, /go-deeper).
-  var PAGE_IDS = ['my-revolution-page', 'favorites-page', 'activations-page', 'activation-detail-page', 'shifts-page', 'upgrade-page', 'profile-page', 'membership-management-page'];
+  var PAGE_IDS = ['favorites-page', 'activations-page', 'activation-detail-page', 'upgrade-page', 'profile-page', 'membership-management-page'];
 
   // Real Full Access checkout URLs (same offers documented in
   // step3-activation-products-reference.md's "Full Access Membership offers"
@@ -2667,7 +2535,7 @@
     if (hasShifts) {
             var top = shifts[0]; try { var pinnedShiftId = sessionStorage.getItem('rhFocusShiftId'); if (pinnedShiftId) { var pinnedShift = shifts.filter(function(s) { return String(s.id) === String(pinnedShiftId); })[0]; if (pinnedShift) { top = pinnedShift; } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } catch (e) {}
       document.querySelectorAll('[data-role="focus-identity"]').forEach(function(el) { el.textContent = top.identity || 'Your Divine Identity'; });
-      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.frequency || ''; });
+      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.maintaining || top.gap || top.frequency || ''; });
       document.querySelectorAll('[data-role="focus-status"]').forEach(function(el) {
         el.textContent = top.statusLabel;
         el.className = 'status-pill ' + top.statusClass;
@@ -3254,7 +3122,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     var newChatTop = document.getElementById('rh-new-chat-top-btn');
     if (newChatTop) newChatTop.addEventListener('click', rhStartNewChat);
     var shiftMenuBtn = document.getElementById('shift-modal-menu-btn');
-    if (shiftMenuBtn) shiftMenuBtn.addEventListener('click', function (ev) { ev.stopPropagation(); toggleShiftModalMenu(); });
+    if (shiftMenuBtn) shiftMenuBtn.addEventListener('click', function (ev) { ev.stopPropagation(); rhDeleteShift(); });
     document.addEventListener('click', function (ev) {
       if (!ev.target.closest('.rh-drawer-item-menu') && !ev.target.closest('.rh-drawer-popover')) {
         var p = document.querySelector('.rh-drawer-popover');
