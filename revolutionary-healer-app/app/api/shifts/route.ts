@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getShiftsByEmail, getShiftById, updateShiftFields, normalizeEmail } from "@/lib/airtable";
+import { getShiftsByEmail, getShiftById, updateShiftFields, deleteShift, normalizeEmail } from "@/lib/airtable";
 
 export async function GET(req: NextRequest) {
   const email = req.nextUrl.searchParams.get("email");
@@ -56,5 +56,28 @@ export async function PATCH(req: NextRequest) {
   } catch (err) {
     console.error("PATCH /api/shifts failed", err);
     return NextResponse.json({ error: "Something went wrong updating your Shift." }, { status: 500 });
+  }
+}
+
+// Delete a Shift entirely. Mirrors the DELETE pattern used by
+// /api/chats/[chatId] (QA fix, Sep 2026): the Shifts table's progress_status
+// field only has "shifting"/"embodied" options (no "archived"), so a hard
+// delete -- gated by ownership check + a confirm prompt client-side -- is
+// used instead of an archive flag.
+export async function DELETE(req: NextRequest) {
+  const { id, email } = await req.json();
+  if (!id || !email) {
+    return NextResponse.json({ error: "Missing id or email" }, { status: 400 });
+  }
+  try {
+    const shift = await getShiftById(id);
+    if (!shift || normalizeEmail(shift.fields.member_email) !== normalizeEmail(email)) {
+      return NextResponse.json({ error: "Shift not found" }, { status: 404 });
+    }
+    await deleteShift(id);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("DELETE /api/shifts failed", err);
+    return NextResponse.json({ error: "Something went wrong deleting your Shift." }, { status: 500 });
   }
 }
