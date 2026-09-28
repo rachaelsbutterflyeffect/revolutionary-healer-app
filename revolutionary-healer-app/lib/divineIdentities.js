@@ -23,6 +23,14 @@
 // results screen to route to the right one. TODO(Rachael): all 7 offers are
 // still status "draft" in Kajabi (confirmed Aug 4) -- publish each one in the
 // Kajabi admin UI before this can go live.
+//
+// RENAME (Sept, GAP Method distortion/routing upgrade -- Rachael's retired-
+// distortion-names cleanup): The Leader's Current Frequency was "Hiddenness"
+// everywhere in this file. The new 16-item distortion registry
+// (lib/gapDistortions.js) replaces that name with "Fear of Being Seen" --
+// renamed here, byte-for-byte, everywhere it appeared (currentFrequency,
+// highestLeverageShift.from, and the customerFacingResult prose) so no live
+// code path or member-visible copy still uses the retired name.
 
 export const DIVINE_IDENTITIES = [
   {
@@ -156,7 +164,7 @@ export const DIVINE_IDENTITIES = [
   {
     slug: "leader",
     displayName: "The Leader",
-    currentFrequency: "Hiddenness",
+    currentFrequency: "Fear of Being Seen",
     highLevelDescription:
       "Here to influence, guide, communicate truth and create meaningful impact -- carries a natural presence that can shift rooms, communities, conversations and possibilities.",
     highestExpression: [
@@ -190,11 +198,11 @@ export const DIVINE_IDENTITIES = [
     gapExplanation:
       "The GAP is not a lack of leadership. The Leader already carries authority, truth and impact. The GAP exists between the leader they already are and the amount of that leadership they currently feel safe embodying publicly. Their leadership is not missing -- it may be hidden beneath self-protection.",
     highestLeverageShift: {
-      from: ["Hiddenness", "Fear of visibility", "Self-protection", "People-pleasing", "Diluted truth"],
+      from: ["Fear of Being Seen", "Fear of visibility", "Self-protection", "People-pleasing", "Diluted truth"],
       into: ["Visibility", "Embodied authority", "Strong boundaries", "Courageous expression", "Full leadership"],
     },
     customerFacingResult:
-      "Your Divine Identity is The Leader. You are currently moving through the frequency of hiddenness. You are here to lead, influence and create impact, but fear of judgment, rejection or being fully seen may be causing you to soften your truth or reduce your presence. Your leadership has not disappeared. The GAP is between the leader you already are and the amount of your leadership you currently feel safe allowing other people to see.",
+      "Your Divine Identity is The Leader. You are currently moving through the frequency of fear of being seen. You are here to lead, influence and create impact, but fear of judgment, rejection or being fully seen may be causing you to soften your truth or reduce your presence. Your leadership has not disappeared. The GAP is between the leader you already are and the amount of your leadership you currently feel safe allowing other people to see.",
     stepOneSignals: {
       stuckFeeling: "I know I am meant to be seen, but I keep holding back.",
       fearMost: "That I will be judged, rejected or misunderstood.",
@@ -398,13 +406,29 @@ export const DIVINE_IDENTITIES = [
       "What part of yourself have you neglected while supporting others?",
       "What helps you feel most connected to yourself and God?",
     ],
+    // FIXED (Sept, GAP Method distortion/routing upgrade): this identity used
+    // to describe a dynamic, conversation-dependent activation choice here
+    // with NO actual code path that implemented it -- lib/processes.js's old
+    // DIVINE_IDENTITY_RECOMMENDATION_TABLE just interpolated this prose
+    // directly into the Step 3 prompt and then expected the model's raw
+    // activation-name text to drive `openActivationSlug`, which never worked
+    // for Healer since there was no single name to match against (see the
+    // old app/api/chat/route.ts's DETERMINISTIC STEP 3 FALLBACK comment).
+    // That whole mechanism is retired. Disconnection is now one of the 16
+    // registry distortions in lib/gapDistortions.js and is routed the same
+    // way as every other identity's distortions: the model detects which
+    // distortions Step 2 actually evidenced (Disconnection or otherwise --
+    // identity is a starting frame, never the verdict) and CODE looks up the
+    // real activation via DISTORTION_ROUTING. The fields below are kept only
+    // as descriptive reference copy for the Step 1/Step 2 prompt tables --
+    // they are never used to select or open an activation.
     recommendationLanguage:
-      "The Healer's Disconnection does not point to one fixed activation -- which one is right depends on how the disconnection is actually presenting, never on being The Healer alone. If she is disconnected from herself, her soul, her identity or her own deeper knowing, this points to Remembrance Activation. If her spiritual gifts feel inaccessible or dormant, this points to Activating Your Gifts Activation. If she is receiving guidance but is having difficulty trusting it, this points to Removing the Frequency of Doubt. If she has a specific desire to develop her intuitive knowing, this points to Intuition Activation. If she is working toward specific visual or psychic development, this points to Third Eye Activation or Clairvoyance Activation. Let the conversation determine which of these fits -- The Healer does not automatically equal Disconnection, and Disconnection does not automatically receive one preset activation.",
+      "Disconnection can present in more than one way, so it is never routed to a single fixed activation just because someone is The Healer. The GAP Method's distortion-detection system (lib/gapDistortions.js) determines the actual Step 3 recommendation from what Step 2 evidence shows -- Disconnection commonly points toward Remembrance Activation or Alignment Activation, but the real pick always comes from the conversation, never from this identity alone.",
     personalizedActivation: {
-      name: "Determined by how Disconnection presents (see recommendationLanguage)",
+      name: "Determined by the GAP Method distortion-routing system (see lib/gapDistortions.js) -- not a fixed value",
       description:
-        "The Healer does not have one fixed personalized activation. Disconnection from self, soul, identity or deeper knowing points to Remembrance Activation. Disconnection from spiritual gifts, or gifts feeling inaccessible or dormant, points to Activating Your Gifts Activation. Difficulty trusting guidance that is already coming through points to Removing the Frequency of Doubt. A specific desire to develop intuitive knowing points to Intuition Activation. A specific desire for visual or psychic development points to Third Eye Activation or Clairvoyance Activation. The actual expression of the pattern in the conversation determines which activation is recommended -- never her Divine Identity alone.",
-      kajabiOfferId: null, // retired Aug 15 (Rachael's explicit request) -- Spirit Connection Activation must never be recommended again; no single fixed activation replaces it, see recommendationLanguage above
+        "Reference copy only. As of the Sept GAP Method upgrade, every identity's actual Step 3 activation -- including Healer's -- is selected by app/api/chat/route.ts via lib/gapDistortions.js's distortion-detection + DISTORTION_ROUTING table, never by a per-identity fixed field. This entry is retained so Step 1/Step 2's compact reference table still has descriptive text for Healer, but nothing in the live routing path reads `personalizedActivation.name` for any identity anymore.",
+      kajabiOfferId: null, // retired Aug 15 (Rachael's explicit request) -- Spirit Connection Activation must never be recommended again; see NEVER_RECOMMEND_SLUGS in lib/gapDistortions.js
       checkoutUrl: null,
       offerStatus: "n/a", // dynamic -- selection depends on conversation content, not a single offer
     },
