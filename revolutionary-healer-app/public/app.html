@@ -4212,7 +4212,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     showEl('d1-results', true);
   }
 
-    function backToQuizFromResults() { day1Done = false; document.getElementById('check1').textContent = ''; showEl('d1-results', false); showEl('d1-domain', true); window.__gapShiftAutoCreated = false; gapChatHistory = []; day2TurnCount = 0; winnerKey = null; var check2ResetEl = document.getElementById('check2'); if (check2ResetEl) check2ResetEl.textContent = ''; }
+    function backToQuizFromResults() { day1Done = false; document.getElementById('check1').textContent = ''; showEl('d1-results', false); showEl('d1-domain', true); window.__gapShiftAutoCreated = false; window.__gapCardData = null; gapChatHistory = []; day2TurnCount = 0; winnerKey = null; var check2ResetEl = document.getElementById('check2'); if (check2ResetEl) check2ResetEl.textContent = ''; }
 
   // Aug 12 (Rachael's explicit request) -- Step 2's chat now runs on the real
   // Claude-backed GAP_METHOD_SCRIPT_FUNNEL_UPSELL script (lib/processes.js)
@@ -4330,6 +4330,19 @@ subActivationKey = subKeyFound;
 }
 reply = reply.replace(subActivationMatch[0], '').trim();
 }
+var saveShiftMatch = reply.match(/\[\[SAVE_SHIFT:\s*([\s\S]*?)\]\]/i);
+if (saveShiftMatch) {
+try {
+  window.__gapCardData = JSON.parse(saveShiftMatch[1]);
+} catch (e) {
+  console.error('Failed to parse SAVE_SHIFT marker', e);
+}
+reply = reply.replace(saveShiftMatch[0], '').trim();
+}
+var distortionsMatch = reply.match(/\[\[DISTORTIONS:[\s\S]*?\]\]/i);
+if (distortionsMatch) { reply = reply.replace(distortionsMatch[0], '').trim(); }
+var topicMarkerMatch = reply.match(/\[\[TOPIC:[\s\S]*?\]\]/i);
+if (topicMarkerMatch) { reply = reply.replace(topicMarkerMatch[0], '').trim(); }
 addBotBubble(reply);
         gapChatHistory.push({ role: 'user', content: userText });
         gapChatHistory.push({ role: 'assistant', content: reply });
@@ -4485,8 +4498,13 @@ if (forceComplete) { goDay(3); }
           divineIdentityName: a ? a.name : '',
           currentFrequency: a ? a.label : '',
           focusArea: 'GAP Method',
-          gapExplanation: a ? a.reading : '',
-          whatWeNoticed: (a && a.frequency) ? a.frequency : '',
+          gapExplanation: (window.__gapCardData && window.__gapCardData.gap) ? window.__gapCardData.gap : "This reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.",
+          whatWeNoticed: (function() {
+            var parts = [];
+            if (window.__gapCardData && window.__gapCardData.howItShowsUp) parts.push(window.__gapCardData.howItShowsUp);
+            if (window.__gapCardData && window.__gapCardData.primaryShift) parts.push('Primary Shift: ' + window.__gapCardData.primaryShift);
+            return parts.length ? parts.join('\n\n') : "This reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
+          })(),
           recommendedActivation: (a && a.activation && a.activation.title) ? a.activation.title : '',
         })
       }).then(function(res) {
