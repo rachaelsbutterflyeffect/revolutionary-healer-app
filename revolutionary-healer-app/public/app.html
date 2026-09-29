@@ -1117,8 +1117,9 @@
   </div>
 </section>
 
-<section class="block" id="my-revolution">
+<section class="block page-view" id="my-revolution">
   <div class="wrap">
+    <a class="page-back" onclick="showMain(); return false;">← Back to Home</a>
     <div class="section-head">
       <div>
         <h2 class="serif">My Revolution</h2>
@@ -2264,7 +2265,7 @@
   // headers, swaps the visible content area rather than linking to a real
   // separate URL -- this is a single-page mockup. In the real Next.js app
   // these would be real routes (e.g. /favorites, /activations, /go-deeper).
-  var PAGE_IDS = ['favorites-page', 'activations-page', 'activation-detail-page', 'upgrade-page', 'profile-page', 'membership-management-page'];
+  var PAGE_IDS = ['my-revolution', 'favorites-page', 'activations-page', 'activation-detail-page', 'upgrade-page', 'profile-page', 'membership-management-page'];
 
   // Real Full Access checkout URLs (same offers documented in
   // step3-activation-products-reference.md's "Full Access Membership offers"
@@ -2488,22 +2489,17 @@
   function showMain() {
     hideAllPages();
     document.getElementById('hero-section').style.display = '';
-    document.getElementById('my-revolution').style.display = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function goToMyRevolution() {
+    document.getElementById('hero-section').style.display = 'none';
     hideAllPages();
-    document.getElementById('hero-section').style.display = '';
-    var el = document.getElementById('my-revolution');
-    if (el) {
-      el.style.display = '';
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
+    document.getElementById('my-revolution').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function showPage(pageId) {
     document.getElementById('hero-section').style.display = 'none';
-    document.getElementById('my-revolution').style.display = 'none';
     hideAllPages();
     document.getElementById(pageId).classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
