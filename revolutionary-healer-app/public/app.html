@@ -885,7 +885,7 @@
   <div class="wrap">
     <div class="logo serif" onclick="showMain()" style="cursor: pointer;">The Revolutionary<span> Healer</span></div>
     <div class="navlinks">
-      <a onclick="showMain(); return false;">My Revolution</a>
+      <a onclick="goToMyRevolution(); return false;">My Revolution</a>
       <a onclick="showPage('activations-page'); return false;">Activations</a>
           </div>
     <a class="member-pill" onclick="showPage('profile-page'); return false;" id="member-pill-label">My Profile</a>
@@ -1193,7 +1193,7 @@
 
 <section class="block page-view" id="favorites-page" style="border-bottom: none;">
   <div class="wrap">
-    <a class="page-back" onclick="showMain(); return false;">← Back to My Revolution</a>
+    <a class="page-back" onclick="goToMyRevolution(); return false;">← Back to My Revolution</a>
     <div class="section-head">
       <div>
         <h2 class="serif">My Favorites</h2>
@@ -1231,7 +1231,7 @@
 
 <section class="block page-view" id="activations-page" style="border-bottom: none;">
   <div class="wrap">
-    <a class="page-back" onclick="showMain(); return false;">← Back to My Revolution</a>
+    <a class="page-back" onclick="goToMyRevolution(); return false;">← Back to My Revolution</a>
     <div class="section-head">
       <div>
         <h2 class="serif">Activations</h2>
@@ -2490,6 +2490,15 @@
     document.getElementById('hero-section').style.display = '';
     document.getElementById('my-revolution').style.display = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function goToMyRevolution() {
+    hideAllPages();
+    document.getElementById('hero-section').style.display = '';
+    var el = document.getElementById('my-revolution');
+    if (el) {
+      el.style.display = '';
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   function showPage(pageId) {
