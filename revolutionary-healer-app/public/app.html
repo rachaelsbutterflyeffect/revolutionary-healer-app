@@ -2331,6 +2331,15 @@
           favCardEl.className = 'fav-card';
           favCardEl.setAttribute('data-activation-slug', entry.slug);
           favCardEl.innerHTML = '<div class="fav-thumb"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div><div class="fav-body"><div class="fav-title"></div><div class="fav-actions"><button class="heart-btn filled" onclick="toggleHeart(this)">♥</button><button class="listen-btn">Listen Now</button></div></div>';
+          var sourceThumb = entry.card ? entry.card.querySelector('.media-thumb') : null;
+          var favThumbEl = favCardEl.querySelector('.fav-thumb');
+          if (sourceThumb && favThumbEl) {
+            var thumbStyle = sourceThumb.getAttribute('style');
+            if (thumbStyle) { favThumbEl.setAttribute('style', thumbStyle); }
+            sourceThumb.classList.forEach(function(c) {
+              if (c.indexOf('glyph-') === 0) { favThumbEl.classList.add(c); }
+            });
+          }
           favCardEl.querySelector('.fav-title').textContent = details.title || entry.slug;
           favCardEl.querySelector('.listen-btn').addEventListener('click', function() {
             if (typeof handleActivationCardClick === 'function') handleActivationCardClick(entry.slug);
