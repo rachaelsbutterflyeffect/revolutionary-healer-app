@@ -37,6 +37,7 @@ export const Tables = {
     GapMethodResults: "GapMethodResults",
     Shifts: "Shifts",
     ActivationCompletions: "ActivationCompletions",
+    Favorites: "Favorites",
     ChatSessions: "ChatSessions",
     ChatMessages: "ChatMessages",
     MemberMemories: "MemberMemories",
@@ -269,6 +270,41 @@ export async function getCompletedActivationSlugsByEmail(email) {
     .select({
         filterByFormula: `{member_email} = "${normalized}"`,
         sort: [{ field: "completed_at", direction: "desc" }],
+    })
+    .all();
+    const slugs = records.map((r) => r.fields.activation_slug).filter(Boolean);
+    return Array.from(new Set(slugs));
+}
+
+// Sept 29 (Rachael's deep-audit P0 -- favorites never persisted, only a
+// visual heart-class toggle with no backend at all). Mirrors the
+// ActivationCompletions pattern above.
+export async function addFavoriteActivation(email, activationSlug) {
+    const normalized = normalizeEmail(email);
+    return base(Tables.Favorites).create({
+        member_email: normalized,
+        activation_slug: activationSlug,
+        favorited_at: new Date().toISOString(),
+    });
+}
+
+export async function removeFavoriteActivation(email, activationSlug) {
+    const normalized = normalizeEmail(email);
+    const records = await base(Tables.Favorites)
+    .select({
+        filterByFormula: `AND({member_email} = "${normalized}", {activation_slug} = "${activationSlug}")`,
+    })
+    .all();
+    if (records.length) {
+        await base(Tables.Favorites).destroy(records.map((r) => r.id));
+    }
+}
+
+export async function getFavoriteActivationSlugsByEmail(email) {
+    const normalized = normalizeEmail(email);
+    const records = await base(Tables.Favorites)
+    .select({
+        filterByFormula: `{member_email} = "${normalized}"`,
     })
     .all();
     const slugs = records.map((r) => r.fields.activation_slug).filter(Boolean);
