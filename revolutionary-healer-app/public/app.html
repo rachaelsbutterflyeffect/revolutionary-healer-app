@@ -1845,15 +1845,6 @@
     </div>
 
     <div class="profile-card">
-      <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Your Revolution</h3></div>
-      <div class="stats-grid">
-        <div class="stat-tile"><div class="stat-value" id="stat-activations-completed">0</div><div class="stat-label">Activations Completed</div></div>
-        <div class="stat-tile"><div class="stat-value" id="stat-embodied-shifts">0</div><div class="stat-label">Embodied Shifts</div></div>
-        <div class="stat-tile"><div class="stat-value" id="stat-days-transforming">0</div><div class="stat-label">Days Transforming</div></div>
-      </div>
-    </div>
-
-    <div class="profile-card">
       <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Profile</h3></div>
       <div class="avatar-row">
         <div class="avatar-circle" id="profile-avatar-circle">R</div>
@@ -1902,8 +1893,6 @@
       <div class="info-row"><div class="info-label">Member Since</div><div class="info-value" id="member-since-value">August 3, 2026</div></div>
       <div class="btn-row">
         <button class="btn-primary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/account','_blank')">Manage Membership</button>
-        <button class="btn-secondary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/purchase_history','_blank')">Update Payment Method</button>
-        <button class="btn-danger-outline" onclick="if (confirm('This will take you to Kajabi, where you can cancel your Revolutionary Healer membership. You will keep access until the end of your current billing period. Continue?')) { window.open('https://www.rachaelsbutterflyeffect.com/settings/purchase_history','_blank'); }">Cancel Membership</button>
       </div>
     </div>
 
@@ -3222,18 +3211,8 @@ window.addEventListener('message', function(evt) {
   }
 
   function handleResetPasswordClick() {
-    if (!RH_EMAIL) return;
     var statusEl = document.getElementById("reset-password-status");
-    if (statusEl) statusEl.textContent = "Sending reset link...";
-    fetch("/api/auth/forgot-password", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: RH_EMAIL }),
-    }).then(function(res) { return res.json(); }).then(function() {
-      if (statusEl) statusEl.textContent = "Check your email (" + RH_EMAIL + ") for a link to reset your password.";
-    }).catch(function() {
-      if (statusEl) statusEl.textContent = "Something went wrong. Please try again.";
-    });
+    if (statusEl) statusEl.textContent = "Password resets aren't automated yet -- email " + SUPPORT_EMAIL + " and we'll get you back in.";
   }
 
   window.handleRemovePhotoClick = handleRemovePhotoClick;
