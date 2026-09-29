@@ -2866,7 +2866,14 @@ function resetGapMethodState() {
 function startGapMethodInChat() {
         var embedWrap = document.getElementById('hero-gap-embed');
         window.__rhGapMethodActive = true;
-        if (embedWrap) { embedWrap.style.display = ''; embedWrap.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        if (embedWrap) {
+                embedWrap.style.display = '';
+                requestAnimationFrame(function () {
+                        requestAnimationFrame(function () {
+                                embedWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        });
+                });
+        }
         resetGapMethodState();
         if (typeof goDay === 'function') { try { goDay(1); } catch (e) {} }
 }
