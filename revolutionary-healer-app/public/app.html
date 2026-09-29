@@ -2841,10 +2841,37 @@ function embedGapMethodInline() {
     wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+function resetGapMethodState() {
+  day1Done = false;
+  phase = 'identity';
+  identityCurrent = 0;
+  identityAnswers = [null, null];
+  selectedDomain = null;
+  winnerKey = null;
+  subActivationKey = null;
+  gapChatHistory = [];
+  day2TurnCount = 0;
+  gapChatRequestPending = false;
+  gapChatReadyQueued = false;
+  window.__gapCardData = null;
+  window.__gapShiftAutoCreated = false;
+  var check1El = document.getElementById('check1'); if (check1El) check1El.textContent = '';
+  var check2El = document.getElementById('check2'); if (check2El) check2El.textContent = '';
+  var check3El = document.getElementById('check3'); if (check3El) check3El.textContent = '';
+  var chatLogEl = document.getElementById('chat-log'); if (chatLogEl) chatLogEl.innerHTML = '';
+  var d2ContinueEl = document.getElementById('d2-continue'); if (d2ContinueEl) d2ContinueEl.style.display = 'none';
+  var readyBtnWrapEl = document.getElementById('ready-btn-wrap'); if (readyBtnWrapEl) readyBtnWrapEl.style.display = 'none';
+  showEl('d1-intro', true);
+  showEl('d1-quiz', false);
+  showEl('d1-domain', false);
+  showEl('d1-results', false);
+}
+
 function startGapMethodInChat() {
         var embedWrap = document.getElementById('hero-gap-embed');
         window.__rhGapMethodActive = true;
         if (embedWrap) { embedWrap.style.display = ''; embedWrap.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+        resetGapMethodState();
         if (typeof goDay === 'function') { try { goDay(1); } catch (e) {} }
 }
 
@@ -4665,7 +4692,7 @@ if (forceComplete) { goDay(3); }
             var parts = [];
             if (window.__gapCardData && window.__gapCardData.howItShowsUp) parts.push(window.__gapCardData.howItShowsUp);
             if (window.__gapCardData && window.__gapCardData.primaryShift) parts.push('Primary Shift: ' + window.__gapCardData.primaryShift);
-            return parts.length ? parts.join('\n\n') : "This reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
+            return parts.length ? parts.join('\n\n') : "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
           })(),
           recommendedActivation: (a && a.activation && a.activation.title) ? a.activation.title : '',
         })
