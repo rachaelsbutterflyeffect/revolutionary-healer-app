@@ -4414,9 +4414,16 @@ if (forceComplete) { goDay(3); }
     // reveal (gapReadyLine+gapStillLine / gapExample / gapRestated), closed
     // with "That's your Gap." per Rachael's Step 3 spec (Aug 10, later still).
     document.getElementById('d3-meta').textContent = reveal.name + ' · ' + reveal.frequency + (domainLabel ? ' · ' + domainLabel : '');
-    document.getElementById('d3-gap-contradiction').innerHTML = reveal.gapReadyLine + '<br>' + reveal.gapStillLine;
-    document.getElementById('d3-gap-example').textContent = reveal.gapExample;
-    document.getElementById('d3-gap-restated').textContent = reveal.gapRestated;
+    var personalizedReveal = window.__gapCardData || null;
+    if (personalizedReveal && personalizedReveal.gap) {
+      document.getElementById('d3-gap-contradiction').textContent = personalizedReveal.gap;
+      document.getElementById('d3-gap-example').textContent = personalizedReveal.howItShowsUp || "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
+      document.getElementById('d3-gap-restated').textContent = personalizedReveal.primaryShift || '';
+    } else {
+      document.getElementById('d3-gap-contradiction').innerHTML = reveal.gapReadyLine + '<br>' + reveal.gapStillLine;
+      document.getElementById('d3-gap-example').textContent = reveal.gapExample;
+      document.getElementById('d3-gap-restated').textContent = reveal.gapRestated;
+    }
 
     // Section 2 -- Your personalized activation. a-teaser now uses the new
     // per-identity activationReason field ("Use this when you notice
