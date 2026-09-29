@@ -938,9 +938,6 @@
       <button class="heart-btn filled" onclick="toggleHeart(this)" style="font-size: 20px;">♥</button>
     </div>
     <div class="shift-modal-actions" style="margin-top: 10px;">
-      <button class="btn-secondary" onclick="closeShiftModal()" data-prompt="Go deeper into this Gap.">Go Deeper Into This Gap →</button>
-    </div>
-    <div class="shift-modal-actions" style="margin-top: 10px;">
       <button class="btn-secondary" id="shift-modal-update-progress-btn">Update Progress</button>
     </div>
     <div id="shift-modal-embodied-ready" style="display: none; margin-top: 20px;">
@@ -2535,7 +2532,7 @@
     if (hasShifts) {
             var top = shifts[0]; try { var pinnedShiftId = sessionStorage.getItem('rhFocusShiftId'); if (pinnedShiftId) { var pinnedShift = shifts.filter(function(s) { return String(s.id) === String(pinnedShiftId); })[0]; if (pinnedShift) { top = pinnedShift; } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } catch (e) {}
       document.querySelectorAll('[data-role="focus-identity"]').forEach(function(el) { el.textContent = top.identity || 'Your Divine Identity'; });
-      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.maintaining || top.gap || top.frequency || ''; });
+      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.maintaining || top.gap || "More will show here as this Shift develops."; });
       document.querySelectorAll('[data-role="focus-status"]').forEach(function(el) {
         el.textContent = top.statusLabel;
         el.className = 'status-pill ' + top.statusClass;
@@ -3121,9 +3118,12 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     if (newChatBtn) newChatBtn.addEventListener('click', rhStartNewChat);
     var newChatTop = document.getElementById('rh-new-chat-top-btn');
     if (newChatTop) newChatTop.addEventListener('click', rhStartNewChat);
-    var shiftMenuBtn = document.getElementById('shift-modal-menu-btn');
-    if (shiftMenuBtn) shiftMenuBtn.addEventListener('click', function (ev) { ev.stopPropagation(); rhDeleteShift(); });
     document.addEventListener('click', function (ev) {
+      if (ev.target.closest('#shift-modal-menu-btn')) {
+        ev.stopPropagation();
+        rhDeleteShift();
+        return;
+      }
       if (!ev.target.closest('.rh-drawer-item-menu') && !ev.target.closest('.rh-drawer-popover')) {
         var p = document.querySelector('.rh-drawer-popover');
         if (p) p.remove();
