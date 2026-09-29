@@ -2215,11 +2215,139 @@
     }
   });
 
-  // Heart icon: Favorites only, never affects My Activations ownership or
+  // Heart icon: Favorites, persisted per-member via Airtable (mirrors
+  // ActivationCompletions). Never affects My Activations ownership or
   // listening history -- see SPEC.md §4.1d.
+  var FAVORITE_ACTIVATION_SLUGS = [];
+  var favoritesLoaded = false;
+
+  function getFavoriteActivationSlugs() {
+    if (favoritesLoaded) { return FAVORITE_ACTIVATION_SLUGS; }
+    if (!RH_EMAIL) { return []; }
+    try {
+      return JSON.parse(localStorage.getItem('rh_favorites_' + RH_EMAIL) || '[]');
+    } catch (e) { return []; }
+  }
+
+  async function loadFavorites() {
+    if (!RH_EMAIL) return;
+    try {
+      var res = await fetch('/api/favorites?email=' + encodeURIComponent(RH_EMAIL));
+      var data = await res.json();
+      var slugs = data.slugs || [];
+      var local = [];
+      try { local = JSON.parse(localStorage.getItem('rh_favorites_' + RH_EMAIL) || '[]'); } catch (e) {}
+      local.forEach(function(s) { if (slugs.indexOf(s) === -1) { slugs.push(s); } });
+      FAVORITE_ACTIVATION_SLUGS = slugs;
+      favoritesLoaded = true;
+      try { localStorage.setItem('rh_favorites_' + RH_EMAIL, JSON.stringify(slugs)); } catch (e) {}
+      applyFavoriteBadges();
+      renderFavoritesSections();
+    } catch (e) {}
+  }
+
+  function applyFavoriteBadges() {
+    var favs = getFavoriteActivationSlugs();
+    document.querySelectorAll('[data-activation-slug]').forEach(function(card) {
+      var slug = card.getAttribute('data-activation-slug');
+      var heart = card.querySelector('.heart-btn');
+      if (!heart) return;
+      var isFav = favs.indexOf(slug) !== -1;
+      heart.classList.toggle('filled', isFav);
+      heart.textContent = isFav ? '♥' : '♡';
+    });
+    var detailHeart = document.getElementById('activation-detail-heart');
+    if (detailHeart && window.__rhCurrentActivationSlug) {
+      var isFavDetail = favs.indexOf(window.__rhCurrentActivationSlug) !== -1;
+      detailHeart.classList.toggle('filled', isFavDetail);
+      detailHeart.textContent = isFavDetail ? '♥' : '♡';
+    }
+  }
+
+  function rhResolveHeartSlug(btn) {
+    var card = btn.closest('[data-activation-slug]');
+    if (card) return card.getAttribute('data-activation-slug');
+    if (btn.id === 'activation-detail-heart' && window.__rhCurrentActivationSlug) {
+      return window.__rhCurrentActivationSlug;
+    }
+    if (window.__rhCurrentShift && window.__rhCurrentShift.activation) {
+      var slug = rhSlugForActivationTitle(window.__rhCurrentShift.activation);
+      if (slug) return slug;
+    }
+    return null;
+  }
+
   function toggleHeart(btn) {
-    var filled = btn.classList.toggle('filled');
-    btn.textContent = filled ? '♥' : '♡';
+    var slug = rhResolveHeartSlug(btn);
+    if (!slug || !RH_EMAIL) {
+      // No real activation context to persist against (or anonymous/funnel
+      // flow) -- fall back to the old visual-only toggle rather than doing nothing.
+      var filled = btn.classList.toggle('filled');
+      btn.textContent = filled ? '♥' : '♡';
+      return;
+    }
+    var favs = getFavoriteActivationSlugs().slice();
+    var idx = favs.indexOf(slug);
+    var nowFav;
+    if (idx === -1) {
+      favs.push(slug);
+      nowFav = true;
+    } else {
+      favs.splice(idx, 1);
+      nowFav = false;
+    }
+    FAVORITE_ACTIVATION_SLUGS = favs;
+    favoritesLoaded = true;
+    try { localStorage.setItem('rh_favorites_' + RH_EMAIL, JSON.stringify(favs)); } catch (e) {}
+    applyFavoriteBadges();
+    renderFavoritesSections();
+    fetch('/api/favorites', {
+      method: nowFav ? 'POST' : 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: RH_EMAIL, activationSlug: slug })
+    }).catch(function(e) {});
+  }
+
+  function renderFavoritesSections() {
+    var favs = getFavoriteActivationSlugs();
+    var libraryGrid = document.getElementById('activation-library-grid');
+    var favCards = favs.map(function(slug) {
+      var card = libraryGrid ? libraryGrid.querySelector('[data-activation-slug="' + slug + '"]') : null;
+      return card ? { slug: slug, card: card, details: (window.ACTIVATION_DETAILS || ACTIVATION_DETAILS || {})[slug] } : null;
+    }).filter(Boolean);
+
+    var pageGrid = document.querySelector('#favorites-page .card-grid');
+    if (pageGrid) {
+      if (!favCards.length) {
+        pageGrid.innerHTML = '<p style="color: var(--taupe); grid-column: 1 / -1;">You haven\'t favorited any activations yet. Tap the heart on any activation to add it here.</p>';
+      } else {
+        pageGrid.innerHTML = '';
+        favCards.forEach(function(entry) {
+          pageGrid.appendChild(entry.card.cloneNode(true));
+        });
+      }
+    }
+
+    var homeRow = document.querySelector('.favorites-row');
+    if (homeRow) {
+      if (!favCards.length) {
+        homeRow.innerHTML = '<p style="color: var(--taupe); font-size: 13px;">No favorites yet -- tap the heart on any activation to add it here.</p>';
+      } else {
+        homeRow.innerHTML = '';
+        favCards.slice(0, 4).forEach(function(entry) {
+          var details = entry.details || {};
+          var favCardEl = document.createElement('div');
+          favCardEl.className = 'fav-card';
+          favCardEl.setAttribute('data-activation-slug', entry.slug);
+          favCardEl.innerHTML = '<div class="fav-thumb"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div><div class="fav-body"><div class="fav-title"></div><div class="fav-actions"><button class="heart-btn filled" onclick="toggleHeart(this)">♥</button><button class="listen-btn">Listen Now</button></div></div>';
+          favCardEl.querySelector('.fav-title').textContent = details.title || entry.slug;
+          favCardEl.querySelector('.listen-btn').addEventListener('click', function() {
+            if (typeof handleActivationCardClick === 'function') handleActivationCardClick(entry.slug);
+          });
+          homeRow.appendChild(favCardEl);
+        });
+      }
+    }
   }
 
   // My Activations page category chips -- single-select, visual only in this
@@ -3167,6 +3295,7 @@ window.addEventListener('message', function(evt) {
     applyCompletionBadges();
     updateProfileStats();
     loadCompletedActivations();
+    loadFavorites();
   function readFileAsDataURL(file) {
     return new Promise(function(resolve, reject) {
       var reader = new FileReader();
