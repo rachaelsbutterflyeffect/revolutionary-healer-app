@@ -4212,7 +4212,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     showEl('d1-results', true);
   }
 
-    function backToQuizFromResults() { day1Done = false; document.getElementById('check1').textContent = ''; showEl('d1-results', false); showEl('d1-domain', true); window.__gapShiftAutoCreated = false; window.__gapCardData = null; gapChatHistory = []; day2TurnCount = 0; winnerKey = null; var check2ResetEl = document.getElementById('check2'); if (check2ResetEl) check2ResetEl.textContent = ''; }
+    function backToQuizFromResults() { day1Done = false; document.getElementById('check1').textContent = ''; showEl('d1-results', false); showEl('d1-domain', true); window.__gapShiftAutoCreated = false; window.__gapCardData = null; gapChatHistory = []; gapChatRequestPending = false; gapChatReadyQueued = false; day2TurnCount = 0; winnerKey = null; var check2ResetEl = document.getElementById('check2'); if (check2ResetEl) check2ResetEl.textContent = ''; }
 
   // Aug 12 (Rachael's explicit request) -- Step 2's chat now runs on the real
   // Claude-backed GAP_METHOD_SCRIPT_FUNNEL_UPSELL script (lib/processes.js)
@@ -4222,6 +4222,8 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
   // day2TurnCount drives when the "ready to move on" affordances appear.
   var gapChatHistory = [];
   var day2TurnCount = 0;
+  var gapChatRequestPending = false;
+  var gapChatReadyQueued = false;
 
   function buildGapContext() {
     var key = winnerKey || 'overworker';
@@ -4295,6 +4297,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     var input = document.getElementById('gap-chat-input');
     if (!isKickoff) addUserBubble(userText);
     input.disabled = true;
+    gapChatRequestPending = true;
     addTypingBubble();
     fetch('/api/gap-chat-member', {
       method: 'POST',
@@ -4303,6 +4306,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     }).then(function(res) { return res.json().then(function(body) { return { ok: res.ok, status: res.status, body: body }; }); })
       .then(function(result) {
         removeTypingBubble();
+        gapChatRequestPending = false;
         if (!result.ok) {
           console.error('gap-chat-member request failed', result.status, result.body);
           addBotBubble("Sorry, something glitched on my end there -- can you try sending that again?");
@@ -4357,14 +4361,18 @@ addBotBubble(reply);
           document.getElementById('ready-btn-wrap').style.display = 'none';
           document.getElementById('check2').textContent = '✓';
           document.getElementById('d2-continue').style.display = 'block';
+          gapChatReadyQueued = false;
 if (forceComplete) { goDay(3); }
+        } else if (gapChatReadyQueued) {
+          gapChatReadyQueued = false;
+          skipToReveal();
         } else {
           input.disabled = false;
           input.focus();
           document.getElementById('ready-btn-wrap').style.display = (day2TurnCount >= 2) ? 'block' : 'none';
         }
       })
-            .catch(function() { removeTypingBubble(); addBotBubble("Sorry -- I had trouble connecting just then. Mind sending that again?"); input.disabled = false; if (forceComplete) { document.getElementById('ready-btn-wrap').style.display = 'block'; } });
+            .catch(function() { gapChatRequestPending = false; removeTypingBubble(); addBotBubble("Sorry -- I had trouble connecting just then. Mind sending that again?"); input.disabled = false; if (forceComplete) { document.getElementById('ready-btn-wrap').style.display = 'block'; } });
   }
 
   function addBotBubble(text) {
@@ -4400,6 +4408,7 @@ if (forceComplete) { goDay(3); }
 
   function skipToReveal() {
     document.getElementById('ready-btn-wrap').style.display = 'none';
+    if (gapChatRequestPending) { gapChatReadyQueued = true; return; }
     sendToGapChat("(The member is ready to move forward. Give your Step 2 completion summary now, in the style already described, then stop.)", true, true);
   }
 
@@ -4419,6 +4428,10 @@ if (forceComplete) { goDay(3); }
       document.getElementById('d3-gap-contradiction').textContent = personalizedReveal.gap;
       document.getElementById('d3-gap-example').textContent = personalizedReveal.howItShowsUp || "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
       document.getElementById('d3-gap-restated').textContent = personalizedReveal.primaryShift || '';
+    } else if (RH_EMAIL) {
+      document.getElementById('d3-gap-contradiction').textContent = "This reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
+      document.getElementById('d3-gap-example').textContent = "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
+      document.getElementById('d3-gap-restated').textContent = '';
     } else {
       document.getElementById('d3-gap-contradiction').innerHTML = reveal.gapReadyLine + '<br>' + reveal.gapStillLine;
       document.getElementById('d3-gap-example').textContent = reveal.gapExample;
