@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     }
 
     const entitlement = deriveEntitlement(member.fields as any);
-    const isPaying = entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership;
+    const isPaying = entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership || entitlement.onDlrhMembership;
     if (!isPaying) {
       return NextResponse.json(
         { error: "This email doesn't have active access yet. If you just purchased, please try again in a few minutes." },
