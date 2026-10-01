@@ -41,6 +41,7 @@ const TRIAL_DAYS = Number(process.env.TRIAL_DAYS ?? 7);
 const TRIAL_CHAT_LIMIT = Number(process.env.TRIAL_CHAT_LIMIT ?? 10);
 const GAP_TRIAL_DAYS = Number(process.env.GAP_TRIAL_DAYS ?? 3);
 const BETA_MEMBER_DAYS = Number(process.env.BETA_MEMBER_DAYS ?? 180);
+const DLRH_MEMBER_DAYS = Number(process.env.DLRH_MEMBER_DAYS ?? 120);
 
 /**
  * Pure function: derive entitlement from a Members record's fields.
@@ -61,6 +62,9 @@ export function deriveEntitlement(memberFields, now = new Date()) {
       onBetaMembership: false,
       betaMembershipExpired: false,
       betaMembershipDaysRemaining: 0,
+      onDlrhMembership: false,
+      dlrhMembershipExpired: false,
+      dlrhMembershipDaysRemaining: 0,
       canUseBase: false,
       canUseTier: false,
       unlockedActivationSlugs: [],
@@ -117,11 +121,26 @@ export function deriveEntitlement(memberFields, now = new Date()) {
     betaMembershipDaysRemaining = Math.max(0, Math.ceil(BETA_MEMBER_DAYS - ageDays));
   }
 
-  const canUseBase = memberActive || onGapTrial || onBetaMembership || (onTrial && trialChatsRemaining > 0);
+  // DLRH cohort membership -- Oct 2026, Fall 2026 DLA Students. Manually granted
+  // (no Kajabi purchase webhook involved), 4-month (120-day) term from
+  // dlrh_member_started_at, same shape as Beta membership above.
+  let onDlrhMembership = false;
+  let dlrhMembershipExpired = false;
+  let dlrhMembershipDaysRemaining = 0;
+
+  if (!tierActive && memberFields.dlrh_member_started_at) {
+    const startedAt = new Date(memberFields.dlrh_member_started_at);
+    const ageDays = (now.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24);
+    dlrhMembershipExpired = ageDays > DLRH_MEMBER_DAYS;
+    onDlrhMembership = !dlrhMembershipExpired;
+    dlrhMembershipDaysRemaining = Math.max(0, Math.ceil(DLRH_MEMBER_DAYS - ageDays));
+  }
+
+  const canUseBase = memberActive || onGapTrial || onBetaMembership || onDlrhMembership || (onTrial && trialChatsRemaining > 0);
   // Higher-tier content (the whole Activation Library) requires tier_active or an
   // active Beta membership. As of Aug 10 the GAP trial no longer grants this --
   // it only grants base (chat) access plus the 7 GAP Method activations below.
-  const canUseTier = tierActive || onBetaMembership;
+  const canUseTier = tierActive || onBetaMembership || onDlrhMembership;
 
   // Aug 10: which activation slugs this member can play. "ALL" is a sentinel the
   // UI can check first (===) before ever consulting the list, for full/Beta
@@ -150,6 +169,9 @@ export function deriveEntitlement(memberFields, now = new Date()) {
     onBetaMembership,
     betaMembershipExpired,
     betaMembershipDaysRemaining,
+    onDlrhMembership,
+    dlrhMembershipExpired,
+    dlrhMembershipDaysRemaining,
     canUseBase,
     canUseTier,
     unlockedActivationSlugs,
