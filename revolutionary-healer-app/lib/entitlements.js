@@ -41,7 +41,7 @@ const TRIAL_DAYS = Number(process.env.TRIAL_DAYS ?? 7);
 const TRIAL_CHAT_LIMIT = Number(process.env.TRIAL_CHAT_LIMIT ?? 10);
 const GAP_TRIAL_DAYS = Number(process.env.GAP_TRIAL_DAYS ?? 3);
 const BETA_MEMBER_DAYS = Number(process.env.BETA_MEMBER_DAYS ?? 180);
-const DLRH_MEMBER_DAYS = Number(process.env.DLRH_MEMBER_DAYS ?? 120);
+const DLRH_CUTOFF_DATE = process.env.DLRH_CUTOFF_DATE ?? "2027-02-01T00:00:00Z";
 
 /**
  * Pure function: derive entitlement from a Members record's fields.
@@ -122,18 +122,19 @@ export function deriveEntitlement(memberFields, now = new Date()) {
   }
 
   // DLRH cohort membership -- Oct 2026, Fall 2026 DLA Students. Manually granted
-  // (no Kajabi purchase webhook involved), 4-month (120-day) term from
-  // dlrh_member_started_at, same shape as Beta membership above.
+  // (no Kajabi purchase webhook involved). Access runs through a fixed calendar
+  // cutoff date (Feb 1, 2027, Rachael's Oct 1 2026 request) rather than a
+  // per-member day count, so every cohort member loses access on the same date
+  // regardless of small differences in when their dlrh_member_started_at was set.
   let onDlrhMembership = false;
   let dlrhMembershipExpired = false;
   let dlrhMembershipDaysRemaining = 0;
 
   if (!tierActive && memberFields.dlrh_member_started_at) {
-    const startedAt = new Date(memberFields.dlrh_member_started_at);
-    const ageDays = (now.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24);
-    dlrhMembershipExpired = ageDays > DLRH_MEMBER_DAYS;
+    const cutoff = new Date(DLRH_CUTOFF_DATE);
+    dlrhMembershipExpired = now.getTime() >= cutoff.getTime();
     onDlrhMembership = !dlrhMembershipExpired;
-    dlrhMembershipDaysRemaining = Math.max(0, Math.ceil(DLRH_MEMBER_DAYS - ageDays));
+    dlrhMembershipDaysRemaining = Math.max(0, Math.ceil((cutoff.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
   }
 
   const canUseBase = memberActive || onGapTrial || onBetaMembership || onDlrhMembership || (onTrial && trialChatsRemaining > 0);
