@@ -865,7 +865,7 @@
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: RH_EMAIL }),
     }).then(function (r) { return r.json(); }).then(function (data) {
-      var stillEntitled = !!(data && (data.memberActive || data.tierActive || data.onBetaMembership));
+      var stillEntitled = !!(data && (data.memberActive || data.tierActive || data.onBetaMembership || data.onDlrhMembership));
       if (!stillEntitled) {
         localStorage.removeItem('rh_member_email');
         localStorage.removeItem('rh_member_login_at');
