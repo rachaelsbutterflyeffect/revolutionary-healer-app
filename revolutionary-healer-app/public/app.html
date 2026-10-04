@@ -3290,7 +3290,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     document.addEventListener('click', function (ev) {
       if (ev.target.closest('#shift-modal-menu-btn')) {
         ev.stopPropagation();
-        rhDeleteShift();
+        toggleShiftModalMenu();
         return;
       }
       if (!ev.target.closest('.rh-drawer-item-menu') && !ev.target.closest('.rh-drawer-popover')) {
