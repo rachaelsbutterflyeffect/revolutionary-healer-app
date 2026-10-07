@@ -406,38 +406,12 @@
   .trial-banner-inner { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 9px 20px; flex-wrap: wrap; }
   .trial-banner-text { font-size: 12.5px; color: #241C0A; font-weight: 600; letter-spacing: 0.02em; }
   .trial-banner-cta { background: #241C0A; color: var(--gold); border: none; border-radius: 999px; padding: 6px 16px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; letter-spacing: 0.03em; }
-  /* Spookbound 2026 feature banner + card (scoped; does not affect other activations) */
-  .new-activation-banner { position: relative; overflow: hidden; border-bottom: 1px solid rgba(207,166,70,0.55); background: #120C10 url('/images/covers/spookbound-2026-banner.jpg') right 30% / auto 135% no-repeat; isolation: isolate; }
-  .new-activation-banner::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, rgba(14,9,14,1) 0%, rgba(26,12,30,0.96) 45%, rgba(30,14,30,0.6) 62%, rgba(40,20,8,0.05) 100%), radial-gradient(ellipse at 80% 120%, rgba(232,140,40,0.35), transparent 60%); }
-  .new-activation-banner::after { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(110deg, transparent 35%, rgba(228,199,122,0.16) 50%, transparent 65%); background-size: 250% 100%; animation: nab-shimmer 7s ease-in-out infinite; }
-  .new-activation-banner .new-activation-banner-inner { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 34px 20px 30px; }
-  .nab-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: 0.22em; color: var(--gold-soft); text-transform: uppercase; display: inline-flex; align-items: center; gap: 8px; }
-  .nab-eyebrow::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 10px 2px rgba(228,199,122,0.8); animation: nab-pulse 2.2s ease-in-out infinite; }
-  .nab-title { margin: 0; font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-weight: 400; font-size: clamp(32px, 6vw, 54px); line-height: 1.05; background: linear-gradient(180deg, #FFF4D6 0%, var(--gold-soft) 45%, var(--gold) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 0 28px rgba(228,170,70,0.25); }
-  .nab-sub { margin: 0; max-width: 460px; font-family: Georgia, serif; font-style: italic; font-size: clamp(15px, 2.2vw, 18px); color: #EFE3CC; line-height: 1.45; }
-  .new-activation-banner-cta { margin-top: 8px; display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(180deg, var(--gold-soft), var(--gold)); color: #241C0A; border: none; border-radius: 999px; padding: 12px 22px; font-size: 14px; font-weight: 800; font-family: inherit; cursor: pointer; letter-spacing: 0.03em; box-shadow: 0 0 0 1px rgba(255,236,190,0.4) inset, 0 0 22px rgba(228,170,70,0.55); animation: nab-glow 2.8s ease-in-out infinite; transition: transform .15s ease; }
-  .new-activation-banner-cta:hover { transform: translateY(-1px) scale(1.02); }
-  .nab-play { width: 22px; height: 22px; border-radius: 50%; background: #241C0A; display: inline-flex; align-items: center; justify-content: center; }
-  .nab-close { position: absolute; top: 12px; right: 10px; width: 32px; height: 32px; border-radius: 50%; border: 1px solid rgba(228,199,122,0.4); background: rgba(14,9,14,0.55); color: var(--gold-soft); font-size: 18px; line-height: 1; cursor: pointer; z-index: 2; }
-  .nab-embers { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-  .nab-embers span { position: absolute; bottom: -10px; width: 4px; height: 4px; border-radius: 50%; background: #FFC66B; box-shadow: 0 0 8px 2px rgba(255,170,60,0.75); opacity: 0; animation: nab-ember 9s linear infinite; }
-  .nab-embers span:nth-child(1) { left: 12%; animation-delay: 0s; }
-  .nab-embers span:nth-child(2) { left: 28%; animation-delay: 2.5s; width: 3px; height: 3px; }
-  .nab-embers span:nth-child(3) { left: 47%; animation-delay: 5s; }
-  .nab-embers span:nth-child(4) { left: 63%; animation-delay: 1.2s; width: 3px; height: 3px; }
-  .nab-embers span:nth-child(5) { left: 78%; animation-delay: 3.8s; }
-  .nab-embers span:nth-child(6) { left: 90%; animation-delay: 6.4s; width: 3px; height: 3px; }
-  @keyframes nab-shimmer { 0%,100% { background-position: 120% 0; } 50% { background-position: -20% 0; } }
-  @keyframes nab-pulse { 0%,100% { opacity: .6; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.15); } }
-  @keyframes nab-glow { 0%,100% { box-shadow: 0 0 0 1px rgba(255,236,190,0.4) inset, 0 0 14px rgba(228,170,70,0.4); } 50% { box-shadow: 0 0 0 1px rgba(255,236,190,0.5) inset, 0 0 30px rgba(240,170,60,0.8); } }
-  @keyframes nab-ember { 0% { transform: translate(0,0); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate(24px,-220px); opacity: 0; } }
-  @media (min-width: 760px) { .new-activation-banner .new-activation-banner-inner { padding: 46px 20px 42px; } }
-  @media (max-width: 480px) { .new-activation-banner { background-size: cover; background-position: 50% 25%; } .new-activation-banner::before { background: linear-gradient(180deg, rgba(14,9,14,0.80) 0%, rgba(30,14,34,0.88) 55%, rgba(14,9,14,0.97) 100%); } .new-activation-banner-cta { width: 100%; justify-content: center; } }
+  /* Spookbound 2026 card highlight (scoped; does not affect other activations) */
   .media-card.spookbound-card { border: 1px solid rgba(228,170,70,0.65); box-shadow: 0 0 0 1px rgba(228,170,70,0.15), 0 0 22px rgba(228,150,50,0.28); animation: sb-card-glow 3.2s ease-in-out infinite; }
   .new-badge { position: absolute; top: 8px; left: 8px; z-index: 2; background: linear-gradient(90deg, var(--gold) 0%, #FFF0C2 50%, var(--gold) 100%); background-size: 200% 100%; color: #241C0A; font-size: 10px; font-weight: 900; letter-spacing: 0.14em; padding: 4px 10px; border-radius: 999px; box-shadow: 0 0 12px rgba(240,180,70,0.85); animation: sb-pill 2.4s ease-in-out infinite; }
   @keyframes sb-card-glow { 0%,100% { box-shadow: 0 0 0 1px rgba(228,170,70,0.15), 0 0 16px rgba(228,150,50,0.2); } 50% { box-shadow: 0 0 0 1px rgba(228,170,70,0.3), 0 0 30px rgba(240,160,50,0.45); } }
   @keyframes sb-pill { 0%,100% { background-position: 0% 0; box-shadow: 0 0 8px rgba(240,180,70,0.6); } 50% { background-position: 100% 0; box-shadow: 0 0 16px rgba(255,200,90,1); } }
-  @media (prefers-reduced-motion: reduce) { .new-activation-banner::after, .nab-eyebrow::before, .new-activation-banner-cta, .nab-embers span, .media-card.spookbound-card, .new-badge { animation: none !important; } .nab-embers { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .media-card.spookbound-card, .new-badge { animation: none !important; } }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,9,7,0.72); z-index: 50; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 60px 20px; }
   .modal-overlay.active { display: flex; }
@@ -934,18 +908,6 @@
     <button class="trial-banner-cta" onclick="showPage('upgrade-page')">Trial — Upgrade Now →</button>
   </div>
 </div>
-
-<div class="new-activation-banner" id="new-activation-banner" role="region" aria-label="New activation">
-  <div class="nab-embers" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-  <button class="nab-close" aria-label="Dismiss" onclick="event.stopPropagation(); try { localStorage.setItem('rh_nab_dismissed_spookbound-2026','1'); } catch(e) {} document.getElementById('new-activation-banner').style.display='none';">&times;</button>
-  <div class="wrap new-activation-banner-inner">
-    <span class="nab-eyebrow">New Activation &middot; October</span>
-    <h2 class="nab-title">Spookbound 2026</h2>
-    <p class="nab-sub">Banish the shadows of curses, black magic &amp; spells.</p>
-    <button class="new-activation-banner-cta" onclick="handleActivationCardClick('spookbound-2026')"><span class="nab-play"><svg width="10" height="10" viewBox="0 0 24 24" fill="#E4C77A"><polygon points="6,4 20,12 6,20"/></svg></span>Play the Activation</button>
-  </div>
-</div>
-<script>try { if (localStorage.getItem('rh_nab_dismissed_spookbound-2026') === '1') { document.getElementById('new-activation-banner').style.display = 'none'; } } catch (e) {}</script>
 
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-card">
