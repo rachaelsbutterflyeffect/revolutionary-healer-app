@@ -4784,5 +4784,99 @@ if (forceComplete) { goDay(3); }
 
 <script src="/activation-covers.js" defer></script>
 <script src="/cover-fixes.js" defer></script>
+<!-- Gap Method pop-up modal shell (presentation only). Wraps the existing
+     #hero-gap-embed container in a modal overlay. Does NOT change any GAP
+     Method step 1/2/3 markup, IDs, handlers, state or API calls: it only
+     restyles the container, watches its existing show/hide (style.display),
+     and adds backdrop / Esc / focus / scroll-lock behaviour around it. -->
+<style id="gm-modal-css">
+  #gm-backdrop { position: fixed; inset: 0; z-index: 9000; display: none; background: radial-gradient(120% 90% at 50% 0%, rgba(74,40,110,0.55), rgba(12,8,18,0.82) 60%); -webkit-backdrop-filter: blur(10px) saturate(120%); backdrop-filter: blur(10px) saturate(120%); opacity: 0; transition: opacity .28s ease; overflow: hidden; }
+  #gm-backdrop.gm-show { opacity: 1; }
+  #gm-backdrop .gm-embers { position: absolute; inset: 0; pointer-events: none; }
+  #gm-backdrop .gm-embers span { position: absolute; bottom: -12px; width: 4px; height: 4px; border-radius: 50%; background: #FFC66B; box-shadow: 0 0 10px 3px rgba(255,170,60,0.6); opacity: 0; animation: gm-ember 12s linear infinite; }
+  #gm-backdrop .gm-embers span:nth-child(1){left:8%;animation-delay:0s}
+  #gm-backdrop .gm-embers span:nth-child(2){left:22%;animation-delay:3s;width:3px;height:3px}
+  #gm-backdrop .gm-embers span:nth-child(3){left:41%;animation-delay:6.5s}
+  #gm-backdrop .gm-embers span:nth-child(4){left:59%;animation-delay:1.6s;width:3px;height:3px}
+  #gm-backdrop .gm-embers span:nth-child(5){left:76%;animation-delay:4.8s}
+  #gm-backdrop .gm-embers span:nth-child(6){left:92%;animation-delay:8.2s;width:3px;height:3px}
+  @keyframes gm-ember { 0%{transform:translate(0,0);opacity:0} 10%{opacity:.75} 100%{transform:translate(30px,-80vh);opacity:0} }
+
+  #hero-gap-embed.gm-modal { position: fixed !important; z-index: 9001 !important; left: 50% !important; top: 50% !important; margin: 0 !important; width: min(720px, calc(100vw - 48px)) !important; max-width: none !important; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; box-sizing: border-box; padding: 22px 22px 12px !important; border-radius: 22px !important; border: 1px solid rgba(228,199,122,0.55) !important; background: linear-gradient(160deg, rgba(58,30,86,0.92) 0%, rgba(30,20,34,0.94) 45%, rgba(70,40,14,0.92) 100%) !important; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: 0 0 0 1px rgba(255,236,190,0.12) inset, 0 0 34px rgba(228,170,70,0.35), 0 30px 80px rgba(0,0,0,0.6) !important; transform: translate(-50%,-50%) scale(.94); opacity: 0; transition: transform .34s cubic-bezier(.2,.9,.3,1.15), opacity .26s ease; }
+  #hero-gap-embed.gm-modal.gm-in { transform: translate(-50%,-50%) scale(1); opacity: 1; animation: gm-glow 3.2s ease-in-out infinite; }
+  #hero-gap-embed.gm-modal::before { content: ""; position: sticky; display: block; top: -22px; height: 2px; margin: -22px -22px 20px; background: linear-gradient(90deg, transparent, rgba(255,226,160,0.95), transparent); background-size: 220% 100%; animation: gm-shimmer 4.5s ease-in-out infinite; z-index: 12; }
+  @keyframes gm-shimmer { 0%,100%{background-position:120% 0} 50%{background-position:-20% 0} }
+  @keyframes gm-glow { 0%,100%{box-shadow:0 0 0 1px rgba(255,236,190,0.12) inset,0 0 26px rgba(228,170,70,0.28),0 30px 80px rgba(0,0,0,0.6)} 50%{box-shadow:0 0 0 1px rgba(255,236,190,0.2) inset,0 0 44px rgba(228,170,70,0.5),0 30px 80px rgba(0,0,0,0.6)} }
+  #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !important; top: 0 !important; right: auto !important; float: right; margin: -6px -6px 0 0; width: 36px !important; height: 36px !important; background: rgba(20,14,24,0.7) !important; border: 1px solid rgba(228,199,122,0.6) !important; color: var(--gold-soft) !important; box-shadow: 0 0 14px rgba(228,170,70,0.35); transition: transform .15s ease, box-shadow .15s ease; z-index: 13 !important; }
+  #hero-gap-embed.gm-modal #hero-gap-embed-close:hover { transform: rotate(90deg); box-shadow: 0 0 20px rgba(228,170,70,0.6); }
+  #hero-gap-embed.gm-modal .topbar { background: transparent !important; border-bottom-color: rgba(228,199,122,0.25) !important; position: static !important; }
+  #hero-gap-embed.gm-modal .card { background: rgba(20,16,22,0.55) !important; border-color: rgba(228,199,122,0.22) !important; }
+  #hero-gap-embed.gm-modal :focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 2px; }
+  body.gm-lock { overflow: hidden !important; touch-action: none; }
+  @media (max-width: 600px) {
+    #hero-gap-embed.gm-modal { left: 0 !important; top: auto !important; bottom: 0 !important; width: 100vw !important; height: 94vh; max-height: 94vh; border-radius: 22px 22px 0 0 !important; border-bottom: none !important; padding: 16px 12px 24px !important; transform: translateY(100%); opacity: 1; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important; }
+    #hero-gap-embed.gm-modal.gm-in { transform: translateY(0); }
+    #hero-gap-embed.gm-modal::before { top: -16px; margin: -16px -12px 14px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #gm-backdrop, #hero-gap-embed.gm-modal { transition: none !important; }
+    #hero-gap-embed.gm-modal.gm-in, #hero-gap-embed.gm-modal::before { animation: none !important; }
+    #gm-backdrop .gm-embers { display: none; }
+    #hero-gap-embed.gm-modal #hero-gap-embed-close:hover { transform: none; }
+  }
+</style>
+<script id="gm-modal-js">
+(function () {
+  function init() {
+    var el = document.getElementById('hero-gap-embed');
+    if (!el || el.__gmInit) return; el.__gmInit = true;
+    var bd = document.createElement('div');
+    bd.id = 'gm-backdrop'; bd.setAttribute('aria-hidden', 'true');
+    bd.innerHTML = '<div class="gm-embers"><span></span><span></span><span></span><span></span><span></span><span></span></div>';
+    document.body.appendChild(bd);
+    // Move the existing container (unchanged inside) to <body> so fixed positioning is never clipped.
+    document.body.appendChild(el);
+    el.classList.add('gm-modal');
+    el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'GAP Method');
+    if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+    var isOpen = false, lastFocus = null, session = false, starter = document.getElementById('gap-method-starter-btn');
+    function shown() { return el.style.display !== 'none'; }
+    function onOpen() {
+      isOpen = true; session = true;
+      lastFocus = document.activeElement;
+      bd.style.display = 'block'; document.body.classList.add('gm-lock');
+      requestAnimationFrame(function () { requestAnimationFrame(function () { bd.classList.add('gm-show'); el.classList.add('gm-in'); }); });
+      setTimeout(function () { var c = document.getElementById('hero-gap-embed-close'); try { (c || el).focus({ preventScroll: true }); } catch (e) {} }, 60);
+    }
+    function onClose() {
+      isOpen = false;
+      el.classList.remove('gm-in'); bd.classList.remove('gm-show');
+      document.body.classList.remove('gm-lock');
+      setTimeout(function () { if (!isOpen) bd.style.display = 'none'; }, 300);
+      var t = lastFocus || starter; if (t && t.focus) { try { t.focus({ preventScroll: true }); } catch (e) {} }
+    }
+    new MutationObserver(function () { var s = shown(); if (s && !isOpen) onOpen(); else if (!s && isOpen) onClose(); }).observe(el, { attributes: true, attributeFilter: ['style'] });
+    if (shown()) onOpen();
+    bd.addEventListener('click', function () { if (typeof closeHeroGapEmbed === 'function') closeHeroGapEmbed(); });
+    // Keep keyboard focus inside the dialog while it is open.
+    document.addEventListener('keydown', function (e) {
+      if (!isOpen || e.key !== 'Tab') return;
+      var f = Array.prototype.filter.call(el.querySelectorAll('button, [href], input, textarea, select, [tabindex]:not([tabindex="-1"])'), function (n) { return !n.disabled && n.offsetParent !== null; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+    // Preserve progress: if a member closed the pop-up mid-way (X, Esc, backdrop), tapping the
+    // GAP Method button again simply re-shows it where they left off instead of restarting.
+    // A finished run (gapMethodComplete) ends the session so the next tap starts fresh as before.
+    window.addEventListener('message', function (evt) { if (evt.data && evt.data.type === 'gapMethodComplete') session = false; });
+    if (starter) starter.addEventListener('click', function (e) {
+      if (session && !shown()) { e.stopImmediatePropagation(); window.__rhGapMethodActive = true; el.style.display = ''; }
+    }, true);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
 </body>
 </html>
