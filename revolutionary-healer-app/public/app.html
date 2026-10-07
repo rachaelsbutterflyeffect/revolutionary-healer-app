@@ -937,7 +937,7 @@
 
 <div class="new-activation-banner" id="new-activation-banner" role="region" aria-label="New activation">
   <div class="nab-embers" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
-  <button class="nab-close" aria-label="Dismiss" onclick="event.stopPropagation(); try { localStorage.setItem('rh_nab_dismissed_spookbound-2026','1'); } catch(e) {} document.getElementById('new-activation-banner').style.display='none';">&times;</button>
+  <button class="nab-close" aria-label="Dismiss" onclick="event.stopPropagation(); try { localStorage.setItem('rh_nab_dismissed_spookbound-2026', String(Date.now())); } catch(e) {} document.getElementById('new-activation-banner').style.display='none';">&times;</button>
   <div class="wrap new-activation-banner-inner">
     <span class="nab-eyebrow">New Activation &middot; October</span>
     <h2 class="nab-title">Spookbound 2026</h2>
@@ -945,7 +945,7 @@
     <button class="new-activation-banner-cta" onclick="handleActivationCardClick('spookbound-2026')"><span class="nab-play"><svg width="10" height="10" viewBox="0 0 24 24" fill="#E4C77A"><polygon points="6,4 20,12 6,20"/></svg></span>Play the Activation</button>
   </div>
 </div>
-<script>try { if (localStorage.getItem('rh_nab_dismissed_spookbound-2026') === '1') { document.getElementById('new-activation-banner').style.display = 'none'; } } catch (e) {}</script>
+<script>try { var nabKey = 'rh_nab_dismissed_spookbound-2026'; var nabVal = localStorage.getItem(nabKey); if (nabVal !== null) { var nabTs = Number(nabVal); if (nabVal !== '1' && isFinite(nabTs) && nabTs > 0 && (Date.now() - nabTs) < 5 * 24 * 60 * 60 * 1000) { document.getElementById('new-activation-banner').style.display = 'none'; } else { localStorage.removeItem(nabKey); } } } catch (e) {}</script>
 
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-card">
