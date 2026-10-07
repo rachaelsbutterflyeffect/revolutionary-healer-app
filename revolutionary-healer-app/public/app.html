@@ -4790,37 +4790,109 @@ if (forceComplete) { goDay(3); }
      restyles the container, watches its existing show/hide (style.display),
      and adds backdrop / Esc / focus / scroll-lock behaviour around it. -->
 <style id="gm-modal-css">
-  #gm-backdrop { position: fixed; inset: 0; z-index: 9000; display: none; background: radial-gradient(120% 90% at 50% 0%, rgba(74,40,110,0.55), rgba(12,8,18,0.82) 60%); -webkit-backdrop-filter: blur(10px) saturate(120%); backdrop-filter: blur(10px) saturate(120%); opacity: 0; transition: opacity .28s ease; overflow: hidden; }
+  /* GAP Method pop-up v2 -- palette: teal / gold / white / black only. All rules scoped to the modal. */
+  #gm-backdrop { position: fixed; inset: 0; z-index: 9000; display: none; background: radial-gradient(110% 80% at 50% 0%, rgba(1,103,108,0.45), rgba(2,8,9,0.9) 62%); -webkit-backdrop-filter: blur(12px) saturate(115%); backdrop-filter: blur(12px) saturate(115%); opacity: 0; transition: opacity .3s ease; overflow: hidden; }
   #gm-backdrop.gm-show { opacity: 1; }
   #gm-backdrop .gm-embers { position: absolute; inset: 0; pointer-events: none; }
-  #gm-backdrop .gm-embers span { position: absolute; bottom: -12px; width: 4px; height: 4px; border-radius: 50%; background: #FFC66B; box-shadow: 0 0 10px 3px rgba(255,170,60,0.6); opacity: 0; animation: gm-ember 12s linear infinite; }
+  #gm-backdrop .gm-embers span { position: absolute; bottom: -12px; width: 4px; height: 4px; border-radius: 50%; background: #F1D58A; box-shadow: 0 0 10px 3px rgba(228,190,100,0.55); opacity: 0; animation: gm-ember 13s linear infinite; }
+  #gm-backdrop .gm-embers span:nth-child(even) { background: #7FE0DA; box-shadow: 0 0 10px 3px rgba(40,170,170,0.5); width: 3px; height: 3px; }
   #gm-backdrop .gm-embers span:nth-child(1){left:8%;animation-delay:0s}
-  #gm-backdrop .gm-embers span:nth-child(2){left:22%;animation-delay:3s;width:3px;height:3px}
+  #gm-backdrop .gm-embers span:nth-child(2){left:22%;animation-delay:3s}
   #gm-backdrop .gm-embers span:nth-child(3){left:41%;animation-delay:6.5s}
-  #gm-backdrop .gm-embers span:nth-child(4){left:59%;animation-delay:1.6s;width:3px;height:3px}
+  #gm-backdrop .gm-embers span:nth-child(4){left:59%;animation-delay:1.6s}
   #gm-backdrop .gm-embers span:nth-child(5){left:76%;animation-delay:4.8s}
-  #gm-backdrop .gm-embers span:nth-child(6){left:92%;animation-delay:8.2s;width:3px;height:3px}
-  @keyframes gm-ember { 0%{transform:translate(0,0);opacity:0} 10%{opacity:.75} 100%{transform:translate(30px,-80vh);opacity:0} }
+  #gm-backdrop .gm-embers span:nth-child(6){left:92%;animation-delay:8.2s}
+  @keyframes gm-ember { 0%{transform:translate(0,0);opacity:0} 10%{opacity:.8} 100%{transform:translate(30px,-80vh);opacity:0} }
 
-  #hero-gap-embed.gm-modal { position: fixed !important; z-index: 9001 !important; left: 50% !important; top: 50% !important; margin: 0 !important; width: min(720px, calc(100vw - 48px)) !important; max-width: none !important; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; box-sizing: border-box; padding: 22px 22px 12px !important; border-radius: 22px !important; border: 1px solid rgba(228,199,122,0.55) !important; background: linear-gradient(160deg, rgba(58,30,86,0.92) 0%, rgba(30,20,34,0.94) 45%, rgba(70,40,14,0.92) 100%) !important; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); box-shadow: 0 0 0 1px rgba(255,236,190,0.12) inset, 0 0 34px rgba(228,170,70,0.35), 0 30px 80px rgba(0,0,0,0.6) !important; transform: translate(-50%,-50%) scale(.94); opacity: 0; transition: transform .34s cubic-bezier(.2,.9,.3,1.15), opacity .26s ease; }
-  #hero-gap-embed.gm-modal.gm-in { transform: translate(-50%,-50%) scale(1); opacity: 1; animation: gm-glow 3.2s ease-in-out infinite; }
-  #hero-gap-embed.gm-modal::before { content: ""; position: sticky; display: block; top: -22px; height: 2px; margin: -22px -22px 20px; background: linear-gradient(90deg, transparent, rgba(255,226,160,0.95), transparent); background-size: 220% 100%; animation: gm-shimmer 4.5s ease-in-out infinite; z-index: 12; }
+  /* Shell: the pop-up IS the GAP Method */
+  #hero-gap-embed.gm-modal { position: fixed !important; z-index: 9001 !important; left: 50% !important; top: 50% !important; margin: 0 !important; width: min(760px, calc(100vw - 48px)) !important; max-width: none !important; height: min(860px, 90vh); max-height: 90vh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; box-sizing: border-box; padding: 0 !important; border-radius: 26px !important; border: 1px solid rgba(207,166,70,0.55) !important;
+    background: radial-gradient(120% 60% at 50% -10%, rgba(1,103,108,0.55), transparent 60%), radial-gradient(80% 50% at 100% 110%, rgba(207,166,70,0.14), transparent 60%), linear-gradient(180deg, #071414 0%, #050909 55%, #030505 100%) !important;
+    box-shadow: 0 0 0 1px rgba(255,240,200,0.08) inset, 0 0 40px rgba(207,166,70,0.28), 0 0 90px rgba(1,103,108,0.35), 0 40px 90px rgba(0,0,0,0.7) !important;
+    transform: translate(-50%,-50%) scale(.94); opacity: 0; transition: transform .38s cubic-bezier(.2,.9,.3,1.15), opacity .28s ease; color: #fff; scrollbar-width: thin; scrollbar-color: rgba(207,166,70,.4) transparent; }
+  #hero-gap-embed.gm-modal.gm-in { transform: translate(-50%,-50%) scale(1); opacity: 1; animation: gm-glow 3.6s ease-in-out infinite; }
+  @keyframes gm-glow { 0%,100%{box-shadow:0 0 0 1px rgba(255,240,200,0.08) inset,0 0 30px rgba(207,166,70,0.22),0 0 80px rgba(1,103,108,0.3),0 40px 90px rgba(0,0,0,0.7)} 50%{box-shadow:0 0 0 1px rgba(255,240,200,0.14) inset,0 0 50px rgba(207,166,70,0.42),0 0 110px rgba(1,103,108,0.45),0 40px 90px rgba(0,0,0,0.7)} }
+
+  /* Close X */
+  #hero-gap-embed.gm-modal #hero-gap-embed-close { position: absolute !important; top: 18px !important; right: 18px !important; width: 38px !important; height: 38px !important; background: rgba(0,0,0,0.45) !important; border: 1px solid rgba(207,166,70,0.6) !important; color: #F1D58A !important; font-size: 14px !important; box-shadow: 0 0 14px rgba(207,166,70,0.3); transition: transform .2s ease, box-shadow .2s ease; z-index: 30 !important; }
+  #hero-gap-embed.gm-modal #hero-gap-embed-close:hover { transform: rotate(90deg); box-shadow: 0 0 22px rgba(207,166,70,0.6); }
+
+  /* Header: title + gold stepper, sticky */
+  #hero-gap-embed.gm-modal .topbar { position: sticky !important; top: 0; z-index: 20; padding: 26px 0 18px !important; border-bottom: 1px solid rgba(207,166,70,0.18) !important; background: linear-gradient(180deg, rgba(4,16,17,0.97), rgba(4,12,13,0.88)) !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+  #hero-gap-embed.gm-modal .topbar::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: linear-gradient(90deg, transparent, #F1D58A, #2BB3AD, transparent); background-size: 220% 100%; animation: gm-shimmer 5s ease-in-out infinite; }
   @keyframes gm-shimmer { 0%,100%{background-position:120% 0} 50%{background-position:-20% 0} }
-  @keyframes gm-glow { 0%,100%{box-shadow:0 0 0 1px rgba(255,236,190,0.12) inset,0 0 26px rgba(228,170,70,0.28),0 30px 80px rgba(0,0,0,0.6)} 50%{box-shadow:0 0 0 1px rgba(255,236,190,0.2) inset,0 0 44px rgba(228,170,70,0.5),0 30px 80px rgba(0,0,0,0.6)} }
-  #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !important; top: 0 !important; right: auto !important; float: right; margin: -6px -6px 0 0; width: 36px !important; height: 36px !important; background: rgba(20,14,24,0.7) !important; border: 1px solid rgba(228,199,122,0.6) !important; color: var(--gold-soft) !important; box-shadow: 0 0 14px rgba(228,170,70,0.35); transition: transform .15s ease, box-shadow .15s ease; z-index: 13 !important; }
-  #hero-gap-embed.gm-modal #hero-gap-embed-close:hover { transform: rotate(90deg); box-shadow: 0 0 20px rgba(228,170,70,0.6); }
-  #hero-gap-embed.gm-modal .topbar { background: transparent !important; border-bottom-color: rgba(228,199,122,0.25) !important; position: static !important; }
-  #hero-gap-embed.gm-modal .card { background: rgba(20,16,22,0.55) !important; border-color: rgba(228,199,122,0.22) !important; }
-  #hero-gap-embed.gm-modal :focus-visible { outline: 2px solid var(--gold-soft); outline-offset: 2px; }
+  #hero-gap-embed.gm-modal .wrap { max-width: 600px !important; padding: 0 32px !important; }
+  #hero-gap-embed.gm-modal .eyebrow-top { font-size: 26px !important; letter-spacing: .14em !important; text-transform: uppercase; margin-bottom: 18px !important; background: linear-gradient(90deg, #CFA646, #FFF3CF 50%, #CFA646); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent !important; animation: gm-shimmer 6s ease-in-out infinite; }
+  #hero-gap-embed.gm-modal .eyebrow-top .tm { color: #CFA646; -webkit-text-fill-color: #CFA646; }
+  #hero-gap-embed.gm-modal .day-tabs { position: relative; gap: 0 !important; justify-content: space-between !important; max-width: 380px; margin: 0 auto; flex-wrap: nowrap !important; }
+  #hero-gap-embed.gm-modal .day-tabs::before { content: ""; position: absolute; left: 12%; right: 12%; top: 50%; height: 1px; background: linear-gradient(90deg, rgba(207,166,70,.7), rgba(43,179,173,.5)); z-index: 0; }
+  #hero-gap-embed.gm-modal .day-tab { position: relative; z-index: 1; background: #050A0A !important; border: 1px solid rgba(207,166,70,0.45) !important; color: rgba(255,255,255,0.7) !important; font-size: 11.5px !important; letter-spacing: .14em; text-transform: uppercase; padding: 8px 16px !important; transition: all .25s ease; }
+  #hero-gap-embed.gm-modal .day-tab.active { background: linear-gradient(180deg, #F1D58A, #CFA646) !important; color: #0A0A0A !important; border-color: #F1D58A !important; box-shadow: 0 0 18px rgba(207,166,70,0.55); font-weight: 700; }
+  #hero-gap-embed.gm-modal .day-tab .check { color: #2BB3AD !important; }
+  #hero-gap-embed.gm-modal .day-tab.active .check { color: #0A0A0A !important; }
+  #hero-gap-embed.gm-modal .access-note { color: #5FCFC9 !important; font-size: 11.5px !important; margin-top: 14px !important; letter-spacing: .02em; }
+
+  /* Panels: no box-in-a-box -- strip card chrome, full-bleed screens */
+  #hero-gap-embed.gm-modal .stage { padding: 40px 0 48px !important; }
+  #hero-gap-embed.gm-modal .card { background: transparent !important; border: none !important; border-radius: 0 !important; padding: 0 !important; box-shadow: none !important; animation: gm-panel .45s cubic-bezier(.2,.8,.2,1) both; }
+  #hero-gap-embed.gm-modal .view.active { animation: gm-panel .45s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes gm-panel { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  #hero-gap-embed.gm-modal .eyebrow { color: #F1D58A !important; font-size: 11px !important; letter-spacing: .28em !important; display: inline-flex; align-items: center; gap: 10px; }
+  #hero-gap-embed.gm-modal .card.center .eyebrow::before, #hero-gap-embed.gm-modal .card.center .eyebrow::after { content: ""; width: 26px; height: 1px; background: linear-gradient(90deg, transparent, #CFA646); }
+  #hero-gap-embed.gm-modal .card.center .eyebrow::after { transform: scaleX(-1); }
+  #hero-gap-embed.gm-modal h1, #hero-gap-embed.gm-modal .q-text { color: #fff !important; font-weight: 400 !important; letter-spacing: -.005em; }
+  #hero-gap-embed.gm-modal #d1-intro h1 { font-size: 40px !important; line-height: 1.15 !important; margin-bottom: 22px !important; }
+  #hero-gap-embed.gm-modal .q-text { font-size: 26px !important; line-height: 1.3 !important; margin-bottom: 28px !important; }
+  #hero-gap-embed.gm-modal p.copy { color: rgba(255,255,255,0.74) !important; font-size: 15.5px !important; line-height: 1.75 !important; }
+  #hero-gap-embed.gm-modal .q-label { color: #5FCFC9 !important; font-size: 11.5px !important; letter-spacing: .22em !important; margin-bottom: 14px !important; }
+  #hero-gap-embed.gm-modal .quote-block { border-left-color: #CFA646 !important; color: rgba(255,255,255,.7) !important; }
+
+  /* Gold option cards */
+  #hero-gap-embed.gm-modal .options { gap: 12px !important; }
+  #hero-gap-embed.gm-modal .opt, #hero-gap-embed.gm-modal .domain-chip { position: relative; background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)) !important; border: 1px solid rgba(207,166,70,0.28) !important; border-radius: 16px !important; padding: 17px 20px !important; font-size: 15px !important; color: #fff !important; transition: border-color .2s ease, background .2s ease, transform .15s ease, box-shadow .2s ease; }
+  #hero-gap-embed.gm-modal .opt:hover, #hero-gap-embed.gm-modal .domain-chip:hover { border-color: rgba(241,213,138,0.8) !important; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,0,0,.35), 0 0 0 1px rgba(207,166,70,.15); }
+  #hero-gap-embed.gm-modal .opt.selected, #hero-gap-embed.gm-modal .domain-chip.selected { background: linear-gradient(135deg, rgba(207,166,70,0.22), rgba(1,103,108,0.25)) !important; border-color: #F1D58A !important; box-shadow: 0 0 0 1px rgba(241,213,138,.5) inset, 0 0 22px rgba(207,166,70,0.3); }
+  #hero-gap-embed.gm-modal .dot { background: rgba(255,255,255,0.15) !important; width: 22px !important; height: 3px !important; border-radius: 3px !important; transition: background .3s ease; }
+  #hero-gap-embed.gm-modal .dot.done { background: #CFA646 !important; }
+  #hero-gap-embed.gm-modal .dot.now { background: #2BB3AD !important; }
+
+  /* Buttons */
+  #hero-gap-embed.gm-modal .btn-gold { background: linear-gradient(180deg, #F1D58A, #CFA646) !important; color: #0A0A0A !important; border-radius: 999px !important; padding: 15px 32px !important; font-weight: 700 !important; letter-spacing: .04em; box-shadow: 0 0 0 1px rgba(255,240,200,.4) inset, 0 0 24px rgba(207,166,70,.45); transition: transform .15s ease, box-shadow .2s ease; }
+  #hero-gap-embed.gm-modal .btn-gold:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(255,240,200,.5) inset, 0 0 34px rgba(207,166,70,.65); }
+  #hero-gap-embed.gm-modal .btn-gold:disabled { opacity: .3 !important; box-shadow: none; }
+  #hero-gap-embed.gm-modal .btn-outline { border-radius: 999px !important; border-color: #2BB3AD !important; color: #fff !important; }
+  #hero-gap-embed.gm-modal .btn-text { color: rgba(255,255,255,.6) !important; }
+  #hero-gap-embed.gm-modal .btn-text:hover { color: #F1D58A !important; }
+
+  /* Step 2 chat + Step 3 reveal */
+  #hero-gap-embed.gm-modal .bubble.bot { background: rgba(1,103,108,0.22) !important; border: 1px solid rgba(43,179,173,0.35) !important; color: #fff !important; }
+  #hero-gap-embed.gm-modal .bubble.user { background: linear-gradient(180deg, #F1D58A, #CFA646) !important; color: #0A0A0A !important; }
+  #hero-gap-embed.gm-modal .gap-chat-input-row { border-top-color: rgba(207,166,70,0.2) !important; }
+  #hero-gap-embed.gm-modal .gap-chat-input-row textarea { background: rgba(0,0,0,0.5) !important; border: 1px solid rgba(207,166,70,0.3) !important; border-radius: 16px !important; color: #fff !important; }
+  #hero-gap-embed.gm-modal .gap-chat-input-row textarea:focus { border-color: #F1D58A !important; box-shadow: 0 0 0 3px rgba(207,166,70,.15); }
+  #hero-gap-embed.gm-modal .gap-chat-input-row button { background: linear-gradient(180deg, #F1D58A, #CFA646) !important; color: #0A0A0A !important; border-radius: 999px !important; }
+  #hero-gap-embed.gm-modal .activation-card, #hero-gap-embed.gm-modal .reveal-block, #hero-gap-embed.gm-modal .reading-card { background: linear-gradient(140deg, rgba(1,103,108,0.25), rgba(0,0,0,0.3)) !important; border: 1px solid rgba(207,166,70,0.45) !important; border-radius: 18px !important; padding: 22px 22px !important; }
+  #hero-gap-embed.gm-modal :focus-visible { outline: 2px solid #F1D58A; outline-offset: 3px; }
   body.gm-lock { overflow: hidden !important; touch-action: none; }
+
+  /* Mobile: full-screen sheet + sticky footer actions */
   @media (max-width: 600px) {
-    #hero-gap-embed.gm-modal { left: 0 !important; top: auto !important; bottom: 0 !important; width: 100vw !important; height: 94vh; max-height: 94vh; border-radius: 22px 22px 0 0 !important; border-bottom: none !important; padding: 16px 12px 24px !important; transform: translateY(100%); opacity: 1; padding-bottom: calc(24px + env(safe-area-inset-bottom)) !important; }
+    #hero-gap-embed.gm-modal { left: 0 !important; top: auto !important; bottom: 0 !important; width: 100vw !important; height: 96vh; max-height: 96vh; border-radius: 26px 26px 0 0 !important; border-bottom: none !important; transform: translateY(100%); opacity: 1; }
     #hero-gap-embed.gm-modal.gm-in { transform: translateY(0); }
-    #hero-gap-embed.gm-modal::before { top: -16px; margin: -16px -12px 14px; }
+    #hero-gap-embed.gm-modal .wrap { padding: 0 20px !important; }
+    #hero-gap-embed.gm-modal .topbar { padding: 20px 0 14px !important; }
+    #hero-gap-embed.gm-modal .eyebrow-top { font-size: 20px !important; margin-bottom: 14px !important; }
+    #hero-gap-embed.gm-modal #hero-gap-embed-close { top: 14px !important; right: 14px !important; width: 34px !important; height: 34px !important; }
+    #hero-gap-embed.gm-modal .stage { padding: 28px 0 0 !important; }
+    #hero-gap-embed.gm-modal #d1-intro h1 { font-size: 31px !important; }
+    #hero-gap-embed.gm-modal .q-text { font-size: 22px !important; }
+    #hero-gap-embed.gm-modal .card .row-between, #hero-gap-embed.gm-modal #d1-intro > .btn-gold { position: sticky; bottom: 0; z-index: 15; margin: 20px -20px 0 !important; padding: 14px 20px calc(16px + env(safe-area-inset-bottom)) !important; background: linear-gradient(180deg, rgba(3,5,5,0), rgba(3,5,5,0.92) 30%, #030505) !important; }
+    #hero-gap-embed.gm-modal #d1-intro > .btn-gold { width: calc(100% + 40px) !important; border-radius: 0 !important; box-shadow: none; }
+    #hero-gap-embed.gm-modal .card .row-between .btn-gold { flex: 1; margin-left: 12px; width: auto !important; }
+    #hero-gap-embed.gm-modal .card, #hero-gap-embed.gm-modal .view.active { padding-bottom: 24px !important; }
   }
   @media (prefers-reduced-motion: reduce) {
-    #gm-backdrop, #hero-gap-embed.gm-modal { transition: none !important; }
-    #hero-gap-embed.gm-modal.gm-in, #hero-gap-embed.gm-modal::before { animation: none !important; }
+    #gm-backdrop, #hero-gap-embed.gm-modal, #hero-gap-embed.gm-modal * { transition: none !important; }
+    #hero-gap-embed.gm-modal.gm-in, #hero-gap-embed.gm-modal .card, #hero-gap-embed.gm-modal .view.active, #hero-gap-embed.gm-modal .topbar::after, #hero-gap-embed.gm-modal .eyebrow-top { animation: none !important; }
     #gm-backdrop .gm-embers { display: none; }
     #hero-gap-embed.gm-modal #hero-gap-embed-close:hover { transform: none; }
   }
