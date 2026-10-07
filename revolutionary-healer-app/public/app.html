@@ -4921,6 +4921,84 @@ if (forceComplete) { goDay(3); }
     #hero-gap-embed.gm-modal h1, #hero-gap-embed.gm-modal .btn-gold::after { animation: none !important; }
     #hero-gap-embed.gm-modal .btn-gold::after { display: none; }
   }
+  /* v3 fit-to-view layer: every screen fits without scrolling */
+  #hero-gap-embed.gm-modal { height: auto !important; max-height: 94vh !important; max-height: 94dvh !important; width: min(860px, calc(100vw - 40px)) !important; }
+  #hero-gap-embed.gm-modal::after { top: 90px; width: min(520px, 70vh); height: min(520px, 70vh); margin-left: calc(min(520px, 70vh) / -2); }
+  #hero-gap-embed.gm-modal .wrap { max-width: 720px !important; padding: 0 clamp(18px, 4vw, 40px) !important; }
+  #hero-gap-embed.gm-modal .topbar { padding: clamp(12px, 2.2vh, 20px) 0 clamp(10px, 1.6vh, 14px) !important; }
+  #hero-gap-embed.gm-modal .eyebrow-top { font-size: clamp(17px, 2.6vh, 24px) !important; margin-bottom: clamp(8px, 1.4vh, 12px) !important; letter-spacing: .2em !important; }
+  #hero-gap-embed.gm-modal .day-tabs { max-width: 330px; }
+  #hero-gap-embed.gm-modal .day-tab { padding: clamp(4px, .8vh, 6px) 13px !important; font-size: 10.5px !important; }
+  #hero-gap-embed.gm-modal .access-note { margin-top: clamp(6px, 1vh, 10px) !important; font-size: 10.5px !important; line-height: 1.3 !important; }
+  #hero-gap-embed.gm-modal #hero-gap-embed-close { top: 12px !important; right: 12px !important; width: 32px !important; height: 32px !important; }
+  #hero-gap-embed.gm-modal .stage { padding: clamp(14px, 3vh, 30px) 0 clamp(14px, 3vh, 28px) !important; }
+  #hero-gap-embed.gm-modal .eyebrow { margin-bottom: clamp(6px, 1.2vh, 12px) !important; font-size: 10.5px !important; }
+  #hero-gap-embed.gm-modal #d1-intro h1 { font-size: clamp(26px, 4.6vh, 40px) !important; margin-bottom: clamp(8px, 1.8vh, 18px) !important; }
+  #hero-gap-embed.gm-modal p.copy { font-size: clamp(13px, 1.9vh, 15px) !important; line-height: 1.55 !important; margin-bottom: clamp(5px, 1vh, 10px) !important; }
+  #hero-gap-embed.gm-modal #d1-intro p.copy[style] { margin-bottom: clamp(10px, 2vh, 20px) !important; }
+  #hero-gap-embed.gm-modal .q-label { margin-bottom: clamp(5px, 1vh, 10px) !important; }
+  #hero-gap-embed.gm-modal .q-text, #hero-gap-embed.gm-modal #d1-domain .q-text { font-size: clamp(17px, 2.8vh, 24px) !important; margin-bottom: clamp(10px, 2vh, 20px) !important; }
+  #hero-gap-embed.gm-modal .quote-block { margin-bottom: clamp(8px, 1.5vh, 16px) !important; font-size: 12.5px !important; }
+  #hero-gap-embed.gm-modal .options { display: grid !important; grid-template-columns: 1fr 1fr; gap: clamp(7px, 1.2vh, 12px) !important; margin-bottom: clamp(8px, 1.6vh, 16px) !important; }
+  #hero-gap-embed.gm-modal .opt, #hero-gap-embed.gm-modal .domain-chip { padding: clamp(9px, 1.6vh, 14px) clamp(12px, 1.6vw, 16px) !important; font-size: clamp(12.5px, 1.8vh, 14.5px) !important; line-height: 1.35 !important; border-radius: 14px !important; margin: 0 !important; width: 100%; height: 100%; }
+  #hero-gap-embed.gm-modal .dots { margin: clamp(6px, 1.2vh, 12px) 0 clamp(8px, 1.4vh, 14px) !important; }
+  #hero-gap-embed.gm-modal .btn-gold { padding: clamp(10px, 1.7vh, 14px) 28px !important; }
+  #hero-gap-embed.gm-modal #r-transition-text { font-size: clamp(14px, 2.2vh, 18px) !important; line-height: 1.5 !important; margin: clamp(6px, 1.4vh, 14px) 0 clamp(12px, 2.4vh, 24px) !important; }
+  #hero-gap-embed.gm-modal #d1-results .center { margin-top: clamp(6px, 1.6vh, 18px) !important; }
+  #hero-gap-embed.gm-modal #view-day2 h1 { font-size: clamp(18px, 2.8vh, 22px) !important; margin-bottom: 6px !important; }
+  #hero-gap-embed.gm-modal #view-day2 p.copy { margin-bottom: clamp(3px, .7vh, 8px) !important; }
+  #hero-gap-embed.gm-modal .note { margin-bottom: clamp(6px, 1.2vh, 12px) !important; }
+  #hero-gap-embed.gm-modal .chat-log { max-height: clamp(70px, 18vh, 220px) !important; margin-bottom: clamp(8px, 1.4vh, 14px) !important; gap: 10px !important; }
+  #hero-gap-embed.gm-modal .gap-chat-input-row { padding-top: clamp(8px, 1.4vh, 14px) !important; }
+  #hero-gap-embed.gm-modal .gap-chat-input-row textarea { min-height: 0 !important; height: clamp(44px, 7vh, 72px); padding: 10px 14px !important; }
+  #hero-gap-embed.gm-modal #view-day3 h1 { font-size: clamp(18px, 2.8vh, 22px) !important; margin-bottom: clamp(10px, 2vh, 20px) !important; }
+  #hero-gap-embed.gm-modal #view-day3 .reveal-block, #hero-gap-embed.gm-modal #view-day3 .activation-card { padding: clamp(12px, 2vh, 20px) !important; margin-bottom: clamp(10px, 2vh, 18px) !important; }
+  @media (max-width: 600px) {
+    #hero-gap-embed.gm-modal { height: auto !important; max-height: 100vh !important; max-height: 100dvh !important; width: 100vw !important; }
+    #hero-gap-embed.gm-modal .wrap { padding: 0 16px !important; }
+    #hero-gap-embed.gm-modal .access-note { font-size: 10px !important; }
+    #hero-gap-embed.gm-modal .day-tab { padding: 4px 10px !important; font-size: 10px !important; letter-spacing: .1em; }
+    #hero-gap-embed.gm-modal .stage { padding: clamp(12px, 2.4vh, 22px) 0 0 !important; }
+    #hero-gap-embed.gm-modal #d1-intro h1 { font-size: clamp(23px, 3.8vh, 30px) !important; }
+    #hero-gap-embed.gm-modal p.copy { font-size: clamp(12.5px, 1.85vh, 14.5px) !important; line-height: 1.5 !important; }
+    #hero-gap-embed.gm-modal .q-text, #hero-gap-embed.gm-modal #d1-domain .q-text { font-size: clamp(16px, 2.6vh, 21px) !important; }
+    #hero-gap-embed.gm-modal .options { grid-template-columns: 1fr 1fr; gap: 7px !important; }
+    #hero-gap-embed.gm-modal .opt, #hero-gap-embed.gm-modal .domain-chip { padding: clamp(8px, 1.4vh, 12px) 10px !important; font-size: clamp(11.5px, 1.75vh, 13.5px) !important; line-height: 1.3 !important; }
+    #hero-gap-embed.gm-modal .card .row-between { margin: clamp(6px, 1.2vh, 14px) -16px 0 !important; padding: 10px 16px calc(12px + env(safe-area-inset-bottom)) !important; }
+    #hero-gap-embed.gm-modal #d1-intro > .btn-gold { margin-top: 4px !important; }
+    #hero-gap-embed.gm-modal .card, #hero-gap-embed.gm-modal .view.active { padding-bottom: clamp(10px, 2vh, 20px) !important; }
+    #hero-gap-embed.gm-modal .chat-log { max-height: clamp(60px, 16vh, 200px) !important; }
+  }
+  #hero-gap-embed.gm-modal::after { content: none !important; }
+  #hero-gap-embed.gm-modal .stage { background: radial-gradient(circle at 50% 42%, transparent 0 34%, rgba(207,166,70,0.06) 34.2% 34.5%, transparent 34.7% 47%, rgba(1,103,108,0.08) 47.2% 47.6%, transparent 47.8%) no-repeat; }
+  /* v3b tighter */
+  #hero-gap-embed.gm-modal .stage { padding: clamp(10px, 2vh, 22px) 0 clamp(10px, 2vh, 20px) !important; }
+  #hero-gap-embed.gm-modal .topbar { padding: clamp(10px, 1.6vh, 16px) 0 clamp(8px, 1.2vh, 12px) !important; }
+  #hero-gap-embed.gm-modal .eyebrow-top { font-size: clamp(16px, 2.3vh, 22px) !important; margin-bottom: clamp(6px, 1vh, 10px) !important; }
+  #hero-gap-embed.gm-modal .access-note { margin-top: clamp(4px, .7vh, 8px) !important; }
+  #hero-gap-embed.gm-modal .q-text, #hero-gap-embed.gm-modal #d1-domain .q-text { font-size: clamp(16px, 2.5vh, 22px) !important; margin-bottom: clamp(8px, 1.4vh, 14px) !important; }
+  #hero-gap-embed.gm-modal .opt, #hero-gap-embed.gm-modal .domain-chip { padding: clamp(7px, 1.1vh, 11px) clamp(10px, 1.3vw, 14px) !important; font-size: clamp(12px, 1.6vh, 14px) !important; }
+  #hero-gap-embed.gm-modal .options { gap: clamp(6px, .9vh, 10px) !important; margin-bottom: clamp(4px, 1vh, 10px) !important; }
+  #hero-gap-embed.gm-modal .dots { margin: clamp(4px, .8vh, 8px) 0 !important; }
+  #hero-gap-embed.gm-modal .row-between .btn-gold, #hero-gap-embed.gm-modal .row-between .btn-text { padding-top: clamp(8px, 1.2vh, 12px) !important; padding-bottom: clamp(8px, 1.2vh, 12px) !important; }
+  @media (min-width: 761px) { #hero-gap-embed.gm-modal #q-options { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 600px) {
+    #hero-gap-embed.gm-modal .topbar { padding: 10px 0 8px !important; }
+    #hero-gap-embed.gm-modal .eyebrow-top { font-size: 16px !important; margin-bottom: 6px !important; }
+    #hero-gap-embed.gm-modal .stage { padding: clamp(8px, 1.6vh, 16px) 0 0 !important; }
+    #hero-gap-embed.gm-modal #d1-intro h1 { font-size: clamp(21px, 3.4vh, 28px) !important; margin-bottom: 8px !important; }
+    #hero-gap-embed.gm-modal p.copy { font-size: clamp(12px, 1.75vh, 14px) !important; line-height: 1.45 !important; margin-bottom: clamp(4px, .8vh, 8px) !important; }
+    #hero-gap-embed.gm-modal .q-label { margin-bottom: 4px !important; }
+    #hero-gap-embed.gm-modal .q-text, #hero-gap-embed.gm-modal #d1-domain .q-text { font-size: clamp(15px, 2.3vh, 19px) !important; margin-bottom: 8px !important; line-height: 1.25 !important; }
+    #hero-gap-embed.gm-modal .opt, #hero-gap-embed.gm-modal .domain-chip { padding: clamp(6px, 1vh, 10px) 9px !important; font-size: clamp(11px, 1.6vh, 13px) !important; line-height: 1.25 !important; border-radius: 12px !important; }
+    #hero-gap-embed.gm-modal .options { gap: 6px !important; }
+    #hero-gap-embed.gm-modal .dots { margin: 4px 0 !important; }
+    #hero-gap-embed.gm-modal .card .row-between { margin-top: 4px !important; padding: 8px 16px calc(10px + env(safe-area-inset-bottom)) !important; }
+    #hero-gap-embed.gm-modal #view-day2 p.copy { font-size: 12px !important; }
+    #hero-gap-embed.gm-modal .chat-log { max-height: clamp(54px, 13vh, 180px) !important; }
+    #hero-gap-embed.gm-modal .gap-chat-input-row textarea { height: 44px; }
+  }
+  @media (max-width: 600px) { #hero-gap-embed.gm-modal { min-height: 86vh; min-height: 86dvh; } }
 </style>
 <script id="gm-modal-js">
 (function () {
