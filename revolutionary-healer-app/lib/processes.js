@@ -1147,12 +1147,29 @@ export function buildGapFunnelSystemPrompt(gapContext) {
   }`;
 }
 
+// Oct 7: "Relationships" focus area added to the in-app GAP Method's
+// "Where are you feeling the gap the most right now?" question (public/app.html
+// DOMAINS). Only appended when the member actually picked it, so every other
+// focus area's prompt is byte-for-byte unchanged.
+const GAP_RELATIONSHIPS_FOCUS_NOTE = `=== FOCUS AREA: RELATIONSHIPS ===
+The member chose Relationships as where they are feeling the gap most. This can be
+a partner, a family member (parent, sibling, child), a friend, or anyone close to
+them. Explore the GAP through how THE MEMBER shows up in that relationship -- what they
+hold back, over-give, tolerate, control, wait for, or can't say -- and what
+their own pattern is protecting, never through diagnosing, blaming, or speaking
+for the other person (you only know their side). Keep the same one-question-at-a-
+time Step 2 rhythm. The Divine Identity and 16-pattern detection work exactly
+the same way for relationships. Use [[TOPIC: general]] unless the conversation
+was substantively about money or business. In the SAVE_SHIFT JSON, set
+"focusArea" to "Relationships".`;
+
 export function buildGapMemberSystemPrompt(gapContext) {
+  const isRelationships = !!gapContext && String(gapContext.focusArea || "").trim().toLowerCase() === "relationships";
   return `${GAP_METHOD_SCRIPT_MEMBER}${
     gapContext
       ? `\n\n${GAP_METHOD_RESULT_NOTE}\n\n=== GAP METHOD RESULT (STEP 1) ===\n${JSON.stringify(gapContext, null, 2)}`
       : ""
-  }`;
+  }${isRelationships ? `\n\n${GAP_RELATIONSHIPS_FOCUS_NOTE}` : ""}`;
 }
 
 export const PROCESSES = [

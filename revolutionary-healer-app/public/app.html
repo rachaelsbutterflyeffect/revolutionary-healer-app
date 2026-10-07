@@ -1054,6 +1054,7 @@
       <button class="day-tab" id="tab-day3" onclick="goDay(3)">Step 3 <span class="check" id="check3"></span></button>
     </div>
     <div class="access-note">✓ All 3 steps + your personalized activation are included.</div>
+    <button type="button" id="gm-start-over" class="gm-start-over" onclick="gapStartOver()" hidden aria-label="Start over: begin a new GAP Method run">&#8635; Start over</button>
   </div>
 </div>
 
@@ -2914,6 +2915,8 @@ function resetGapMethodState() {
   gapChatReadyQueued = false;
   window.__gapCardData = null;
   window.__gapShiftAutoCreated = false;
+  if (typeof gapCurrentStep !== 'undefined') gapCurrentStep = 1;
+  var gapInputEl = document.getElementById('gap-chat-input'); if (gapInputEl) { gapInputEl.value = ''; gapInputEl.disabled = false; }
   var check1El = document.getElementById('check1'); if (check1El) check1El.textContent = '';
   var check2El = document.getElementById('check2'); if (check2El) check2El.textContent = '';
   var check3El = document.getElementById('check3'); if (check3El) check3El.textContent = '';
@@ -3490,7 +3493,8 @@ var DOMAINS = [
     { key: "business", label: "Business + Visibility" },
     { key: "money", label: "Money" },
     { key: "gifts", label: "Spiritual Gifts" },
-    { key: "energy", label: "Energy + Frequency" }
+    { key: "energy", label: "Energy + Frequency" },
+    { key: "relationships", label: "Relationships" }
   ];
 
   var QUESTION_BANKS = {
@@ -4266,10 +4270,31 @@ var DOMAINS = [
   var identityCurrent = 0;
   var identityAnswers = [null, null];
 
-  function showEl(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; }
+  function showEl(id, show) { document.getElementById(id).style.display = show ? 'block' : 'none'; if (typeof gapUpdateStartOver === 'function') gapUpdateStartOver(); }
 
+  // Step tracker sync (Oct 7): which step the member is currently on. Going
+  // BACK to step N clears the completion marks for step N and every later
+  // step (and the state those marks stood for), so the tracker always
+  // reflects the current run. Start over / reopen (resetGapMethodState) puts
+  // this back to 1.
+  var gapCurrentStep = 1;
+  function gapClearChecksFrom(n) {
+    for (var i = n; i <= 3; i++) { var c = document.getElementById('check' + i); if (c) c.textContent = ''; }
+  }
   function goDay(n) {
+if (n === 2) { var c1el = document.getElementById('check1'); if (!c1el || c1el.textContent !== '✓') { n = 1; } }
 if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.textContent !== '✓') { n = 2; } }
+    if (n < gapCurrentStep) {
+      gapClearChecksFrom(n);
+      if (n <= 2) { window.__gapCardData = null; window.__gapShiftAutoCreated = false; }
+      if (n === 1) {
+        // Back on Step 1: land on its last question so an answer can be changed (Step 1 is no longer complete).
+        day1Done = false; gapChatHistory = []; gapChatRequestPending = false; gapChatReadyQueued = false; day2TurnCount = 0;
+        if (document.getElementById('d1-results').style.display !== 'none') { showEl('d1-results', false); showEl('d1-domain', true); renderDomainChips(); document.getElementById('domain-next').disabled = !selectedDomain; }
+      }
+    }
+    gapCurrentStep = n;
+    setTimeout(gapUpdateStartOver, 0);
     [1,2,3].forEach(function(i) {
       document.getElementById('view-day' + i).classList.toggle('active', i === n);
       document.getElementById('tab-day' + i).classList.toggle('active', i === n);
@@ -4280,6 +4305,29 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }
+
+  // "Start over" (Oct 7): visible whenever a run is under way or finished
+  // (any screen except the untouched Step 1 intro), including when the
+  // pop-up is reopened onto a previous result. Resets the pop-up to a clean
+  // Step 1 via resetGapMethodState(); it never deletes anything that was
+  // already saved -- Shift cards stay in My Revolution.
+  function gapUpdateStartOver() {
+    var b = document.getElementById('gm-start-over'); if (!b) return;
+    var intro = document.getElementById('d1-intro'), v1 = document.getElementById('view-day1');
+    var pristine = v1 && v1.classList.contains('active') && intro && intro.style.display !== 'none';
+    b.hidden = !!pristine;
+  }
+  function gapStartOver() {
+    var reachedStep3 = gapCurrentStep === 3;
+    var started = !reachedStep3 && (gapCurrentStep === 2 || identityAnswers.some(function (x) { return !!x; }) || !!selectedDomain);
+    if (started && !window.confirm('Start a new GAP Method run? Your answers from this run will be cleared. Your saved Shifts stay in My Revolution.')) return;
+    resetGapMethodState();
+    goDay(1);
+    var stage = document.querySelector('#hero-gap-embed .stage'); var wrapEl = document.getElementById('hero-gap-embed');
+    if (wrapEl) wrapEl.scrollTop = 0; if (stage) stage.scrollTop = 0;
+    gapUpdateStartOver();
+  }
+  window.gapStartOver = gapStartOver;
 
   function beginStep1() {
     phase = 'identity';
@@ -4447,7 +4495,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     showEl('d1-results', true);
   }
 
-    function backToQuizFromResults() { day1Done = false; document.getElementById('check1').textContent = ''; showEl('d1-results', false); showEl('d1-domain', true); window.__gapShiftAutoCreated = false; window.__gapCardData = null; gapChatHistory = []; gapChatRequestPending = false; gapChatReadyQueued = false; day2TurnCount = 0; winnerKey = null; var check2ResetEl = document.getElementById('check2'); if (check2ResetEl) check2ResetEl.textContent = ''; }
+    function backToQuizFromResults() { day1Done = false; gapClearChecksFrom(1); gapCurrentStep = 1; renderDomainChips(); document.getElementById('domain-next').disabled = !selectedDomain; document.getElementById('check1').textContent = ''; showEl('d1-results', false); showEl('d1-domain', true); window.__gapShiftAutoCreated = false; window.__gapCardData = null; gapChatHistory = []; gapChatRequestPending = false; gapChatReadyQueued = false; day2TurnCount = 0; winnerKey = null; var check2ResetEl = document.getElementById('check2'); if (check2ResetEl) check2ResetEl.textContent = ''; }
 
   // Aug 12 (Rachael's explicit request) -- Step 2's chat now runs on the real
   // Claude-backed GAP_METHOD_SCRIPT_FUNNEL_UPSELL script (lib/processes.js)
@@ -4481,7 +4529,8 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     business: "What is happening in your business right now that has you feeling like something isn't adding up?",
     money: "When you look at money right now, what feels different from the way you actually want it to be?",
     gifts: "When your gifts aren't feeling the way you want them to right now, what is actually happening?\n\nTell me what you notice -- maybe in what you're receiving, what happens afterward, or what you find yourself doing.",
-    energy: "What has been happening in your energy that made you choose Energy + Frequency today?"
+    energy: "What has been happening in your energy that made you choose Energy + Frequency today?",
+    relationships: "Who is the relationship you're feeling this in right now -- a partner, family member, friend, or someone else -- and what has been happening between you that doesn't feel the way you want it to?"
   };
   var IDENTITY_SLUG_TO_KEY = {
     guardian: 'overworker',
@@ -4572,7 +4621,7 @@ reply = reply.replace(subActivationMatch[0], '').trim();
 var saveShiftMatch = reply.match(/\[\[SAVE_SHIFT:\s*([\s\S]*?)\]\]/i);
 if (saveShiftMatch) {
 try {
-  window.__gapCardData = JSON.parse(saveShiftMatch[1]);
+  window.__gapCardData = rhCleanGapCardData(JSON.parse(saveShiftMatch[1]));
 } catch (e) {
   console.error('Failed to parse SAVE_SHIFT marker', e);
 }
@@ -4610,11 +4659,45 @@ if (forceComplete) { goDay(3); }
             .catch(function() { gapChatRequestPending = false; removeTypingBubble(); addBotBubble("Sorry -- I had trouble connecting just then. Mind sending that again?"); input.disabled = false; if (forceComplete) { document.getElementById('ready-btn-wrap').style.display = 'block'; } });
   }
 
+  // GAP popup markdown fix (Oct 7): the main chatbot shows AI replies as
+  // plain text (textContent + white-space:pre-wrap, see addRhMessage), so no
+  // HTML is ever injected. The GAP Method member script (lib/processes.js)
+  // asks the model for bullet lists / numbered sections, and the model also
+  // sends **bold**, *italics*, headings and literal "\n" / <br> text, which
+  // showed up raw in the popup. rhCleanAiText() converts that to clean plain
+  // text; callers still assign it with textContent (never innerHTML), so the
+  // result is the same safe plain-text treatment the main chat uses.
+  function rhCleanAiText(input) {
+    var s = String(input == null ? '' : input);
+    s = s.replace(/\r\n?/g, '\n');
+    s = s.replace(/\\r\\n|\\n|\\r/g, '\n').replace(/\\t/g, ' ');       // literal "\n" typed out as text
+    s = s.replace(/&lt;br\s*\/?&gt;/gi, '\n').replace(/<br\s*\/?>/gi, '\n');  // <br> shown as text
+    s = s.replace(/<\/?(p|div)\s*>/gi, '\n').replace(/<li\s*>/gi, '\n\u2022 ').replace(/<\/?(strong|b|em|i|u|ul|ol|li|span)\s*>/gi, '');
+    s = s.split('\n').map(function (line) {
+      if (/^\s*([-*_])(\s*\1){2,}\s*$/.test(line)) return '';            // --- / *** rules
+      line = line.replace(/^\s{0,3}#{1,6}\s+/, '');                       // ## headings
+      line = line.replace(/^\s*>\s?/, '');                                // > quotes
+      line = line.replace(/^(\s*)[-*+\u2022]\s+/, '$1\u2022 ');           // - / * bullets -> bullet dot
+      return line;
+    }).join('\n');
+    s = s.replace(/\*\*\*([^*\n]+?)\*\*\*/g, '$1').replace(/\*\*([^\n]+?)\*\*/g, '$1').replace(/__([^_\n]+?)__/g, '$1');
+    s = s.replace(/(^|[^\w*])\*(?!\s)([^*\n]+?)\*(?![\w*])/g, '$1$2').replace(/(^|[^\w])_(?!\s)([^_\n]+?)_(?!\w)/g, '$1$2');
+    s = s.replace(/`([^`\n]+)`/g, '$1').replace(/\*\*/g, '');
+    s = s.replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n');
+    return s.trim();
+  }
+  window.rhCleanAiText = rhCleanAiText;
+  function rhCleanGapCardData(d) {
+    if (!d || typeof d !== 'object') return d;
+    Object.keys(d).forEach(function (k) { if (typeof d[k] === 'string') d[k] = rhCleanAiText(d[k]); });
+    return d;
+  }
+
   function addBotBubble(text) {
     var log = document.getElementById('chat-log');
     var b = document.createElement('div');
     b.className = 'bubble bot';
-    b.textContent = text;
+    b.textContent = rhCleanAiText(text);
     log.appendChild(b);
     log.scrollTop = log.scrollHeight;
   }
@@ -4660,9 +4743,9 @@ if (forceComplete) { goDay(3); }
     document.getElementById('d3-meta').textContent = reveal.name + ' · ' + reveal.frequency + (domainLabel ? ' · ' + domainLabel : '');
     var personalizedReveal = window.__gapCardData || null;
     if (personalizedReveal && personalizedReveal.gap) {
-      document.getElementById('d3-gap-contradiction').textContent = personalizedReveal.gap;
-      document.getElementById('d3-gap-example').textContent = personalizedReveal.howItShowsUp || "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
-      document.getElementById('d3-gap-restated').textContent = personalizedReveal.primaryShift || '';
+      document.getElementById('d3-gap-contradiction').textContent = rhCleanAiText(personalizedReveal.gap);
+      document.getElementById('d3-gap-example').textContent = rhCleanAiText(personalizedReveal.howItShowsUp) || "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
+      document.getElementById('d3-gap-restated').textContent = rhCleanAiText(personalizedReveal.primaryShift || '');
     } else if (RH_EMAIL) {
       document.getElementById('d3-gap-contradiction').textContent = "This reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
       document.getElementById('d3-gap-example').textContent = "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
@@ -5146,6 +5229,27 @@ if (forceComplete) { goDay(3); }
   @media (max-width: 600px) {
     #hero-gap-embed.gm-modal #view-day3 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3 .card > #d3-activation-card { max-height: calc(100vh - 330px); max-height: calc(100dvh - 330px); }
     #hero-gap-embed.gm-modal #view-day3 .card > #d3-activation-card { max-height: calc(100dvh - 356px); }
+  }
+  /* Oct 7 fixes: Start over control (luxury gold pill) */
+  #hero-gap-embed .gm-start-over { display: none; }
+  #hero-gap-embed.gm-modal .gm-start-over:not([hidden]) { display: inline-flex; align-items: center; gap: 6px; position: absolute; z-index: 26; right: clamp(26px, 2.6vw, 40px); top: calc(clamp(22px, 3.2vh, 34px) + clamp(36px, 5vh, 44px) + 12px); background: rgba(0,0,0,0.45); border: 1px solid rgba(226,190,104,0.7); color: #F8E7B0; border-radius: 999px; padding: 7px 14px; font: 600 11px/1 inherit; font-family: inherit; letter-spacing: .16em; text-transform: uppercase; cursor: pointer; box-shadow: 0 0 14px rgba(226,190,104,0.25); transition: box-shadow .3s ease, background .3s ease, color .3s ease; }
+  #hero-gap-embed.gm-modal .gm-start-over:hover { background: linear-gradient(180deg, #F8E7B0, #CFA646); color: #0A0A0A; box-shadow: 0 0 22px rgba(226,190,104,0.55); }
+  #hero-gap-embed:not(.gm-modal) .gm-start-over:not([hidden]) { display: inline-block; margin-top: 8px; background: none; border: 1px solid var(--gold); color: var(--gold); border-radius: 999px; padding: 6px 14px; font-size: 12px; cursor: pointer; }
+  @media (max-width: 600px) {
+    #hero-gap-embed.gm-modal .gm-start-over:not([hidden]) { position: static; margin: 8px auto 0; padding: 6px 12px; font-size: 9.5px; letter-spacing: .14em; }
+    #hero-gap-embed.gm-modal .topbar .wrap { display: flex; flex-direction: column; align-items: center; }
+    #hero-gap-embed.gm-modal .topbar .wrap > .day-tabs { width: 100%; }
+  }
+  /* Oct 7 fixes: 5th focus option (Relationships) spans the full row so the 2-column grid stays balanced */
+  #hero-gap-embed.gm-modal #domain-chips > .domain-chip:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  /* Oct 7 fixes: Step 3 text always shows in full -- no inner scroll boxes / cut-off. If a long reflection
+     needs more room than the window, the pop-up panel scrolls as a whole instead. */
+  #hero-gap-embed.gm-modal #view-day3 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3 .card > #d3-activation-card { max-height: none !important; overflow: visible !important; }
+  #hero-gap-embed.gm-modal #view-day3 p.copy { white-space: pre-line; }
+  #hero-gap-embed.gm-modal #view-day3 .card > .reveal-block:nth-child(3) p.copy { font-size: clamp(12.5px, 1.7vh, 15px) !important; line-height: 1.48 !important; }
+  #hero-gap-embed.gm-modal #view-day3 #d3-gap-contradiction { font-size: clamp(14px, 2vh, 17.5px) !important; }
+  @media (max-width: 600px) {
+    #hero-gap-embed.gm-modal #view-day3 .card { overflow-y: visible; align-items: start; }
   }
 </style>
 <script id="gm-modal-js">
