@@ -5533,6 +5533,7 @@ if (forceComplete) { goDay(3); }
   body.lux-home #my-revolution [data-role="focus-empty"] { position: relative; border-radius: 24px; border: 1px solid rgba(226,190,104,0.45); padding: clamp(30px, 4vw, 46px) 24px; margin-bottom: clamp(36px, 6vh, 56px); background: radial-gradient(70% 90% at 50% 0%, rgba(43,179,173,0.22), transparent 70%), linear-gradient(180deg, rgba(4,24,26,0.9), rgba(1,8,9,0.94)); text-align: center; }
   body.lux-home #my-revolution [data-role="focus-empty"] .copy { font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(19px, 2vw, 24px) !important; color: rgba(255,255,255,0.86); line-height: 1.4; max-width: 520px; margin: 0 auto 22px !important; }
   /* the data hides sample content until the member's own data has loaded (no "The Leader" flash) */
+  body.lux-home #my-revolution .focus-card-body { align-items: flex-start; } /* identity sits at the top when the real 'asking for attention' text is long */
   body.lux-home:not(.lux-data-ready) #my-revolution [data-role="focus-card"], body.lux-home:not(.lux-data-ready) #my-revolution [data-role="focus-empty"] { display: none !important; }
   .lux-skel { display: none; }
   body.lux-home:not(.lux-data-ready) #my-revolution .lux-skel { display: block; }
