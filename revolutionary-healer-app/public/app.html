@@ -406,6 +406,11 @@
   .trial-banner-inner { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 9px 20px; flex-wrap: wrap; }
   .trial-banner-text { font-size: 12.5px; color: #241C0A; font-weight: 600; letter-spacing: 0.02em; }
   .trial-banner-cta { background: #241C0A; color: var(--gold); border: none; border-radius: 999px; padding: 6px 16px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; letter-spacing: 0.03em; }
+  .new-activation-banner { background: #2A2314; border-bottom: 1px solid var(--gold); }
+  .new-activation-banner-inner { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 9px 20px; flex-wrap: wrap; }
+  .new-activation-banner-text { font-size: 12.5px; color: var(--gold); font-weight: 600; letter-spacing: 0.02em; }
+  .new-activation-banner-cta { background: var(--gold); color: #241C0A; border: none; border-radius: 999px; padding: 6px 16px; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; letter-spacing: 0.03em; }
+  .new-badge { position: absolute; top: 8px; left: 8px; background: var(--gold); color: #241C0A; font-size: 10px; font-weight: 800; letter-spacing: 0.08em; padding: 3px 8px; border-radius: 999px; z-index: 2; }
 
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(10,9,7,0.72); z-index: 50; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 60px 20px; }
   .modal-overlay.active { display: flex; }
@@ -903,6 +908,13 @@
   </div>
 </div>
 
+<div class="new-activation-banner" id="new-activation-banner">
+  <div class="wrap new-activation-banner-inner">
+    <span class="new-activation-banner-text">🎃 New activation released: Spookbound 2026</span>
+    <button class="new-activation-banner-cta" onclick="handleActivationCardClick('spookbound-2026')">Open Spookbound →</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-card">
     <div class="shift-modal-headerbar">
@@ -1313,6 +1325,18 @@
         <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy + Frequency</button>
       </div>
       <div class="card-grid" id="activation-library-grid">
+        <div class="media-card" onclick="handleActivationCardClick('spookbound-2026')" style="cursor: pointer;" data-activation-slug="spookbound-2026" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <div class="media-thumb" style="background-image:url('/images/covers/spookbound-2026.jpg'); background-size:cover; background-position:center;"><span class="new-badge">NEW</span><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Spookbound 2026: Breaking Spells, Curses &amp; Black Magic</h3>
+          <p class="media-description">Banish the shadows of curses, black magic, and spells.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
         <div class="media-card" onclick="handleActivationCardClick('grounding')" style="cursor: pointer;" data-activation-slug="grounding" data-category="Energy + Frequency">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <div class="media-thumb glyph-crystal"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
@@ -2397,6 +2421,7 @@
   // falls back to "Description coming soon." for those.
   var WISTIA_EMBED_BASE = 'https://fast.wistia.net/embed/iframe/';
   var ACTIVATION_DETAILS = {
+    'spookbound-2026': { title: 'Spookbound 2026: Breaking Spells, Curses & Black Magic', description: 'Banish the shadows of curses, black magic, and spells.', wistiaId: 've15xicvuw', cover: '/images/covers/spookbound-2026.jpg' },
     'grounding': { title: 'Grounding Activation', description: 'Anchors your energy fully into your body and the present moment, so you feel calm, stable, and safe to be seen.', wistiaId: 'shyqht7zcb', whatFor: 'Use this activation when your energy feels scattered, ungrounded, or when you need to get back into your body. When you\'ve been living ten steps ahead in your head, or you\'ve been moving so quickly that you barely feel connected to yourself anymore. It brings your energy back into the present so you can work with what is actually happening instead of everything your mind is running ahead to.', whenToUse: ['You\'ve been working, creating, talking to people or moving all day and feel scattered.', 'You\'re struggling to focus on one thing.', 'You\'ve been doing a lot of energetic or spiritual work and want to come back into your body.', 'You feel like you are getting sick, or feel like you are disconnected.', 'You\'re about to make a decision but feel mentally everywhere.', 'You feel disconnected from yourself or your physical surroundings.', 'Before or after client work when you want to come back to your own energy.', 'Before bed after a busy day.'] },
     'clearing-activation': { title: 'Clearing Activation', description: 'Clears stuck or heavy energy from your field, creating space for clarity and forward movement.', wistiaId: 'r2e0pk7310', whatFor: 'This is the broad, everyday clearing activation. Use it when something feels energetically heavy, stagnant or "off," but you do not necessarily know exactly what you picked up or where it came from. This is a daily energetic hygiene practice to maintain your frequency in purity.', whenToUse: ['After a hard day.', 'Before and/or after client work.', 'After conflict or an emotionally intense conversation.', 'When you feel energetically heavy without an obvious reason.', 'When you want to clear before moving into another activation.', 'When something simply feels off and you want a general reset.'] },
     'protection-shielding': { title: 'Protection & Shielding Activation', description: 'Strengthens your energetic boundaries so you can stay open and sensitive without absorbing what isn\'t yours.', wistiaId: 'vd4qxo80ja', whatFor: 'Use this when you are naturally sensitive to other people\'s energy and want to stay connected to yourself without shutting down your sensitivity. This activation supports stronger energetic boundaries and energetic hygiene so other people\'s emotions, expectations and energy do not become indistinguishable from your own.', whenToUse: ['Before client sessions.', 'Before entering a busy or emotionally intense environment.', 'Before doing any energetic work on yourself or someone else.', 'Before large events, gatherings or family situations.', 'When you want to remain open without absorbing everything around you.', 'If you identify with being an empath, this will assist you in not absorbing other people\'s energies.', 'Before bed after a busy day.'] },
