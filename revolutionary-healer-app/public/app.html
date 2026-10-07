@@ -1364,7 +1364,7 @@
             <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           </div>
           <div class="media-body">
-            <h3>Spookbound 2026: Breaking Spells, Curses &amp; Black Magic</h3>
+            <h3>SPOOKBOUND Activation</h3>
           <p class="media-description">Banish the shadows of curses, black magic, and spells.</p>
             <div class="listening-status">Not started</div>
           </div>
@@ -1812,6 +1812,7 @@
     <div class="section-head">
       <div>
         <h2 class="serif" id="activation-detail-title">Activation</h2>
+        <p class="serif" id="activation-detail-tagline" style="display:none;color:#E4C77A;font-style:italic;font-size:17px;margin:4px 0 10px;"></p>
         <p id="activation-detail-description">Description coming soon.</p>
       </div>
     </div>
@@ -1822,6 +1823,7 @@
     </div>
     <div id="activation-detail-whentouse" style="display:none;margin-top:24px;">
       <h3 style="color:#CFA646;font-size:15px;letter-spacing:0.02em;margin-bottom:8px;">When To Use This</h3>
+      <p id="activation-detail-whentouse-intro" style="display:none;color:#F6F2E9;opacity:0.85;line-height:1.6;margin:0 0 8px;"></p>
       <ul style="color:#F6F2E9;opacity:0.85;line-height:1.7;padding-left:20px;margin:0;" id="activation-detail-whentouse-list"></ul>
     </div>
     <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(169,153,127,0.25);">
@@ -2453,7 +2455,7 @@
   // falls back to "Description coming soon." for those.
   var WISTIA_EMBED_BASE = 'https://fast.wistia.net/embed/iframe/';
   var ACTIVATION_DETAILS = {
-    'spookbound-2026': { title: 'Spookbound 2026: Breaking Spells, Curses & Black Magic', description: 'Banish the shadows of curses, black magic, and spells.', wistiaId: 've15xicvuw', cover: '/images/covers/spookbound-2026.jpg' },
+    'spookbound-2026': { title: "SPOOKBOUND Activation", tagline: "Banishing the Shadows of Curses, Black Magic & Spells", description: "SpookBound is a deep energetic clearing designed to clear and release energy connected to curses, spells, black magic, psychic interference, or unwanted energetic influence.", wistiaId: 've15xicvuw', cover: '/images/covers/spookbound-2026.jpg', whatFor: "Use this activation when you feel like something in your field isn't yours, you've been around energy or spiritual practices that don't feel clean or aligned, or you simply want to intentionally clear your field of anything you no longer consent to carrying.", whenToUseIntro: "You might reach for SpookBound when:", whenToUse: ["You feel unusually heavy, drained, unsettled or energetically “off”", "You feel like you've picked up energy that isn't yours", "You've been around people, places or spiritual work that left you feeling uncomfortable or affected afterward", "You're concerned someone may have directed negative intention or energy toward you", "You've participated in spiritual practices in the past that you no longer feel aligned with", "You keep feeling pulled to clear your field but your usual clearing practice doesn't feel like enough", "You want a deeper energetic reset and a clear boundary around what is and isn't welcome in your field", "You have done with inner work the clearing but still nothing is shifting. This is where we go into the deeper layers and clear things most healers can't see."] },
     'grounding': { title: 'Grounding Activation', description: 'Anchors your energy fully into your body and the present moment, so you feel calm, stable, and safe to be seen.', wistiaId: 'shyqht7zcb', whatFor: 'Use this activation when your energy feels scattered, ungrounded, or when you need to get back into your body. When you\'ve been living ten steps ahead in your head, or you\'ve been moving so quickly that you barely feel connected to yourself anymore. It brings your energy back into the present so you can work with what is actually happening instead of everything your mind is running ahead to.', whenToUse: ['You\'ve been working, creating, talking to people or moving all day and feel scattered.', 'You\'re struggling to focus on one thing.', 'You\'ve been doing a lot of energetic or spiritual work and want to come back into your body.', 'You feel like you are getting sick, or feel like you are disconnected.', 'You\'re about to make a decision but feel mentally everywhere.', 'You feel disconnected from yourself or your physical surroundings.', 'Before or after client work when you want to come back to your own energy.', 'Before bed after a busy day.'] },
     'clearing-activation': { title: 'Clearing Activation', description: 'Clears stuck or heavy energy from your field, creating space for clarity and forward movement.', wistiaId: 'r2e0pk7310', whatFor: 'This is the broad, everyday clearing activation. Use it when something feels energetically heavy, stagnant or "off," but you do not necessarily know exactly what you picked up or where it came from. This is a daily energetic hygiene practice to maintain your frequency in purity.', whenToUse: ['After a hard day.', 'Before and/or after client work.', 'After conflict or an emotionally intense conversation.', 'When you feel energetically heavy without an obvious reason.', 'When you want to clear before moving into another activation.', 'When something simply feels off and you want a general reset.'] },
     'protection-shielding': { title: 'Protection & Shielding Activation', description: 'Strengthens your energetic boundaries so you can stay open and sensitive without absorbing what isn\'t yours.', wistiaId: 'vd4qxo80ja', whatFor: 'Use this when you are naturally sensitive to other people\'s energy and want to stay connected to yourself without shutting down your sensitivity. This activation supports stronger energetic boundaries and energetic hygiene so other people\'s emotions, expectations and energy do not become indistinguishable from your own.', whenToUse: ['Before client sessions.', 'Before entering a busy or emotionally intense environment.', 'Before doing any energetic work on yourself or someone else.', 'Before large events, gatherings or family situations.', 'When you want to remain open without absorbing everything around you.', 'If you identify with being an empath, this will assist you in not absorbing other people\'s energies.', 'Before bed after a busy day.'] },
@@ -2625,6 +2627,10 @@
     }
     document.getElementById('activation-detail-title').textContent = a.title;
     document.getElementById('activation-detail-description').textContent = a.description || 'Description coming soon.';
+    var taglineEl = document.getElementById('activation-detail-tagline');
+    if (taglineEl) { taglineEl.textContent = a.tagline || ''; taglineEl.style.display = a.tagline ? '' : 'none'; }
+    var wtuIntroEl = document.getElementById('activation-detail-whentouse-intro');
+    if (wtuIntroEl) { wtuIntroEl.textContent = a.whenToUseIntro || ''; wtuIntroEl.style.display = a.whenToUseIntro ? '' : 'none'; }
     renderRhActivationPlayer(a);
     var whatForSec = document.getElementById('activation-detail-whatfor');
     if (a.whatFor) {
