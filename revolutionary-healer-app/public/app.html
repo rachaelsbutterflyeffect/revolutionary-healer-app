@@ -5248,6 +5248,11 @@ if (forceComplete) { goDay(3); }
   #hero-gap-embed.gm-modal #view-day3 p.copy { white-space: pre-line; }
   #hero-gap-embed.gm-modal #view-day3 .card > .reveal-block:nth-child(3) p.copy { font-size: clamp(12.5px, 1.7vh, 15px) !important; line-height: 1.48 !important; }
   #hero-gap-embed.gm-modal #view-day3 #d3-gap-contradiction { font-size: clamp(14px, 2vh, 17.5px) !important; }
+  @media (min-width: 601px) {
+    /* the Gap card carries the long personal text, so it gets the widest column; typical real reflections then fit 1280x720 - 1440x900 with no scrolling at all */
+    #hero-gap-embed.gm-modal #view-day3 .card { grid-template-columns: 1.55fr 1fr 1fr !important; }
+    #hero-gap-embed.gm-modal #view-day3 #d3-gap-contradiction { font-size: clamp(14px, 1.9vh, 17px) !important; line-height: 1.42 !important; }
+  }
   @media (max-width: 600px) {
     #hero-gap-embed.gm-modal #view-day3 .card { overflow-y: visible; align-items: start; }
   }
