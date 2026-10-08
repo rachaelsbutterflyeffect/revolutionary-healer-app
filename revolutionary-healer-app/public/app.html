@@ -1175,6 +1175,15 @@
         </div>
 
       </div>
+      <!-- GAP reading restructure, switch on only: the Primary Shift diagnosis + "That's your Gap." as its own block below the cards (display only; the saved Shift is unchanged). -->
+      <div class="gap-v2-only gap-shift-block" id="d3-shift-block">
+        <div class="gap-shift-label">Your Gap</div>
+        <div class="gap-v2-scroll gap-shift-scroll" id="d3-shift-scroll">
+          <p class="gap-into" id="d3-shift-into" hidden></p>
+          <p class="gap-shift-text" id="d3-shift-text"></p>
+          <p class="gap-shift-close">That's your Gap.</p>
+        </div>
+      </div>
       <!-- GAP reading restructure (Oct 8 2026): shown while the one deep reading runs. -->
       <div class="gap-analyzing" id="gap-analyzing" hidden aria-live="polite">
         <div class="eyebrow">Step 3: Evolve your reality</div>
@@ -2192,6 +2201,7 @@
     // the Shift is Shifting), and never on an already-Embodied Shift.
     document.getElementById('shift-modal-embodied-ready').style.display =
       (shift.statusClass === 'shifting' && shift.readyForEmbodied) ? '' : 'none';
+    if (typeof gapV2ShiftModal === 'function') gapV2ShiftModal(shift); // switch on only: unified labels
   }
 
   function openShiftModal(id) {
@@ -2766,6 +2776,7 @@
       });
       document.querySelectorAll('[data-role="focus-activation"]').forEach(function(el) { el.textContent = top.activation || ''; });
       document.querySelectorAll('[data-role="focus-activity-line"]').forEach(function(el) { el.textContent = 'Started ' + top.date; });
+      if (typeof gapV2FocusCard === 'function') gapV2FocusCard(top); // switch on only: unified labels
     }
 
     var listHtml = '';
@@ -3020,6 +3031,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     if (!RH_EMAIL) return;
     try {
       var res = await fetch('/api/shifts?email=' + encodeURIComponent(RH_EMAIL));
+      if (typeof gapNoteFastReading === 'function') gapNoteFastReading(res); // GAP reading restructure: switch on -> unified Shift card labels
       var data = await res.json();
       var records = data.shifts || [];
       SHIFTS.length = 0;
@@ -5384,7 +5396,7 @@ if (forceComplete) { goDay(3); }
   // The switch (GAP_FAST_READING) lives on the server. It marks Step 2 chat replies with the header
   // x-gap-fast-reading: 1 ONLY when the new flow is on for this member; switch off = no header = every
   // Step 2 -> Step 3 path below behaves exactly like main (no analyzing screen, today's completion request).
-  window.__gapFastReading = false;
+  if (window.__gapFastReading !== true) window.__gapFastReading = false;
   function gapNoteFastReading(res) { try { if (res && res.headers && res.headers.get('x-gap-fast-reading') === '1') window.__gapFastReading = true; } catch (e) {} }
   function gapFastReadingOn() { return window.__gapFastReading === true; }
   function gapStripHiddenMarkers(text) {
@@ -5631,7 +5643,83 @@ if (forceComplete) { goDay(3); }
   function gapV2SetStep3(on) {
     var v = document.getElementById('view-day3'); if (!v) return;
     v.classList.toggle('gap-v2', !!on);
-    if (on) { gapV2Layout(); requestAnimationFrame(function () { requestAnimationFrame(gapV2Layout); }); setTimeout(gapV2Layout, 350); }
+    if (!on) return;
+    // Rachael (Oct 8): the Primary Shift diagnosis + "That's your Gap." leave the summary card and sit in their
+    // own "Your Shift" block below the cards. Same text, display only.
+    var restated = document.getElementById('d3-gap-restated');
+    var shiftText = document.getElementById('d3-shift-text');
+    if (shiftText) { shiftText.textContent = restated ? restated.textContent : ''; shiftText.hidden = !shiftText.textContent.trim(); }
+    gapRenderInto(document.getElementById('d3-shift-into'), restated ? restated.textContent : '');
+    var gapCard = v.querySelector('.card > .reveal-block');
+    // Unified labels (Rachael, Oct 8): Current Frequency (summary card) -> Your Gap (diagnosis block) -> Primary Activation.
+    var gapEyebrow = gapCard ? gapCard.querySelector('.eyebrow') : null; if (gapEyebrow) gapEyebrow.textContent = 'Current Frequency';
+    var actEyebrow = v.querySelector('.card > .eyebrow:nth-child(4)'); if (actEyebrow) actEyebrow.textContent = 'Primary Activation';
+    if (gapCard) Array.prototype.forEach.call(gapCard.querySelectorAll('p'), function (p) { if (p.textContent.trim() === "That's your Gap.") p.classList.add('gap-v2-moved'); });
+    var ss = document.getElementById('d3-shift-scroll');
+    if (ss && !ss.__gapFade) { ss.__gapFade = true; ss.addEventListener('scroll', function () { gapV2Fade(ss); }, { passive: true }); }
+    gapV2Layout(); requestAnimationFrame(function () { requestAnimationFrame(gapV2Layout); }); setTimeout(gapV2Layout, 350);
+  }
+  // what_we_noticed is saved as "<how it shows up>\n\nPrimary Shift: <diagnosis>" (autoCreateMemberShift) -- split for display only.
+  function gapSplitNoticed(text) {
+    var t = String(text || ''); var m = t.match(/(^|\n)[ \t]*Primary Shift:[ \t]*([\s\S]*)$/);
+    if (!m) return { how: t.trim(), shift: '' };
+    return { how: t.slice(0, m.index).trim(), shift: m[2].trim() };
+  }
+  // The member's own "from X into Y" naming, e.g. "Restriction into Aligned Receiving" (never hard-coded).
+  function gapIntoName(shift) {
+    var t = String(shift || '').replace(/\s+/g, ' ').trim(); var END = '(?:\\s*(?:--|\u2014|\u2013|\\s-\\s|;|\\.)|$)';
+    var m = t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?)\\s+into\\s+(.{2,60}?)' + END, 'i')) || t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?)\\s+to\\s+(.{2,60}?)' + END, 'i'));
+    if (!m) return null;
+    var clean = function (x) { return x.replace(/[\s,;:]+$/, '').trim(); };
+    return { from: clean(m[1]), to: clean(m[2]) };
+  }
+  function gapRenderInto(el, shift) {
+    if (!el) return;
+    var n = gapIntoName(shift);
+    el.textContent = '';
+    if (!n) { el.hidden = true; return; }
+    var a = document.createElement('span'); a.className = 'gap-into-from'; a.textContent = n.from;
+    var w = document.createElement('em'); w.className = 'gap-into-word'; w.textContent = ' into ';
+    var b = document.createElement('span'); b.className = 'gap-into-to'; b.textContent = n.to;
+    el.appendChild(a); el.appendChild(w); el.appendChild(b); el.hidden = false;
+  }
+  // Today's Focus card, switch on only: same three labels, same order. Content unchanged except a short
+  // "Your Gap" line (the member's own "X into Y" naming) when the Shift has one; older Shifts look as before.
+  function gapV2FocusCard(top) {
+    if (!gapFastReadingOn()) return;
+    var parts = gapSplitNoticed(top && top.maintaining);
+    document.querySelectorAll('[data-role="focus-card"]').forEach(function (card) {
+      var kicker = card.querySelector('[data-role="focus-freq"]'); kicker = kicker && kicker.previousElementSibling;
+      if (kicker && kicker.classList.contains('focus-card-kicker')) kicker.textContent = 'Current Frequency';
+      var freqWrap = card.querySelector('[data-role="focus-freq"]'); freqWrap = freqWrap && freqWrap.parentNode;
+      var gapLine = card.querySelector('.gap-v2-focus-gap');
+      if (!gapLine && freqWrap) { gapLine = document.createElement('div'); gapLine.className = 'gap-v2-focus-gap'; gapLine.innerHTML = '<div class="focus-card-kicker">Your Gap</div><div class="gap-into"></div>'; freqWrap.parentNode.insertBefore(gapLine, freqWrap.nextSibling); }
+      if (gapLine) { gapRenderInto(gapLine.querySelector('.gap-into'), parts.shift); gapLine.style.display = gapLine.querySelector('.gap-into').hidden ? 'none' : ''; }
+      var act = card.querySelector('[data-role="focus-activation"]');
+      if (act && act.previousSibling && act.previousSibling.nodeType === 3) act.previousSibling.textContent = 'Primary Activation: ';
+    });
+  }
+  // Shift detail pop-up, switch on only: Current Frequency (headline + how it shows up) -> Your Gap (diagnosis +
+  // "That's your Gap.") -> Primary Activation. Same saved values; older Shifts without a diagnosis skip Your Gap.
+  function gapV2ShiftModal(shift) {
+    if (!gapFastReadingOn() || !shift) return;
+    var parts = gapSplitNoticed(shift.maintaining);
+    var gapEl = document.getElementById('shift-modal-gap'); if (!gapEl) return;
+    var cfSection = gapEl.parentNode; cfSection.querySelector('.eyebrow').textContent = 'Current Frequency';
+    var how = document.getElementById('shift-modal-how');
+    if (!how) { how = document.createElement('p'); how.id = 'shift-modal-how'; how.style.margin = '10px 0 0'; how.style.whiteSpace = 'pre-line'; gapEl.parentNode.insertBefore(how, gapEl.nextSibling); }
+    how.textContent = parts.how; how.style.display = parts.how ? '' : 'none';
+    var maint = document.getElementById('shift-modal-maintaining'); if (maint && maint.parentNode) maint.parentNode.style.display = 'none';
+    var yg = document.getElementById('shift-modal-yourgap-section');
+    if (!yg) {
+      yg = document.createElement('div'); yg.className = 'shift-modal-section'; yg.id = 'shift-modal-yourgap-section';
+      yg.innerHTML = '<div class="eyebrow">Your Gap</div><p class="gap-into" id="shift-modal-into" hidden></p><p style="margin: 0; white-space: pre-line;" id="shift-modal-yourgap"></p><p class="gap-shift-close" style="margin: 8px 0 0;">That\'s your Gap.</p>';
+      var actStrong = document.getElementById('shift-modal-activation'); var actSection = actStrong && actStrong.closest('.shift-modal-section');
+      cfSection.parentNode.insertBefore(yg, actSection || null);
+    }
+    gapRenderInto(document.getElementById('shift-modal-into'), parts.shift);
+    document.getElementById('shift-modal-yourgap').textContent = parts.shift;
+    yg.style.display = parts.shift ? '' : 'none';
   }
   function gapV2Wrap(card, keepSelector) {
     if (!card) return null;
@@ -5650,27 +5738,17 @@ if (forceComplete) { goDay(3); }
     w.classList.toggle('gap-v2-more-below', more && w.scrollTop + w.clientHeight < w.scrollHeight - 4);
     w.classList.toggle('gap-v2-more-above', more && w.scrollTop > 4);
   }
+  // Sizing is pure CSS (the Step 3 screen is a flex column that shrinks to the pop-up's height, so cards and
+  // the Your Shift block never run past the frame); this only builds the inner scroll areas and their fades.
   function gapV2Layout() {
     var v = document.getElementById('view-day3');
-    if (!v || !v.classList.contains('gap-v2') || !v.classList.contains('active') || v.classList.contains('gap-analyzing-on')) return;
-    var modal = document.getElementById('hero-gap-embed');
+    if (!v || !v.classList.contains('gap-v2')) return;
     var gapCard = v.querySelector('.card > .reveal-block');
     var actCard = document.getElementById('d3-activation-card');
-    var wraps = [gapV2Wrap(gapCard, '.eyebrow'), gapV2Wrap(actCard, '.gap-v2-only')];
-    var isModal = modal && modal.classList.contains('gm-modal');
-    var mr = isModal ? modal.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
-    var vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    var bottom = Math.min(mr.bottom, vh);
-    var pad = window.innerWidth <= 600 ? 34 : 40; // clear of the gold corner frame
-    var scrollTop = isModal ? modal.scrollTop : 0;
-    wraps.forEach(function (w) {
-      if (!w) return;
-      w.style.maxHeight = 'none';
-      var card = w.parentNode; var wr = w.getBoundingClientRect(); var cr = card.getBoundingClientRect();
-      var below = Math.max(0, cr.bottom - wr.bottom); // button / padding / border under the scrolling part
-      var avail = Math.floor(bottom - (wr.top + scrollTop) - below - pad);
-      w.style.maxHeight = avail >= 150 ? avail + 'px' : 'none'; // tiny windows: the pop-up scrolls as a whole, as before
+    var areas = [gapV2Wrap(gapCard, '.eyebrow'), gapV2Wrap(actCard, '.gap-v2-only'), document.getElementById('d3-shift-scroll')].filter(Boolean);
+    areas.forEach(function (w) {
       gapV2Fade(w);
+      if (!w.__gapRO && window.ResizeObserver) { w.__gapRO = new ResizeObserver(function () { gapV2Fade(w); }); w.__gapRO.observe(w); }
     });
   }
   window.addEventListener('resize', function () { gapV2Layout(); });
@@ -6257,6 +6335,52 @@ if (forceComplete) { goDay(3); }
   /* Step 3 card row, restructure only (#view-day3.gap-v2 is set only when the server ran the new reading). */
   #view-day3 .gap-v2-only { display: none !important; }
   #view-day3.gap-v2 #d3-upsell-block { display: none !important; }
+  #view-day3.gap-v2 #d3-gap-restated, #view-day3.gap-v2 .gap-v2-moved { display: none !important; }
+  #view-day3.gap-v2 #d3-shift-block { display: block !important; position: relative; box-sizing: border-box; max-width: 760px; margin: clamp(10px, 1.8vh, 18px) auto 0; padding: clamp(10px, 1.6vh, 16px) clamp(16px, 3vw, 32px); text-align: center; background: radial-gradient(120% 150% at 50% 0%, rgba(1,103,108,0.30), rgba(1,103,108,0.06) 55%, rgba(0,0,0,0) 80%); }
+  #view-day3.gap-v2 #d3-shift-block::before, #view-day3.gap-v2 #d3-shift-block::after { content: ""; position: absolute; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, transparent, rgba(226,190,104,0.7), transparent); pointer-events: none; }
+  #view-day3.gap-v2 #d3-shift-block::before { top: 0; } #view-day3.gap-v2 #d3-shift-block::after { bottom: 0; }
+  #view-day3.gap-analyzing-on #d3-shift-block { display: none !important; }
+  #view-day3.gap-v2 .gap-shift-label { color: #E2BE68; font-size: 10.5px; letter-spacing: .28em; text-transform: uppercase; margin: 0 0 clamp(4px, .8vh, 8px); }
+  #view-day3.gap-v2 .gap-shift-label::before, #view-day3.gap-v2 .gap-shift-label::after { content: "\25C6"; font-size: 6px; vertical-align: 2px; margin: 0 9px; color: rgba(226,190,104,0.8); }
+  #view-day3.gap-v2 .gap-shift-text { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; color: #fff; font-size: clamp(15px, 2.1vh, 19px); line-height: 1.38; margin: 0 0 clamp(4px, .8vh, 8px); white-space: pre-line; }
+  #view-day3.gap-v2 .gap-shift-close { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-style: italic; color: #F1D58A; font-size: clamp(15px, 2vh, 18px); margin: 0; }
+  #view-day3.gap-v2 .gap-shift-scroll { padding: 0 4px; }
+  /* the member's own "X into Y" naming, made prominent (Step 3 Your Gap block, Shift pop-up, Today's Focus) */
+  .gap-into { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-size: 21px; line-height: 1.25; margin: 2px 0 8px; color: #fff; }
+  .gap-into .gap-into-word { font-style: italic; color: rgba(241,213,138,0.85); }
+  .gap-into .gap-into-to { color: #F1D58A; font-weight: 600; }
+  #view-day3.gap-v2 #d3-shift-into { font-size: clamp(18px, 2.6vh, 24px); margin: 0 0 clamp(4px, .8vh, 8px); }
+  #shift-modal .gap-shift-close { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-style: italic; color: #E2BE68; font-size: 16px; }
+  .gap-v2-focus-gap { margin-top: 14px; } .gap-v2-focus-gap .gap-into { font-size: 19px; margin: 2px 0 0; }
+  @media (max-width: 600px) { #view-day3.gap-v2 #d3-shift-into { font-size: 18px; } }
+  /* tighter summary card so Step 3 doesn't run long; borders always end inside the pop-up */
+  /* Fit: the Step 3 screen becomes a flex column that can only SHRINK to the pop-up's height (no growing, so short
+     content stays centred as before). Cards and the Your Shift block give up height to their inner scroll areas,
+     so no border ever runs past the pop-up, and the pop-up never needs to scroll under its gold frame. */
+  #hero-gap-embed.gm-modal > .stage:has(#view-day3.gap-v2.active:not(.gap-analyzing-on)) > .wrap { flex: 0 1 auto; min-height: 0; display: flex; flex-direction: column; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2.active:not(.gap-analyzing-on) { flex: 0 1 auto; min-height: 0; display: flex !important; flex-direction: column; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2.active > .card { flex: 0 1 auto; min-height: 0; grid-template-rows: auto auto auto minmax(0, 1fr) !important; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > #d3-activation-card { min-height: 0; max-height: 100% !important; } /* beats main's Oct 7 'max-height: none !important' so a card's bottom border always ends inside its row */
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-shift-block { flex: 0 1 auto; min-height: 0; display: flex !important; flex-direction: column; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-shift-block > .gap-shift-label { flex: 0 0 auto; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-shift-scroll { flex: 0 1 auto; min-height: 44px; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card .gap-v2-scroll { flex: 0 1 auto; min-height: 60px; }
+  @media (max-width: 600px) {
+    /* phones had no bottom padding under Step 3: keep everything clear of the gold corner frame */
+    #hero-gap-embed.gm-modal > .stage:has(#view-day3.gap-v2.active:not(.gap-analyzing-on)) { padding-bottom: 30px !important; }
+  }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > #d3-activation-card { overflow: hidden !important; display: flex; flex-direction: column; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .gap-v2-scroll { min-height: 0; flex: 0 1 auto; }
+  @media (max-width: 600px) {
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card { padding-bottom: 10px !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > h1 { font-size: clamp(18px, 2.8vh, 23px) !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > #d3-activation-card { padding: 14px 16px !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-meta { font-size: 13px !important; margin-bottom: 6px !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-gap-contradiction { font-size: 15.5px !important; line-height: 1.36 !important; margin-bottom: 8px !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .reveal-block:nth-child(3) p.copy { font-size: 13px !important; line-height: 1.45 !important; }
+    #view-day3.gap-v2 #d3-shift-block { margin-top: 10px; padding: 10px 14px; }
+    #view-day3.gap-v2 .gap-shift-text { font-size: 15.5px; }
+  }
   #view-day3.gap-v2 #d3-listen-now { display: block !important; width: 100%; box-sizing: border-box; margin: clamp(12px, 1.8vh, 18px) 0 0 !important; text-align: center; cursor: pointer; position: relative; z-index: 3; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
   #view-day3.gap-v2 #d3-listen-status:not([hidden]) { display: block !important; margin: 10px 0 0 !important; font-size: 13px !important; color: #F8E7B0; text-align: center; }
   #view-day3.gap-v2 .gap-v2-scroll { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: rgba(226,190,104,.45) transparent; padding-right: 2px; }

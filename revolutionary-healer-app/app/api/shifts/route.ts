@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getShiftsByEmail, getShiftById, updateShiftFields, deleteShift, normalizeEmail } from "@/lib/airtable";
+import { gapFastReadingEnabled, gapFastReadingSwitch, GAP_FAST_READING_HEADER } from "@/lib/gapReading"; // GAP reading restructure (Oct 8 2026)
 
 export async function GET(req: NextRequest) {
   const email = req.nextUrl.searchParams.get("email");
@@ -24,6 +25,7 @@ export async function GET(req: NextRequest) {
       readyForEmbodied: !!r.fields.ready_for_embodied,
       todaysFocus: r.fields.todays_focus ?? "", // GAP reading restructure (Oct 8 2026); "" for older Shifts
     }));
+    if (gapFastReadingEnabled({ ...gapFastReadingSwitch(), email })) return NextResponse.json({ shifts }, { headers: GAP_FAST_READING_HEADER }); // switch on only: page uses the unified Shift card labels
     return NextResponse.json({ shifts });
   } catch (err) {
     console.error("GET /api/shifts failed", err);

@@ -433,6 +433,26 @@ await test("/api/shifts: todaysFocus added to each Shift ('' for older rows); ev
   n.shifts.forEach((s) => delete s.todaysFocus); assert.deepEqual(n, o);
 });
 
+await test("/api/shifts: x-gap-fast-reading header ONLY when the switch is on for that member (labels); body identical either way", async () => {
+  const rows = [{ id: "recA", fields: { divine_identity_name: "The Wayshower", what_we_noticed: "w" } }];
+  globalThis.__at = { creates: [], updates: [], rows };
+  const newS = await import(transpile(read("app/api/shifts/route.ts"), "sh-new2.mjs"));
+  const get = (email) => newS.GET(Object.assign(new Request("http://localhost/api/shifts?email=" + email), { nextUrl: new URL("http://localhost/api/shifts?email=" + email) }));
+  const saved = { m: process.env.GAP_FAST_READING, a: process.env.GAP_FAST_READING_ALLOWLIST };
+  try {
+    delete process.env.GAP_FAST_READING; delete process.env.GAP_FAST_READING_ALLOWLIST;
+    const off = await get("member@example.com"); assert.equal(off.headers.get("x-gap-fast-reading"), null); const offBody = await off.text();
+    process.env.GAP_FAST_READING = "on";
+    const on = await get("member@example.com"); assert.equal(on.headers.get("x-gap-fast-reading"), "1"); assert.equal(await on.text(), offBody);
+    process.env.GAP_FAST_READING = "allowlist"; process.env.GAP_FAST_READING_ALLOWLIST = "tester@example.com";
+    assert.equal((await get("member@example.com")).headers.get("x-gap-fast-reading"), null);
+    assert.equal((await get("tester@example.com")).headers.get("x-gap-fast-reading"), "1");
+  } finally {
+    if (saved.m === undefined) delete process.env.GAP_FAST_READING; else process.env.GAP_FAST_READING = saved.m;
+    if (saved.a === undefined) delete process.env.GAP_FAST_READING_ALLOWLIST; else process.env.GAP_FAST_READING_ALLOWLIST = saved.a;
+  }
+});
+
 apiServer.close();
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

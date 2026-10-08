@@ -21,6 +21,14 @@ export const GAP_READING_RESTRUCTURE_HUNKS = {
   [
    "      readyForEmbodied: !!r.fields.ready_for_embodied,\n      todaysFocus: r.fields.todays_focus ?? \"\", // GAP reading restructure (Oct 8 2026); \"\" for older Shifts\n",
    "      readyForEmbodied: !!r.fields.ready_for_embodied,\n"
+  ],
+  [
+   "import { getShiftsByEmail, getShiftById, updateShiftFields, deleteShift, normalizeEmail } from \"@/lib/airtable\";\nimport { gapFastReadingEnabled, gapFastReadingSwitch, GAP_FAST_READING_HEADER } from \"@/lib/gapReading\"; // GAP reading restructure (Oct 8 2026)\n",
+   "import { getShiftsByEmail, getShiftById, updateShiftFields, deleteShift, normalizeEmail } from \"@/lib/airtable\";\n"
+  ],
+  [
+   "    if (gapFastReadingEnabled({ ...gapFastReadingSwitch(), email })) return NextResponse.json({ shifts }, { headers: GAP_FAST_READING_HEADER }); // switch on only: page uses the unified Shift card labels\n    return NextResponse.json({ shifts });\n",
+   "    return NextResponse.json({ shifts });\n"
   ]
  ],
  "lib/airtable.js": [
