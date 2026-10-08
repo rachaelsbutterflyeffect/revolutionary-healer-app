@@ -5430,9 +5430,9 @@ if (forceComplete) { goDay(3); }
        Step 3 preview shortcut). Draft PR, never merge.
      - Presentation only: no backend, no tracking, nothing is saved.
        "Tell me more" only pre-fills the chat box; it never sends.
-     - Version A (?ccm=card): centered card over the home screen.
+     - Version A (default): centered card over the home screen.
      - Version B (?ccm=chat): invitation card inside the chatbot.
-     - ?ccm=off hides both. A small mockup toggle switches versions.
+     - Default (no param) is the card. ?ccm=chat / ?ccm=off still work silently.
      - Forced visible for the mockup (ignores the day-14 / Shift rules).
      - Does not touch or recolor the Spookbound banner.
      ============================================================ -->
@@ -5518,14 +5518,6 @@ if (forceComplete) { goDay(3); }
   .ccm-chatcard .ccm-btn-gold { padding: 13px 28px; font-size: 12px; }
   .ccm-chatcard.ccm-done .ccm-actions { opacity: .55; pointer-events: none; }
   .ccm-chatnote { align-self: flex-start; color: #A9997F; font-size: 13px; font-style: italic; padding-left: 14px; border-left: 2px solid rgba(226,190,104,.5); }
-
-  /* ---------- mockup-only toggle ---------- */
-  #ccm-mock-toggle { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 9300; display: flex; align-items: center; gap: 4px; padding: 5px; border-radius: 999px; background: rgba(10,9,7,.88); border: 1px dashed rgba(226,190,104,.55); box-shadow: 0 10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; white-space: nowrap; }
-  #ccm-mock-toggle .ccm-tlabel { font-size: 9.5px; font-weight: 700; letter-spacing: .18em; color: #8C8272; padding: 0 8px 0 10px; text-transform: uppercase; }
-  #ccm-mock-toggle button { border: none; cursor: pointer; border-radius: 999px; padding: 8px 13px; font-size: 12px; font-weight: 600; letter-spacing: .03em; background: transparent; color: #CDBFA6; font-family: inherit; }
-  #ccm-mock-toggle button[aria-pressed="true"] { background: linear-gradient(180deg, #F1D58A, #CFA646); color: #241C0A; }
-  #ccm-mock-toggle button.ccm-replay { color: #E2BE68; font-size: 15px; padding: 6px 10px; }
-  @media (max-width: 420px) { #ccm-mock-toggle .ccm-tlabel { display: none; } #ccm-mock-toggle button { padding: 8px 11px; font-size: 11.5px; } }
 
   @media (max-width: 480px) {
     #ccm-pop { padding: 40px 24px 24px; border-radius: 22px; }
@@ -5679,47 +5671,18 @@ if (forceComplete) { goDay(3); }
     thread.scrollTop = thread.scrollHeight;
   }
 
-  /* ---------- mockup toggle ---------- */
-  var mode = 'card';
-  function setMode(m, replay) {
-    mode = m;
-    try { var u = new URL(location.href); u.searchParams.set('ccm', m); history.replaceState(null, '', u.toString()); } catch (e) {}
-    var t = document.getElementById('ccm-mock-toggle');
-    if (t) Array.prototype.forEach.call(t.querySelectorAll('[data-mode]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === m)); });
-    closeCard(true); removeChatCard();
+  /* ---------- show on app open ---------- */
+  function show(m) {
     if (m === 'card') openCard();
-    else if (m === 'chat') {
-      openChatCard();
-      var shell = document.getElementById('rh-chat-shell');
-      if (shell && replay) shell.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      var w = document.getElementById('rh-chat-welcome'); var th = document.getElementById('rh-chat-thread');
-      if (w && th && !th.querySelector('.rh-msg')) w.style.display = '';
-    }
-  }
-  function buildToggle() {
-    var t = document.createElement('div');
-    t.id = 'ccm-mock-toggle'; t.setAttribute('role', 'group'); t.setAttribute('aria-label', 'Mockup only: switch pop-up version');
-    t.title = 'Mockup only. Not part of the real app.';
-    t.innerHTML = '<span class="ccm-tlabel">Mockup</span>' +
-      '<button type="button" data-mode="card" aria-pressed="false">Pop-up card</button>' +
-      '<button type="button" data-mode="chat" aria-pressed="false">In the chat</button>' +
-      '<button type="button" class="ccm-replay" data-replay aria-label="Show it again" title="Show it again">&#8635;</button>';
-    document.body.appendChild(t);
-    t.addEventListener('click', function (e) {
-      var b = e.target.closest('button'); if (!b) return;
-      if (b.hasAttribute('data-replay')) setMode(mode === 'off' ? 'card' : mode, true);
-      else setMode(b.getAttribute('data-mode'), true);
-    });
+    else if (m === 'chat') openChatCard();
   }
 
   function init() {
     var q = (new URLSearchParams(location.search).get('ccm') || 'card').toLowerCase();
     if (['card', 'chat', 'off'].indexOf(q) === -1) q = 'card';
     loadFont();
-    buildToggle();
     // Let the home screen (and any saved chat) paint first, like a real app-open moment.
-    setTimeout(function () { setMode(q, false); }, 1100);
+    setTimeout(function () { show(q); }, 1100);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
