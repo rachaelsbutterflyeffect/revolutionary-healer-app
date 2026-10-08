@@ -38,6 +38,7 @@ import {
   generateChatTitle,
 } from "@/lib/memory";
 import { placeholderChatTitle, titleActionForMessage } from "@/lib/chatTitles";
+import { toCachedSystemBlocks } from "@/lib/promptCache";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
@@ -212,13 +213,19 @@ export async function POST(req: NextRequest) {
   // even if the model call itself fails.
   await createMessage({ chatId, email, role: "user", text: message });
 
+  // Prompt caching (Oct 8 2026, see lib/promptCache.js): same model,
+  // max_tokens, messages, timeout and system prompt TEXT as before. The only
+  // difference is that `system` is sent as two text blocks (same text, same
+  // order) with a cache breakpoint after the fixed instructions, so Anthropic
+  // can reuse them instead of re-reading ~14k tokens on every message.
   let response;
+  const claudeStartedAt = Date.now();
   try {
     response = await anthropic.messages.create(
       {
         model: MODEL,
         max_tokens: 4096,
-        system: systemPrompt,
+        system: toCachedSystemBlocks(systemPrompt),
         messages: [...historyForClaude, { role: "user", content: message }],
       },
       { timeout: CHAT_TIMEOUT_MS }
@@ -228,6 +235,26 @@ export async function POST(req: NextRequest) {
       { error: "The response took too long. Please try again." },
       { status: 504 }
     );
+  }
+
+  // Vercel logs: how long Claude took and whether the prompt cache was used
+  // (cache_read_input_tokens > 0 = fixed instructions reused;
+  // cache_creation_input_tokens > 0 = (re)stored for the next 5 minutes).
+  try {
+    const u: any = response.usage || {};
+    console.log(
+      "[chat] claude usage " +
+        JSON.stringify({
+          ms: Date.now() - claudeStartedAt,
+          input_tokens: u.input_tokens,
+          cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
+          cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
+          output_tokens: u.output_tokens,
+          stop_reason: response.stop_reason,
+        })
+    );
+  } catch (logErr) {
+    // logging must never affect the reply
   }
 
   const rawReplyText = response.content
