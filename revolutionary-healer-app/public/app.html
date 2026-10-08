@@ -5668,7 +5668,7 @@ if (forceComplete) { goDay(3); }
   // The member's own "from X into Y" naming, e.g. "Restriction into Aligned Receiving" (never hard-coded).
   function gapIntoName(shift) {
     var t = String(shift || '').replace(/\s+/g, ' ').trim(); var END = '(?:\\s*(?:--|\u2014|\u2013|\\s-\\s|;|\\.)|$)';
-    var m = t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?)\\s+into\\s+(.{2,60}?)' + END, 'i')) || t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?)\\s+to\\s+(.{2,60}?)' + END, 'i'));
+    var m = t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?),\\s+into\\s+(.{2,60}?)' + END, 'i')) || t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?)\\s+into\\s+(.{2,60}?)' + END, 'i')) || t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?)\\s+to\\s+(.{2,60}?)' + END, 'i'));
     if (!m) return null;
     var clean = function (x) { return x.replace(/[\s,;:]+$/, '').trim(); };
     return { from: clean(m[1]), to: clean(m[2]) };
