@@ -3055,6 +3055,29 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     rhSendMessage(text);
   }
 
+  // ---------------------------------------------------------------------------
+  // Main chat send + waiting logic.
+  //
+  // Oct 8 2026 fix ("false try again"): the page used to give up after 30s
+  // and show "This is taking longer than expected -- please try again" even
+  // though the server was usually still writing the reply -- and then saved
+  // it anyway. Members saw a false error, and tapping Try Again sent the same
+  // message a second time. Now (on-screen logic only -- the bot, its prompt
+  // and how replies are saved are unchanged):
+  //   * at 30s nothing fails: the thinking bubble switches to a calm
+  //     "still working" line and the page keeps waiting for the reply;
+  //   * "Try Again" is shown only when the server actually answered with an
+  //     error, or when we never heard back AND a check of the chat's saved
+  //     messages confirms no reply landed (RH_CHAT_CLIENT_TIMEOUT_MS is only
+  //     a last-resort cap, above the server's own worst case of ~2.5 min:
+  //     3 Claude attempts x 45s + retry pauses);
+  //   * tapping Try Again first re-checks whether the reply has landed since,
+  //     and shows it instead of sending the message again.
+  // ---------------------------------------------------------------------------
+  var RH_CHAT_STILL_WORKING_MS = 30000;
+  var RH_CHAT_CLIENT_TIMEOUT_MS = 180000;
+  var RH_STILL_WORKING_TEXT = "Still with you \u2014 this one is taking a little longer than usual. Your reply is on its way\u2026";
+
   async function rhSendMessage(text, processSlug) {
     var input = document.getElementById('chat-input');
     var sendBtn = document.getElementById('hero-speak-btn');
@@ -3066,14 +3089,138 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     input.value = '';
     autoGrowChatInput();
     window.__rhLastFailedText = null;
-        var thinkingEl = showRhThinking(); var rhAbortController = new AbortController(); var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, 30000); try { var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text }; try { payload.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {} if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId; if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId; if (processSlug) payload.processSlug = processSlug; var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal }); clearTimeout(rhAbortTimeout); var data = await res.json(); removeRhThinking(thinkingEl); if (!res.ok || data.error) { window.__rhLastFailedText = text; addRhError(); } else { if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); } var follow = rhFollowReply; var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?", { follow: follow }); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); rhKeepComposerInView(follow); rhUpdateScrollDownBtn(); if (!follow) { var sdb = document.getElementById('rh-scroll-down-btn'); if (sdb && sdb.classList.contains('rh-show')) sdb.classList.add('rh-glow'); } } } catch (e) { clearTimeout(rhAbortTimeout); removeRhThinking(thinkingEl); window.__rhLastFailedText = text; if (e && e.name === 'AbortError') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); } } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; } }
+    window.__rhLastFailedSend = null;
+    var sentAt = Date.now();
+    var chatIdAtSend = window.__rhActiveChatId || null;
+    var thinkingEl = showRhThinking();
+    var rhAbortController = new AbortController();
+    var rhStillWorkingTimer = setTimeout(function() { rhMarkThinkingStillWorking(thinkingEl); }, RH_CHAT_STILL_WORKING_MS);
+    var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, RH_CHAT_CLIENT_TIMEOUT_MS);
+    // failure: null = got a reply; 'server' = the server answered with an
+    // error (it really failed); 'timeout' / 'unclear' = we never got a usable
+    // answer, so the reply may still have been generated and saved.
+    var failure = null;
+    var data = null;
+    try {
+      var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text };
+      try { payload.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
+      if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId;
+      if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId;
+      if (processSlug) payload.processSlug = processSlug;
+      var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal });
+      clearTimeout(rhAbortTimeout);
+      try { data = await res.json(); } catch (jsonErr) { data = null; }
+      if (!data) failure = 'unclear'; // not JSON, e.g. a hosting error page
+      else if (!res.ok || data.error) failure = 'server';
+    } catch (e) {
+      failure = (e && e.name === 'AbortError') ? 'timeout' : 'unclear';
+    }
+    clearTimeout(rhAbortTimeout);
+    clearTimeout(rhStillWorkingTimer);
+    try {
+      // If the member started a new chat or opened another one while waiting,
+      // the thinking bubble is gone: don't drop this reply (or an error) into
+      // a different conversation. The reply is saved in its own chat.
+      if (thinkingEl && thinkingEl.isConnected === false) return;
+      if (!failure) {
+        removeRhThinking(thinkingEl);
+        rhShowChatReply(data);
+        return;
+      }
+      if (failure !== 'server') {
+        var saved = await rhFindSavedReply(text, chatIdAtSend, sentAt, 3);
+        if (thinkingEl && thinkingEl.isConnected === false) return;
+        if (saved) {
+          removeRhThinking(thinkingEl);
+          rhShowChatReply({ reply: saved.reply, chatId: saved.chatId });
+          return;
+        }
+      }
+      removeRhThinking(thinkingEl);
+      window.__rhLastFailedText = text;
+      window.__rhLastFailedSend = { text: text, chatId: chatIdAtSend, sentAt: sentAt };
+      if (failure === 'timeout') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); }
+    } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; }
+  }
 
-  function rhRetryLastMessage() {
+  // Renders a reply exactly the way a normal successful send always has.
+  function rhShowChatReply(data) {
+    if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); }
+    var follow = rhFollowReply; var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?", { follow: follow }); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); rhKeepComposerInView(follow); rhUpdateScrollDownBtn(); if (!follow) { var sdb = document.getElementById('rh-scroll-down-btn'); if (sdb && sdb.classList.contains('rh-show')) sdb.classList.add('rh-glow'); }
+  }
+
+  // At 30s: stop rotating the thinking lines and show one calm "still
+  // working" line instead. Purely visual; the request keeps going.
+  function rhMarkThinkingStillWorking(el) {
+    if (!el || el.isConnected === false) return;
+    if (el.__rhThinkingTimer) { clearInterval(el.__rhThinkingTimer); el.__rhThinkingTimer = null; }
+    var textEl = el.querySelector ? el.querySelector('.rh-thinking-text') : null;
+    if (textEl) textEl.textContent = RH_STILL_WORKING_TEXT;
+    if (el.classList) el.classList.add('rh-still-working');
+  }
+
+  // Did the reply to `text` (sent at `sentAt`) actually get saved, even though
+  // the page never received it? Reads the chat's saved messages through the
+  // existing /api/chats endpoints (read-only). For a brand-new chat (no id
+  // yet) it looks at chats created since the send. Matches the member's exact
+  // message saved at/after the send (60s allowance for clock differences) and
+  // returns the first assistant message after it. Tries `attempts` times, a
+  // few seconds apart, because the server saves the reply just after sending it.
+  var RH_SAVED_REPLY_CLOCK_SLACK_MS = 60000;
+  var RH_SAVED_REPLY_RECHECK_MS = 4000;
+  async function rhFindSavedReply(text, chatId, sentAt, attempts) {
+    var since = sentAt - RH_SAVED_REPLY_CLOCK_SLACK_MS;
+    for (var attempt = 0; attempt < (attempts || 1); attempt++) {
+      if (attempt > 0) await new Promise(function(r) { setTimeout(r, RH_SAVED_REPLY_RECHECK_MS); });
+      try {
+        var ids = [];
+        if (chatId) {
+          ids = [chatId];
+        } else if (RH_EMAIL) {
+          var lr = await fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL));
+          var ld = lr.ok ? await lr.json() : null;
+          ids = ((ld && ld.chats) || [])
+            .filter(function(c) { var t = Date.parse(c.createdAt || ''); return !isNaN(t) && t >= since; })
+            .sort(function(a, b) { return Date.parse(b.createdAt) - Date.parse(a.createdAt); })
+            .slice(0, 3)
+            .map(function(c) { return c.id; });
+        }
+        for (var i = 0; i < ids.length; i++) {
+          var r = await fetch('/api/chats/' + encodeURIComponent(ids[i]));
+          if (!r.ok) continue;
+          var d = await r.json();
+          var msgs = (d && d.messages) || [];
+          for (var j = msgs.length - 1; j >= 0; j--) {
+            if (msgs[j].role !== 'user') continue;
+            var at = Date.parse(msgs[j].createdAt || '');
+            if (msgs[j].text !== text || isNaN(at) || at < since) break; // only the member's latest message counts
+            for (var k = j + 1; k < msgs.length; k++) {
+              if (msgs[k].role === 'assistant' && msgs[k].text) return { reply: msgs[k].text, chatId: ids[i] };
+            }
+            break;
+          }
+        }
+      } catch (e) {}
+    }
+    return null;
+  }
+
+  async function rhRetryLastMessage() {
     var t = window.__rhLastFailedText;
-    if (!t) return;
+    if (!t || window.__rhSending || window.__rhRetryChecking) return; // ignore double taps
+    var info = window.__rhLastFailedSend;
     var errNodes = document.querySelectorAll('.rh-msg-error');
     if (errNodes.length) errNodes[errNodes.length - 1].closest('.rh-thinking, .rh-msg-error') && errNodes[errNodes.length - 1].remove();
     window.__rhLastFailedText = null;
+    window.__rhLastFailedSend = null;
+    // Duplicate guard: if the reply landed after all, show it instead of
+    // sending the same message again.
+    if (info && info.text === t) {
+      window.__rhRetryChecking = true;
+      var saved = null;
+      try { saved = await rhFindSavedReply(t, info.chatId, info.sentAt, 1); } finally { window.__rhRetryChecking = false; }
+      if (saved) { rhShowChatReply({ reply: saved.reply, chatId: saved.chatId }); return; }
+    }
     rhSendMessage(t);
   }
 
