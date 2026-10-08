@@ -1124,13 +1124,15 @@
 
   /* the Primary Shift, as a small arched panel */
   .rhh-card .rhh-shift { position: relative; text-align: center; padding: 30px 22px 22px; border: 1px solid rgba(226,190,104,0.45); border-radius: 50% 50% 14px 14px / 30px 30px 14px 14px;
-    background: radial-gradient(90% 140px at 50% 0%, rgba(43,179,173,0.20), transparent 75%), linear-gradient(180deg, rgba(4,30,32,0.7), rgba(0,0,0,0.5)); box-shadow: inset 0 0 0 3px rgba(226,190,104,0.04), 0 0 26px rgba(226,190,104,0.08); }
+    background: radial-gradient(90% 110px at 50% 0%, rgba(43,179,173,0.13), transparent 75%), linear-gradient(180deg, #062422 0%, #031314 50%, #020A0B 100%); box-shadow: inset 0 0 0 3px rgba(226,190,104,0.04), 0 0 26px rgba(226,190,104,0.08); }
+  /* legibility (Oct 8): solid colours, bigger/heavier labels and values, dark text-shadow instead of a glow */
+  .rhh-card .rhh-shift .rhh-kicker { font-size: 12.5px; font-weight: 600; letter-spacing: .2em; color: #A6F0EA; margin-bottom: 12px; }
   .rhh-card .rhh-shift[hidden] { display: none; }
   .rhh-card .rhh-shift::before { content: ""; position: absolute; left: 50%; top: -5px; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); border: 1px solid rgba(226,190,104,0.85); background: #030606; box-shadow: 0 0 9px rgba(226,190,104,0.55); }
-  .rhh-card .rhh-ft-label { display: block; font-size: 9.5px; letter-spacing: .34em; padding-left: .34em; text-transform: uppercase; color: rgba(127,224,218,0.85); margin-bottom: 4px; }
+  .rhh-card .rhh-ft-label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .22em; padding-left: .22em; text-transform: uppercase; color: #A6F0EA; margin-bottom: 6px; }
   .rhh-card .rhh-from, .rhh-card .rhh-into { margin: 0; font-family: "RH Shift Serif", Georgia, serif; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
-  .rhh-card .rhh-from { font-style: italic; font-size: 17px; line-height: 1.4; color: rgba(255,255,255,0.72); -webkit-line-clamp: 2; line-clamp: 2; }
-  .rhh-card .rhh-into { font-weight: 500; font-size: 20px; line-height: 1.35; color: #F6E3A8; text-shadow: 0 0 16px rgba(226,190,104,0.22); -webkit-line-clamp: 3; line-clamp: 3; }
+  .rhh-card .rhh-from { font-style: normal; font-weight: 600; font-size: 19px; line-height: 1.45; color: #F4EFE4; text-shadow: 0 1px 2px rgba(0,0,0,0.7); -webkit-line-clamp: 3; line-clamp: 3; }
+  .rhh-card .rhh-into { font-weight: 600; font-size: 21px; line-height: 1.42; color: #FBEBB8; text-shadow: 0 1px 2px rgba(0,0,0,0.7); -webkit-line-clamp: 3; line-clamp: 3; }
   .rhh-card .rhh-ft-arrow { display: flex; flex-direction: column; align-items: center; height: 30px; width: 16px; margin: 8px auto; }
   .rhh-card .rhh-ft-arrow::before { content: ""; width: 1px; flex: 1; background: linear-gradient(180deg, transparent, rgba(226,190,104,0.9)); }
   .rhh-card .rhh-ft-arrow svg { width: 14px; height: 14px; margin-top: -2px; filter: drop-shadow(0 0 5px rgba(226,190,104,0.7)); }
@@ -1166,9 +1168,9 @@
     .focus-card.rhh-card .rhf-attn { padding-left: 13px; }
     .rhh-card .rhh-grid.rhh-has-shift { gap: 20px; }
     .rhh-card .rhh-shift { padding: 22px 14px 16px; border-radius: 50% 50% 12px 12px / 22px 22px 12px 12px; }
-    .rhh-card .rhh-shift .rhh-kicker { margin-bottom: 6px; }
-    .rhh-card .rhh-from { font-size: 15.5px; }
-    .rhh-card .rhh-into { font-size: 18px; -webkit-line-clamp: 2; line-clamp: 2; }
+    .rhh-card .rhh-shift .rhh-kicker { margin-bottom: 10px; font-size: 12px; }
+    .rhh-card .rhh-from { font-size: 18px; }
+    .rhh-card .rhh-into { font-size: 20px; }
     .rhh-card .rhh-ft-arrow { height: 22px; margin: 4px auto 6px; }
     .focus-card.rhh-card .rhh-footer { margin-top: 20px; padding-top: 16px; }
     .focus-card.rhh-card .rhh-footer { flex-direction: column; align-items: stretch; }
@@ -1178,6 +1180,20 @@
   }
   @media (prefers-reduced-motion: reduce) {
     .rhh-card .rhh-glow, .rhh-card .status-pill, .rhh-card .rhh-chip, .rhh-card .rhh-continue { animation: none !important; transition: none !important; }
+  }
+</style>
+<!-- Shift pop-up Primary Shift legibility (Oct 8, presentation only): overrides
+     the #34 rules above for the From / Into labels and values. -->
+<style id="rh-primary-legibility-css">
+  #shift-modal .rhs-primary-frame { background: radial-gradient(90% 130px at 50% 0%, rgba(43,179,173,0.14), transparent 75%), linear-gradient(180deg, #062422 0%, #031314 50%, #020A0B 100%); }
+  #shift-modal .rhs-primary-frame .rhs-eyebrow { font-size: 12.5px; font-weight: 600; letter-spacing: .2em; padding-left: .2em; color: #A6F0EA; margin-bottom: 14px; }
+  #shift-modal .rhs-ft-label { font-size: 12px; font-weight: 700; letter-spacing: .22em; padding-left: .22em; color: #A6F0EA; margin-bottom: 8px; }
+  #shift-modal .rhs-from p { font-style: normal; font-weight: 600; font-size: 20px; line-height: 1.5; color: #F4EFE4; text-shadow: 0 1px 2px rgba(0,0,0,0.7); }
+  #shift-modal .rhs-into p { font-weight: 600; font-size: 23px; line-height: 1.42; color: #FBEBB8; text-shadow: 0 1px 2px rgba(0,0,0,0.7); }
+  @media (max-width: 640px) {
+    #shift-modal .rhs-primary-frame .rhs-eyebrow { font-size: 12px; }
+    #shift-modal .rhs-from p { font-size: 19px; }
+    #shift-modal .rhs-into p { font-size: 21px; }
   }
 </style>
 <div class="modal-overlay" id="shift-modal">
