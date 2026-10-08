@@ -959,45 +959,279 @@
 </div>
 <script>try { var nabKey = 'rh_nab_dismissed_spookbound-2026'; var nabVal = localStorage.getItem(nabKey); if (nabVal !== null) { var nabTs = Number(nabVal); if (nabVal !== '1' && isFinite(nabTs) && nabTs > 0 && (Date.now() - nabTs) < 5 * 24 * 60 * 60 * 1000) { document.getElementById('new-activation-banner').style.display = 'none'; } else { localStorage.removeItem(nabKey); } } } catch (e) {}</script>
 
+<!-- Today's Focus + Shift card redesign (Oct 8, presentation only).
+     Ports the luxury-home doorway look (gold arch, teal glow, Cormorant serif,
+     rise/reveal motion) to the Shift pop-up and the Today's Focus teaser.
+     Reads the same Shift fields as before; never changes stored text.
+     All motion is opacity/transform only and is switched off under
+     prefers-reduced-motion. -->
+<style id="rh-shift-card-css">
+  @font-face { font-family: "RH Shift Serif"; src: url("/fonts/cormorant-garamond-latin.woff2") format("woff2"); font-weight: 300 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: "RH Shift Serif"; src: url("/fonts/cormorant-garamond-italic-latin.woff2") format("woff2"); font-weight: 500; font-style: italic; font-display: swap; }
+
+  /* ---------- Shift pop-up: overlay ---------- */
+  #shift-modal.modal-overlay { padding: 46px 16px 40px; background: radial-gradient(110% 75% at 50% 0%, rgba(1,103,108,0.40), rgba(2,8,9,0.93) 62%); }
+  #shift-modal.modal-overlay.active { animation: rhs-fade .35s ease both; }
+
+  /* ---------- Shift pop-up: the arched card ---------- */
+  #shift-modal .rhs-card { position: relative; isolation: isolate; max-width: 560px; margin: 0 auto; padding: 84px 36px 34px; color: var(--white);
+    border: 1px solid rgba(226,190,104,0.62); border-radius: 50% 50% 22px 22px / 64px 64px 22px 22px;
+    background: radial-gradient(85% 340px at 50% 0%, rgba(43,179,173,0.26), transparent 72%), radial-gradient(80% 260px at 50% 100%, rgba(226,190,104,0.09), transparent 70%), linear-gradient(180deg, #04201F 0%, #020D0E 45%, #010505 100%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 5px rgba(226,190,104,0.05), 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(1,103,108,0.28);
+    animation: rhs-rise .75s cubic-bezier(.16,1,.3,1) both; }
+  #shift-modal .rhs-card:focus { outline: none; }
+  #shift-modal .rhs-card:focus-visible { outline: 2px solid #F1D58A; outline-offset: 4px; }
+  /* breathing gold halo (opacity-only animation, cheap on phones) */
+  #shift-modal .rhs-glow { position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; z-index: -2; box-shadow: 0 0 46px rgba(226,190,104,0.22), 0 0 110px rgba(1,103,108,0.35); opacity: .55; animation: rhs-breathe 6s ease-in-out 1s infinite; }
+  /* inner arch hairline + gold corner filigree (same ornaments as the doorways) */
+  #shift-modal .rhs-arch { position: absolute; inset: 9px; border-radius: 50% 50% 14px 14px / 56px 56px 14px 14px; border: 1px solid rgba(226,190,104,0.22); pointer-events: none; z-index: -1;
+    background: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%280%2060%29%20scale%281%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3Cpath%20d%3D%22M2%202%20L14%2014%22%20stroke-width%3D%220.5%22/%3E%3C/g%3E%3C/svg%3E") bottom left / 28px no-repeat, url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%2860%2060%29%20scale%28-1%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3Cpath%20d%3D%22M2%202%20L14%2014%22%20stroke-width%3D%220.5%22/%3E%3C/g%3E%3C/svg%3E") bottom right / 28px no-repeat; }
+  /* one gold light sweep across the card each time it opens */
+  #shift-modal .rhs-sheen { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; pointer-events: none; z-index: 0; }
+  #shift-modal .rhs-sheen::after { content: ""; position: absolute; top: -10%; bottom: -10%; left: -70%; width: 45%; background: linear-gradient(100deg, transparent, rgba(255,246,218,0.10), transparent); transform: skewX(-18deg); animation: rhs-sweep 1.8s .45s cubic-bezier(.16,1,.3,1) both; }
+  #shift-modal .rhs-crest { position: absolute; top: 26px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; pointer-events: none; }
+  #shift-modal .rhs-crest-line { width: 46px; height: 1px; background: linear-gradient(90deg, transparent, rgba(226,190,104,0.85)); }
+  #shift-modal .rhs-crest-line.rhs-flip { transform: scaleX(-1); }
+  #shift-modal .rhs-crest-gem { width: 9px; height: 9px; transform: rotate(45deg); border: 1px solid rgba(226,190,104,0.8); background: #030606; box-shadow: 0 0 10px rgba(226,190,104,0.45); }
+
+  /* header controls (⋯ menu + close) sit inside the arch */
+  #shift-modal .shift-modal-headerbar { position: absolute; float: none; top: 40px; right: 22px; z-index: 4; }
+  #shift-modal .shift-modal-headerbar .rh-drawer-item-menu,
+  #shift-modal .shift-modal-headerbar .modal-close { width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 1px solid rgba(226,190,104,0.45); background: rgba(2,12,13,0.72); color: #F1D58A; font-size: 17px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease, color .3s ease; }
+  #shift-modal .shift-modal-headerbar .rh-drawer-item-menu:hover,
+  #shift-modal .shift-modal-headerbar .modal-close:hover { border-color: rgba(248,231,176,0.95); color: #FFF6DA; box-shadow: 0 0 14px rgba(226,190,104,0.35); }
+  #shift-modal .shift-modal-headerbar button:focus-visible { outline: 2px solid #F1D58A; outline-offset: 3px; }
+  #shift-modal .shift-modal-popover { top: 42px; right: 0; z-index: 6; }
+
+  /* content sits above the sheen */
+  #shift-modal .rhs-card > :not(.rhs-glow):not(.rhs-arch):not(.rhs-sheen):not(.rhs-crest):not(.shift-modal-headerbar) { position: relative; z-index: 1; }
+  #shift-modal .rhs-reveal { animation: rhs-in .7s cubic-bezier(.16,1,.3,1) both; animation-delay: calc(var(--i, 0) * 90ms + 200ms); }
+
+  #shift-modal .rhs-head { text-align: center; padding: 0 30px; }
+  #shift-modal .rhs-eyebrow { font-size: 10.5px; letter-spacing: .3em; padding-left: .3em; text-transform: uppercase; color: rgba(127,224,218,0.9); margin: 0 0 8px; }
+  #shift-modal .rhs-head h2 { font-family: "RH Shift Serif", "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 36px; line-height: 1.08; margin: 0 0 6px; color: #F3DE9F;
+    background: linear-gradient(100deg, #E2BE68 0%, #FFF6DA 45%, #CFA646 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: rhs-shimmer 9s ease-in-out infinite; }
+  #shift-modal .rhs-experiencing { margin: 0; font-family: "RH Shift Serif", Georgia, serif; font-style: italic; font-size: 17px; color: rgba(255,255,255,0.74); }
+  #shift-modal .rhs-experiencing:empty, #shift-modal .rhs-experiencing.rhs-none { display: none; }
+  #shift-modal .rhs-status { margin-top: 14px; display: flex; justify-content: center; }
+  #shift-modal .status-pill { font-size: 11.5px; letter-spacing: .08em; padding: 6px 14px; }
+  #shift-modal .status-pill.shifting { animation: rhs-pill 3.4s ease-in-out infinite; }
+  #shift-modal .status-pill.embodied { color: #CFEBD5; border-color: rgba(120,190,140,0.75); }
+  #shift-modal .rhs-rule { width: 64px; height: 1px; margin: 22px auto 4px; background: linear-gradient(90deg, transparent, rgba(226,190,104,0.85), transparent); }
+
+  #shift-modal .shift-modal-section { margin-top: 24px; }
+  #shift-modal .shift-modal-section p { color: rgba(246,242,233,0.86); font-size: 15px; line-height: 1.72; }
+  #shift-modal .rhs-paras p { margin: 0 0 12px; }
+  #shift-modal .rhs-paras p:last-child { margin-bottom: 0; }
+  #shift-modal .rhs-paras { border-left: 1px solid rgba(226,190,104,0.35); padding-left: 16px; }
+  #shift-modal .rhs-muted, #shift-modal .rhs-paras p.rhs-muted { color: var(--taupe); font-style: italic; }
+  #shift-modal #shift-modal-activation { color: #F3DE9F; font-weight: 500; }
+
+  /* ---------- the Primary Shift headline moment ---------- */
+  #shift-modal .rhs-primary { margin-top: 30px; }
+  #shift-modal .rhs-primary-frame { position: relative; text-align: center; padding: 34px 22px 26px; border: 1px solid rgba(226,190,104,0.5); border-radius: 50% 50% 16px 16px / 38px 38px 16px 16px;
+    background: radial-gradient(90% 160px at 50% 0%, rgba(43,179,173,0.22), transparent 75%), linear-gradient(180deg, rgba(4,30,32,0.75), rgba(0,0,0,0.55)); box-shadow: inset 0 0 0 4px rgba(226,190,104,0.04), 0 0 34px rgba(226,190,104,0.10); }
+  #shift-modal .rhs-primary-frame::before { content: ""; position: absolute; left: 50%; top: -5px; width: 9px; height: 9px; margin-left: -4.5px; transform: rotate(45deg); border: 1px solid rgba(226,190,104,0.85); background: #030606; box-shadow: 0 0 10px rgba(226,190,104,0.6); }
+  #shift-modal .rhs-ft-label { display: block; font-size: 10px; letter-spacing: .34em; padding-left: .34em; text-transform: uppercase; color: rgba(127,224,218,0.88); margin-bottom: 6px; }
+  #shift-modal .rhs-from p { margin: 0; font-family: "RH Shift Serif", Georgia, serif; font-style: italic; font-size: 18px; line-height: 1.45; color: rgba(255,255,255,0.68); }
+  #shift-modal .rhs-into p { margin: 0; font-family: "RH Shift Serif", Georgia, serif; font-weight: 500; font-size: 22px; line-height: 1.38; color: #F6E3A8; text-shadow: 0 0 18px rgba(226,190,104,0.25); }
+  #shift-modal .rhs-arrow { display: flex; flex-direction: column; align-items: center; margin: 14px auto; height: 44px; width: 20px; position: relative; }
+  #shift-modal .rhs-arrow::before { content: ""; width: 1px; flex: 1; background: linear-gradient(180deg, transparent, rgba(226,190,104,0.9)); }
+  #shift-modal .rhs-arrow svg { width: 16px; height: 16px; margin-top: -2px; filter: drop-shadow(0 0 6px rgba(226,190,104,0.7)); animation: rhs-bob 2.6s ease-in-out infinite; }
+  #shift-modal .rhs-primary-raw { margin: 0; font-size: 15px; line-height: 1.7; color: rgba(246,242,233,0.86); text-align: left; }
+
+  /* ---------- actions ---------- */
+  #shift-modal .shift-modal-actions { margin-top: 28px; }
+  #shift-modal .shift-modal-actions .btn-primary { position: relative; overflow: hidden; border-radius: 999px; padding: 12px 26px; letter-spacing: .04em; color: #1A1408; background: linear-gradient(100deg, #CFA646 0%, #F8E7B0 48%, #CFA646 100%); background-size: 200% 100%; box-shadow: 0 0 18px rgba(226,190,104,0.28); transition: background-position .8s ease, box-shadow .4s ease; }
+  #shift-modal .shift-modal-actions .btn-primary:hover { background-position: 100% 0; box-shadow: 0 0 26px rgba(226,190,104,0.45); }
+  #shift-modal .shift-modal-actions .btn-secondary { border-radius: 999px; border-color: rgba(226,190,104,0.5); color: #F3DE9F; }
+  #shift-modal .shift-modal-actions .btn-secondary:hover { border-color: rgba(248,231,176,0.95); }
+  #shift-modal button:focus-visible { outline: 2px solid #F1D58A; outline-offset: 3px; }
+
+  @keyframes rhs-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes rhs-rise { from { opacity: 0; transform: translateY(28px) scale(.985); } to { opacity: 1; transform: none; } }
+  @keyframes rhs-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @keyframes rhs-sweep { from { left: -70%; } to { left: 140%; } }
+  @keyframes rhs-breathe { 0%,100% { opacity: .45; } 50% { opacity: 1; } }
+  @keyframes rhs-shimmer { 0%,100% { background-position: 100% 0; } 50% { background-position: 0% 0; } }
+  @keyframes rhs-pill { 0%,100% { box-shadow: 0 0 0 0 rgba(45,212,191,0.0); } 50% { box-shadow: 0 0 14px 1px rgba(45,212,191,0.38); } }
+  @keyframes rhs-bob { 0%,100% { transform: translateY(-2px); opacity: .75; } 50% { transform: translateY(3px); opacity: 1; } }
+
+  @media (max-width: 640px) {
+    #shift-modal.modal-overlay { padding: 28px 12px 28px; }
+    #shift-modal .rhs-card { max-width: none; padding: 74px 20px 26px; border-radius: 50% 50% 20px 20px / 50px 50px 20px 20px; }
+    #shift-modal .rhs-arch { border-radius: 50% 50% 13px 13px / 43px 43px 13px 13px; }
+    #shift-modal .rhs-crest { top: 20px; }
+    #shift-modal .rhs-crest-line { width: 30px; }
+    #shift-modal .shift-modal-headerbar { top: 30px; right: 16px; }
+    #shift-modal .shift-modal-headerbar .rh-drawer-item-menu, #shift-modal .shift-modal-headerbar .modal-close { width: 32px; height: 32px; }
+    #shift-modal .rhs-head { padding: 0 6px; }
+    #shift-modal .rhs-head h2 { font-size: 31px; }
+    #shift-modal .rhs-paras { padding-left: 13px; }
+    #shift-modal .rhs-primary-frame { padding: 30px 16px 22px; border-radius: 50% 50% 14px 14px / 30px 30px 14px 14px; }
+    #shift-modal .rhs-into p { font-size: 20px; }
+  }
+
+  /* ---------- Today's Focus card: short teaser + tap to expand ---------- */
+  .focus-card .rhf-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+  .focus-card .rhf-attn { margin-bottom: 18px; }
+  .focus-card .rhf-teaser { margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--gold-soft); cursor: pointer; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+  .focus-card .rhf-attn.rhf-open .rhf-teaser { display: block; -webkit-line-clamp: unset; line-clamp: none; overflow: visible; cursor: default; animation: rhs-in .45s cubic-bezier(.16,1,.3,1) both; }
+  .focus-card .rhf-teaser.rhf-muted { color: var(--taupe); font-style: italic; }
+  .focus-card .rhf-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0 16px; margin-top: 2px; }
+  .focus-card .rhf-more, .focus-card .rhf-open-full { background: none; border: none; padding: 10px 0; min-height: 40px; font-family: inherit; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #F1D58A; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; }
+  .focus-card .rhf-more[hidden], .focus-card .rhf-open-full[hidden] { display: none; }
+  .focus-card .rhf-more svg { width: 12px; height: 12px; transition: transform .35s cubic-bezier(.16,1,.3,1); }
+  .focus-card .rhf-more[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .focus-card .rhf-more:hover, .focus-card .rhf-open-full:hover { color: #FFF6DA; }
+  .focus-card .rhf-more:focus-visible, .focus-card .rhf-open-full:focus-visible { outline: 2px solid #F1D58A; outline-offset: 3px; border-radius: 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #shift-modal, #shift-modal *, #shift-modal *::before, #shift-modal *::after, .focus-card .rhf-teaser, .focus-card .rhf-more svg { animation: none !important; transition: none !important; }
+    #shift-modal .rhs-sheen { display: none; }
+  }
+</style>
+<!-- Home "Today's Focus" card restyle (Oct 8, presentation only): a smaller
+     sibling of the doorway-style Shift pop-up above. Same fields, IDs and
+     handlers; motion is opacity/box-shadow only and off under reduced motion. -->
+<style id="rh-focus-home-css">
+  .focus-card.rhh-card { position: relative; isolation: isolate; padding: 60px 36px 28px; margin-bottom: 40px; color: var(--white);
+    border: 1px solid rgba(226,190,104,0.6); border-radius: 50% 50% 18px 18px / 44px 44px 18px 18px;
+    background: radial-gradient(70% 240px at 50% 0%, rgba(43,179,173,0.22), transparent 72%), radial-gradient(60% 200px at 50% 100%, rgba(226,190,104,0.07), transparent 70%), linear-gradient(180deg, #04201F 0%, #020D0E 55%, #010505 100%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 4px rgba(226,190,104,0.04), 0 22px 60px rgba(0,0,0,0.5), 0 0 44px rgba(1,103,108,0.22); }
+  .rhh-card .rhh-glow { position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; z-index: -2; box-shadow: 0 0 36px rgba(226,190,104,0.18), 0 0 90px rgba(1,103,108,0.28); opacity: .5; animation: rhs-breathe 7s ease-in-out infinite; }
+  .rhh-card .rhh-arch, .rhh-empty .rhh-arch { position: absolute; inset: 8px; border-radius: 50% 50% 12px 12px / 38px 38px 12px 12px; border: 1px solid rgba(226,190,104,0.2); pointer-events: none; z-index: -1;
+    background: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%280%2060%29%20scale%281%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3C/g%3E%3C/svg%3E") bottom left / 22px no-repeat, url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%2860%2060%29%20scale%28-1%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3C/g%3E%3C/svg%3E") bottom right / 22px no-repeat; }
+  .rhh-card .rhh-crest { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 9px; pointer-events: none; }
+  .rhh-card .rhh-crest-line { width: 40px; height: 1px; background: linear-gradient(90deg, transparent, rgba(226,190,104,0.85)); }
+  .rhh-card .rhh-crest-line.rhh-flip { transform: scaleX(-1); }
+  .rhh-card .rhh-crest-gem { width: 8px; height: 8px; transform: rotate(45deg); border: 1px solid rgba(226,190,104,0.8); background: #030606; box-shadow: 0 0 9px rgba(226,190,104,0.45); }
+  .rhh-card .rhh-label, .rhh-empty .rhh-label { text-align: center; color: #F1D58A; font-size: 11.5px; letter-spacing: .3em; padding-left: .3em; margin-bottom: 26px; }
+  .rhh-card .rhh-kicker { font-size: 10.5px; letter-spacing: .28em; text-transform: uppercase; color: rgba(127,224,218,0.9); margin: 0 0 8px; }
+
+  .rhh-card .rhh-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; align-items: start; }
+  .rhh-card .rhh-grid.rhh-has-shift { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; }
+  .rhh-card .rhh-top { margin-bottom: 20px; align-items: flex-start; }
+  .rhh-card .rhh-identity { font-family: "RH Shift Serif", "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 36px; line-height: 1.06; margin: 0; color: #F3DE9F;
+    background: linear-gradient(100deg, #E2BE68 0%, #FFF6DA 45%, #CFA646 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .rhh-card .status-pill { font-size: 11.5px; letter-spacing: .08em; padding: 6px 14px; margin-top: 4px; }
+  .rhh-card .status-pill.shifting { animation: rhs-pill 3.4s ease-in-out infinite; }
+  .rhh-card .status-pill.embodied { color: #CFEBD5; border-color: rgba(120,190,140,0.75); }
+  .focus-card.rhh-card .rhf-attn { margin-bottom: 6px; border-left: 1px solid rgba(226,190,104,0.35); padding-left: 16px; }
+  .focus-card.rhh-card .rhf-teaser { color: rgba(246,242,233,0.86); font-size: 15.5px; line-height: 1.65; }
+  .focus-card.rhh-card .rhf-teaser.rhf-muted { color: var(--taupe); }
+  .rhh-card .rhh-activity { margin: 10px 0 0; font-size: 12.5px; color: var(--taupe); }
+
+  /* the Primary Shift, as a small arched panel */
+  .rhh-card .rhh-shift { position: relative; text-align: center; padding: 30px 22px 22px; border: 1px solid rgba(226,190,104,0.45); border-radius: 50% 50% 14px 14px / 30px 30px 14px 14px;
+    background: radial-gradient(90% 140px at 50% 0%, rgba(43,179,173,0.20), transparent 75%), linear-gradient(180deg, rgba(4,30,32,0.7), rgba(0,0,0,0.5)); box-shadow: inset 0 0 0 3px rgba(226,190,104,0.04), 0 0 26px rgba(226,190,104,0.08); }
+  .rhh-card .rhh-shift[hidden] { display: none; }
+  .rhh-card .rhh-shift::before { content: ""; position: absolute; left: 50%; top: -5px; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); border: 1px solid rgba(226,190,104,0.85); background: #030606; box-shadow: 0 0 9px rgba(226,190,104,0.55); }
+  .rhh-card .rhh-ft-label { display: block; font-size: 9.5px; letter-spacing: .34em; padding-left: .34em; text-transform: uppercase; color: rgba(127,224,218,0.85); margin-bottom: 4px; }
+  .rhh-card .rhh-from, .rhh-card .rhh-into { margin: 0; font-family: "RH Shift Serif", Georgia, serif; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+  .rhh-card .rhh-from { font-style: italic; font-size: 17px; line-height: 1.4; color: rgba(255,255,255,0.72); -webkit-line-clamp: 2; line-clamp: 2; }
+  .rhh-card .rhh-into { font-weight: 500; font-size: 20px; line-height: 1.35; color: #F6E3A8; text-shadow: 0 0 16px rgba(226,190,104,0.22); -webkit-line-clamp: 3; line-clamp: 3; }
+  .rhh-card .rhh-ft-arrow { display: flex; flex-direction: column; align-items: center; height: 30px; width: 16px; margin: 8px auto; }
+  .rhh-card .rhh-ft-arrow::before { content: ""; width: 1px; flex: 1; background: linear-gradient(180deg, transparent, rgba(226,190,104,0.9)); }
+  .rhh-card .rhh-ft-arrow svg { width: 14px; height: 14px; margin-top: -2px; filter: drop-shadow(0 0 5px rgba(226,190,104,0.7)); }
+
+  /* footer: activation chip + Continue */
+  .focus-card.rhh-card .rhh-footer { margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(226,190,104,0.2); gap: 18px; align-items: flex-end; }
+  .rhh-card .rhh-activation { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+  .rhh-card .rhh-activation[hidden] { display: none; }
+  .rhh-card .rhh-chip { display: inline-flex; align-items: center; gap: 10px; max-width: 100%; min-height: 44px; padding: 7px 18px 7px 7px; border-radius: 999px; border: 1px solid rgba(226,190,104,0.5); background: rgba(2,12,13,0.6); color: #F3DE9F; font-family: inherit; font-size: 14px; text-align: left; cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease; }
+  .rhh-card .rhh-chip strong { font-weight: 500; color: inherit; }
+  .rhh-card .rhh-chip:hover { border-color: rgba(248,231,176,0.95); box-shadow: 0 0 16px rgba(226,190,104,0.3); }
+  .rhh-card .rhh-chip-play { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #F8E7B0, #CFA646); box-shadow: 0 0 10px rgba(226,190,104,0.45); }
+  .rhh-card .rhh-continue { border-radius: 999px; padding: 13px 28px; letter-spacing: .04em; color: #1A1408; background: linear-gradient(100deg, #CFA646 0%, #F8E7B0 48%, #CFA646 100%); background-size: 200% 100%; box-shadow: 0 0 18px rgba(226,190,104,0.28); transition: background-position .8s ease, box-shadow .4s ease; }
+  .rhh-card .rhh-continue:hover { background-position: 100% 0; box-shadow: 0 0 26px rgba(226,190,104,0.45); }
+  .rhh-card button:focus-visible, .rhh-empty button:focus-visible { outline: 2px solid #F1D58A; outline-offset: 3px; }
+
+  /* empty state (no Shifts yet) gets the same frame, quietly */
+  .card.rhh-empty { position: relative; isolation: isolate; padding: 52px 28px 30px; border: 1px solid rgba(226,190,104,0.5); border-radius: 50% 50% 18px 18px / 44px 44px 18px 18px;
+    background: radial-gradient(70% 220px at 50% 0%, rgba(43,179,173,0.18), transparent 72%), linear-gradient(180deg, #04201F 0%, #020D0E 60%, #010505 100%); }
+  .card.rhh-empty .copy { color: rgba(246,242,233,0.82); }
+  .card.rhh-empty .focus-empty-cta { border-radius: 999px; padding: 13px 26px; background: linear-gradient(100deg, #CFA646 0%, #F8E7B0 48%, #CFA646 100%); color: #1A1408; }
+
+  @media (max-width: 760px) {
+    .rhh-card .rhh-grid.rhh-has-shift { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+  @media (max-width: 640px) {
+    .focus-card.rhh-card { padding: 52px 18px 22px; margin-bottom: 28px; border-radius: 50% 50% 16px 16px / 34px 34px 16px 16px; }
+    .rhh-card .rhh-arch, .rhh-empty .rhh-arch { border-radius: 50% 50% 11px 11px / 28px 28px 11px 11px; }
+    .rhh-card .rhh-crest { top: 15px; }
+    .rhh-card .rhh-crest-line { width: 28px; }
+    .rhh-card .rhh-label { margin-bottom: 20px; }
+    .rhh-card .rhh-identity { font-size: 31px; }
+    .focus-card.rhh-card .rhf-attn { padding-left: 13px; }
+    .rhh-card .rhh-grid.rhh-has-shift { gap: 20px; }
+    .rhh-card .rhh-shift { padding: 22px 14px 16px; border-radius: 50% 50% 12px 12px / 22px 22px 12px 12px; }
+    .rhh-card .rhh-shift .rhh-kicker { margin-bottom: 6px; }
+    .rhh-card .rhh-from { font-size: 15.5px; }
+    .rhh-card .rhh-into { font-size: 18px; -webkit-line-clamp: 2; line-clamp: 2; }
+    .rhh-card .rhh-ft-arrow { height: 22px; margin: 4px auto 6px; }
+    .focus-card.rhh-card .rhh-footer { margin-top: 20px; padding-top: 16px; }
+    .focus-card.rhh-card .rhh-footer { flex-direction: column; align-items: stretch; }
+    .rhh-card .rhh-chip { width: 100%; }
+    .rhh-card .rhh-continue { width: 100%; }
+    .card.rhh-empty { border-radius: 50% 50% 16px 16px / 34px 34px 16px 16px; padding: 46px 18px 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rhh-card .rhh-glow, .rhh-card .status-pill, .rhh-card .rhh-chip, .rhh-card .rhh-continue { animation: none !important; transition: none !important; }
+  }
+</style>
 <div class="modal-overlay" id="shift-modal">
-  <div class="modal-card">
+  <div class="modal-card rhs-card" role="dialog" aria-modal="true" aria-labelledby="shift-modal-identity" tabindex="-1">
+    <span class="rhs-glow" aria-hidden="true"></span>
+    <span class="rhs-arch" aria-hidden="true"></span>
+    <span class="rhs-sheen" aria-hidden="true"></span>
+    <span class="rhs-crest" aria-hidden="true"><span class="rhs-crest-line"></span><span class="rhs-crest-gem"></span><span class="rhs-crest-line rhs-flip"></span></span>
     <div class="shift-modal-headerbar">
-      <button type="button" class="rh-drawer-item-menu" id="shift-modal-menu-btn" aria-label="Shift options" title="Shift options">⋯</button>
-      <button class="modal-close" onclick="closeShiftModal()">×</button>
+      <button type="button" class="rh-drawer-item-menu" id="shift-modal-menu-btn" aria-label="Shift options" title="Shift options" aria-haspopup="menu">⋯</button>
+      <button type="button" class="modal-close" onclick="closeShiftModal()" aria-label="Close">×</button>
     </div>
-    <div class="eyebrow" style="margin-bottom: 4px;">Your Divine Identity</div>
-    <h2 class="serif" id="shift-modal-identity" style="margin-bottom: 2px;">The Leader</h2>
-    <p style="margin: 0; color: var(--taupe); font-size: 13.5px;">Currently experiencing: <span id="shift-modal-frequency">Hiddenness</span></p>
-    <div class="shift-modal-section">
-      <div class="eyebrow">Your GAP</div>
+    <div class="rhs-head rhs-reveal" style="--i:0">
+      <div class="rhs-eyebrow">Your Divine Identity</div>
+      <h2 class="serif" id="shift-modal-identity">The Leader</h2>
+      <p class="rhs-experiencing" id="shift-modal-experiencing">Currently experiencing: <span id="shift-modal-frequency">Hiddenness</span></p>
+      <div class="rhs-status"><span class="status-pill shifting" id="shift-modal-status">● Shifting</span></div>
+    </div>
+    <div class="rhs-rule rhs-reveal" style="--i:1" aria-hidden="true"></div>
+    <div class="shift-modal-section rhs-reveal" id="shift-modal-gap-section" style="--i:2">
+      <div class="rhs-eyebrow">Your GAP</div>
       <p style="margin: 0;" id="shift-modal-gap">Your leadership hasn't disappeared &mdash; the GAP is between the leader you already are and the amount of that leadership you currently feel safe letting people see.</p>
     </div>
-    <div class="shift-modal-section">
-      <div class="eyebrow">What's Maintaining It</div>
-      <p style="margin: 0;" id="shift-modal-maintaining">Your answers suggest part of you connects being fully visible with judgment or increased pressure &mdash; so staying smaller has felt safer than being fully seen.</p>
+    <div class="shift-modal-section rhs-reveal" id="shift-modal-maintaining-section" style="--i:3">
+      <div class="rhs-eyebrow">What's Maintaining It</div>
+      <div class="rhs-paras" id="shift-modal-maintaining"><p>Your answers suggest part of you connects being fully visible with judgment or increased pressure &mdash; so staying smaller has felt safer than being fully seen.</p></div>
     </div>
-    <div class="shift-modal-section" id="shift-modal-highest-leverage-section">
-      <div class="eyebrow">Your Shift</div>
+    <div class="shift-modal-section rhs-primary rhs-reveal" id="shift-modal-primary-section" style="--i:4; display: none;">
+      <div class="rhs-primary-frame">
+        <div class="rhs-eyebrow">Your Primary Shift</div>
+        <div class="rhs-from"><span class="rhs-ft-label">From</span><p id="shift-modal-primary-from"></p></div>
+        <div class="rhs-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#F1D58A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+        <div class="rhs-into"><span class="rhs-ft-label">Into</span><p id="shift-modal-primary-into"></p></div>
+      </div>
+    </div>
+    <div class="shift-modal-section rhs-reveal" id="shift-modal-highest-leverage-section" style="--i:5">
+      <div class="rhs-eyebrow">Your Shift</div>
       <p style="margin: 0;" id="shift-modal-highest-leverage">Visibility, truth and embodied authority.</p>
     </div>
-    <div class="shift-modal-section">
-      <div class="eyebrow">Primary Activation</div>
+    <div class="shift-modal-section rhs-reveal" style="--i:6">
+      <div class="rhs-eyebrow">Primary Activation</div>
       <p style="margin: 0;"><strong id="shift-modal-activation">Expansion Activation</strong></p>
     </div>
-    <div class="shift-modal-section" id="shift-modal-deeper-section" style="display: none; border-top: 1px solid var(--taupe-line); padding-top: 16px; margin-top: 20px;">
-      <div class="eyebrow" style="color: var(--gold);">What We Found Deeper</div>
+    <div class="shift-modal-section rhs-reveal" id="shift-modal-deeper-section" style="--i:7; display: none; border-top: 1px solid rgba(226,190,104,0.25); padding-top: 16px; margin-top: 22px;">
+      <div class="rhs-eyebrow" style="color: var(--gold);">What We Found Deeper</div>
       <p style="margin: 8px 0 0;">Undercurrent: <strong id="shift-modal-undercurrent">Doubt</strong></p>
       <p style="margin: 4px 0 10px; font-size: 13px; color: var(--taupe);" id="shift-modal-undercurrent-shows-up">When more people start paying attention, you begin questioning whether you know enough, whether you're ready, and whether you should say less.</p>
       <p style="margin: 0;">Suggested Activation: <strong id="shift-modal-undercurrent-activation">Removing the Frequency of Doubt</strong></p>
     </div>
-    <div class="shift-modal-section">
-      <p style="margin: 0;">Progress: <span class="status-pill shifting" id="shift-modal-status">● Shifting</span></p>
-    </div>
-    <div class="shift-modal-actions">
+    <div class="shift-modal-actions rhs-reveal" style="--i:8">
       <button class="btn-primary" id="shift-modal-listen-btn">Listen Now</button>
-      <button class="heart-btn filled" onclick="toggleHeart(this)" style="font-size: 20px;">♥</button>
+      <button class="heart-btn filled" onclick="toggleHeart(this)" style="font-size: 20px;" aria-label="Favorite">♥</button>
     </div>
-    <div class="shift-modal-actions" style="margin-top: 10px;">
+    <div class="shift-modal-actions rhs-reveal" style="--i:9; margin-top: 10px;">
       <button class="btn-secondary" id="shift-modal-update-progress-btn">Update Progress</button>
     </div>
     <div id="shift-modal-embodied-ready" style="display: none; margin-top: 20px;">
@@ -1192,28 +1426,50 @@
       </div>
     </div>
 
-    <div class="focus-card" data-role="focus-card">
-      <div class="focus-card-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
-      <div class="focus-card-body">
-        <div class="focus-card-identity">
-          <div class="focus-card-kicker">Your Divine Identity</div>
-          <h3 class="serif" data-role="focus-identity">The Leader</h3>
+    <div class="focus-card rhh-card" data-role="focus-card">
+      <span class="rhh-glow" aria-hidden="true"></span>
+      <span class="rhh-arch" aria-hidden="true"></span>
+      <span class="rhh-crest" aria-hidden="true"><span class="rhh-crest-line"></span><span class="rhh-crest-gem"></span><span class="rhh-crest-line rhh-flip"></span></span>
+      <div class="focus-card-label rhh-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
+      <div class="rhh-grid" data-role="focus-grid">
+        <div class="rhh-main">
+          <div class="rhf-top rhh-top">
+            <div class="focus-card-identity">
+              <div class="focus-card-kicker rhh-kicker">Your Divine Identity</div>
+              <h3 class="serif rhh-identity" data-role="focus-identity">The Leader</h3>
+            </div>
+            <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
+          </div>
+          <div class="rhf-attn" data-role="focus-attn">
+            <div class="focus-card-kicker rhh-kicker" id="focus-attn-label">What's Asking For Attention</div>
+            <p class="rhf-teaser" id="focus-attn-teaser" data-role="focus-freq" aria-labelledby="focus-attn-label">Hiddenness</p>
+            <div class="rhf-controls">
+              <button type="button" class="rhf-more" data-role="focus-more" aria-expanded="false" aria-controls="focus-attn-teaser" hidden><span data-role="focus-more-label">Read more</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+              <button type="button" class="rhf-open-full" data-role="focus-open-full" onclick="rhOpenFocusShift()" hidden>Open your full Shift →</button>
+            </div>
+          </div>
+          <div class="focus-card-activity rhh-activity" data-role="focus-activity">
+            <div data-role="focus-activity-line">Started August 4, 2026</div>
+          </div>
         </div>
-        <div>
-          <div class="focus-card-kicker">What's Asking For Attention</div>
-          <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
+        <div class="rhh-shift" data-role="focus-primary" hidden>
+          <div class="rhh-kicker">Your Primary Shift</div>
+          <div class="rhh-ft"><span class="rhh-ft-label">From</span><p class="rhh-from" data-role="focus-primary-from"></p></div>
+          <div class="rhh-ft-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#F1D58A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+          <div class="rhh-ft"><span class="rhh-ft-label">Into</span><p class="rhh-into" data-role="focus-primary-into"></p></div>
         </div>
-        <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
       </div>
-      <div class="focus-card-activity" data-role="focus-activity">
-        <div data-role="focus-activity-line">Started August 4, 2026</div>
-      </div>
-      <div class="focus-card-footer">
-        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation">Expansion Activation</strong></div>
-        <button class="btn-primary" onclick="openShiftModal()">Continue Your Revolution</button>
+      <div class="focus-card-footer rhh-footer">
+        <div class="focus-card-activation rhh-activation" data-role="focus-activation-wrap">
+          <span class="rhh-kicker rhh-act-label">Recommended activation</span>
+          <button type="button" class="rhh-chip" data-role="focus-activation-chip" onclick="rhOpenFocusActivation()"><span class="rhh-chip-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="10" height="10"><polygon points="7,4 20,12 7,20" fill="#1A1408"/></svg></span><strong data-role="focus-activation">Expansion Activation</strong></button>
+        </div>
+        <button class="btn-primary rhh-continue" data-role="focus-continue" onclick="rhOpenFocusShift()">Continue Your Revolution</button>
       </div>
     </div>
-    <div class="card center" data-role="focus-empty" style="display:none;">
+    <div class="card center rhh-empty" data-role="focus-empty" style="display:none;">
+      <span class="rhh-arch" aria-hidden="true"></span>
+      <div class="focus-card-label rhh-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
       <p class="copy" style="margin: 0 0 18px; text-align:center;">You haven't started a Shift yet. Complete the GAP Method to create your first one.</p>
       <button class="btn-primary focus-empty-cta">Start the GAP Method →</button>
     </div>
@@ -2128,12 +2384,230 @@
   // Populated from real Airtable Shift records via /api/shifts -- see loadMemberRevolutionData() below.
   var SHIFTS = [];
 
+  // ---------------------------------------------------------------------
+  // Today's Focus + Shift card redesign (Oct 8) -- DISPLAY-ONLY helpers.
+  // These only decide how the saved what_we_noticed text is laid out on
+  // screen. They never change what is stored in Airtable, and every word of
+  // the stored text is still shown in the Shift pop-up.
+  // Saved format (GAP pop-up + main chat): howItShowsUp + "\n\n" +
+  // "Primary Shift: " + primaryShift. Older/legacy records may be plain
+  // text, HTML, the "wasn't captured" placeholder, or empty.
+  // ---------------------------------------------------------------------
+  function rhWordCount(t) { var m = String(t || '').match(/\S+/g); return m ? m.length : 0; }
+  function rhLooksLikeHtml(t) { return /<\/?[a-z][^>]*>|&(?:[a-z]+|#\d+|#x[0-9a-f]+);/i.test(String(t || '')); }
+  function rhIsPlaceholderText(t) { return /wasn['\u2019]t captured this time/i.test(String(t || '')); }
+
+  // Split one block of "how it shows up" text into 2-4 short paragraphs.
+  // Splits on "; " first (how the GAP reveal is usually written), then on
+  // sentence ends. Punctuation stays exactly where it was; nothing is dropped.
+  function rhSplitShowsUp(text) {
+    text = String(text || '').replace(/\r\n?/g, '\n').trim();
+    if (!text) return [];
+    var blocks = text.split(/\n[ \t]*\n/).map(function(b) { return b.trim(); }).filter(Boolean);
+    if (blocks.length > 1) return blocks;
+    if (rhWordCount(text) < 40) return [text];
+    var pieces = [];
+    var start = 0, i;
+    for (i = 0; i < text.length; i++) {
+      if (text.charAt(i) === ';' && /\s/.test(text.charAt(i + 1) || '')) {
+        pieces.push(text.slice(start, i + 1).trim());
+        start = i + 1;
+      }
+    }
+    pieces.push(text.slice(start).trim());
+    pieces = pieces.filter(Boolean);
+    if (pieces.length < 2) {
+      pieces = text.replace(/([.!?]["\u201d\u2019')]?)\s+(?=["\u201c\u2018'(]?[A-Z])/g, '$1\u0000').split('\u0000')
+        .map(function(p) { return p.trim(); }).filter(Boolean);
+    }
+    // Fold very short fragments (under 6 words) into the paragraph before them.
+    pieces = pieces.reduce(function(acc, p) {
+      if (acc.length && rhWordCount(p) < 6) acc[acc.length - 1] += ' ' + p; else acc.push(p);
+      return acc;
+    }, []);
+    if (pieces.length > 1 && rhWordCount(pieces[0]) < 6) { pieces[1] = pieces[0] + ' ' + pieces[1]; pieces.shift(); }
+    if (pieces.length < 2) return [text];
+    if (pieces.length <= 4) return pieces;
+    var total = rhWordCount(text);
+    var n = Math.min(4, Math.max(2, Math.round(total / 40)));
+    // Group neighbouring pieces into n paragraphs of roughly equal length.
+    var out = [], cur = [], acc = 0, k = 1;
+    pieces.forEach(function(p, idx) {
+      cur.push(p); acc += rhWordCount(p);
+      var remainingPieces = pieces.length - idx - 1, remainingGroups = n - out.length - 1;
+      if (remainingGroups > 0 && (acc >= (total * k) / n || remainingPieces === remainingGroups)) {
+        out.push(cur.join(' ')); cur = []; k++;
+      }
+    });
+    if (cur.length) out.push(cur.join(' '));
+    return out;
+  }
+
+  // "From X, into Y" -> { from: X, into: Y }; null if it can't be read safely.
+  function rhParsePrimaryShift(text) {
+    var t = String(text || '').trim();
+    var m = t.match(/^from\s+([\s\S]+?),\s+into\s+([\s\S]+)$/i);
+    if (!m) {
+      var intoCount = (t.match(/\binto\b/gi) || []).length;
+      if (intoCount === 1) m = t.match(/^from\s+([\s\S]+?)\s+into\s+([\s\S]+)$/i);
+    }
+    if (!m) return null;
+    var from = m[1].trim(), into = m[2].trim();
+    if (!from || !into) return null;
+    return { from: from, into: into };
+  }
+
+  // Lay out a Shift's "What's asking for attention" text for display.
+  function rhParseAttention(raw) {
+    var text = String(raw || '').replace(/\r\n?/g, '\n').trim();
+    var res = { kind: 'empty', raw: text, paragraphs: [], primaryLine: '', primary: null };
+    if (!text) return res;
+    if (rhLooksLikeHtml(text)) { res.kind = 'html'; return res; }
+    if (rhIsPlaceholderText(text)) { res.kind = 'placeholder'; res.paragraphs = [text]; return res; }
+    res.kind = 'text';
+    var m = text.match(/(^|\n)[ \t]*Primary Shift:[ \t]*/i);
+    var showsUp = text;
+    if (m) {
+      showsUp = text.slice(0, m.index).trim();
+      var primaryText = text.slice(m.index + m[0].length).trim();
+      res.primaryLine = text.slice(m.index).trim();
+      res.primary = primaryText ? rhParsePrimaryShift(primaryText) : null;
+    }
+    res.paragraphs = rhSplitShowsUp(showsUp);
+    // Unreadable "Primary Shift:" line -> keep it word-for-word as the last paragraph.
+    if (res.primaryLine && !res.primary) res.paragraphs.push(res.primaryLine);
+    return res;
+  }
+
+  // Short teaser for the Today's Focus card: the opening of the attention
+  // text (about 30-50 words). The full text lives only in the Shift pop-up.
+  function rhFocusTeaser(shift) {
+    var parsed = rhParseAttention(shift && shift.maintaining);
+    var source = '';
+    var muted = false;
+    if (parsed.kind === 'text' || parsed.kind === 'placeholder') {
+      var paras = parsed.paragraphs.slice();
+      if (!paras.length && parsed.primaryLine) paras = [parsed.primaryLine];
+      var pick = [];
+      for (var i = 0; i < paras.length; i++) {
+        pick.push(paras[i]);
+        if (rhWordCount(pick.join(' ')) >= 30) break;
+      }
+      source = pick.join(' ');
+      muted = parsed.kind === 'placeholder';
+    } else if (parsed.kind === 'html') {
+      var tmp = document.createElement('div'); tmp.innerHTML = parsed.raw; source = (tmp.textContent || '').trim();
+    }
+    if (!source) {
+      source = (shift && shift.gap) ? String(shift.gap) : '';
+      if (rhLooksLikeHtml(source)) { var tmp2 = document.createElement('div'); tmp2.innerHTML = source; source = (tmp2.textContent || '').trim(); }
+      muted = rhIsPlaceholderText(source);
+    }
+    if (!source) return { text: 'More will show here as this Shift develops.', truncated: false, muted: true };
+    var words = source.split(/\s+/);
+    var truncated = false;
+    if (words.length > 50) { source = words.slice(0, 45).join(' ').replace(/[,;:\u2014-]+$/, '') + '\u2026'; truncated = true; }
+    var fullWords = rhWordCount(parsed.raw || (shift && shift.gap) || '');
+    if (!truncated && rhWordCount(source) < fullWords) {
+      truncated = true;
+      // The teaser stops partway through: end on an ellipsis, not a dangling ";" or ",".
+      source = source.replace(/[\s,;:\u2014-]+$/, '');
+      if (!/[.!?\u2026]["\u201d\u2019')]?$/.test(source)) source += '\u2026';
+    }
+    return { text: source, truncated: truncated, muted: muted };
+  }
+
+  // Today's Focus selection (mirrors lib/shifts.js deriveTodaysFocus):
+  // the newest Shift that is NOT Embodied. `shifts` arrives newest-first
+  // (/api/shifts sorts by created_at desc). A same-session pin is honoured
+  // only if that Shift still exists, isn't Embodied, and no newer Shift has
+  // been created since it was pinned. If every Shift is Embodied, fall back
+  // to the newest one so the card never disappears.
+  function rhPickFocusShift(shifts, pin) {
+    if (!shifts || !shifts.length) return null;
+    function isActive(s) { return s && s.statusClass !== 'embodied'; }
+    var newestId = String(shifts[0].id);
+    if (pin && pin.id && pin.newestId && String(pin.newestId) === newestId) {
+      var pinned = shifts.filter(function(s) { return String(s.id) === String(pin.id); })[0];
+      if (pinned && isActive(pinned)) return pinned;
+    }
+    var active = shifts.filter(isActive);
+    return active.length ? active[0] : shifts[0];
+  }
+  function rhReadFocusPin() {
+    try { return { id: sessionStorage.getItem('rhFocusShiftId'), newestId: sessionStorage.getItem('rhFocusNewestId') }; } catch (e) { return null; }
+  }
+  function rhWriteFocusPin(focus, shifts) {
+    try {
+      sessionStorage.setItem('rhFocusShiftId', String(focus.id));
+      sessionStorage.setItem('rhFocusNewestId', String(shifts[0].id));
+    } catch (e) {}
+  }
+  // "Continue Your Revolution" / "Open your full Shift" open the exact Shift the card shows.
+  function rhOpenFocusShift() { openShiftModal(window.__rhFocusShiftId); }
+  // Home card extras (display only): the Primary Shift From -> Into preview and
+  // the Recommended activation chip, which opens the same activation the
+  // Shift pop-up's "Listen Now" opens.
+  function rhRenderFocusExtras(top) {
+    var parsed = rhParseAttention(top && top.maintaining);
+    var pr = parsed.primary;
+    document.querySelectorAll('[data-role="focus-primary"]').forEach(function(box) {
+      box.hidden = !pr;
+      if (pr) {
+        var f = box.querySelector('[data-role="focus-primary-from"]'); if (f) f.textContent = pr.from;
+        var t = box.querySelector('[data-role="focus-primary-into"]'); if (t) t.textContent = pr.into;
+      }
+    });
+    document.querySelectorAll('[data-role="focus-grid"]').forEach(function(g) { g.classList.toggle('rhh-has-shift', !!pr); });
+    var title = (top && top.activation) ? String(top.activation) : '';
+    document.querySelectorAll('[data-role="focus-activation-wrap"]').forEach(function(w) { w.hidden = !title; });
+    document.querySelectorAll('[data-role="focus-activation-chip"]').forEach(function(chip) { chip.setAttribute('aria-label', 'Recommended activation: ' + title); });
+  }
+  function rhOpenFocusActivation() {
+    var shift = SHIFTS.filter(function(s) { return String(s.id) === String(window.__rhFocusShiftId); })[0];
+    var slug = shift && rhSlugForActivationTitle(shift.activation);
+    if (slug && typeof handleActivationCardClick === 'function') handleActivationCardClick(slug);
+    else rhOpenFocusShift();
+  }
+
+  function rhRenderMaintaining(shift) {
+    var section = document.getElementById('shift-modal-maintaining-section');
+    var box = document.getElementById('shift-modal-maintaining');
+    var primarySection = document.getElementById('shift-modal-primary-section');
+    var parsed = rhParseAttention(shift.maintaining);
+    box.innerHTML = '';
+    primarySection.style.display = 'none';
+    if (parsed.kind === 'html') {
+      // Legacy rich text: render exactly as before (same innerHTML behaviour).
+      var legacy = document.createElement('p');
+      legacy.innerHTML = parsed.raw;
+      box.appendChild(legacy);
+      section.style.display = '';
+      return parsed;
+    }
+    parsed.paragraphs.forEach(function(t) {
+      var p = document.createElement('p');
+      p.textContent = t;
+      if (parsed.kind === 'placeholder') p.className = 'rhs-muted';
+      box.appendChild(p);
+    });
+    section.style.display = parsed.paragraphs.length ? '' : 'none';
+    if (parsed.primary) {
+      document.getElementById('shift-modal-primary-from').textContent = parsed.primary.from;
+      document.getElementById('shift-modal-primary-into').textContent = parsed.primary.into;
+      primarySection.style.display = '';
+    }
+    return parsed;
+  }
+
   function renderShiftModal(shift) {
     window.__rhCurrentShift = shift;
     document.getElementById('shift-modal-identity').textContent = shift.identity || 'Your Divine Identity';
     document.getElementById('shift-modal-frequency').textContent = shift.frequency || '';
+    document.getElementById('shift-modal-experiencing').classList.toggle('rhs-none', !shift.frequency);
     document.getElementById('shift-modal-gap').innerHTML = shift.gap || '';
-    document.getElementById('shift-modal-maintaining').innerHTML = shift.maintaining || '';
+    document.getElementById('shift-modal-gap-section').style.display = shift.gap ? '' : 'none';
+    rhRenderMaintaining(shift);
     document.getElementById('shift-modal-activation').textContent = shift.activation || '';
     var statusEl = document.getElementById('shift-modal-status');
     statusEl.textContent = shift.statusLabel;
@@ -2174,13 +2648,50 @@
       (shift.statusClass === 'shifting' && shift.readyForEmbodied) ? '' : 'none';
   }
 
+  var rhShiftModalReturnFocus = null;
   function openShiftModal(id) {
     if (!SHIFTS.length) return;
-    var shift = SHIFTS.find(function(s) { return s.id === id; }) || SHIFTS[0];
+    var shift = SHIFTS.find(function(s) { return id != null && String(s.id) === String(id); }) || SHIFTS[0];
     renderShiftModal(shift);
-    document.getElementById('shift-modal').classList.add('active');
+    var overlay = document.getElementById('shift-modal');
+    if (!overlay.classList.contains('active')) rhShiftModalReturnFocus = document.activeElement;
+    overlay.classList.add('active');
+    overlay.scrollTop = 0;
+    var card = overlay.querySelector('.rhs-card');
+    if (card) { try { card.focus({ preventScroll: true }); } catch (e) {} }
   }
-  function closeShiftModal() { document.getElementById('shift-modal').classList.remove('active'); }
+  function closeShiftModal() {
+    var overlay = document.getElementById('shift-modal');
+    var wasOpen = overlay.classList.contains('active');
+    overlay.classList.remove('active');
+    var pop = document.querySelector('.shift-modal-popover');
+    if (pop) pop.remove();
+    var back = rhShiftModalReturnFocus;
+    rhShiftModalReturnFocus = null;
+    if (wasOpen && back && back.focus && document.contains(back) && back.offsetParent !== null) {
+      try { back.focus({ preventScroll: true }); } catch (e) {}
+    }
+  }
+  // Shift pop-up keyboard support: Esc closes the ⋯ menu, then the pop-up;
+  // Tab stays inside the pop-up while it is open.
+  document.addEventListener('keydown', function(e) {
+    var overlay = document.getElementById('shift-modal');
+    if (!overlay || !overlay.classList.contains('active')) return;
+    if (e.key === 'Escape') {
+      var pop = document.querySelector('.shift-modal-popover');
+      if (pop) { pop.remove(); var mb = document.getElementById('shift-modal-menu-btn'); if (mb) mb.focus(); }
+      else { closeShiftModal(); }
+      return;
+    }
+    if (e.key === 'Tab') {
+      var card = overlay.querySelector('.rhs-card');
+      var f = Array.prototype.filter.call(card.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'), function(el) { return !el.disabled && el.offsetParent !== null; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === card)) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
   function toggleShiftModalMenu() {
     var existing = document.querySelector('.shift-modal-popover');
     if (existing) { existing.remove(); return; }
@@ -2275,6 +2786,7 @@
         shift3.statusClass = 'embodied';
         shift3.statusLabel = '\ud83d\udfe2 Embodied';
         renderShiftModal(shift3);
+        if (typeof renderFocusAndShifts === 'function') renderFocusAndShifts(SHIFTS);
       }).catch(function() {}).finally(function() {
         embodiedBtn.disabled = false;
       });
@@ -2725,6 +3237,44 @@
     } catch (e) { return ''; }
   }
 
+  // Today's Focus teaser: two-line preview, tap to expand. Expanding shows the
+  // short opening only, plus a link into the full Shift pop-up.
+  var rhFocusTeaserState = { truncated: false };
+  function rhSetFocusExpanded(open) {
+    document.querySelectorAll('[data-role="focus-attn"]').forEach(function(box) { box.classList.toggle('rhf-open', !!open); });
+    document.querySelectorAll('[data-role="focus-more"]').forEach(function(btn) {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      var label = btn.querySelector('[data-role="focus-more-label"]');
+      if (label) label.textContent = open ? 'Show less' : 'Read more';
+    });
+    document.querySelectorAll('[data-role="focus-open-full"]').forEach(function(b) { b.hidden = !open; });
+  }
+  function rhUpdateFocusMore(teaser) {
+    if (teaser) rhFocusTeaserState.truncated = !!teaser.truncated;
+    document.querySelectorAll('[data-role="focus-attn"]').forEach(function(box) {
+      var p = box.querySelector('[data-role="focus-freq"]');
+      var btn = box.querySelector('[data-role="focus-more"]');
+      if (!p || !btn) return;
+      var open = box.classList.contains('rhf-open');
+      var overflowing;
+      if (open) overflowing = true;
+      else if (p.clientHeight > 0) overflowing = p.scrollHeight - p.clientHeight > 2;
+      else overflowing = (p.textContent || '').length > 110;
+      btn.hidden = !(overflowing || rhFocusTeaserState.truncated);
+    });
+  }
+  document.addEventListener('click', function(e) {
+    var more = e.target.closest('[data-role="focus-more"]');
+    var teaserEl = !more && e.target.closest('.focus-card .rhf-attn:not(.rhf-open) [data-role="focus-freq"]');
+    if (!more && !teaserEl) return;
+    var box = (more || teaserEl).closest('[data-role="focus-attn"]');
+    var btn = box && box.querySelector('[data-role="focus-more"]');
+    if (!btn || btn.hidden) return;
+    rhSetFocusExpanded(btn.getAttribute('aria-expanded') !== 'true');
+  });
+  var rhFocusResizeT = null;
+  window.addEventListener('resize', function() { clearTimeout(rhFocusResizeT); rhFocusResizeT = setTimeout(function() { rhUpdateFocusMore(); }, 150); });
+
   function renderFocusAndShifts(shifts) {
     var hasShifts = shifts.length > 0;
 
@@ -2737,15 +3287,21 @@
     document.querySelectorAll('[data-role="demo-activity"]').forEach(function(el) { el.style.display = hasShifts ? '' : 'none'; });
 
     if (hasShifts) {
-            var top = shifts[0]; try { var pinnedShiftId = sessionStorage.getItem('rhFocusShiftId'); if (pinnedShiftId) { var pinnedShift = shifts.filter(function(s) { return String(s.id) === String(pinnedShiftId); })[0]; if (pinnedShift) { top = pinnedShift; } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } catch (e) {}
+      var top = rhPickFocusShift(shifts, rhReadFocusPin());
+      rhWriteFocusPin(top, shifts);
+      window.__rhFocusShiftId = top.id;
       document.querySelectorAll('[data-role="focus-identity"]').forEach(function(el) { el.textContent = top.identity || 'Your Divine Identity'; });
-      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.maintaining || top.gap || "More will show here as this Shift develops."; });
+      var teaser = rhFocusTeaser(top);
+      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = teaser.text; el.classList.toggle('rhf-muted', !!teaser.muted); });
+      rhSetFocusExpanded(false);
+      rhUpdateFocusMore(teaser);
       document.querySelectorAll('[data-role="focus-status"]').forEach(function(el) {
         el.textContent = top.statusLabel;
         el.className = 'status-pill ' + top.statusClass;
       });
       document.querySelectorAll('[data-role="focus-activation"]').forEach(function(el) { el.textContent = top.activation || ''; });
       document.querySelectorAll('[data-role="focus-activity-line"]').forEach(function(el) { el.textContent = 'Started ' + top.date; });
+      rhRenderFocusExtras(top);
     }
 
     var listHtml = '';
