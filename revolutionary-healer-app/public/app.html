@@ -5424,5 +5424,305 @@ if (forceComplete) { goDay(3); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
+<!-- ============================================================
+     MOCKUP ONLY: "Clear Channel Method" member pop-up (2 versions).
+     - Never active on production hosts (same host guard as the GAP
+       Step 3 preview shortcut). Draft PR, never merge.
+     - Presentation only: no backend, no tracking, nothing is saved.
+       "Tell me more" only pre-fills the chat box; it never sends.
+     - Version A (?ccm=card): centered card over the home screen.
+     - Version B (?ccm=chat): invitation card inside the chatbot.
+     - ?ccm=off hides both. A small mockup toggle switches versions.
+     - Forced visible for the mockup (ignores the day-14 / Shift rules).
+     - Does not touch or recolor the Spookbound banner.
+     ============================================================ -->
+<style id="ccm-mock-css">
+  .ccm-serif { font-family: "Cormorant Garamond", "Cormorant", "Playfair Display", "Iowan Old Style", Georgia, serif; }
+  /* ---------- shared pieces ---------- */
+  .ccm-eyebrow { display: inline-flex; align-items: center; gap: 10px; font: 600 10.5px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; letter-spacing: .32em; text-transform: uppercase; color: #E2BE68; }
+  .ccm-eyebrow::before, .ccm-eyebrow::after { content: ""; width: 22px; height: 1px; background: linear-gradient(90deg, transparent, rgba(226,190,104,.8)); }
+  .ccm-eyebrow::after { transform: scaleX(-1); }
+  .ccm-title { margin: 0; font-weight: 500; line-height: 1.02; letter-spacing: .005em; background: linear-gradient(100deg, #FFF6DC 0%, #F3D995 30%, #E2BE68 52%, #FFF1C9 64%, #C9A04A 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: ccm-foil 9s ease-in-out infinite; }
+  .ccm-title sup { font-size: .34em; vertical-align: top; position: relative; top: .35em; margin-left: .06em; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-weight: 500; letter-spacing: 0; }
+  @keyframes ccm-foil { 0%,100% { background-position: 100% 0; } 50% { background-position: 0% 0; } }
+  .ccm-tagline { text-wrap: balance; margin: 0; font-style: italic; font-weight: 500; color: #F6F2E9; line-height: 1.3; }
+  .ccm-rule { display: flex; align-items: center; justify-content: center; gap: 12px; color: #E2BE68; font-size: 10px; }
+  .ccm-rule::before, .ccm-rule::after { content: ""; flex: 0 1 84px; height: 1px; background: linear-gradient(90deg, transparent, rgba(226,190,104,.65)); }
+  .ccm-rule::after { transform: scaleX(-1); }
+  .ccm-what { text-wrap: pretty; margin: 0; color: #CDBFA6; font-size: 14.5px; line-height: 1.6; }
+  .ccm-price { margin: 0; font-size: 12.5px; letter-spacing: .06em; color: #A9997F; }
+  .ccm-price b { color: #F1D58A; font-weight: 600; letter-spacing: .04em; font-size: 14px; }
+  .ccm-price s { color: #8C8272; margin-left: 4px; }
+  .ccm-btn-gold { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: none; cursor: pointer; border-radius: 999px; padding: 15px 34px; font: 700 12.5px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; letter-spacing: .2em; text-transform: uppercase; color: #241C0A; background: linear-gradient(180deg, #F8E7B0 0%, #E2BE68 48%, #B98A2E 100%); box-shadow: 0 0 0 1px rgba(255,236,190,.45) inset, 0 10px 30px rgba(185,138,46,.35), 0 0 26px rgba(226,190,104,.35); transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease; }
+  .ccm-btn-gold::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.7), transparent); transform: skewX(-20deg); animation: ccm-gleam 5.5s ease-in-out infinite; pointer-events: none; }
+  .ccm-btn-gold:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(255,236,190,.55) inset, 0 14px 36px rgba(185,138,46,.45), 0 0 34px rgba(226,190,104,.5); }
+  @keyframes ccm-gleam { 0%,70% { left: -60%; } 100% { left: 130%; } }
+  .ccm-btn-quiet { background: none; border: none; cursor: pointer; padding: 10px 14px; font: 500 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; letter-spacing: .08em; color: #A9997F; transition: color .3s ease; }
+  .ccm-btn-quiet:hover { color: #F6F2E9; }
+  .ccm-fly { display: block; filter: drop-shadow(0 0 10px rgba(226,190,104,.55)); animation: ccm-float 6s ease-in-out infinite; }
+  .ccm-fly .w { transform-box: fill-box; animation: ccm-flap 4.2s ease-in-out infinite; }
+  .ccm-fly .wl { transform-origin: 100% 60%; } .ccm-fly .wr { transform-origin: 0% 60%; }
+  @keyframes ccm-flap { 0%,100% { transform: scaleX(1); } 50% { transform: scaleX(.82); } }
+  @keyframes ccm-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+  .ccm-spark { position: absolute; width: 10px; height: 10px; pointer-events: none; background: radial-gradient(circle, #FFF4D6 0 1.2px, transparent 1.6px), linear-gradient(#F1D58A, #F1D58A) center / 1px 100% no-repeat, linear-gradient(#F1D58A, #F1D58A) center / 100% 1px no-repeat; opacity: 0; animation: ccm-twinkle 4.8s ease-in-out infinite; filter: drop-shadow(0 0 4px rgba(241,213,138,.9)); }
+  @keyframes ccm-twinkle { 0%,100% { opacity: 0; transform: scale(.4) rotate(0deg); } 45%,55% { opacity: .95; transform: scale(1) rotate(45deg); } }
+
+  /* ---------- Version A: centered card ---------- */
+  #ccm-pop-backdrop { position: fixed; inset: 0; z-index: 9100; display: none; align-items: center; justify-content: center; padding: 24px 18px calc(84px + env(safe-area-inset-bottom)); background: radial-gradient(70% 60% at 50% 45%, rgba(207,166,70,.16), transparent 70%), radial-gradient(120% 90% at 50% 40%, rgba(1,103,108,.28), rgba(2,10,11,.82) 58%, rgba(0,0,0,.9) 100%); -webkit-backdrop-filter: blur(10px) saturate(110%); backdrop-filter: blur(10px) saturate(110%); opacity: 0; transition: opacity .45s ease; overflow-y: auto; }
+  #ccm-pop-backdrop.ccm-open { display: flex; }
+  #ccm-pop-backdrop.ccm-show { opacity: 1; }
+  #ccm-pop { position: relative; width: min(500px, 100%); margin: auto; text-align: center; border-radius: 24px; padding: 46px clamp(26px, 6vw, 48px) 30px; border: 1px solid rgba(226,190,104,.6);
+    background: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22160%22%20height%3D%22160%22%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.85%22%20numOctaves%3D%222%22%20stitchTiles%3D%22stitch%22/%3E%3CfeColorMatrix%20values%3D%220%200%200%200%201%20%200%200%200%200%201%20%200%200%200%200%201%20%200%200%200%200.05%200%22/%3E%3C/filter%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20filter%3D%22url%28%23n%29%22/%3E%3C/svg%3E") repeat, radial-gradient(80% 50% at 50% 0%, rgba(226,190,104,.16), transparent 70%), radial-gradient(70% 45% at 50% 100%, rgba(1,103,108,.30), transparent 70%), linear-gradient(180deg, #14110B 0%, #0C0B08 60%, #070706 100%);
+    background-size: 160px 160px, auto, auto, auto;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 0 0 7px rgba(226,190,104,.06), 0 0 70px rgba(226,190,104,.20), 0 0 160px rgba(1,103,108,.30), 0 40px 120px rgba(0,0,0,.8);
+    transform: translateY(18px) scale(.97); opacity: 0; transition: transform .8s cubic-bezier(.16,1,.3,1), opacity .6s ease; }
+  #ccm-pop-backdrop.ccm-show #ccm-pop { transform: none; opacity: 1; }
+  #ccm-pop::before { content: ""; position: absolute; inset: 12px; border-radius: 15px; border: 1px solid rgba(226,190,104,.18); pointer-events: none;
+    background: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3C/svg%3E") top left / 40px no-repeat,
+      url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%2860%200%29%20scale%28-1%201%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3C/g%3E%3C/svg%3E") top right / 40px no-repeat,
+      url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%280%2060%29%20scale%281%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3C/g%3E%3C/svg%3E") bottom left / 40px no-repeat,
+      url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%2860%2060%29%20scale%28-1%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3C/g%3E%3C/svg%3E") bottom right / 40px no-repeat; }
+  #ccm-pop::after { content: ""; position: absolute; left: 50%; top: 0; width: 70%; height: 1px; transform: translateX(-50%); background: linear-gradient(90deg, transparent, rgba(255,240,200,.9), transparent); pointer-events: none; }
+  #ccm-pop > * { position: relative; z-index: 1; }
+  #ccm-pop .ccm-close { position: absolute; top: 18px; right: 18px; z-index: 2; width: 34px; height: 34px; border-radius: 50%; border: 1px solid rgba(226,190,104,.35); background: rgba(0,0,0,.35); color: #E2BE68; font-size: 19px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .3s ease, color .3s ease; }
+  #ccm-pop .ccm-close:hover { background: rgba(226,190,104,.15); color: #FFF4D6; }
+  #ccm-pop .ccm-halo { position: relative; width: 92px; height: 70px; margin: 0 auto 14px; }
+  #ccm-pop .ccm-halo::before { content: ""; position: absolute; left: 50%; top: 50%; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: radial-gradient(circle, rgba(226,190,104,.28), transparent 65%); }
+  #ccm-pop .ccm-halo .ccm-fly { position: relative; width: 92px; height: 70px; }
+  #ccm-pop .ccm-eyebrow { margin-bottom: 18px; }
+  #ccm-pop .ccm-title { font-size: clamp(40px, 10.5vw, 54px); margin-bottom: 18px; }
+  #ccm-pop .ccm-tagline { font-size: clamp(21px, 5.4vw, 25px); max-width: 390px; margin: 0 auto 20px; }
+  #ccm-pop .ccm-rule { margin: 0 auto 20px; }
+  #ccm-pop .ccm-what { max-width: 380px; margin: 0 auto 18px; }
+  #ccm-pop .ccm-price { margin-bottom: 26px; }
+  #ccm-pop .ccm-actions { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  #ccm-pop .ccm-btn-gold { min-width: 250px; }
+  body.ccm-lock { overflow: hidden; }
+
+  /* ---------- Version B: invitation inside the chat ---------- */
+  .ccm-chatcard { align-self: stretch; position: relative; margin: 4px 0 2px; border-radius: 18px; padding: 26px 22px 18px; text-align: center; border: 1px solid rgba(226,190,104,.55);
+    background: radial-gradient(90% 60% at 50% 0%, rgba(226,190,104,.14), transparent 70%), radial-gradient(70% 50% at 50% 100%, rgba(1,103,108,.22), transparent 70%), linear-gradient(180deg, #16120B, #0B0A08);
+    box-shadow: 0 0 0 5px rgba(226,190,104,.05), 0 0 40px rgba(226,190,104,.14), 0 18px 50px rgba(0,0,0,.45); animation: ccm-rise .9s cubic-bezier(.16,1,.3,1) both; }
+  .ccm-chatcard::before { content: ""; position: absolute; inset: 8px; border-radius: 12px; border: 1px solid rgba(226,190,104,.14); pointer-events: none; }
+  .ccm-chatcard::after { content: ""; position: absolute; left: 50%; top: 0; width: 60%; height: 1px; transform: translateX(-50%); background: linear-gradient(90deg, transparent, rgba(255,240,200,.85), transparent); }
+  .ccm-chatcard > * { position: relative; z-index: 1; }
+  @keyframes ccm-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .ccm-chatcard .ccm-from { display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; }
+  .ccm-chatcard .ccm-fly { width: 58px; height: 44px; }
+  .ccm-chatcard .ccm-title { font-size: clamp(30px, 7.4vw, 38px); margin: 0 0 10px; }
+  .ccm-chatcard .ccm-tagline { font-size: clamp(18px, 4.4vw, 21px); max-width: 460px; margin: 0 auto 14px; }
+  .ccm-chatcard .ccm-rule { margin: 0 auto 14px; }
+  .ccm-chatcard .ccm-what { font-size: 14px; max-width: 430px; margin: 0 auto 12px; }
+  .ccm-chatcard .ccm-price { margin-bottom: 18px; }
+  .ccm-chatcard .ccm-actions { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .ccm-chatcard .ccm-btn-gold { padding: 13px 28px; font-size: 12px; }
+  .ccm-chatcard.ccm-done .ccm-actions { opacity: .55; pointer-events: none; }
+  .ccm-chatnote { align-self: flex-start; color: #A9997F; font-size: 13px; font-style: italic; padding-left: 14px; border-left: 2px solid rgba(226,190,104,.5); }
+
+  /* ---------- mockup-only toggle ---------- */
+  #ccm-mock-toggle { position: fixed; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 9300; display: flex; align-items: center; gap: 4px; padding: 5px; border-radius: 999px; background: rgba(10,9,7,.88); border: 1px dashed rgba(226,190,104,.55); box-shadow: 0 10px 30px rgba(0,0,0,.5); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; white-space: nowrap; }
+  #ccm-mock-toggle .ccm-tlabel { font-size: 9.5px; font-weight: 700; letter-spacing: .18em; color: #8C8272; padding: 0 8px 0 10px; text-transform: uppercase; }
+  #ccm-mock-toggle button { border: none; cursor: pointer; border-radius: 999px; padding: 8px 13px; font-size: 12px; font-weight: 600; letter-spacing: .03em; background: transparent; color: #CDBFA6; font-family: inherit; }
+  #ccm-mock-toggle button[aria-pressed="true"] { background: linear-gradient(180deg, #F1D58A, #CFA646); color: #241C0A; }
+  #ccm-mock-toggle button.ccm-replay { color: #E2BE68; font-size: 15px; padding: 6px 10px; }
+  @media (max-width: 420px) { #ccm-mock-toggle .ccm-tlabel { display: none; } #ccm-mock-toggle button { padding: 8px 11px; font-size: 11.5px; } }
+
+  @media (max-width: 480px) {
+    #ccm-pop { padding: 40px 24px 24px; border-radius: 22px; }
+    #ccm-pop .ccm-halo { margin-bottom: 10px; }
+    #ccm-pop .ccm-eyebrow { margin-bottom: 14px; letter-spacing: .26em; }
+    #ccm-pop .ccm-title { margin-bottom: 14px; }
+    #ccm-pop .ccm-tagline { margin-bottom: 16px; }
+    #ccm-pop .ccm-rule { margin-bottom: 16px; }
+    #ccm-pop .ccm-what { font-size: 14px; margin-bottom: 14px; }
+    #ccm-pop .ccm-price { margin-bottom: 22px; }
+    #ccm-pop .ccm-btn-gold { width: 100%; min-width: 0; }
+    .ccm-chatcard { padding: 22px 16px 14px; }
+    .ccm-chatcard .ccm-actions { flex-direction: column; gap: 2px; }
+    .ccm-chatcard .ccm-btn-gold { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ccm-title, .ccm-btn-gold::after, .ccm-fly, .ccm-fly .w, .ccm-spark, .ccm-chatcard { animation: none !important; }
+    #ccm-pop, #ccm-pop-backdrop { transition: none !important; }
+  }
+</style>
+<script id="ccm-mock-js">
+(function () {
+  var host = (location.hostname || '').toLowerCase();
+  var PROD = ['therevolutionaryhealer.com', 'www.therevolutionaryhealer.com', 'revolutionary-healer-app-7jzf.vercel.app'];
+  if (PROD.indexOf(host) !== -1 || /(^|\.)therevolutionaryhealer\.com$/.test(host)) return;
+
+  // Copy pulled from rachaelsbutterflyeffect.com/ClearChannelMethod (verbatim / near-verbatim).
+  var COPY = {
+    eyebrow: 'A member invitation',
+    tagline: 'Most healers are channeling. Very few are channeling clean.',
+    what: 'The psychic foundation everything else builds on: seven self-paced transmission modules to clear, stabilize and trust your channel.',
+    prefill: "I'd love to hear more about the Clear Channel Method. What is it, and is it right for me?"
+  };
+
+  var FLY = '<svg class="ccm-fly" viewBox="0 0 92 70" fill="none" aria-hidden="true">' +
+    '<defs><linearGradient id="ccmG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF1C9"/><stop offset=".5" stop-color="#E2BE68"/><stop offset="1" stop-color="#B98A2E"/></linearGradient>' +
+    '<radialGradient id="ccmF" cx=".5" cy=".5" r=".6"><stop offset="0" stop-color="#E2BE68" stop-opacity=".38"/><stop offset="1" stop-color="#E2BE68" stop-opacity=".04"/></radialGradient></defs>' +
+    '<g class="w wl" stroke="url(#ccmG)" stroke-width="1.3" stroke-linejoin="round">' +
+      '<path d="M45 33 C39 16 22 4 11 8 C3 11 5 24 16 30 C25 35 36 36 45 35 Z" fill="url(#ccmF)"/>' +
+      '<path d="M44.5 37 C34 38 22 44 21 53 C20 61 30 62 37 54 C41 49 43.5 43 44.5 39 Z" fill="url(#ccmF)"/>' +
+      '<path d="M43 31 C35 22 25 15 16 14" stroke-width=".6" opacity=".7"/><path d="M42 39 C36 44 31 49 29 55" stroke-width=".6" opacity=".7"/></g>' +
+    '<g class="w wr" stroke="url(#ccmG)" stroke-width="1.3" stroke-linejoin="round">' +
+      '<path d="M47 33 C53 16 70 4 81 8 C89 11 87 24 76 30 C67 35 56 36 47 35 Z" fill="url(#ccmF)"/>' +
+      '<path d="M47.5 37 C58 38 70 44 71 53 C72 61 62 62 55 54 C51 49 48.5 43 47.5 39 Z" fill="url(#ccmF)"/>' +
+      '<path d="M49 31 C57 22 67 15 76 14" stroke-width=".6" opacity=".7"/><path d="M50 39 C56 44 61 49 63 55" stroke-width=".6" opacity=".7"/></g>' +
+    '<path d="M46 27 L46 47" stroke="url(#ccmG)" stroke-width="2.2" stroke-linecap="round"/>' +
+    '<path d="M46 27 C44 20 41 16 37 14 M46 27 C48 20 51 16 55 14" stroke="url(#ccmG)" stroke-width=".9" stroke-linecap="round"/>' +
+    '<circle cx="37" cy="14" r="1.3" fill="#F1D58A"/><circle cx="55" cy="14" r="1.3" fill="#F1D58A"/></svg>';
+
+  function title(tag) { return '<' + tag + ' class="ccm-title ccm-serif">Clear Channel Method<sup>&trade;</sup></' + tag + '>'; }
+  function body() {
+    return '<p class="ccm-tagline ccm-serif">&ldquo;' + COPY.tagline + '&rdquo;</p>' +
+      '<div class="ccm-rule" aria-hidden="true">&#10022;</div>' +
+      '<p class="ccm-what">' + COPY.what + '</p>' +
+      '<p class="ccm-price">Member price <b>$397</b> <s>$497</s></p>';
+  }
+
+  function loadFont() {
+    if (document.getElementById('ccm-font')) return;
+    var l = document.createElement('link'); l.id = 'ccm-font'; l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap';
+    document.head.appendChild(l);
+  }
+
+  // "Tell me more": open the chat with the member question typed in (never auto-sends).
+  function tellMeMore() {
+    closeCard(true);
+    if (typeof showMain === 'function') { try { showMain(); } catch (e) {} }
+    var input = document.getElementById('chat-input');
+    var shell = document.getElementById('rh-chat-shell');
+    if (shell) shell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (input) {
+      input.value = COPY.prefill;
+      try { input.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+      if (typeof autoGrowChatInput === 'function') { try { autoGrowChatInput(); } catch (e) {} }
+      setTimeout(function () { try { input.focus({ preventScroll: true }); input.setSelectionRange(input.value.length, input.value.length); } catch (e) {} }, 450);
+    }
+  }
+
+  /* ---------- Version A ---------- */
+  var bd = null, lastFocus = null;
+  function buildCard() {
+    if (bd) return bd;
+    bd = document.createElement('div');
+    bd.id = 'ccm-pop-backdrop';
+    bd.innerHTML =
+      '<div id="ccm-pop" role="dialog" aria-modal="true" aria-labelledby="ccm-pop-title" tabindex="-1">' +
+        '<button type="button" class="ccm-close" aria-label="Close" data-ccm-close>&times;</button>' +
+        '<span class="ccm-spark" style="left:16%;top:22%;animation-delay:.4s"></span>' +
+        '<span class="ccm-spark" style="right:15%;top:30%;animation-delay:2.1s"></span>' +
+        '<span class="ccm-spark" style="left:11%;bottom:24%;animation-delay:3.3s"></span>' +
+        '<span class="ccm-spark" style="right:12%;bottom:34%;animation-delay:1.2s"></span>' +
+        '<div class="ccm-halo">' + FLY + '</div>' +
+        '<div class="ccm-eyebrow">' + COPY.eyebrow + '</div>' +
+        title('h2').replace('class=', 'id="ccm-pop-title" class=') +
+        body() +
+        '<div class="ccm-actions">' +
+          '<button type="button" class="ccm-btn-gold" data-ccm-more>Tell me more</button>' +
+          '<button type="button" class="ccm-btn-quiet" data-ccm-close>Not now</button>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(bd);
+    bd.addEventListener('click', function (e) {
+      if (e.target === bd || e.target.closest('[data-ccm-close]')) { closeCard(); return; }
+      if (e.target.closest('[data-ccm-more]')) tellMeMore();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && bd.classList.contains('ccm-open')) closeCard(); });
+    return bd;
+  }
+  function openCard() {
+    buildCard();
+    lastFocus = document.activeElement;
+    bd.classList.add('ccm-open'); document.body.classList.add('ccm-lock');
+    requestAnimationFrame(function () { requestAnimationFrame(function () { bd.classList.add('ccm-show'); }); });
+    setTimeout(function () { var b = bd.querySelector('[data-ccm-more]'); try { b.focus({ preventScroll: true }); } catch (e) {} }, 120);
+  }
+  function closeCard(keepFocus) {
+    if (!bd || !bd.classList.contains('ccm-open')) return;
+    bd.classList.remove('ccm-show'); document.body.classList.remove('ccm-lock');
+    setTimeout(function () { if (!bd.classList.contains('ccm-show')) bd.classList.remove('ccm-open'); }, 450);
+    if (!keepFocus && lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
+  }
+
+  /* ---------- Version B ---------- */
+  function removeChatCard() { var c = document.getElementById('ccm-chatcard'); if (c) c.remove(); var n = document.getElementById('ccm-chatnote'); if (n) n.remove(); }
+  function openChatCard() {
+    var thread = document.getElementById('rh-chat-thread');
+    if (!thread) return;
+    removeChatCard();
+    var w = document.getElementById('rh-chat-welcome'); if (w) w.style.display = 'none';
+    var c = document.createElement('div');
+    c.id = 'ccm-chatcard'; c.className = 'ccm-chatcard'; c.setAttribute('role', 'region'); c.setAttribute('aria-label', 'Clear Channel Method invitation');
+    c.innerHTML =
+      '<span class="ccm-spark" style="left:9%;top:18%;animation-delay:.6s"></span>' +
+      '<span class="ccm-spark" style="right:10%;top:26%;animation-delay:2.6s"></span>' +
+      '<div class="ccm-from">' + FLY + '</div>' +
+      '<div class="ccm-eyebrow" style="margin-bottom:12px">' + COPY.eyebrow + '</div>' +
+      title('h3') + body() +
+      '<div class="ccm-actions">' +
+        '<button type="button" class="ccm-btn-gold" data-ccm-more>Tell me more</button>' +
+        '<button type="button" class="ccm-btn-quiet" data-ccm-close>Not now</button>' +
+      '</div>';
+    thread.appendChild(c);
+    c.addEventListener('click', function (e) {
+      if (e.target.closest('[data-ccm-more]')) { c.classList.add('ccm-done'); tellMeMore(); return; }
+      if (e.target.closest('[data-ccm-close]')) {
+        removeChatCard();
+        if (!thread.querySelector('.rh-msg') && w) w.style.display = '';
+      }
+    });
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  /* ---------- mockup toggle ---------- */
+  var mode = 'card';
+  function setMode(m, replay) {
+    mode = m;
+    try { var u = new URL(location.href); u.searchParams.set('ccm', m); history.replaceState(null, '', u.toString()); } catch (e) {}
+    var t = document.getElementById('ccm-mock-toggle');
+    if (t) Array.prototype.forEach.call(t.querySelectorAll('[data-mode]'), function (b) { b.setAttribute('aria-pressed', String(b.getAttribute('data-mode') === m)); });
+    closeCard(true); removeChatCard();
+    if (m === 'card') openCard();
+    else if (m === 'chat') {
+      openChatCard();
+      var shell = document.getElementById('rh-chat-shell');
+      if (shell && replay) shell.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      var w = document.getElementById('rh-chat-welcome'); var th = document.getElementById('rh-chat-thread');
+      if (w && th && !th.querySelector('.rh-msg')) w.style.display = '';
+    }
+  }
+  function buildToggle() {
+    var t = document.createElement('div');
+    t.id = 'ccm-mock-toggle'; t.setAttribute('role', 'group'); t.setAttribute('aria-label', 'Mockup only: switch pop-up version');
+    t.title = 'Mockup only. Not part of the real app.';
+    t.innerHTML = '<span class="ccm-tlabel">Mockup</span>' +
+      '<button type="button" data-mode="card" aria-pressed="false">Pop-up card</button>' +
+      '<button type="button" data-mode="chat" aria-pressed="false">In the chat</button>' +
+      '<button type="button" class="ccm-replay" data-replay aria-label="Show it again" title="Show it again">&#8635;</button>';
+    document.body.appendChild(t);
+    t.addEventListener('click', function (e) {
+      var b = e.target.closest('button'); if (!b) return;
+      if (b.hasAttribute('data-replay')) setMode(mode === 'off' ? 'card' : mode, true);
+      else setMode(b.getAttribute('data-mode'), true);
+    });
+  }
+
+  function init() {
+    var q = (new URLSearchParams(location.search).get('ccm') || 'card').toLowerCase();
+    if (['card', 'chat', 'off'].indexOf(q) === -1) q = 'card';
+    loadFont();
+    buildToggle();
+    // Let the home screen (and any saved chat) paint first, like a real app-open moment.
+    setTimeout(function () { setMode(q, false); }, 1100);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+</script>
 </body>
 </html>

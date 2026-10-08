@@ -1,13 +1,5 @@
 {
   "crons": [
-    {
-      "path": "/api/cron/retry-webhooks",
-      "schedule": "0 8 * * *"
-    }
-  ],
-  "git": {
-    "deploymentEnabled": {
-      "feat/ccm-popup-mockup": false
-    }
-  }
+    { "path": "/api/cron/retry-webhooks", "schedule": "0 8 * * *" }
+  ]
 }
