@@ -6392,7 +6392,14 @@ if (forceComplete) { goDay(3); }
   @keyframes gap-an-gleam { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
   @media (prefers-reduced-motion: reduce) { .gap-an-core, .gap-an-ring, .gap-an-title { animation: none !important; } .gap-an-orb i { animation-duration: 4s; } .gap-an-bar span { transition: none; } }
   /* Step 2 is a plain chat now, so the log uses the room the intro used to take. */
-  #hero-gap-embed.gm-modal #view-day2 .chat-log { max-height: calc(100dvh - 300px) !important; }
+  /* Step 2 chat fills the dialog: messages on top, input pinned to the bottom (Oct 8 polish). */
+  #hero-gap-embed.gm-modal > .stage:has(#view-day2.active) { justify-content: flex-start !important; }
+  #hero-gap-embed.gm-modal > .stage:has(#view-day2.active) > .wrap { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  #hero-gap-embed.gm-modal #view-day2.active { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  #hero-gap-embed.gm-modal #view-day2.active > .card { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; background: transparent; border: none; padding-top: 4px; }
+  #hero-gap-embed.gm-modal #view-day2 .chat-log { flex: 1 1 auto; min-height: 0; max-height: none !important; }
+  #hero-gap-embed.gm-modal #view-day2 .gap-chat-input-row { flex: 0 0 auto; }
+  #hero-gap-embed.gm-modal #view-day2 .gap-chat-input-row textarea { min-height: 68px !important; height: 68px; line-height: 1.35; }
 </style>
 <script id="gm-modal-js">
 (function () {
@@ -6444,9 +6451,7 @@ if (forceComplete) { goDay(3); }
     function fitChat() {
       var view = document.getElementById('view-day2'), log = document.getElementById('chat-log');
       if (!view || !view.classList.contains('active') || !log) return;
-      var below = view.getBoundingClientRect().bottom - log.getBoundingClientRect().bottom;
-      var h = Math.floor(el.getBoundingClientRect().bottom - log.getBoundingClientRect().top - below - 8);
-      log.style.setProperty('max-height', Math.max(72, h) + 'px', 'important');
+      log.style.removeProperty('max-height'); // flex layout keeps the input at the bottom; don't cap the log
       log.scrollTop = log.scrollHeight;
     }
     function lockPage() {
