@@ -54,7 +54,7 @@ export default function MyRevolution() {
           <div className="nav-links">
             <a href="/" className="nav-link-btn">Chat</a>
             <a href="/my-revolution" className="nav-link-btn active">My Revolution</a>
-            <a href="/gap-method.html" className="nav-link-btn">GAP Method</a>
+            <a href="/gap-method.html" className="nav-link-btn">GAP Method™</a>
           </div>
         </div>
       </div>
@@ -81,8 +81,8 @@ export default function MyRevolution() {
         {email && shifts && shifts.length === 0 && (
           <div className="card center empty-state">
             <p className="copy">You haven't started a Shift yet.</p>
-            <p className="copy" style={{ marginBottom: 24 }}>Complete the 3 Step GAP Method to create your first one.</p>
-            <a className="btn-gold" href="/gap-method.html">Start the GAP Method →</a>
+            <p className="copy" style={{ marginBottom: 24 }}>Complete the 3 Step GAP Method™ to create your first one.</p>
+            <a className="btn-gold" href="/gap-method.html">Start the GAP Method™ →</a>
           </div>
         )}
 
