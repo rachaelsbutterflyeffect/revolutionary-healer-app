@@ -31,6 +31,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript";
+import { undoRemoveRelationships } from "./remove-relationships-scope.mjs"; // Remove Relationships option (Oct 8 2026): see that file
 
 const BASE = "114c555"; // main = what is live (PR 35 merge)
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -196,13 +197,15 @@ await test("assembled member GAP system prompt (gapContext=null) still hashes to
 });
 await test("instruction / knowledge files unchanged since main: processes, prompts, activationGuide, activations, divineIdentities, gapDistortions, focusAreas, the funnel GAP route", () => {
   for (const f of ["lib/processes.js", "lib/prompts.js", "lib/activationGuide.js", "lib/activations.js", "lib/divineIdentities.js", "lib/gapDistortions.js", "lib/focusAreas.js", "app/api/gap-chat/route.ts", "app/api/gap-method-result/route.ts", "lib/chatStreaming.js"])
-    assert.equal(sha(read(f)), sha(gitShow(f)), `${f} changed`);
+    assert.equal(sha(undoRemoveRelationships(f, read(f))), sha(gitShow(f)), `${f} changed`); // only the reviewed Remove-Relationships hunks may differ
 });
 const pageBlock = (html, start) => { const i = html.indexOf(start); assert.ok(i >= 0, start); const ends = ["\n  function ", "\n  var ", "\n  async function ", "\n  // ", "\n</script>"].map((e) => html.indexOf(e, i + start.length)).filter((x) => x > 0); return html.slice(i, Math.min(...ends)); };
+// Remove Relationships option (Oct 8 2026): main's STEP2_OPENING_QUESTIONS minus ONLY the Relationships line (and the comma it added).
+const withoutRelationshipsOpener = (block) => { const t = block.replace(/,\n    relationships: "[^"\n]*"\n/, "\n"); assert.notEqual(t, block, "main's Relationships opener not found"); return t; };
 await test("page data + identity scoring unchanged: ARCHETYPES (fixed map), DIVINE_REVEAL, DISCONNECTION_SUB_ACTIVATIONS, IDENTITY_QUESTIONS, nextQ (Q1 tie-break), buildGapContext, STEP2_OPENING_QUESTIONS, ACTIVATION_DETAILS, card text cleaners", () => {
   const now = read("public/app.html"), old = gitShow("public/app.html");
   for (const b of ["var ARCHETYPES", "var DIVINE_REVEAL", "var DISCONNECTION_SUB_ACTIVATIONS", "var IDENTITY_QUESTIONS", "function nextQ(", "function buildGapContext(", "var STEP2_OPENING_QUESTIONS", "var IDENTITY_SLUG_TO_KEY", "var ACTIVATION_DETAILS", "function rhCleanAiText(", "function rhCleanGapCardData(", "function addBotBubble(", "function setupDay2(", "async function gapReadStream(", "function getGapIdentitySlugForKey(", "function getGapActivationSlugForKey(", "function showResults(", "function renderQ("])
-    assert.equal(sha(pageBlock(now, b)), sha(pageBlock(old, b)), `${b} changed`);
+    assert.equal(sha(pageBlock(now, b)), sha(b === "var STEP2_OPENING_QUESTIONS" ? withoutRelationshipsOpener(pageBlock(old, b)) : pageBlock(old, b)), `${b} changed`);
   assert.match(pageBlock(now, "function nextQ("), /if \(scores\[identityAnswers\[0\]\] === scores\[winnerKey\]\) \{ winnerKey = identityAnswers\[0\]; \} \/\/ tie-break to Q1/);
 });
 await test("35 contexts (7 identities x 5 focus areas): the system prompt the route sends is byte-identical to main's, for chat turns AND the reading, switch on and off", async () => {
