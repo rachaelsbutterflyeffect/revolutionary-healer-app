@@ -26,6 +26,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript";
+import { undoRemoveRelationships } from "./remove-relationships-scope.mjs"; // Remove Relationships option (Oct 8 2026): see that file
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(here, "..");
@@ -212,7 +213,7 @@ await test("funnel GAP bot (/api/gap-chat, 1024), GAP Step 3 marker retry (200) 
 await test("GAP prompt and Shift-saving code untouched by this fix (processes.js, gap-shift route, airtable.js identical to 7d13fab)", () => {
   for (const f of ["lib/processes.js", "app/api/gap-shift/route.ts", "lib/airtable.js"]) {
     const old = execFileSync("git", ["show", `7d13fab:revolutionary-healer-app/${f}`], { cwd: appRoot, encoding: "utf8", maxBuffer: 64 << 20 });
-    assert.equal(read(f), old, `${f} changed`);
+    assert.equal(undoRemoveRelationships(f, read(f)), old, `${f} changed`);
   }
 });
 

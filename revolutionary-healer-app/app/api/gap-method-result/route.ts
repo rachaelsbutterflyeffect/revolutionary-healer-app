@@ -31,7 +31,8 @@ export async function POST(req: NextRequest) {
       email,
       divineIdentity: body.divineIdentity,
       primaryFrequency: body.primaryFrequency,
-      focusArea: body.focusArea,
+      // Oct 8: "Relationships" was removed from the GAP Method; a stale page sending it saves as no specific area.
+      focusArea: typeof body.focusArea === "string" && body.focusArea.trim().toLowerCase() === "relationships" ? "" : body.focusArea,
       refinedGap: body.refinedGap,
       step1Answers: body.step1Answers,
       step2Summary: body.step2Summary,

@@ -585,7 +585,7 @@ await test("funnel GAP bot, Shift-creation route and GAP prompts untouched; the 
   assert.ok(!/mode:\s*process\.env\.CHAT_STREAMING\b/.test(gapMember), "GAP must not follow the main chat's on/off switch");
   try {
     const changed = execFileSync("git", ["diff", "--name-only", "d98b36f", "--", "."], { cwd: appRoot, encoding: "utf8" }).split("\n").filter(Boolean);
-    const allowed = /^revolutionary-healer-app\/(app\/api\/chat\/route\.ts|app\/api\/gap-chat-member\/route\.ts|lib\/chatStreaming\.js|public\/app\.html|scripts\/test-chat-streaming\.mjs|scripts\/test-chat-streaming-browser\.mjs|scripts\/test-gap-streaming\.mjs|package\.json)$/;
+    const allowed = /^revolutionary-healer-app\/(app\/api\/chat\/route\.ts|app\/api\/gap-chat-member\/route\.ts|lib\/chatStreaming\.js|public\/app\.html|scripts\/test-chat-streaming\.mjs|scripts\/test-chat-streaming-browser\.mjs|scripts\/test-gap-streaming\.mjs|package\.json|lib\/processes\.js|app\/api\/gap-method-result\/route\.ts|scripts\/test-gap-max-tokens\.mjs|scripts\/test-remove-relationships\.mjs|scripts\/remove-relationships-scope\.mjs)$/; // + Remove Relationships option (Oct 8 2026; processes.js / gap-method-result hunks proven exact by remove-relationships-scope.mjs)
     for (const f of changed) assert.match(f, allowed, `unexpected file changed: ${f}`);
   } catch (e) { if (e instanceof assert.AssertionError) throw e; }
 });
