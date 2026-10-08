@@ -59,6 +59,15 @@ export async function GET(req: NextRequest) {
     const offerId = f.offer_id || undefined;
     const eventType = f.event_type || undefined;
     const currentAttempts = Number(f.attempt_count ?? 0);
+    // Oct 8 2026: the stable Kajabi member id lives in the stored raw payload.
+    let kajabiMemberId: string | undefined;
+    try {
+      const raw = JSON.parse(f.raw_payload || "{}");
+      const id = raw?.member?.id ?? raw?.member_id;
+      kajabiMemberId = id != null ? String(id) : undefined;
+    } catch {
+      kajabiMemberId = undefined;
+    }
 
     try {
       // Note: WebhookEvents rows don't store the buyer's first name, so
@@ -66,7 +75,7 @@ export async function GET(req: NextRequest) {
       // (lib/airtable.js) requires the key to be present (even if its value
       // is undefined) since it has no default value in its destructured
       // parameter, which TypeScript then infers as a required property.
-      const result = await processKajabiPurchase({ email, firstName: undefined, offerId, eventType });
+      const result = await processKajabiPurchase({ email, firstName: undefined, offerId, eventType, kajabiMemberId });
       await updateWebhookEvent(row.id, {
         outcome: result.outcome,
         member_record_id: result.memberRecordId,

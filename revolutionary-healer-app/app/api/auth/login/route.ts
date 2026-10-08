@@ -2,6 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { getMemberByEmail, setMemberPassword, normalizeEmail } from "@/lib/airtable";
 import { deriveEntitlement } from "@/lib/entitlements";
 import { hashPassword, verifyPassword } from "@/lib/auth";
+import { sendOpsAlert } from "@/lib/email";
+
+// Oct 8 2026 (after Eden Koz's Kajabi email change): a member whose email
+// changed in Kajabi but not yet in the app lands here with "no member". The
+// message now tells her the self-serve way in (her previous email still works
+// until her account is moved). Optional heads-up email to Rachael, OFF unless
+// LOGIN_MISS_ALERT=on in Vercel (random typos would otherwise email her).
+const NOT_FOUND_MESSAGE =
+  "We don't see a purchase for that email. Double-check you're using the exact email you purchased with. " +
+  "If you recently changed your email in Kajabi, sign in with your previous email for now and contact support so we can update it.";
+
+async function maybeAlertLoginMiss(email: string) {
+  if (String(process.env.LOGIN_MISS_ALERT ?? "").trim().toLowerCase() !== "on") return;
+  if (!/^[^\s@"'\\]+@[^\s@"'\\]+\.[^\s@"'\\]+$/.test(email)) return;
+  try {
+    await sendOpsAlert({
+      subject: `Sign-in attempt with an unknown email: ${email}`,
+      message:
+        `Someone tried to sign in to the app as ${email}, but no member has that email.\n\n` +
+        `If this is a member who changed her email in Kajabi, move her account in one step ` +
+        `(dry run first, then add --apply): node scripts/move-member-email.mjs --old <her previous email> --new ${email}\n\n` +
+        `If it's a typo or not a member, you can ignore this.`,
+    });
+  } catch (err) {
+    console.error("login miss alert failed", err);
+  }
+}
 
 // Aug 13 (Rachael's Kajabi-linked landing page request): Kajabi doesn't
 // expose an API to verify a member's real Kajabi password, so this is a
@@ -22,10 +49,8 @@ export async function POST(req: NextRequest) {
 
     const member = await getMemberByEmail(email);
     if (!member) {
-      return NextResponse.json(
-        { error: "We don't see a purchase for that email. Double-check you're using the exact email you purchased with, or reach out for help." },
-        { status: 401 }
-      );
+      await maybeAlertLoginMiss(email);
+      return NextResponse.json({ error: NOT_FOUND_MESSAGE }, { status: 401 });
     }
 
     const entitlement = deriveEntitlement(member.fields as any);

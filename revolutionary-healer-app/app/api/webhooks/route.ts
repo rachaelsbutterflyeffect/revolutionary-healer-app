@@ -82,6 +82,11 @@ export async function POST(req: NextRequest) {
     const offerIdRaw: string | number | undefined = event?.offer?.id ?? event?.offer_id;
     const offerId: string | undefined = offerIdRaw != null ? String(offerIdRaw) : undefined;
     const eventType: string | undefined = event?.event_type;
+    // Oct 8 2026: Kajabi's STABLE member id (same person even after an email
+    // change in Kajabi). Captured on the Members record; see
+    // processKajabiPurchase / MEMBER_EMAIL_SYNC in lib/airtable.js.
+    const kajabiMemberIdRaw = event?.member?.id ?? event?.member_id;
+    const kajabiMemberId: string | undefined = kajabiMemberIdRaw != null ? String(kajabiMemberIdRaw) : undefined;
 
     if (!email) {
       return NextResponse.json({ error: "no member email in payload" }, { status: 400 });
@@ -106,7 +111,7 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const result = await processKajabiPurchase({ email, firstName, offerId, eventType });
+      const result = await processKajabiPurchase({ email, firstName, offerId, eventType, kajabiMemberId });
 
       try {
         if (existingEvent) {
