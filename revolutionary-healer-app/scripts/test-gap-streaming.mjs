@@ -70,7 +70,7 @@ async function test(name, fn) {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const read = (f) => fs.readFileSync(path.join(appRoot, f), "utf8");
-const { createMarkerHoldback } = await import(pathToFileURL(path.join(appRoot, "lib", "chatStreaming.js")).href);
+const { createMarkerHoldback, runStreamedReply } = await import(pathToFileURL(path.join(appRoot, "lib", "chatStreaming.js")).href);
 
 // ---------------------------------------------------------------------------
 // Real GAP replies' shapes (markers exactly as lib/processes.js asks for them)
@@ -122,6 +122,8 @@ const apiServer = http.createServer((req, res) => {
     let idx = 0;
     if (b.thinking) {
       ev("content_block_start", { index: 0, content_block: { type: "thinking", thinking: "", signature: "" } });
+      if (b.thinkingSilenceMs) await sleep(b.thinkingSilenceMs); // the real API sends nothing while it thinks
+      if (b.thinkingHang) return;
       for (const w of b.thinking.match(/\S+\s*/g)) ev("content_block_delta", { index: 0, delta: { type: "thinking_delta", thinking: w } });
       ev("content_block_delta", { index: 0, delta: { type: "signature_delta", signature: "sig" } });
       ev("content_block_stop", { index: 0 });
@@ -322,6 +324,35 @@ await test("stream stats logged with the GAP label (log-only: counts and timings
   assert.ok(line); assert.ok(!/wayshower|Step 3|SAVE_SHIFT/i.test(line));
   const j = JSON.parse(line.replace(/^.*?stream stats /, ""));
   assert.equal(j.ok, true); assert.ok(j.events["content_block_delta:thinking_delta"] >= 1); assert.ok(typeof j.firstVisibleMs === "number");
+});
+// Stall timers vs hidden thinking (the API sends no data while Claude thinks).
+const AnthropicSdk = (await import("@anthropic-ai/sdk")).default;
+async function timerRun(api, timers) {
+  apiBehaviour = api; apiRequests.length = 0;
+  const events = []; let closed = false; let finishCalls = 0; const t0 = Date.now();
+  const res = await quiet(async () => ({ r: await runStreamedReply({
+    channel: { send: (e) => { if (!closed) events.push(e); }, close: () => { closed = true; } }, chatId: null, label: "test",
+    startStream: (signal) => new AnthropicSdk({ apiKey: "test", baseURL: process.env.ANTHROPIC_BASE_URL, maxRetries: 0, fetch: (u, i) => fetch(u, i) /* same transport as the routes */ }).messages.stream({ model: "m", max_tokens: 10, messages: [{ role: "user", content: "x" }] }, { signal, timeout: 5000 }),
+    finishReply: async (m) => { finishCalls++; return { replyText: "done", openActivationSlug: null }; }, ...timers }) }));
+  return { ...res.r, events, finishCalls, ms: Date.now() - t0 };
+}
+await test("long hidden thinking (silence 4x the idle limit) is NOT treated as a stall: reply completes", async () => {
+  const r = await timerRun(() => ({ text: QUESTION, thinking: "deep thought", thinkingSilenceMs: 600 }), { idleMs: 150, overallMs: 5000 });
+  assert.equal(r.ok, true); assert.equal(r.stalled, null); assert.equal(r.finishCalls, 1);
+  assert.equal(r.events[r.events.length - 1].type, "done");
+});
+await test("silence while WRITING the reply is still a stall (idle timer resumes after thinking): error, finishReply never runs", async () => {
+  const r = await timerRun(() => ({ text: QUESTION, thinking: "t", failAt: 3, fail: "hang" }), { idleMs: 150, overallMs: 5000 });
+  assert.equal(r.stalled, "idle"); assert.equal(r.finishCalls, 0); assert.equal(r.events[r.events.length - 1].type, "error");
+  assert.ok(r.ms < 2000);
+});
+await test("thinking that never ends is still stopped by the overall cap: error, finishReply never runs", async () => {
+  const r = await timerRun(() => ({ text: QUESTION, thinking: "t", thinkingHang: true }), { idleMs: 100, overallMs: 500 });
+  assert.equal(r.stalled, "overall"); assert.equal(r.finishCalls, 0); assert.equal(r.events[r.events.length - 1].type, "error");
+});
+await test("REAL route: a hidden-thinking pause streams the full reply (meta first, then words, then done)", async () => {
+  const s = await run(newRoute, { body: SBODY, env: ON, api: () => ({ text: COMPLETION, thinking: "hidden", thinkingSilenceMs: 300 }) });
+  assert.equal(s.events.find((e) => e.type === "done").reply, COMPLETION);
 });
 await test("scope: the GAP route saves nothing (no Airtable write imports) and the funnel GAP bot / Shift creation route are untouched", () => {
   const src = read(ROUTE);

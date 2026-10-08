@@ -30,14 +30,15 @@
 //     waitUntil, independent of the connection: if the member closes the tab
 //     or loses signal, the reply still finishes and is saved exactly once.
 //     Writes to a closed connection are ignored.
-//   * Our own stall timers: no Claude data for STREAM_IDLE_MS once it has
-//     started, or the whole thing past STREAM_OVERALL_MS -> stop, save
+//   * Our own stall timers: no Claude data for STREAM_IDLE_MS once the reply
+//     text has started (never during Claude's hidden thinking, which the API
+//     does not send at all), or the whole thing past STREAM_OVERALL_MS -> stop, save
 //     nothing, send an error (the page shows Try Again; resending is safe
 //     because nothing was saved).
 //   * The Anthropic SDK only retries while connecting (before the first
 //     word); a failure mid-reply is never retried behind the member's back.
 
-/** No Claude stream data for this long (after it started) = stalled. */
+/** No Claude stream data for this long once the reply text has started = stalled. */
 export const STREAM_IDLE_MS = 30000;
 /** Hard cap for one streamed reply, kept below the page's 180s last resort. */
 export const STREAM_OVERALL_MS = 170000;
@@ -186,9 +187,19 @@ export async function runStreamedReply({
   let stalled = null;
   let idleTimer = null;
   const overallTimer = setTimeout(() => { stalled = "overall"; ac.abort(); }, overallMs);
-  // The idle timer starts with the first data from Claude. Before that, the
-  // SDK's own per-attempt timeout + retries (connection phase) apply.
+  // HIDDEN THINKING (Oct 8 2026 fix): Claude Sonnet 5 thinks before it
+  // writes, and the API sends NOTHING while it thinks (measured on the TEST
+  // previews: up to ~19s of silence before a GAP reply's first word; the
+  // ~7,300-token thinking seen on heavy main-chat requests is ~80s). The
+  // first version of this file started the idle timer at Claude's very first
+  // event, so any thinking longer than STREAM_IDLE_MS was wrongly treated as
+  // a stall (error + Try Again, every time). So the idle timer now only runs
+  // once the reply TEXT has started; before that the SDK's connection
+  // timeout + retries and the overall cap (STREAM_OVERALL_MS) apply, and the
+  // page keeps getting the 10s keep-alive meanwhile.
+  let textStarted = false;
   const touch = () => {
+    if (!textStarted) return;
     if (idleTimer) clearTimeout(idleTimer);
     idleTimer = setTimeout(() => { stalled = "idle"; ac.abort(); }, idleMs);
   };
@@ -209,6 +220,8 @@ export async function runStreamedReply({
   try {
     const stream = startStream(ac.signal);
     stream.on("streamEvent", (event) => {
+      if (!textStarted && event && ((event.type === "content_block_start" && event.content_block && event.content_block.type === "text") ||
+          (event.type === "content_block_delta" && event.delta && event.delta.type === "text_delta"))) textStarted = true;
       touch();
       try {
         const now = Date.now();
