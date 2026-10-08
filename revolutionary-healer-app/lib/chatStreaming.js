@@ -163,12 +163,13 @@ export const SSE_HEADERS = {
  *
  * @param {object} o
  * @param {{ send: (e: any) => any, close: () => void }} o.channel
- * @param {string} o.chatId
+ * @param {string | null} o.chatId  (null for the GAP bot, which has no saved chat)
  * @param {(signal: AbortSignal) => any} o.startStream  returns an Anthropic MessageStream
  * @param {(finalMessage: any, schedule: (p: Promise<any>) => void) => Promise<{replyText: string, openActivationSlug: any}>} o.finishReply
  *        the route's shared post-processing + saves helper
  * @param {number} [o.idleMs]
  * @param {number} [o.overallMs]
+ * @param {string} [o.label]  log prefix only ("chat" = main chatbot, "gap-chat-member" = GAP bot)
  * @returns {Promise<{ ok: boolean, stalled?: string | null }>}
  */
 export async function runStreamedReply({
@@ -178,6 +179,7 @@ export async function runStreamedReply({
   finishReply,
   idleMs = STREAM_IDLE_MS,
   overallMs = STREAM_OVERALL_MS,
+  label = "chat",
 }) {
   const holdback = createMarkerHoldback();
   const ac = new AbortController();
@@ -199,15 +201,31 @@ export async function runStreamedReply({
   // connection closes early without an error. Only a reply that reached
   // Claude's own end-of-message signal counts as complete.
   let sawMessageStop = false;
+  // Log-only timing stats (Vercel logs): event kinds, longest silence
+  // between Claude events, when the first visible words went out.
+  const startedAt = Date.now();
+  const stats = { events: {}, maxGapMs: 0, firstEventMs: null, firstVisibleMs: null };
+  let lastEventAt = null;
   try {
     const stream = startStream(ac.signal);
     stream.on("streamEvent", (event) => {
       touch();
+      try {
+        const now = Date.now();
+        if (lastEventAt === null) stats.firstEventMs = now - startedAt;
+        else stats.maxGapMs = Math.max(stats.maxGapMs, now - lastEventAt);
+        lastEventAt = now;
+        const k = event && event.type ? (event.delta && event.delta.type ? `${event.type}:${event.delta.type}` : event.content_block && event.content_block.type ? `${event.type}:${event.content_block.type}` : event.type) : "?";
+        stats.events[k] = (stats.events[k] || 0) + 1;
+      } catch (e) {}
       if (event && event.type === "message_stop") sawMessageStop = true;
     });
     stream.on("text", (piece) => {
       const visible = holdback.push(piece);
-      if (visible) channel.send({ type: "delta", text: visible });
+      if (visible) {
+        if (stats.firstVisibleMs === null) stats.firstVisibleMs = Date.now() - startedAt;
+        channel.send({ type: "delta", text: visible });
+      }
     });
     finalMessage = await stream.finalMessage();
     if (stalled) throw new Error(`stream stalled (${stalled})`);
@@ -216,12 +234,18 @@ export async function runStreamedReply({
     }
   } catch (err) {
     stopTimers();
-    console.error(`[chat] streamed reply failed${stalled ? ` (stalled: ${stalled})` : ""} -- nothing saved`, err);
+    try { console.log(`[${label}] stream stats ` + JSON.stringify({ ok: false, totalMs: Date.now() - startedAt, ...stats })); } catch (e) {}
+    console.error(`[${label}] streamed reply failed${stalled ? ` (stalled: ${stalled})` : ""} -- nothing saved`, err);
     channel.send({ type: "error", error: STREAM_ERROR_TEXT });
     channel.close();
     return { ok: false, stalled };
   }
   stopTimers();
+  try {
+    const u = (finalMessage && finalMessage.usage) || {};
+    const thinking = u.output_tokens_details && u.output_tokens_details.thinking_tokens;
+    console.log(`[${label}] stream stats ` + JSON.stringify({ ok: true, totalMs: Date.now() - startedAt, ...stats, output_tokens: u.output_tokens, thinking_tokens: typeof thinking === "number" ? thinking : null, stop_reason: finalMessage.stop_reason }));
+  } catch (e) {}
 
   // The complete reply exists. From here on it's the exact same code as the
   // non-streaming path; the background saves are awaited below instead of
@@ -231,7 +255,7 @@ export async function runStreamedReply({
   try {
     result = await finishReply(finalMessage, (p) => { bookkeeping = p; });
   } catch (err) {
-    console.error("[chat] streamed reply: post-processing failed", err);
+    console.error(`[${label}] streamed reply: post-processing failed`, err);
     channel.send({ type: "error", error: STREAM_ERROR_TEXT });
     channel.close();
     if (bookkeeping) await bookkeeping;

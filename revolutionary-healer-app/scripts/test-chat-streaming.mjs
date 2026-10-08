@@ -575,14 +575,17 @@ await test("hard rule: the route never writes to Airtable from inside the stream
   assert.ok(!/from\s+["'][^"']*(airtable|memory)/.test(src));
   assert.ok(!/createMessage|createShiftFromChat|updateShiftFields|updateChatSession|createMemory/.test(src.replace(/\/\/.*$/gm, "")));
 });
-await test("GAP routes, GAP prompts and Shift-saving functions untouched by this change", () => {
-  for (const f of ["app/api/gap-chat-member/route.ts", "app/api/gap-chat/route.ts", "app/api/gap-shift/route.ts"]) {
+await test("funnel GAP bot, Shift-creation route and GAP prompts untouched; the member GAP bot streams only behind its OWN switch (GAP_STREAMING, see npm run test:gap-streaming)", () => {
+  for (const f of ["app/api/gap-chat/route.ts", "app/api/gap-shift/route.ts"]) {
     const src = fs.readFileSync(path.join(appRoot, f), "utf8");
-    assert.ok(!/chatStreaming|CHAT_STREAMING/.test(src), `${f} references streaming`);
+    assert.ok(!/chatStreaming|CHAT_STREAMING|GAP_STREAMING/.test(src), `${f} references streaming`);
   }
+  const gapMember = fs.readFileSync(path.join(appRoot, "app/api/gap-chat-member/route.ts"), "utf8");
+  assert.match(gapMember, /mode:\s*process\.env\.GAP_STREAMING\b/);
+  assert.ok(!/mode:\s*process\.env\.CHAT_STREAMING\b/.test(gapMember), "GAP must not follow the main chat's on/off switch");
   try {
     const changed = execFileSync("git", ["diff", "--name-only", "7d13fab", "--", "."], { cwd: appRoot, encoding: "utf8" }).split("\n").filter(Boolean);
-    const allowed = /^revolutionary-healer-app\/(app\/api\/chat\/route\.ts|lib\/chatStreaming\.js|public\/app\.html|scripts\/test-chat-streaming\.mjs|scripts\/test-chat-streaming-browser\.mjs|package\.json)$/;
+    const allowed = /^revolutionary-healer-app\/(app\/api\/chat\/route\.ts|app\/api\/gap-chat-member\/route\.ts|lib\/chatStreaming\.js|public\/app\.html|scripts\/test-chat-streaming\.mjs|scripts\/test-chat-streaming-browser\.mjs|scripts\/test-gap-streaming\.mjs|package\.json)$/;
     for (const f of changed) assert.match(f, allowed, `unexpected file changed: ${f}`);
   } catch (e) { if (e instanceof assert.AssertionError) throw e; }
 });

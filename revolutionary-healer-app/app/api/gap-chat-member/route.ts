@@ -8,16 +8,72 @@
 // GAP_METHOD_SCRIPT_FUNNEL_UPSELL -- see the "TWO GAP METHOD BOTS" note in
 // lib/processes.js. Added per Rachael's Aug 30 request to rebuild the in-app
 // GAP Method to visually and functionally match public/gap-method.html.
+//
+// STREAMING (Oct 8 2026, approved by Rachael; same design as the main chat,
+// see lib/chatStreaming.js). OFF BY DEFAULT and switched separately from the
+// main chat, so either can be turned off on its own:
+//   GAP_STREAMING            off (default / missing) | allowlist | on
+//   GAP_STREAMING_ALLOWLIST  optional; if not set, CHAT_STREAMING_ALLOWLIST
+//                            (the main chat's list) is used
+// The page must also ask ({ stream: true }). When streaming is not used this
+// route sends exactly the same Claude request and returns exactly the same
+// JSON as before. When it is used:
+//   * words go to the page as they're written; everything from the first
+//     "[[" (the hidden FINAL_IDENTITY / SUB_ACTIVATION / SAVE_SHIFT /
+//     DISTORTIONS / TOPIC markers, always at the end) is held back, so no
+//     marker ever reaches the screen while the reply is arriving;
+//   * the final "done" event carries `reply` = exactly the text the JSON path
+//     returns (markers included, because the page reads them to save the
+//     Shift and deal the card), and the page runs the SAME code on it as on a
+//     JSON reply;
+//   * a reply that breaks part-way sends "error" and never "done": the page
+//     removes the half reply and shows Try Again. This route saves nothing
+//     (the GAP conversation lives in the page; the Shift is only created
+//     later by /api/gap-shift from a COMPLETE reply), so a partial can never
+//     be saved.
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { waitUntil } from "@vercel/functions";
 import { buildGapMemberSystemPrompt } from "@/lib/processes";
 import { getEntitlementForEmail } from "@/lib/entitlements";
+import {
+  chatStreamingAllowed,
+  createSseChannel,
+  runStreamedReply,
+  SSE_HEADERS,
+} from "@/lib/chatStreaming";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
+// Streaming only: same API, key and model; Node's own fetch instead of the
+// SDK 0.32 default transport (which can throw a false "Premature close" at
+// the end of a streamed reply) -- same as app/api/chat/route.ts.
+const streamingAnthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  fetch: ((url: any, init?: any) => fetch(url, { ...init, cache: "no-store" })) as any,
+});
+// Streaming only: time allowed to CONNECT to Claude (per attempt, until the
+// stream opens). Once words flow, lib/chatStreaming.js's idle/overall
+// timers apply instead.
+const GAP_STREAM_CONNECT_TIMEOUT_MS = 45000;
+
+function gapStreamingSwitch() {
+  return {
+    mode: process.env.GAP_STREAMING,
+    allowlist: process.env.GAP_STREAMING_ALLOWLIST || process.env.CHAT_STREAMING_ALLOWLIST,
+  };
+}
+
+// The reply text, exactly as the JSON path builds it (markers included).
+function replyTextOf(message: any): string {
+  return message.content
+    .filter((block: any) => block.type === "text")
+    .map((block: any) => block.text)
+    .join("\n");
+}
 
 export async function POST(req: NextRequest) {
-  const { email, message, history = [], gapContext = null } = await req.json();
+  const { email, message, history = [], gapContext = null, stream: streamRequested = false } = await req.json();
 
   if (!email || !message) {
     return NextResponse.json({ error: "email and message are required" }, { status: 400 });
@@ -30,17 +86,32 @@ export async function POST(req: NextRequest) {
 
   const systemPrompt = buildGapMemberSystemPrompt(gapContext);
 
-  const response = await anthropic.messages.create({
+  const claudeParams = {
     model: MODEL,
     max_tokens: 4096,
     system: systemPrompt,
     messages: [...history, { role: "user", content: message }],
-  });
+  };
 
-  const replyText = response.content
-    .filter((block: any) => block.type === "text")
-    .map((block: any) => block.text)
-    .join("\n");
+  if (chatStreamingAllowed({ ...gapStreamingSwitch(), email, requested: streamRequested })) {
+    const channel = createSseChannel();
+    waitUntil(
+      runStreamedReply({
+        channel,
+        chatId: null,
+        label: "gap-chat-member",
+        startStream: (signal: AbortSignal) =>
+          streamingAnthropic.messages.stream(claudeParams as any, { timeout: GAP_STREAM_CONNECT_TIMEOUT_MS, signal }),
+        // Nothing to save here: hand back the complete reply, same text as JSON.
+        finishReply: async (finalMessage: any) => ({ replyText: replyTextOf(finalMessage), openActivationSlug: null }),
+      })
+    );
+    return new Response(channel.readable, { headers: SSE_HEADERS });
+  }
+
+  const response = await anthropic.messages.create(claudeParams as any);
+
+  const replyText = replyTextOf(response);
 
   return NextResponse.json({ reply: replyText });
 }
