@@ -5455,10 +5455,10 @@ if (forceComplete) { goDay(3); }
   .ccm-price s { color: #8C8272; margin-left: 4px; }
   .ccm-btn-gold { position: relative; overflow: hidden; display: inline-flex; align-items: center; justify-content: center; gap: 10px; border: none; cursor: pointer; border-radius: 999px; padding: 15px 34px; font: 700 12.5px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; letter-spacing: .2em; text-transform: uppercase; color: #241C0A; background: linear-gradient(180deg, #F8E7B0 0%, #E2BE68 48%, #B98A2E 100%); box-shadow: 0 0 0 1px rgba(255,236,190,.45) inset, 0 10px 30px rgba(185,138,46,.35), 0 0 26px rgba(226,190,104,.35); transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease; }
   .ccm-btn-gold::after { content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; background: linear-gradient(100deg, transparent, rgba(255,255,255,.7), transparent); transform: skewX(-20deg); animation: ccm-gleam 5.5s ease-in-out infinite; pointer-events: none; }
-  .ccm-btn-gold:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(255,236,190,.55) inset, 0 14px 36px rgba(185,138,46,.45), 0 0 34px rgba(226,190,104,.5); }
+  @media (hover: hover) { .ccm-btn-gold:hover { transform: translateY(-1px); box-shadow: 0 0 0 1px rgba(255,236,190,.55) inset, 0 14px 36px rgba(185,138,46,.45), 0 0 34px rgba(226,190,104,.5); } }
   @keyframes ccm-gleam { 0%,70% { left: -60%; } 100% { left: 130%; } }
   .ccm-btn-quiet { background: none; border: none; cursor: pointer; padding: 10px 14px; font: 500 13px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; letter-spacing: .08em; color: #A9997F; transition: color .3s ease; }
-  .ccm-btn-quiet:hover { color: #F6F2E9; }
+  @media (hover: hover) { .ccm-btn-quiet:hover { color: #F6F2E9; } }
   .ccm-fly { display: block; filter: drop-shadow(0 0 10px rgba(226,190,104,.55)); animation: ccm-float 6s ease-in-out infinite; }
   .ccm-fly .w { transform-box: fill-box; animation: ccm-flap 4.2s ease-in-out infinite; }
   .ccm-fly .wl { transform-origin: 100% 60%; } .ccm-fly .wr { transform-origin: 0% 60%; }
