@@ -3,7 +3,8 @@
 
 import Airtable from "airtable";
 import crypto from "crypto";
-import { sendGapMethodMagicLink } from "./email";
+import { sendGapMethodMagicLink, sendOpsAlert } from "./email";
+import { applyMemberEmailChange, describePlan } from "./memberEmailChange";
 import { DIVINE_IDENTITIES } from "./divineIdentities";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
@@ -534,29 +535,181 @@ export async function listWebhookEventsDueForRetry() {
     .all();
 }
 
-export async function processKajabiPurchase({ email, firstName, offerId, eventType }) {
+// ---------------------------------------------------------------------------
+// Oct 8 2026 (Rachael, after Eden Koz's Kajabi email change): member email
+// changes. Kajabi has no "contact updated" webhook, but every purchase /
+// payment.succeeded webhook carries a STABLE Kajabi member id (member.id) next
+// to the member's CURRENT email. We capture that id on the Members record
+// (kajabi_member_id), so a later webhook whose email isn't in Members but
+// whose member id IS can be recognised as the same person with a new email.
+//
+// MEMBER_EMAIL_SYNC (Vercel env var) -- default "off":
+//   off   : exactly the old behaviour (an unknown email gets a new Members
+//           record). Only the id capture below runs, and only once the
+//           kajabi_member_id field exists in Airtable.
+//   alert : a stable-id match with a different email emails Rachael (ops
+//           alert) with the exact one-step fix; the purchase's access flags go
+//           on the member's EXISTING record (same Kajabi person) instead of
+//           creating a duplicate. Nothing is renamed automatically.
+//   auto  : same detection, then lib/memberEmailChange.js moves the email
+//           across every email-keyed table (audit row in EmailChanges first),
+//           and Rachael gets an FYI email with the undo command. If the move is
+//           blocked (ambiguous) it falls back to "alert".
+// A match is only used when EXACTLY ONE Members record has that Kajabi id.
+// Any error in this block is caught -- it can never fail the purchase itself.
+// ---------------------------------------------------------------------------
+export function memberEmailSyncMode(raw = process.env.MEMBER_EMAIL_SYNC) {
+    const v = String(raw ?? "").trim().toLowerCase();
+    return v === "alert" || v === "auto" ? v : "off";
+}
+
+export function cleanKajabiId(id) {
+    const s = id == null ? "" : String(id).trim();
+    return /^[A-Za-z0-9_-]{1,64}$/.test(s) ? s : null;
+}
+
+export async function findMembersByKajabiId(kajabiMemberId) {
+    const id = cleanKajabiId(kajabiMemberId);
+    if (!id) return [];
+    return base(Tables.Members)
+    .select({ filterByFormula: `{kajabi_member_id} = "${id}"`, maxRecords: 3 })
+    .firstPage();
+}
+
+async function safeOpsAlert(alertFn, subject, message) {
+    try {
+        await alertFn({ subject, message });
+    } catch (err) {
+        console.error("member email sync: ops alert failed", err);
+    }
+}
+
+// Best-effort: never throws. Only fills an EMPTY kajabi_member_id; never
+// overwrites a different id (that would be a data problem worth a human look).
+export async function captureKajabiMemberId(record, kajabiMemberId) {
+    const id = cleanKajabiId(kajabiMemberId);
+    if (!id || !record?.id) return "skipped";
+    const current = record.fields?.kajabi_member_id;
+    if (current === id) return "unchanged";
+    if (current) {
+        console.warn(`kajabi_member_id mismatch on ${record.id}: has ${current}, webhook sent ${id} -- left as is`);
+        return "mismatch";
+    }
+    try {
+        await base(Tables.Members).update(record.id, { kajabi_member_id: id });
+        return "captured";
+    } catch (err) {
+        // e.g. the field hasn't been added to this Airtable base yet.
+        console.warn("kajabi_member_id capture skipped:", String(err?.message ?? err));
+        return "failed";
+    }
+}
+
+async function handleKajabiEmailChange({ newEmail, kajabiMemberId, offerId, mode, alertFn }) {
+    const matches = await findMembersByKajabiId(kajabiMemberId);
+    if (matches.length === 0) return null;
+    if (matches.length > 1) {
+        await safeOpsAlert(alertFn, "Member email change needs a look (ambiguous)",
+            `A Kajabi payment arrived for ${newEmail} (Kajabi member id ${kajabiMemberId}, offer ${offerId ?? "?"}).\n\n` +
+            `That email is not in the app, and ${matches.length} Members records share that Kajabi id ` +
+            `(${matches.map((m) => `${m.id} ${m.fields?.email ?? ""}`).join(", ")}), so nothing was changed automatically. ` +
+            `The app created a new record for ${newEmail} as usual.`);
+        return { action: "ambiguous", record: null };
+    }
+    const match = matches[0];
+    const oldEmail = normalizeEmail(match.fields?.email);
+    if (!oldEmail || oldEmail === newEmail) return null;
+
+    const fixCommand = `node scripts/move-member-email.mjs --old ${oldEmail} --new ${newEmail}`;
+    if (mode === "auto") {
+        try {
+            const res = await applyMemberEmailChange(base, {
+                oldEmail,
+                newEmail,
+                source: "kajabi_webhook",
+                note: `Kajabi member id ${kajabiMemberId}, offer ${offerId ?? "?"}`,
+            });
+            if (res.applied) {
+                await safeOpsAlert(alertFn, `Member email updated: ${oldEmail} -> ${newEmail}`,
+                    `Kajabi now has a new email for one of your members (Kajabi member id ${kajabiMemberId}).\n\n` +
+                    `The app moved her account automatically, so she keeps her access, chats and history:\n${describePlan(res.plan)}\n\n` +
+                    `Audit row: EmailChanges ${res.auditRecordId}. To undo: node scripts/move-member-email.mjs --old ${newEmail} --new ${oldEmail} --apply`);
+                const fresh = await base(Tables.Members).find(match.id);
+                return { action: "moved", record: fresh };
+            }
+            await safeOpsAlert(alertFn, `Member email change blocked: ${oldEmail} -> ${newEmail}`,
+                `Kajabi sent a payment for ${newEmail} with the same Kajabi member id (${kajabiMemberId}) as ${oldEmail}, ` +
+                `but the automatic move was blocked, so nothing was renamed:\n${describePlan(res.plan)}\n\n` +
+                `Her access was applied to her existing record (${match.id}); she can still sign in with ${oldEmail}. ` +
+                `Review, then run: ${fixCommand}`);
+            return { action: "blocked", record: match };
+        } catch (err) {
+            await safeOpsAlert(alertFn, `Member email move stopped part-way: ${oldEmail} -> ${newEmail}`,
+                `Error: ${String(err?.message ?? err)}\n\nThe Members record was not renamed, so she can still sign in with ${oldEmail}. ` +
+                `See the EmailChanges table for what moved, then finish with: ${fixCommand} --resume`);
+            return { action: "failed", record: match };
+        }
+    }
+    await safeOpsAlert(alertFn, `Member changed email in Kajabi: ${oldEmail} -> ${newEmail}`,
+        `Kajabi sent a payment for ${newEmail} (Kajabi member id ${kajabiMemberId}, offer ${offerId ?? "?"}). ` +
+        `In the app she is still ${oldEmail} (Members ${match.id}).\n\n` +
+        `Her access was applied to that existing record (no duplicate created). Until her email is moved she must sign in with ${oldEmail}.\n\n` +
+        `To move her email across every table in one step (dry run first, then add --apply): ${fixCommand}`);
+    return { action: "alerted", record: match };
+}
+
+/**
+ * @param {{ email: string, firstName: string | undefined, offerId: string | undefined, eventType: string | undefined, kajabiMemberId?: string }} args
+ * @param {{ mode?: string, sendOpsAlert?: (a: { subject: string, message: string }) => Promise<any> }} [deps]
+ */
+export async function processKajabiPurchase({ email, firstName, offerId, eventType, kajabiMemberId }, deps = {}) {
     const normalizedEmail = normalizeEmail(email);
     const isMemberOffer = offerId ? MEMBER_OFFER_IDS.includes(offerId) : true;
     const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
     const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;
     const isCancellation = eventType === "cancellation" || eventType === "refund";
 
-    const existing = await getMemberByEmail(normalizedEmail);
+    let existing = await getMemberByEmail(normalizedEmail);
+
+    let emailSync = null;
+    const syncMode = memberEmailSyncMode(deps.mode);
+    if (!existing && syncMode !== "off" && cleanKajabiId(kajabiMemberId)) {
+        try {
+            emailSync = await handleKajabiEmailChange({
+                newEmail: normalizedEmail,
+                kajabiMemberId: cleanKajabiId(kajabiMemberId),
+                offerId,
+                mode: syncMode,
+                alertFn: deps.sendOpsAlert ?? sendOpsAlert,
+            });
+        } catch (err) {
+            // e.g. kajabi_member_id field missing -> behave exactly as before.
+            console.error("member email sync check failed (ignored)", String(err?.message ?? err));
+            emailSync = null;
+        }
+        if (emailSync?.record) existing = emailSync.record;
+    }
+
     const fields = {};
     if (isMemberOffer) fields.member_active = !isCancellation;
     if (isTierOffer) fields.tier_active = !isCancellation;
 
     let memberRecordId;
     let outcome;
+    let memberRecord;
     if (existing) {
         await base(Tables.Members).update(existing.id, fields);
         memberRecordId = existing.id;
+        memberRecord = existing;
         outcome = "already_existed";
     } else {
         const created = await base(Tables.Members).create({ email: normalizedEmail, member_active: !isCancellation, ...fields });
         memberRecordId = created.id;
+        memberRecord = created;
         outcome = "created";
     }
+
+    if (kajabiMemberId != null) await captureKajabiMemberId(memberRecord, kajabiMemberId);
 
     if (isGapMethodOffer && !isCancellation) {
         const { sessionToken } = await upsertGapMethodResultOnPurchase({ email: normalizedEmail, offerId, firstName });
@@ -569,7 +722,7 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
         await linkGapMethodResultToMember(normalizedEmail, memberRecordId);
     }
 
-    return { memberRecordId, outcome };
+    return { memberRecordId, outcome, ...(emailSync ? { emailSync: emailSync.action } : {}) };
 }
 
 export default base;
