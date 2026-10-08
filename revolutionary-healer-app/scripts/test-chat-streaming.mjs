@@ -12,7 +12,7 @@
 //  B. Switch off / missing / not allowed / processSlug: the new route
 //     returns byte-for-byte the same JSON, makes the same Airtable writes and
 //     sends the same Claude request as the route before this change
-//     (git 7d13fab).
+//     (git d98b36f).
 //  C. Streaming on: events, same final reply + same saves as the JSON path,
 //     no Airtable write while text is arriving, member disconnect still saves
 //     exactly once, mid-reply failures save nothing, SDK retries only before
@@ -255,7 +255,7 @@ process.env.ANTHROPIC_BASE_URL = `http://127.0.0.1:${apiServer.address().port}`;
 process.env.ANTHROPIC_API_KEY = "test-not-a-real-key";
 
 // ---------------------------------------------------------------------------
-// Load the NEW route and the route as it was before streaming (git 7d13fab)
+// Load the NEW route and the route as it was before streaming (git d98b36f)
 // ---------------------------------------------------------------------------
 function transpileRoute(src, name) {
   const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText;
@@ -266,10 +266,10 @@ function transpileRoute(src, name) {
 const newRoute = await import(transpileRoute(fs.readFileSync(path.join(appRoot, "app/api/chat/route.ts"), "utf8"), "route-new.mjs"));
 let oldRoute = null;
 try {
-  const oldSrc = execFileSync("git", ["show", "7d13fab:revolutionary-healer-app/app/api/chat/route.ts"], { cwd: appRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+  const oldSrc = execFileSync("git", ["show", "d98b36f:revolutionary-healer-app/app/api/chat/route.ts"], { cwd: appRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
   oldRoute = await import(transpileRoute(oldSrc, "route-old.mjs"));
 } catch (e) {
-  console.log("   (git 7d13fab not available -- old-vs-new comparisons will fail)");
+  console.log("   (git d98b36f not available -- old-vs-new comparisons will fail)");
 }
 
 const SHIFT1 = { id: "recShift1", fields: { member_email: "member@example.com", focus_area: "Prosperity", divine_identity_name: "Healer", current_frequency: "Over-giving", progress_status: "shifting", gap_explanation: "Rescues clients", recommended_activation: "Receiving" } };
@@ -357,7 +357,7 @@ const assistantSaves = (w) => w.filter(([n, a]) => n === "createMessage" && a.ro
 // ---------------------------------------------------------------------------
 // B. Switch off: identical to before
 // ---------------------------------------------------------------------------
-console.log("\n# B. Switch off / not allowed / processSlug: identical to the route before this change (git 7d13fab)");
+console.log("\n# B. Switch off / not allowed / processSlug: identical to the route before this change (git d98b36f)");
 const gapStep3 =
   "Step 3: Your Recommended Activation\n\nHere is what I see for you...\n" +
   `[[SAVE_SHIFT: {"focusArea": "Prosperity", "divineIdentityName": "Healer", "divineIdentitySlug": "healer", "currentFrequency": "Over-giving", "gap": "g", "howItShowsUp": "h", "primaryShift": "p", "recommendedActivation": "free text"}]]\n` +
@@ -584,7 +584,7 @@ await test("funnel GAP bot, Shift-creation route and GAP prompts untouched; the 
   assert.match(gapMember, /mode:\s*process\.env\.GAP_STREAMING\b/);
   assert.ok(!/mode:\s*process\.env\.CHAT_STREAMING\b/.test(gapMember), "GAP must not follow the main chat's on/off switch");
   try {
-    const changed = execFileSync("git", ["diff", "--name-only", "7d13fab", "--", "."], { cwd: appRoot, encoding: "utf8" }).split("\n").filter(Boolean);
+    const changed = execFileSync("git", ["diff", "--name-only", "d98b36f", "--", "."], { cwd: appRoot, encoding: "utf8" }).split("\n").filter(Boolean);
     const allowed = /^revolutionary-healer-app\/(app\/api\/chat\/route\.ts|app\/api\/gap-chat-member\/route\.ts|lib\/chatStreaming\.js|public\/app\.html|scripts\/test-chat-streaming\.mjs|scripts\/test-chat-streaming-browser\.mjs|scripts\/test-gap-streaming\.mjs|package\.json)$/;
     for (const f of changed) assert.match(f, allowed, `unexpected file changed: ${f}`);
   } catch (e) { if (e instanceof assert.AssertionError) throw e; }

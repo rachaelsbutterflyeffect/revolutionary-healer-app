@@ -45,6 +45,12 @@ import {
   runStreamedReply,
   SSE_HEADERS,
 } from "@/lib/chatStreaming";
+import {
+  MAIN_CHAT_MAX_TOKENS,
+  mainChatReplyRequestOptions,
+  noteMainChatReplyStop,
+  thinkingTokensFromUsage,
+} from "@/lib/mainChatReply";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
@@ -245,9 +251,13 @@ export async function POST(req: NextRequest) {
   // difference is that `system` is sent as two text blocks (same text, same
   // order) with a cache breakpoint after the fixed instructions, so Anthropic
   // can reuse them instead of re-reading ~14k tokens on every message.
+  //
+  // Long-reply fix (Oct 8 2026, see lib/mainChatReply.js): max_tokens was
+  // 4096 for hidden thinking + visible reply combined, so long replies were
+  // cut off mid-sentence. Same ceiling for both the streamed and JSON paths.
   const claudeParams = {
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: MAIN_CHAT_MAX_TOKENS,
     system: toCachedSystemBlocks(systemPrompt),
     messages: [...historyForClaude, { role: "user", content: message }],
   };
@@ -281,12 +291,14 @@ export async function POST(req: NextRequest) {
             cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
             cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
             output_tokens: u.output_tokens,
+            thinking_tokens: thinkingTokensFromUsage(u),
             stop_reason: response.stop_reason,
           })
       );
     } catch (logErr) {
       // logging must never affect the reply
     }
+    noteMainChatReplyStop(response); // log-only
 
     const rawReplyText = response.content
       .filter((block: any) => block.type === "text")
@@ -613,7 +625,7 @@ export async function POST(req: NextRequest) {
   try {
     response = await anthropic.messages.create(
       claudeParams as any,
-      { timeout: CHAT_TIMEOUT_MS }
+      mainChatReplyRequestOptions()
     );
   } catch (err) {
     return NextResponse.json(

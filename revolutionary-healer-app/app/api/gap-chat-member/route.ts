@@ -36,6 +36,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { waitUntil } from "@vercel/functions";
 import { buildGapMemberSystemPrompt } from "@/lib/processes";
 import { getEntitlementForEmail } from "@/lib/entitlements";
+import { GAP_CHAT_MAX_TOKENS, logGapChatUsage } from "@/lib/gapChatReply";
 import {
   chatStreamingAllowed,
   createSseChannel,
@@ -86,13 +87,17 @@ export async function POST(req: NextRequest) {
 
   const systemPrompt = buildGapMemberSystemPrompt(gapContext);
 
+  // Long-reply fix (Oct 8 2026, see lib/gapChatReply.js): 4096 had to hold
+  // hidden thinking + reply + the Shift-saving markers; now 10,000. Same
+  // ceiling for the streamed and JSON paths.
   const claudeParams = {
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: GAP_CHAT_MAX_TOKENS,
     system: systemPrompt,
     messages: [...history, { role: "user", content: message }],
   };
 
+  const claudeStartedAt = Date.now();
   if (chatStreamingAllowed({ ...gapStreamingSwitch(), email, requested: streamRequested })) {
     const channel = createSseChannel();
     waitUntil(
@@ -103,13 +108,18 @@ export async function POST(req: NextRequest) {
         startStream: (signal: AbortSignal) =>
           streamingAnthropic.messages.stream(claudeParams as any, { timeout: GAP_STREAM_CONNECT_TIMEOUT_MS, signal }),
         // Nothing to save here: hand back the complete reply, same text as JSON.
-        finishReply: async (finalMessage: any) => ({ replyText: replyTextOf(finalMessage), openActivationSlug: null }),
+        finishReply: async (finalMessage: any) => {
+          logGapChatUsage(finalMessage, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS); // log-only (Vercel logs)
+          return { replyText: replyTextOf(finalMessage), openActivationSlug: null };
+        },
       })
     );
     return new Response(channel.readable, { headers: SSE_HEADERS });
   }
 
   const response = await anthropic.messages.create(claudeParams as any);
+
+  logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS); // log-only (Vercel logs)
 
   const replyText = replyTextOf(response);
 

@@ -10,7 +10,7 @@
 //  A. Switch: GAP_STREAMING is separate from CHAT_STREAMING (either can be
 //     off on its own); allowlist; the page must ask.
 //  B. Switch off / not allowed: byte-for-byte the same JSON and the same
-//     Claude request as the route before streaming (git 7d13fab).
+//     Claude request as the route before streaming (git d98b36f, PR #37 head).
 //  C. Streaming on: hidden markers (FINAL_IDENTITY, SUB_ACTIVATION,
 //     SAVE_SHIFT, DISTORTIONS, TOPIC) never reach the screen, split at
 //     every character boundary; hidden thinking never reaches the screen;
@@ -157,7 +157,7 @@ function transpile(src, name) {
 }
 const ROUTE = "app/api/gap-chat-member/route.ts";
 const newRoute = await import(transpile(read(ROUTE), "gap-new.mjs"));
-const oldRoute = await import(transpile(execFileSync("git", ["show", `7d13fab:revolutionary-healer-app/${ROUTE}`], { cwd: appRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }), "gap-old.mjs"));
+const oldRoute = await import(transpile(execFileSync("git", ["show", `d98b36f:revolutionary-healer-app/${ROUTE}`], { cwd: appRoot, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }), "gap-old.mjs"));
 
 const SWITCH_KEYS = ["GAP_STREAMING", "GAP_STREAMING_ALLOWLIST", "CHAT_STREAMING", "CHAT_STREAMING_ALLOWLIST"];
 function setSwitch(env = {}) { for (const k of SWITCH_KEYS) { if (env[k] !== undefined) process.env[k] = env[k]; else delete process.env[k]; } }
@@ -222,7 +222,7 @@ await test("allowlist: GAP_STREAMING_ALLOWLIST if set, otherwise the main chat's
 });
 
 // ---------------------------------------------------------------------------
-console.log("\n# B. Switch off / not allowed: identical to the route before this change (git 7d13fab)");
+console.log("\n# B. Switch off / not allowed: identical to the route before this change (git d98b36f = PR #37 head, incl. the GAP max_tokens fix)");
 const OFF_ENVS = [{}, { GAP_STREAMING: "off" }, { GAP_STREAMING: "allowlist", CHAT_STREAMING_ALLOWLIST: "other@example.com" }, { CHAT_STREAMING: "on" }];
 await test("every reply shape x every 'off' setting x page asking or not: same status, same JSON bytes, same Claude request", async () => {
   for (const env of OFF_ENVS) for (const [name, text] of Object.entries(SAMPLES)) for (const body of [BODY, SBODY]) {
