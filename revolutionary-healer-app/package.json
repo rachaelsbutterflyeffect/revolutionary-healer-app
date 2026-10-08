@@ -12,7 +12,9 @@
     "test:chat-streaming": "node scripts/test-chat-streaming.mjs",
     "test:gap-streaming": "node scripts/test-gap-streaming.mjs",
     "test:chat-max-tokens": "node scripts/test-chat-max-tokens.mjs",
-    "test:gap-max-tokens": "node scripts/test-gap-max-tokens.mjs"
+    "test:gap-max-tokens": "node scripts/test-gap-max-tokens.mjs",
+    "test:gap-reading": "node scripts/test-gap-reading.mjs",
+    "test:remove-relationships": "node scripts/test-remove-relationships.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",

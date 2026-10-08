@@ -1159,10 +1159,13 @@
 
         <div class="eyebrow">Your personalized activation</div>
         <div class="activation-card" id="d3-activation-card" style="text-align:left; margin-bottom: 34px;">
+          <div class="eyebrow gap-v2-only" id="a-v2-label">Primary Activation</div>
           <div class="activation-tag" id="a-tag"></div>
           <h3 id="a-title"></h3>
           <div class="activation-meta" id="a-meta"></div>
           <p id="a-teaser"></p>
+          <button type="button" class="btn-gold gap-v2-only" id="d3-listen-now" onclick="gapListenNow(this)">Listen now →</button>
+          <p class="gap-v2-only gap-listen-status" id="d3-listen-status" role="status" hidden></p>
         </div>
 
         <div class="reveal-block" id="d3-upsell-block" style="text-align:left; margin-top: 8px;">
@@ -1171,7 +1174,34 @@
           <a href="javascript:void(0)" class="btn-gold" onclick="handleGapListenNowClick()">Listen now →</a>
 <div id="d3-embed-confirmation" style="display:none; text-align:center; margin-top: 18px;"><p class="copy" style="color: var(--gold-soft); margin:0;">✓ Your Shift has been saved to My Revolution.</p></div>
         </div>
+        <!-- GAP reading restructure, switch on only: "Your Gap" card, 2nd in the row (CSS grid places it between
+             Current Frequency and Primary Activation). The member's own Primary Shift wording; display only. -->
+        <div class="reveal-block gap-v2-only gap-yourgap-card" id="d3-yourgap-card" style="text-align:left;">
+          <div class="eyebrow">Your Gap</div>
+          <p class="gap-into" id="d3-shift-into" hidden></p>
+          <p class="gap-shift-text" id="d3-shift-text"></p>
+          <p class="gap-shift-close">That's your Gap.</p>
+          <button type="button" class="gap-to-activation" id="d3-to-activation" onclick="gapScrollToActivation()">shift this quickly <span class="gap-to-arrow" aria-hidden="true">&rarr;</span></button>
+        </div>
 
+      </div>
+      <!-- GAP reading restructure (Oct 8 2026): shown while the one deep reading runs. -->
+      <div class="gap-analyzing" id="gap-analyzing" hidden aria-live="polite">
+        <div class="eyebrow">Step 3: Evolve your reality</div>
+        <div class="gap-an-orb" aria-hidden="true">
+          <span class="gap-an-ring"></span><span class="gap-an-ring gap-an-ring2"></span><span class="gap-an-core"></span>
+          <i style="--x:-62px;--y:-38px;--d:0s"></i><i style="--x:58px;--y:-46px;--d:.35s"></i><i style="--x:70px;--y:22px;--d:.7s"></i><i style="--x:-70px;--y:30px;--d:1.05s"></i>
+          <i style="--x:-24px;--y:-72px;--d:1.4s"></i><i style="--x:26px;--y:68px;--d:1.75s"></i><i style="--x:-44px;--y:62px;--d:.2s"></i><i style="--x:46px;--y:-70px;--d:.9s"></i>
+          <i style="--x:-82px;--y:-4px;--d:1.25s"></i><i style="--x:84px;--y:-8px;--d:1.6s"></i><i style="--x:6px;--y:-86px;--d:.55s"></i><i style="--x:-8px;--y:84px;--d:1.9s"></i>
+        </div>
+        <p class="gap-an-title serif">Analyzing to find your biggest gap frequency</p>
+        <div class="gap-an-pct"><span id="gap-an-pct">0</span>%</div>
+        <div class="gap-an-bar" id="gap-an-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="gap-an-fill"></span></div>
+        <p class="gap-an-note" id="gap-an-note">Reading everything you shared…</p>
+        <div class="gap-an-error" id="gap-an-error" hidden>
+          <p>Something interrupted your reading. Nothing has been saved yet, and your conversation is still here.</p>
+          <button type="button" class="btn-gold" id="gap-an-retry">Try again</button>
+        </div>
       </div>
     </div>
 
@@ -2172,6 +2202,7 @@
     // the Shift is Shifting), and never on an already-Embodied Shift.
     document.getElementById('shift-modal-embodied-ready').style.display =
       (shift.statusClass === 'shifting' && shift.readyForEmbodied) ? '' : 'none';
+    if (typeof gapV2ShiftModal === 'function') gapV2ShiftModal(shift); // switch on only: unified labels
   }
 
   function openShiftModal(id) {
@@ -2739,13 +2770,14 @@
     if (hasShifts) {
             var top = shifts[0]; try { var pinnedShiftId = sessionStorage.getItem('rhFocusShiftId'); if (pinnedShiftId) { var pinnedShift = shifts.filter(function(s) { return String(s.id) === String(pinnedShiftId); })[0]; if (pinnedShift) { top = pinnedShift; } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } else { sessionStorage.setItem('rhFocusShiftId', String(shifts[0].id)); } } catch (e) {}
       document.querySelectorAll('[data-role="focus-identity"]').forEach(function(el) { el.textContent = top.identity || 'Your Divine Identity'; });
-      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.maintaining || top.gap || "More will show here as this Shift develops."; });
+      document.querySelectorAll('[data-role="focus-freq"]').forEach(function(el) { el.textContent = top.todaysFocus || top.maintaining || top.gap || "More will show here as this Shift develops."; }); // todaysFocus: GAP reading restructure (older Shifts: unchanged)
       document.querySelectorAll('[data-role="focus-status"]').forEach(function(el) {
         el.textContent = top.statusLabel;
         el.className = 'status-pill ' + top.statusClass;
       });
       document.querySelectorAll('[data-role="focus-activation"]').forEach(function(el) { el.textContent = top.activation || ''; });
       document.querySelectorAll('[data-role="focus-activity-line"]').forEach(function(el) { el.textContent = 'Started ' + top.date; });
+      if (typeof gapV2FocusCard === 'function') gapV2FocusCard(top); // switch on only: unified labels
     }
 
     var listHtml = '';
@@ -2932,6 +2964,8 @@ function resetGapMethodState() {
   gapChatReadyQueued = false;
   window.__gapCardData = null;
   window.__gapShiftAutoCreated = false;
+  if (typeof gapCancelReading === 'function') gapCancelReading(); // GAP reading restructure
+  window.__gapReading = null;
   if (typeof gapCurrentStep !== 'undefined') gapCurrentStep = 1;
   var gapInputEl = document.getElementById('gap-chat-input'); if (gapInputEl) { gapInputEl.value = ''; gapInputEl.disabled = false; }
   var check1El = document.getElementById('check1'); if (check1El) check1El.textContent = '';
@@ -2998,6 +3032,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     if (!RH_EMAIL) return;
     try {
       var res = await fetch('/api/shifts?email=' + encodeURIComponent(RH_EMAIL));
+      if (typeof gapNoteFastReading === 'function') gapNoteFastReading(res); // GAP reading restructure: switch on -> unified Shift card labels
       var data = await res.json();
       var records = data.shifts || [];
       SHIFTS.length = 0;
@@ -3015,6 +3050,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
           activation: r.recommendedActivation,
           undercurrent: r.undercurrent ? { frequency: r.undercurrent, activation: r.nextSuggestedActivation } : null,
           readyForEmbodied: !!r.readyForEmbodied,
+          todaysFocus: r.todaysFocus || '',
         });
       });
       renderFocusAndShifts(SHIFTS);
@@ -3967,8 +4003,7 @@ var DOMAINS = [
     { key: "business", label: "Business + Visibility" },
     { key: "money", label: "Money" },
     { key: "gifts", label: "Spiritual Gifts" },
-    { key: "energy", label: "Energy + Frequency" },
-    { key: "relationships", label: "Relationships" }
+    { key: "energy", label: "Energy + Frequency" }
   ];
 
   var QUESTION_BANKS = {
@@ -4756,6 +4791,7 @@ var DOMAINS = [
     for (var i = n; i <= 3; i++) { var c = document.getElementById('check' + i); if (c) c.textContent = ''; }
   }
   function goDay(n) {
+if (typeof gapReadingNavGuard === 'function' && gapFastReadingOn() && gapReadingNavGuard(n)) return; // GAP reading restructure (switch on only): one reading, no early Step 3
 if (n === 2) { var c1el = document.getElementById('check1'); if (!c1el || c1el.textContent !== '✓') { n = 1; } }
 if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.textContent !== '✓') { n = 2; } }
     if (n < gapCurrentStep) {
@@ -5003,8 +5039,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     business: "What is happening in your business right now that has you feeling like something isn't adding up?",
     money: "When you look at money right now, what feels different from the way you actually want it to be?",
     gifts: "When your gifts aren't feeling the way you want them to right now, what is actually happening?\n\nTell me what you notice -- maybe in what you're receiving, what happens afterward, or what you find yourself doing.",
-    energy: "What has been happening in your energy that made you choose Energy + Frequency today?",
-    relationships: "Who is the relationship you're feeling this in right now -- a partner, family member, friend, or someone else -- and what has been happening between you that doesn't feel the way you want it to?"
+    energy: "What has been happening in your energy that made you choose Energy + Frequency today?"
   };
   var IDENTITY_SLUG_TO_KEY = {
     guardian: 'overworker',
@@ -5183,6 +5218,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(gapPayload)
     }).then(function(res) {
+        gapNoteFastReading(res); // GAP reading restructure: the server says (header) whether the new flow is on for this member
         if (typeof rhIsChatStream === 'function' && rhIsChatStream(res)) return gapReadStream(res);
         return res.json().then(function(body) { return { ok: res.ok, status: res.status, body: body }; });
       })
@@ -5230,6 +5266,7 @@ var distortionsMatch = reply.match(/\[\[DISTORTIONS:[\s\S]*?\]\]/i);
 if (distortionsMatch) { reply = reply.replace(distortionsMatch[0], '').trim(); }
 var topicMarkerMatch = reply.match(/\[\[TOPIC:[\s\S]*?\]\]/i);
 if (topicMarkerMatch) { reply = reply.replace(topicMarkerMatch[0], '').trim(); }
+if (gapFastReadingOn()) reply = gapStripHiddenMarkers(reply); // switch on: the new hidden markers never reach the screen
 if (result.streamedBubble && result.streamedBubble.isConnected) {
   // Streamed: the words are already on screen -- swap in the exact final reply.
   result.streamedBubble.classList.remove('gap-streaming');
@@ -5334,7 +5371,395 @@ if (forceComplete) { goDay(3); }
   function skipToReveal() {
     document.getElementById('ready-btn-wrap').style.display = 'none';
     if (gapChatRequestPending) { gapChatReadyQueued = true; return; }
-    sendToGapChat("(The member is ready to move forward. Give your Step 2 completion summary now, in the style already described, then stop.)", true, true);
+    if (gapFastReadingOn()) { startGapReading(); return; } // GAP reading restructure (switch on): the ONE deep reading
+    sendToGapChat("(The member is ready to move forward. Give your Step 2 completion summary now, in the style already described, then stop.)", true, true); // switch off: exactly main
+  }
+
+  // ===========================================================================
+  // GAP reading restructure (Oct 8 2026, Rachael -- TEST PREVIEW, not live).
+  // Steps 1-2 are a light chat; between Step 2 and Step 3 ONE deep reading
+  // runs exactly once (single trigger) while the Step 3 screen shows the gold
+  // "analyzing to find your biggest gap frequency" animation. That one
+  // reading produces the Step 3 diagnostic, the Shift card and the Today's
+  // Focus text. The message sent is today's hidden completion request, word
+  // for word (the server appends the reading notes only when its
+  // GAP_FAST_READING switch is on). The Shift is still saved once, by
+  // autoCreateMemberShift() via /api/gap-shift, when Step 3 opens.
+  // ===========================================================================
+  var GAP_READING_KICKOFF = "(The member is ready to move forward. Give your Step 2 completion summary now, in the style already described, then stop.)";
+  var GAP_READING_TIMEOUT_MS = 150000;
+  var gapReadingState = 'idle'; // idle | running | done
+  var gapReadingRun = 0;        // bumps on every start/cancel; stale replies are ignored
+  window.__gapReading = null;
+
+  // The switch (GAP_FAST_READING) lives on the server. It marks Step 2 chat replies with the header
+  // x-gap-fast-reading: 1 ONLY when the new flow is on for this member; switch off = no header = every
+  // Step 2 -> Step 3 path below behaves exactly like main (no analyzing screen, today's completion request).
+  if (window.__gapFastReading !== true) window.__gapFastReading = false;
+  function gapNoteFastReading(res) { try { if (res && res.headers && res.headers.get('x-gap-fast-reading') === '1') window.__gapFastReading = true; } catch (e) {} }
+  function gapFastReadingOn() { return window.__gapFastReading === true; }
+  function gapStripHiddenMarkers(text) {
+    return String(text == null ? '' : text).replace(/\[\[[\s\S]*?\]\]/g, '').replace(/\[\[[\s\S]*$/, '').trim();
+  }
+  function gapStep1Answers() {
+    var out = [];
+    try {
+      [0, 1].forEach(function (i) {
+        var q = IDENTITY_QUESTIONS[i], k = identityAnswers[i];
+        var opt = q && q.options.filter(function (o) { return o.key === k; })[0];
+        if (q && opt) out.push({ question: q.text, answer: opt.label });
+      });
+      var d = DOMAINS.filter(function (x) { return x.key === selectedDomain; })[0];
+      if (d) out.push({ question: 'Where are you feeling the gap the most right now?', answer: d.label });
+    } catch (e) {}
+    return out;
+  }
+  function gapActivationLibraryTitles() {
+    if (typeof ACTIVATION_DETAILS === 'undefined') return [];
+    return Object.keys(ACTIVATION_DETAILS).map(function (k) { return ACTIVATION_DETAILS[k] && ACTIVATION_DETAILS[k].title; }).filter(Boolean);
+  }
+  function gapNormTitle(t) { return String(t || '').toLowerCase().replace(/[\u2018\u2019\u201c\u201d"'`*_]/g, '').replace(/\s+/g, ' ').replace(/[\s.,;:!]+$/, '').trim(); }
+  // Library slug for an exact activation title (exact first, then case/space-insensitive, unique only).
+  function gapLibrarySlugForTitle(title) {
+    if (!title || typeof ACTIVATION_DETAILS === 'undefined') return null;
+    var exact = null, loose = [], n = gapNormTitle(title);
+    Object.keys(ACTIVATION_DETAILS).forEach(function (slug) {
+      var t = ACTIVATION_DETAILS[slug] && ACTIVATION_DETAILS[slug].title; if (!t) return;
+      if (t === String(title).trim()) exact = exact || slug; else if (gapNormTitle(t) === n) loose.push(slug);
+    });
+    return exact || (loose.length === 1 ? loose[0] : null);
+  }
+  // Today's (pre-restructure) activation for an identity: ARCHETYPES, or the Healer sub-activation.
+  function gapFixedActivation(key) {
+    key = key || 'overworker';
+    var a = ARCHETYPES[key], reveal = DIVINE_REVEAL[key];
+    var data = { title: a.activation.title, type: a.activation.type, duration: a.activation.duration, teaser: reveal.activationReason };
+    if (key === 'disconnected') {
+      var subKey = (subActivationKey && DISCONNECTION_SUB_ACTIVATIONS[subActivationKey]) ? subActivationKey : 'remembrance';
+      var sub = DISCONNECTION_SUB_ACTIVATIONS[subKey];
+      data = { title: sub.title, type: sub.type, duration: sub.duration, teaser: sub.teaser };
+    }
+    data.slug = getGapActivationSlugForKey(key);
+    data.source = 'fixed';
+    return data;
+  }
+  // The activation for the card / Step 3 / Today's Focus. Restructure on: the
+  // AI's personalized pick from the deep reading, validated against the exact
+  // library titles; the fixed map only if the pick is missing or invalid.
+  function gapResolveActivation(key) {
+    key = key || 'overworker';
+    var fixed = gapFixedActivation(key);
+    var r = window.__gapReading;
+    if (!r || !r.enabled) return fixed;
+    var pick = r.activationTitle || (window.__gapCardData && window.__gapCardData.recommendedActivation) || '';
+    var slug = gapLibrarySlugForTitle(pick);
+    if (!slug) { fixed.source = 'fallback'; fixed.aiPick = r.aiPick || pick || null; return fixed; }
+    var title = ACTIVATION_DETAILS[slug].title;
+    var meta = null;
+    Object.keys(ARCHETYPES).forEach(function (k) { var x = ARCHETYPES[k].activation; if (!meta && x && x.title === title) meta = x; });
+    Object.keys(DISCONNECTION_SUB_ACTIVATIONS).forEach(function (k) { var x = DISCONNECTION_SUB_ACTIVATIONS[k]; if (!meta && x.title === title) meta = x; });
+    var teaser = r.activationWhy; // the reading's own words on why this activation fits this member
+    if (!teaser) {
+      if (title === fixed.title) teaser = fixed.teaser;
+      else {
+        Object.keys(DISCONNECTION_SUB_ACTIVATIONS).forEach(function (k) { if (!teaser && DISCONNECTION_SUB_ACTIVATIONS[k].title === title) teaser = DISCONNECTION_SUB_ACTIVATIONS[k].teaser; });
+        teaser = teaser || ACTIVATION_DETAILS[slug].description || fixed.teaser;
+      }
+    }
+    return { title: title, type: (meta && meta.type) || 'Guided activation', duration: (meta && meta.duration) || '', teaser: teaser, slug: slug, source: 'ai', aiPick: r.aiPick || pick, fixedTitle: fixed.title };
+  }
+
+  // --- the analyzing screen ---------------------------------------------------
+  var gapAnTimer = null, gapAnShown = 0, gapAnStart = 0;
+  var GAP_AN_NOTES = [[0, 'Reading everything you shared…'], [9, 'Weaving your words into your reading…'], [24, 'Finding the frequency underneath it all…'], [40, 'Still with you -- a deep reading can take a minute or two.'], [75, 'Almost there -- finishing your reading…']];
+  function gapAnEls() { return { view: document.getElementById('view-day3'), panel: document.getElementById('gap-analyzing'), pct: document.getElementById('gap-an-pct'), fill: document.getElementById('gap-an-fill'), note: document.getElementById('gap-an-note'), err: document.getElementById('gap-an-error'), bar: document.getElementById('gap-an-bar') }; }
+  function gapAnPaint(p) {
+    var e = gapAnEls(); gapAnShown = p;
+    if (e.pct) e.pct.textContent = String(Math.floor(p));
+    if (e.fill) e.fill.style.width = p.toFixed(1) + '%';
+    if (e.bar) e.bar.setAttribute('aria-valuenow', String(Math.floor(p)));
+  }
+  function gapAnTick() {
+    var t = (Date.now() - gapAnStart) / 1000;
+    var target = 95 * (1 - Math.exp(-t / 13)); // eases toward ~95% while waiting
+    gapAnPaint(Math.max(gapAnShown, target));
+    var e = gapAnEls(), note = GAP_AN_NOTES[0][1];
+    GAP_AN_NOTES.forEach(function (n) { if (t >= n[0]) note = n[1]; });
+    if (e.note && e.note.textContent !== note) e.note.textContent = note;
+  }
+  function gapShowAnalyzing(on) {
+    var e = gapAnEls(); if (!e.panel || !e.view) return;
+    if (gapAnTimer) { clearInterval(gapAnTimer); gapAnTimer = null; }
+    e.view.classList.toggle('gap-analyzing-on', !!on);
+    e.panel.hidden = !on;
+    if (e.err) e.err.hidden = true;
+    if (on) { gapAnStart = Date.now(); gapAnShown = 0; gapAnPaint(0); gapAnTick(); gapAnTimer = setInterval(gapAnTick, 120); }
+  }
+  function gapAnComplete(done) {
+    if (gapAnTimer) { clearInterval(gapAnTimer); gapAnTimer = null; }
+    var from = gapAnShown, t0 = Date.now();
+    (function step() {
+      var k = Math.min(1, (Date.now() - t0) / 450);
+      gapAnPaint(from + (100 - from) * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) { (window.requestAnimationFrame || setTimeout)(step, 16); } else { setTimeout(done, 450); }
+    })();
+  }
+
+  // --- single trigger ----------------------------------------------------------
+  function startGapReading() {
+    if (gapReadingState !== 'idle') return; // exactly once per run
+    if (gapChatRequestPending) { gapChatReadyQueued = true; return; }
+    gapReadingState = 'running';
+    var run = ++gapReadingRun;
+    window.__gapReading = null;
+    var input = document.getElementById('gap-chat-input'); if (input) input.disabled = true;
+    document.getElementById('ready-btn-wrap').style.display = 'none';
+    document.getElementById('d2-continue').style.display = 'none';
+    document.getElementById('check2').textContent = '✓';
+    // Show the Step 3 screen with the animation (setupDay3 + the Shift save wait for the reading).
+    gapCurrentStep = 3;
+    [1, 2, 3].forEach(function (i) {
+      document.getElementById('view-day' + i).classList.toggle('active', i === 3);
+      document.getElementById('tab-day' + i).classList.toggle('active', i === 3);
+    });
+    setTimeout(gapUpdateStartOver, 0);
+    gapShowAnalyzing(true);
+    var stage = document.querySelector('#hero-gap-embed .stage'), wrapEl = document.getElementById('hero-gap-embed');
+    if (wrapEl) wrapEl.scrollTop = 0; if (stage) stage.scrollTop = 0;
+    gapRequestReading(run, 1);
+  }
+  function gapCancelReading() {
+    gapReadingRun++;
+    gapReadingState = 'idle';
+    gapShowAnalyzing(false);
+  }
+  // goDay() calls this first. Returns true when goDay must do nothing.
+  function gapReadingNavGuard(n) {
+    if (gapReadingState === 'running') {
+      if (n === 3) return true;          // already on the analyzing screen
+      gapCancelReading();                // going back: the reading is dropped, nothing saved
+      return false;
+    }
+    if (n === 3 && gapReadingState === 'idle' && gapCurrentStep !== 3) {
+      var c2 = document.getElementById('check2');
+      if (c2 && c2.textContent === '✓') { startGapReading(); return true; } // every way into Step 3 goes through the one reading
+    }
+    if (n < 3 && gapReadingState === 'done') gapReadingState = 'idle';
+    return false;
+  }
+  function gapRequestReading(run, attempt) {
+    var e = gapAnEls(); if (e.err) e.err.hidden = true;
+    if (!gapAnTimer && gapReadingState === 'running') { gapAnTimer = setInterval(gapAnTick, 120); }
+    var key = winnerKey || 'overworker';
+    var body = {
+      email: RH_EMAIL, message: GAP_READING_KICKOFF, history: gapChatHistory, gapContext: buildGapContext(),
+      phase: 'reading', step1: gapStep1Answers(), activationLibrary: gapActivationLibraryTitles(), fixedActivation: gapFixedActivation(key).title
+    };
+    var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+    var killer = ctrl ? setTimeout(function () { ctrl.abort(); }, GAP_READING_TIMEOUT_MS) : null;
+    var t0 = Date.now();
+    fetch('/api/gap-chat-member', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl ? ctrl.signal : undefined })
+      .then(function (res) { return res.json().catch(function () { return null; }).then(function (b) { return { ok: res.ok, status: res.status, body: b }; }); })
+      .then(function (result) {
+        if (killer) clearTimeout(killer);
+        if (run !== gapReadingRun || gapReadingState !== 'running') return; // cancelled meanwhile
+        if (!result.ok || !result.body || typeof result.body.reply !== 'string') { console.error('gap reading failed', result.status); return gapReadingFailed(run, attempt); }
+        var applied = gapApplyReadingReply(result.body.reply, result.body.reading || null);
+        var hadShift = applied.hadShift;
+        try { console.info('[gap-reading]', JSON.stringify({ ms: Date.now() - t0, attempt: attempt, saveShift: hadShift, activation: result.body.reading ? result.body.reading.activation : 'restructure off', todaysFocus: result.body.reading ? result.body.reading.todaysFocusCheck : null })); } catch (e2) {}
+        if (!hadShift && attempt < 2) return gapRequestReading(run, attempt + 1); // one quiet retry if the Shift details are missing
+        // Kept in the Step 2 conversation exactly as the old completion turn was.
+        if (applied.visible) addBotBubble(applied.visible);
+        gapChatHistory.push({ role: 'user', content: GAP_READING_KICKOFF });
+        gapChatHistory.push({ role: 'assistant', content: applied.visible || "Thank you for sharing all of that with me -- I can see clearly what's here for you." });
+        day2TurnCount++;
+        gapFinishReading(run);
+      })
+      .catch(function (err) {
+        if (killer) clearTimeout(killer);
+        if (run !== gapReadingRun || gapReadingState !== 'running') return;
+        console.error('gap reading request failed', err);
+        gapReadingFailed(run, attempt);
+      });
+  }
+  function gapReadingFailed(run, attempt) {
+    if (gapAnTimer) { clearInterval(gapAnTimer); gapAnTimer = null; }
+    var e = gapAnEls(); if (!e.err) return;
+    e.err.hidden = false;
+    var btn = document.getElementById('gap-an-retry');
+    if (btn) {
+      btn.disabled = false;
+      btn.onclick = function () {
+        if (btn.disabled || run !== gapReadingRun || gapReadingState !== 'running') return;
+        btn.disabled = true;
+        gapRequestReading(run, attempt + 1); // nothing was saved; same reading, same conversation
+      };
+    }
+  }
+  // Same marker handling as a chat reply (sendToGapChat), plus the reading's
+  // own hidden markers. Returns { hadShift, visible }; never touches the conversation.
+  function gapApplyReadingReply(rawReply, reading) {
+    var reply = rawReply || '';
+    var fi = reply.match(/\[\[FINAL_IDENTITY:\s*(\w+)\s*\]\]/i);
+    if (fi) { var fs = fi[1].toLowerCase(); if (IDENTITY_SLUG_TO_KEY[fs]) winnerKey = IDENTITY_SLUG_TO_KEY[fs]; reply = reply.replace(fi[0], '').trim(); }
+    var sa = reply.match(/\[\[SUB_ACTIVATION:\s*(\w+)\s*\]\]/i);
+    if (sa) { var sk = sa[1].toLowerCase(); if (DISCONNECTION_SUB_ACTIVATIONS[sk]) subActivationKey = sk; reply = reply.replace(sa[0], '').trim(); }
+    var hadShift = false;
+    var ss = reply.match(/\[\[SAVE_SHIFT:\s*([\s\S]*?)\]\]/i);
+    if (ss) {
+      try { window.__gapCardData = rhCleanGapCardData(JSON.parse(ss[1])); hadShift = true; } catch (e) { console.error('Failed to parse SAVE_SHIFT marker', e); }
+      reply = reply.replace(ss[0], '').trim();
+    }
+    reply = gapStripHiddenMarkers(reply);
+    if (reading) {
+      window.__gapReading = {
+        enabled: true,
+        activationTitle: reading.activation && reading.activation.title ? reading.activation.title : null,
+        activationSource: reading.activation ? reading.activation.source : null,
+        aiPick: reading.activation ? reading.activation.aiPick : null,
+        oldFixed: reading.activation ? reading.activation.oldFixed : null,
+        activationWhy: reading.activationWhy ? rhCleanAiText(reading.activationWhy) : null,
+        todaysFocus: reading.todaysFocus ? rhCleanAiText(reading.todaysFocus) : null
+      };
+    }
+    return { hadShift: hadShift, visible: reply };
+  }
+  function gapFinishReading(run) {
+    gapAnComplete(function () {
+      if (run !== gapReadingRun || gapReadingState !== 'running') return;
+      gapShowAnalyzing(false);
+      gapReadingState = 'done';
+      goDay(3); // setupDay3 + the one Shift save, exactly as before
+    });
+  }
+
+  // ---- Step 3 card row, restructure only (Rachael, Oct 8 iPhone review). Only active when the server ran the
+  // new reading (window.__gapReading.enabled), so with GAP_FAST_READING off Step 3 is exactly today's.
+  //  - the "Ready for your full transformation?" card is hidden; Listen now sits under the activation card
+  //  - Listen now waits until the Shift is saved and dealt, closes the pop-up, then opens the activation
+  //    through the app's normal activation opener (handleActivationCardClick -> openActivationDetail)
+  //  - long cards scroll inside themselves with a soft fade, so text never runs past the pop-up's frame
+  function gapV2SetStep3(on) {
+    var v = document.getElementById('view-day3'); if (!v) return;
+    v.classList.toggle('gap-v2', !!on);
+    if (!on) return;
+    // Rachael (Oct 8): three cards in one row -- Current Frequency | Your Gap | Primary Activation. The Primary Shift
+    // diagnosis + "That's your Gap." move from the summary card into the Your Gap card. Same text, display only.
+    var restated = document.getElementById('d3-gap-restated');
+    var shiftText = document.getElementById('d3-shift-text');
+    if (shiftText) { shiftText.textContent = restated ? restated.textContent : ''; shiftText.hidden = !shiftText.textContent.trim(); }
+    gapRenderInto(document.getElementById('d3-shift-into'), restated ? restated.textContent : '');
+    var gapCard = v.querySelector('.card > .reveal-block');
+    var gapEyebrow = gapCard ? gapCard.querySelector('.eyebrow') : null; if (gapEyebrow) gapEyebrow.textContent = 'Current Frequency';
+    if (gapCard) Array.prototype.forEach.call(gapCard.querySelectorAll('p'), function (p) { if (p.textContent.trim() === "That's your Gap.") p.classList.add('gap-v2-moved'); });
+    var row = v.querySelector('.card'); if (row) row.scrollLeft = 0; // always start on Current Frequency
+  }
+  // "shift this quickly ->" at the bottom of the Your Gap card: slide the row to the Primary Activation card.
+  function gapScrollToActivation() {
+    var v = document.getElementById('view-day3'); var row = v && v.querySelector('.card'); var act = document.getElementById('d3-activation-card');
+    if (!row || !act) return;
+    var smooth = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'smooth' : 'auto';
+    if (row.scrollWidth > row.clientWidth + 2) {
+      var pad = parseFloat(getComputedStyle(row).scrollPaddingLeft) || parseFloat(getComputedStyle(row).paddingLeft) || 0;
+      row.scrollTo({ left: row.scrollLeft + act.getBoundingClientRect().left - row.getBoundingClientRect().left - pad, behavior: smooth });
+    } else {
+      act.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: smooth }); // desktop: all three cards are visible
+    }
+    act.classList.remove('gap-v2-flash'); void act.offsetWidth; act.classList.add('gap-v2-flash');
+    setTimeout(function () { act.classList.remove('gap-v2-flash'); }, 1400);
+  }
+  // what_we_noticed is saved as "<how it shows up>\n\nPrimary Shift: <diagnosis>" (autoCreateMemberShift) -- split for display only.
+  function gapSplitNoticed(text) {
+    var t = String(text || ''); var m = t.match(/(^|\n)[ \t]*Primary Shift:[ \t]*([\s\S]*)$/);
+    if (!m) return { how: t.trim(), shift: '' };
+    return { how: t.slice(0, m.index).trim(), shift: m[2].trim() };
+  }
+  // The member's own "from X into Y" naming, e.g. "Restriction into Aligned Receiving" (never hard-coded).
+  function gapIntoName(shift) {
+    var t = String(shift || '').replace(/\s+/g, ' ').trim(); var END = '(?:\\s*(?:--|\u2014|\u2013|\\s-\\s|;|\\.)|$)';
+    var m = t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,160}?),\\s+into\\s+(.{2,160}?)' + END, 'i')) || t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,160}?)\\s+into\\s+(.{2,160}?)' + END, 'i')) || t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,160}?)\\s+to\\s+(.{2,160}?)' + END, 'i'));
+    if (!m) return null;
+    var clean = function (x) { return x.replace(/[\s,;:]+$/, '').trim(); };
+    var n = { from: clean(m[1]), to: clean(m[2]) };
+    return n;
+  }
+  function gapRenderInto(el, shift) {
+    if (!el) return;
+    var n = gapIntoName(shift);
+    el.textContent = '';
+    if (!n) { el.hidden = true; return; }
+    var a = document.createElement('span'); a.className = 'gap-into-from'; a.textContent = n.from;
+    var w = document.createElement('em'); w.className = 'gap-into-word'; w.textContent = ' into ';
+    var b = document.createElement('span'); b.className = 'gap-into-to'; b.textContent = n.to;
+    el.appendChild(a); el.appendChild(w); el.appendChild(b); el.hidden = false;
+    el.classList.toggle('gap-into-long', (n.from.length + n.to.length) > 60); // long names: a little smaller, still in full
+  }
+  // Today's Focus card, switch on only: same three labels, same order. Content unchanged except a short
+  // "Your Gap" line (the member's own "X into Y" naming) when the Shift has one; older Shifts look as before.
+  function gapV2FocusCard(top) {
+    if (!gapFastReadingOn()) return;
+    var parts = gapSplitNoticed(top && top.maintaining);
+    document.querySelectorAll('[data-role="focus-card"]').forEach(function (card) {
+      var kicker = card.querySelector('[data-role="focus-freq"]'); kicker = kicker && kicker.previousElementSibling;
+      if (kicker && kicker.classList.contains('focus-card-kicker')) kicker.textContent = 'Current Frequency';
+      var freqWrap = card.querySelector('[data-role="focus-freq"]'); freqWrap = freqWrap && freqWrap.parentNode;
+      var gapLine = card.querySelector('.gap-v2-focus-gap');
+      if (!gapLine && freqWrap) { gapLine = document.createElement('div'); gapLine.className = 'gap-v2-focus-gap'; gapLine.innerHTML = '<div class="focus-card-kicker">Your Gap</div><div class="gap-into"></div>'; freqWrap.parentNode.insertBefore(gapLine, freqWrap.nextSibling); }
+      if (gapLine) { gapRenderInto(gapLine.querySelector('.gap-into'), parts.shift); gapLine.style.display = gapLine.querySelector('.gap-into').hidden ? 'none' : ''; }
+      var act = card.querySelector('[data-role="focus-activation"]');
+      if (act && act.previousSibling && act.previousSibling.nodeType === 3) act.previousSibling.textContent = 'Primary Activation: ';
+    });
+  }
+  // Shift detail pop-up, switch on only: Current Frequency (headline + how it shows up) -> Your Gap (diagnosis +
+  // "That's your Gap.") -> Primary Activation. Same saved values; older Shifts without a diagnosis skip Your Gap.
+  function gapV2ShiftModal(shift) {
+    if (!gapFastReadingOn() || !shift) return;
+    var parts = gapSplitNoticed(shift.maintaining);
+    var gapEl = document.getElementById('shift-modal-gap'); if (!gapEl) return;
+    var cfSection = gapEl.parentNode; cfSection.querySelector('.eyebrow').textContent = 'Current Frequency';
+    var how = document.getElementById('shift-modal-how');
+    if (!how) { how = document.createElement('p'); how.id = 'shift-modal-how'; how.style.margin = '10px 0 0'; how.style.whiteSpace = 'pre-line'; gapEl.parentNode.insertBefore(how, gapEl.nextSibling); }
+    how.textContent = parts.how; how.style.display = parts.how ? '' : 'none';
+    var maint = document.getElementById('shift-modal-maintaining'); if (maint && maint.parentNode) maint.parentNode.style.display = 'none';
+    var yg = document.getElementById('shift-modal-yourgap-section');
+    if (!yg) {
+      yg = document.createElement('div'); yg.className = 'shift-modal-section'; yg.id = 'shift-modal-yourgap-section';
+      yg.innerHTML = '<div class="eyebrow">Your Gap</div><p class="gap-into" id="shift-modal-into" hidden></p><p style="margin: 0; white-space: pre-line;" id="shift-modal-yourgap"></p><p class="gap-shift-close" style="margin: 8px 0 0;">That\'s your Gap.</p>';
+      var actStrong = document.getElementById('shift-modal-activation'); var actSection = actStrong && actStrong.closest('.shift-modal-section');
+      cfSection.parentNode.insertBefore(yg, actSection || null);
+    }
+    gapRenderInto(document.getElementById('shift-modal-into'), parts.shift);
+    document.getElementById('shift-modal-yourgap').textContent = parts.shift;
+    yg.style.display = parts.shift ? '' : 'none';
+  }
+  var gapListenBusy = false;
+  function gapListenNow(btn) {
+    if (gapListenBusy) return;
+    gapListenBusy = true;
+    var label = btn.textContent;
+    var status = document.getElementById('d3-listen-status');
+    function setStatus(t) { if (status) { status.textContent = t || ''; status.hidden = !t; } }
+    var key = (typeof winnerKey !== 'undefined' && winnerKey) ? winnerKey : 'overworker';
+    var r = gapResolveActivation(key);
+    var slug = (r.source === 'ai' && r.slug) ? r.slug : getGapActivationSlugForKey(key);
+    if (typeof ACTIVATION_DETAILS !== 'undefined' && !ACTIVATION_DETAILS[slug]) slug = getGapActivationSlugForKey(key);
+    function go() {
+      setStatus(''); btn.textContent = label; gapListenBusy = false;
+      try { console.info('[gap-listen-now]', JSON.stringify({ slug: slug, shiftId: window.__gapShiftSavedId || null })); } catch (e) {}
+      closeHeroGapEmbed();                // the pop-up closes completely
+      handleActivationCardClick(slug);    // ...and the activation opens the way the rest of the app opens it
+    }
+    // The Shift must be saved and dealt first. A save that failed earlier is tried again (same guard as before).
+    if (!window.__gapShiftAutoCreated && typeof autoCreateMemberShift === 'function') autoCreateMemberShift();
+    var saving = window.__gapShiftSavePromise || Promise.resolve(!!window.__gapShiftSavedId);
+    btn.textContent = 'Saving your Shift…';
+    Promise.race([saving, new Promise(function (res) { setTimeout(function () { res('timeout'); }, 20000); })]).then(function (ok) {
+      var id = window.__gapShiftSavedId;
+      var dealt = !!id && typeof SHIFTS !== 'undefined' && SHIFTS.some(function (s) { return String(s.id) === id; });
+      if (ok === true && dealt) return go();
+      btn.textContent = label; gapListenBusy = false;
+      setStatus("Your Shift is still saving. Please tap Listen now again in a moment.");
+    });
   }
 
   function setupDay3() {
@@ -5370,18 +5795,17 @@ if (forceComplete) { goDay(3); }
     // Rachael's rule that the description must connect directly to the
     // specific pattern from Step 2, not describe the activation in vague
     // energetic terms alone.
-    var activationData = a.activation;
-    var activationTeaser = reveal.activationReason;
-    if (key === 'disconnected') {
-      var subKey2 = (subActivationKey && DISCONNECTION_SUB_ACTIVATIONS[subActivationKey]) ? subActivationKey : 'remembrance';
-      var sub = DISCONNECTION_SUB_ACTIVATIONS[subKey2];
-      activationData = { title: sub.title, type: sub.type, duration: sub.duration };
-      activationTeaser = sub.teaser;
-    }
+    // GAP reading restructure: the AI's personalized pick from the one deep
+    // reading (validated against the library); the fixed per-identity map only
+    // as a fallback. With the restructure off this is exactly today's value.
+    var resolvedActivation = gapResolveActivation(key);
+    var activationData = { title: resolvedActivation.title, type: resolvedActivation.type, duration: resolvedActivation.duration };
+    var activationTeaser = resolvedActivation.teaser;
     document.getElementById('a-tag').textContent = activationData.type;
     document.getElementById('a-title').textContent = activationData.title;
-    document.getElementById('a-meta').textContent = activationData.type + ' · ' + activationData.duration;
+    document.getElementById('a-meta').textContent = (activationData.duration || !gapFastReadingOn()) ? (activationData.type + ' · ' + activationData.duration) : activationData.type; // switch off: exactly main
     document.getElementById('a-teaser').textContent = activationTeaser;
+    gapV2SetStep3(!!(window.__gapReading && window.__gapReading.enabled));
     document.getElementById('check3').textContent = '✓';
 
     // Save this diagnostic result server-side (Aug 12 persistence instruction)
@@ -5424,7 +5848,8 @@ if (forceComplete) { goDay(3); }
   }
   function handleGapListenNowClick() {
     var key = (typeof winnerKey !== 'undefined' && winnerKey) ? winnerKey : 'overworker';
-    var slug = getGapActivationSlugForKey(key);
+    var resolved = gapResolveActivation(key);
+    var slug = resolved.source === 'ai' ? resolved.slug : getGapActivationSlugForKey(key);
     if (typeof handleActivationCardClick === 'function') handleActivationCardClick(slug);
   }
   function autoCreateMemberShift() {
@@ -5434,7 +5859,8 @@ if (forceComplete) { goDay(3); }
       var key = (typeof winnerKey !== 'undefined' && winnerKey) ? winnerKey : 'overworker';
       var a = (typeof ARCHETYPES !== 'undefined') ? ARCHETYPES[key] : null;
       var identitySlug = getGapIdentitySlugForKey(key);
-      fetch('/api/gap-shift', {
+      window.__gapShiftSavedId = null;
+      window.__gapShiftSavePromise = fetch('/api/gap-shift', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -5450,7 +5876,12 @@ if (forceComplete) { goDay(3); }
             if (window.__gapCardData && window.__gapCardData.primaryShift) parts.push('Primary Shift: ' + window.__gapCardData.primaryShift);
             return parts.length ? parts.join('\n\n') : "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
           })(),
-          recommendedActivation: (a && a.activation && a.activation.title) ? a.activation.title : '',
+          recommendedActivation: (function() {
+            var r = gapResolveActivation(key);
+            if (r.source === 'ai') return r.title; // restructure: the personalized activation shown on the card
+            return (a && a.activation && a.activation.title) ? a.activation.title : '';
+          })(),
+          todaysFocus: (window.__gapReading && window.__gapReading.todaysFocus) ? window.__gapReading.todaysFocus : undefined,
         })
       }).then(function(res) {
         return res.json().catch(function() { return null; }).then(function(body) {
@@ -5460,10 +5891,20 @@ if (forceComplete) { goDay(3); }
         if (!result.ok) {
           console.error('autoCreateMemberShift: server rejected the request', result.status, result.body);
           window.__gapShiftAutoCreated = false;
-        } else { if (typeof loadMemberRevolutionData === 'function') loadMemberRevolutionData(); }
+          return false;
+        } else {
+          // Oct 8 fix (Rachael's preview run: "no Shift card"): the Shift WAS saved, but Today's Focus is
+          // pinned for the browser session to whichever Shift was newest at login (Sept 23 "stable Today's
+          // Focus"), so the new Shift never showed until the next visit. Pin it to the Shift just saved.
+          var newShiftId = result.body && result.body.shiftId ? String(result.body.shiftId) : null;
+          if (newShiftId) { window.__gapShiftSavedId = newShiftId; try { sessionStorage.setItem('rhFocusShiftId', newShiftId); } catch (e) {} }
+          if (typeof loadMemberRevolutionData === 'function') return Promise.resolve(loadMemberRevolutionData()).then(function() { return true; });
+          return true;
+        }
       }).catch(function(e) {
         console.error('autoCreateMemberShift failed', e);
         window.__gapShiftAutoCreated = false;
+        return false;
       });
     } catch (e) {
       console.error('autoCreateMemberShift failed', e);
@@ -5850,8 +6291,6 @@ if (forceComplete) { goDay(3); }
     #hero-gap-embed.gm-modal .topbar .wrap { display: flex; flex-direction: column; align-items: center; }
     #hero-gap-embed.gm-modal .topbar .wrap > .day-tabs { width: 100%; }
   }
-  /* Oct 7 fixes: 5th focus option (Relationships) spans the full row so the 2-column grid stays balanced */
-  #hero-gap-embed.gm-modal #domain-chips > .domain-chip:last-child:nth-child(odd) { grid-column: 1 / -1; }
   /* Oct 7 fixes: Step 3 text always shows in full -- no inner scroll boxes / cut-off. If a long reflection
      needs more room than the window, the pop-up panel scrolls as a whole instead. */
   #hero-gap-embed.gm-modal #view-day3 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3 .card > #d3-activation-card { max-height: none !important; overflow: visible !important; }
@@ -5866,6 +6305,85 @@ if (forceComplete) { goDay(3); }
   @media (max-width: 600px) {
     #hero-gap-embed.gm-modal #view-day3 .card { overflow-y: visible; align-items: start; }
   }
+</style>
+<style id="gap-reading-css">
+  /* Step 3 card row, restructure only (#view-day3.gap-v2 is set only when the server ran the new reading). */
+  #view-day3 .gap-v2-only { display: none !important; }
+  #view-day3.gap-v2 #d3-upsell-block { display: none !important; }
+  #view-day3.gap-v2 #d3-gap-restated, #view-day3.gap-v2 .gap-v2-moved { display: none !important; }
+  /* Step 3, switch on: ONE row of three cards -- Current Frequency | Your Gap | Primary Activation (phones: a swipe
+     row, Your Gap peeking in on the right; desktop: three columns). Every card grows to fit ALL of its text: no inner
+     scroll, no fade, no line clamp, no max-height. If Step 3 is taller than the pop-up, Step 3's main area (the stage)
+     scrolls as one page; its scroll edge sits above the gold frame line, so text and borders never cross the frame. */
+  #hero-gap-embed.gm-modal > .stage:has(#view-day3.gap-v2.active:not(.gap-analyzing-on)) { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; overflow-x: hidden !important; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; margin-bottom: 18px; padding-bottom: 26px !important; scrollbar-width: thin; scrollbar-color: rgba(226,190,104,.45) transparent; }
+  #hero-gap-embed.gm-modal > .stage:has(#view-day3.gap-v2.active:not(.gap-analyzing-on))::-webkit-scrollbar { width: 4px; }
+  #hero-gap-embed.gm-modal > .stage:has(#view-day3.gap-v2.active:not(.gap-analyzing-on))::-webkit-scrollbar-thumb { background: rgba(226,190,104,.45); border-radius: 4px; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 > .card { grid-template-rows: auto auto auto !important; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .eyebrow:nth-child(4) { display: none !important; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .reveal-block:nth-child(3) { grid-column: 1 !important; grid-row: 3 !important; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > #d3-yourgap-card { display: flex !important; flex-direction: column; grid-column: 2 !important; grid-row: 3 !important; scroll-snap-align: start; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > #d3-activation-card { grid-column: 3 !important; grid-row: 3 !important; display: flex; flex-direction: column; scroll-snap-align: start; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > #d3-activation-card { max-height: none !important; overflow: visible !important; margin: 0 !important; box-sizing: border-box; min-width: 0; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card p, #hero-gap-embed.gm-modal #view-day3.gap-v2 .card h3 { overflow: visible !important; max-height: none !important; -webkit-line-clamp: none !important; text-overflow: clip !important; white-space: normal; overflow-wrap: break-word; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 .card p.copy { white-space: pre-line; }
+  #view-day3.gap-v2 #a-v2-label { display: block !important; margin-bottom: 10px !important; }
+  #view-day3.gap-v2 #d3-activation-card .activation-tag { align-self: flex-start; }
+  /* Your Gap card */
+  #view-day3.gap-v2 #d3-yourgap-card > .eyebrow { margin-bottom: 8px; }
+  #view-day3.gap-v2 .gap-shift-text { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; color: #fff; font-size: clamp(16px, 2vh, 18.5px) !important; line-height: 1.42 !important; margin: 0 0 8px !important; white-space: pre-line !important; }
+  #view-day3.gap-v2 .gap-shift-close { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-style: italic; color: #F1D58A; font-size: clamp(16px, 2vh, 18px) !important; margin: 0 !important; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-shift-into { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif !important; color: #fff !important; font-size: clamp(19px, 2.6vh, 23px) !important; line-height: 1.28 !important; margin: 0 0 10px !important; text-wrap: balance; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-shift-into .gap-into-word { font-style: italic; color: rgba(241,213,138,0.85) !important; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-shift-into .gap-into-to { color: #F1D58A !important; font-weight: 600; }
+  #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-shift-into.gap-into-long, .gap-into.gap-into-long { font-size: 18px !important; line-height: 1.3 !important; }
+  /* "shift this quickly ->": a small accent tucked into the card's bottom-right corner (Rachael, Oct 8) */
+  #view-day3.gap-v2 .gap-to-activation { margin-top: auto; align-self: flex-end; text-align: right; padding: 12px 0 0 12px; background: none; border: 0; cursor: pointer; font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-style: italic; font-size: 14px; line-height: 1.2; letter-spacing: .03em; color: rgba(226,190,104,0.92); white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  #view-day3.gap-v2 .gap-to-activation .gap-to-arrow { display: inline-block; font-style: normal; font-size: 12px; margin-left: 4px; }
+  #view-day3.gap-v2 .gap-to-activation:hover, #view-day3.gap-v2 .gap-to-activation:focus-visible { color: #F1D58A; }
+  #view-day3.gap-v2 #d3-activation-card.gap-v2-flash { box-shadow: 0 0 0 1px rgba(226,190,104,.75), 0 0 26px rgba(226,190,104,.28); transition: box-shadow .4s ease; }
+  #view-day3.gap-v2 #d3-activation-card #a-teaser { margin-bottom: 4px !important; }
+  #view-day3.gap-v2 #d3-listen-now { display: block !important; width: 100%; box-sizing: border-box; margin: clamp(12px, 1.8vh, 18px) 0 0 !important; text-align: center; cursor: pointer; position: relative; z-index: 3; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
+  #view-day3.gap-v2 #d3-listen-status:not([hidden]) { display: block !important; margin: 10px 0 0 !important; font-size: 13px !important; color: #F8E7B0; text-align: center; }
+  #view-day3.gap-v2 #d3-activation-card #d3-listen-now { margin-top: auto !important; }
+  @media (min-width: 601px) {
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card { grid-template-columns: 1.3fr 1fr 1fr !important; align-items: stretch !important; }
+    #view-day3.gap-v2 #d3-activation-card #a-teaser { margin-bottom: 14px !important; }
+  }
+  @media (max-width: 600px) {
+    /* swipe row: card 1 fills the width, card 2 peeks in on the right; tighter but readable spacing */
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card { grid-template-columns: repeat(3, calc(100vw - 64px)) !important; align-items: start !important; padding-bottom: 6px !important; }
+    #hero-gap-embed.gm-modal > .stage:has(#view-day3.gap-v2.active:not(.gap-analyzing-on)) { margin-bottom: 12px; padding-bottom: 22px !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > h1 { font-size: clamp(18px, 2.8vh, 23px) !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > #d3-activation-card { padding: 16px 16px 16px !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-meta { font-size: 13px !important; margin-bottom: 6px !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 #d3-gap-contradiction { font-size: 16px !important; line-height: 1.38 !important; margin-bottom: 10px !important; }
+    #hero-gap-embed.gm-modal #view-day3.gap-v2 .card > .reveal-block:nth-child(3) p.copy { font-size: 13.5px !important; line-height: 1.5 !important; }
+    #view-day3.gap-v2 #d3-activation-card #a-teaser { margin-bottom: 14px !important; }
+  }
+  /* GAP reading restructure (Oct 8 2026): the Step 3 "analyzing" screen. Teal / gold / white only, matches the GAP pop-up. */
+  #view-day3.gap-analyzing-on > .card, #hero-gap-embed.gm-modal #view-day3.gap-analyzing-on > .card { display: none !important; }
+  .gap-analyzing { text-align: center; max-width: 560px; margin: 0 auto; padding: clamp(18px, 4vh, 44px) clamp(16px, 3vw, 32px); border-radius: 22px; border: 1px solid rgba(207,166,70,0.35); background: radial-gradient(90% 70% at 50% 0%, rgba(1,103,108,0.35), transparent 70%), rgba(5,12,12,0.55); box-shadow: 0 0 60px rgba(207,166,70,0.08) inset; }
+  .gap-analyzing[hidden] { display: none !important; }
+  .gap-analyzing .eyebrow { margin-bottom: clamp(10px, 2.4vh, 22px); }
+  .gap-an-orb { position: relative; width: 120px; height: 120px; margin: clamp(8px, 2vh, 18px) auto clamp(14px, 3vh, 26px); }
+  .gap-an-core { position: absolute; left: 50%; top: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; background: radial-gradient(circle, #FFF6D8 0%, #F1D58A 35%, rgba(207,166,70,0.25) 70%, transparent 72%); box-shadow: 0 0 28px 10px rgba(228,190,100,0.45); animation: gap-an-pulse 2.4s ease-in-out infinite; }
+  .gap-an-ring { position: absolute; inset: 8px; border-radius: 50%; border: 1.5px solid rgba(228,190,100,0.55); border-top-color: transparent; border-left-color: rgba(127,224,218,0.45); animation: gap-an-spin 3.2s linear infinite; }
+  .gap-an-ring2 { inset: 22px; border-color: rgba(127,224,218,0.35); border-bottom-color: transparent; border-right-color: rgba(241,213,138,0.7); animation-duration: 2.2s; animation-direction: reverse; }
+  .gap-an-orb i { position: absolute; left: 50%; top: 50%; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: #F6E3A8; box-shadow: 0 0 8px 2px rgba(241,213,138,0.8); opacity: 0; animation: gap-an-spark 2.1s ease-in-out infinite; animation-delay: var(--d); }
+  .gap-an-orb i:nth-of-type(3n) { width: 3px; height: 3px; background: #CFF4F1; box-shadow: 0 0 8px 2px rgba(127,224,218,0.6); }
+  .gap-an-title { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-size: clamp(19px, 3vh, 26px); line-height: 1.25; margin: 0 0 clamp(8px, 1.6vh, 14px); background: linear-gradient(100deg, #FFFFFF 0%, #FFFFFF 36%, #F6E3A8 48%, #FFFFFF 60%, #FFFFFF 100%); background-size: 260% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: gap-an-gleam 4.5s ease-in-out infinite; }
+  .gap-an-pct { font-size: clamp(30px, 5vh, 42px); font-weight: 300; letter-spacing: .02em; color: #F1D58A; font-variant-numeric: tabular-nums; margin-bottom: 10px; text-shadow: 0 0 18px rgba(228,190,100,0.35); }
+  .gap-an-bar { height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; margin: 0 auto 14px; max-width: 340px; }
+  .gap-an-bar span { display: block; height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, #01676C, #3FA8A3 35%, #E4C77A 75%, #F6E3A8); box-shadow: 0 0 12px rgba(228,190,100,0.6); transition: width .12s linear; }
+  .gap-an-note { color: rgba(255,255,255,0.72); font-size: clamp(13px, 1.9vh, 15px); margin: 0; min-height: 1.5em; }
+  .gap-an-error { margin-top: 18px; }
+  .gap-an-error[hidden] { display: none; }
+  .gap-an-error p { color: #F8E7B0; font-size: 14px; margin: 0 0 12px; }
+  @keyframes gap-an-spin { to { transform: rotate(360deg); } }
+  @keyframes gap-an-pulse { 0%, 100% { transform: scale(0.9); opacity: .85; } 50% { transform: scale(1.12); opacity: 1; } }
+  @keyframes gap-an-spark { 0% { transform: translate(0, 0) scale(.3); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; } }
+  @keyframes gap-an-gleam { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
+  @media (prefers-reduced-motion: reduce) { .gap-an-core, .gap-an-ring, .gap-an-title { animation: none !important; } .gap-an-orb i { animation-duration: 4s; } .gap-an-bar span { transition: none; } }
 </style>
 <script id="gm-modal-js">
 (function () {
@@ -5916,75 +6434,6 @@ if (forceComplete) { goDay(3); }
     if (starter) starter.addEventListener('click', function (e) {
       if (session && !shown()) { e.stopImmediatePropagation(); window.__rhGapMethodActive = true; el.style.display = ''; }
     }, true);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-})();
-</script>
-<!-- MOCKUP-ONLY Step 3 preview shortcut. Never active on production hosts.
-     Opens the GAP Method straight on Step 3 with clearly fake sample data,
-     using the existing goDay(3)/setupDay3() render path. While active, all
-     non-GET requests are short-circuited locally, so nothing is saved and no
-     AI call is made. Does not change the normal flow. -->
-<style id="gm-preview-css">
-  #gm-preview-step3 { position: absolute; left: clamp(26px, 2.6vw, 40px); top: calc(clamp(22px, 3.2vh, 34px) + clamp(34px, 5vh, 46px) + 10px); background: none; border: none; padding: 2px 0; font: 500 11px/1.2 inherit; font-family: inherit; letter-spacing: .08em; color: rgba(95,207,201,0.75); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; z-index: 25; }
-  #gm-preview-step3:hover { color: #F8E7B0; }
-  @media (max-width: 600px) { #gm-preview-step3 { position: static; display: block; margin: 6px auto 0; font-size: 10px; } }
-</style>
-<script id="gm-preview-js">
-(function () {
-  var host = (location.hostname || '').toLowerCase();
-  var PROD = ['therevolutionaryhealer.com', 'www.therevolutionaryhealer.com', 'revolutionary-healer-app-7jzf.vercel.app'];
-  if (PROD.indexOf(host) !== -1 || /(^|\.)therevolutionaryhealer\.com$/.test(host)) return;
-
-  function guardFetch() {
-    if (window.__gmPreviewFetchGuard) return;
-    window.__gmPreviewFetchGuard = true;
-    var realFetch = window.fetch;
-    window.fetch = function (input, init) {
-      var method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
-      if (window.__gmPreviewActive && method !== 'GET') {
-        try { console.info('[GAP preview] blocked ' + method + ' ' + (typeof input === 'string' ? input : input.url)); } catch (e) {}
-        return Promise.resolve(new Response('{"ok":true,"preview":true}', { status: 200, headers: { 'Content-Type': 'application/json' } }));
-      }
-      return realFetch.apply(this, arguments);
-    };
-  }
-
-  function openStep3Preview() {
-    if (typeof goDay !== 'function' || typeof setupDay3 !== 'function') return;
-    guardFetch();
-    window.__gmPreviewActive = true;
-    var wrap = document.getElementById('hero-gap-embed');
-    if (wrap && wrap.style.display === 'none' && typeof startGapMethodInChat === 'function') startGapMethodInChat();
-    // Fake sample state, same shape the normal flow produces.
-    winnerKey = 'overworker';
-    selectedDomain = 'business';
-    day1Done = true;
-    window.__gapShiftAutoCreated = true; // never auto-create a Shift from a preview
-    window.__gapCardData = {
-      gap: 'SAMPLE PREVIEW: You want your work to be seen, yet you keep pushing harder instead of letting it land.',
-      howItShowsUp: 'SAMPLE PREVIEW: Posting more, resting less, and starting over each time results feel slow.',
-      primaryShift: 'SAMPLE PREVIEW: From proving through effort to receiving what is already building.'
-    };
-    var c1 = document.getElementById('check1'); if (c1) c1.textContent = '✓';
-    var c2 = document.getElementById('check2'); if (c2) c2.textContent = '✓';
-    goDay(3);
-  }
-  window.gmOpenStep3Preview = openStep3Preview;
-
-  function init() {
-    var wrap = document.getElementById('hero-gap-embed');
-    if (!wrap) return;
-    var bar = wrap.querySelector('.topbar .wrap') || wrap.querySelector('.topbar');
-    if (bar && !document.getElementById('gm-preview-step3')) {
-      var b = document.createElement('button');
-      b.type = 'button'; b.id = 'gm-preview-step3'; b.textContent = 'Preview step 3';
-      b.title = 'Mockup only: opens Step 3 with sample data (nothing is saved)';
-      b.addEventListener('click', openStep3Preview);
-      if (window.matchMedia('(max-width: 600px)').matches) bar.appendChild(b); else wrap.querySelector('.topbar').appendChild(b);
-    }
-    var q = new URLSearchParams(location.search);
-    if ((q.get('gap') || '').toLowerCase() === 'step3') setTimeout(openStep3Preview, 1200);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

@@ -40,8 +40,9 @@ export const GAP_CHAT_MAX_TOKENS = 10000;
  * @param {any} response  the Anthropic message
  * @param {number} ms     how long Claude took
  * @param {number} maxTokens  the ceiling the call used
+ * @param {object} [extra]    optional log-only fields (GAP reading restructure: phase, effort)
  */
-export function logGapChatUsage(response, ms, maxTokens) {
+export function logGapChatUsage(response, ms, maxTokens, extra) {
   try {
     const u = (response && response.usage) || {};
     const text = ((response && response.content) || [])
@@ -59,6 +60,7 @@ export function logGapChatUsage(response, ms, maxTokens) {
       save_shift: /\[\[SAVE_SHIFT:/i.test(text),
       final_identity: /\[\[FINAL_IDENTITY:/i.test(text),
       distortions: /\[\[DISTORTIONS:/i.test(text),
+      ...(extra && typeof extra === "object" ? extra : {}),
     };
     if (line.stop_reason === "max_tokens") console.warn("[gap-chat-member] reply hit max_tokens (cut off) " + JSON.stringify(line));
     else console.log("[gap-chat-member] claude usage " + JSON.stringify(line));
