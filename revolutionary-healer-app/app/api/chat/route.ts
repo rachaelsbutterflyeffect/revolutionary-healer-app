@@ -39,9 +39,32 @@ import {
 } from "@/lib/memory";
 import { placeholderChatTitle, titleActionForMessage } from "@/lib/chatTitles";
 import { toCachedSystemBlocks } from "@/lib/promptCache";
+import {
+  chatStreamingAllowed,
+  createSseChannel,
+  runStreamedReply,
+  SSE_HEADERS,
+} from "@/lib/chatStreaming";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
+// Streaming only (Oct 8 2026): a second client for the SAME API, key and
+// model whose only difference is the HTTP transport. SDK 0.32's built-in
+// transport (node-fetch 2.7) can throw a false "Premature close" at the very
+// end of a streamed reply on Node 20+, which would turn every good reply into
+// an error; Node's own fetch doesn't. The normal (non-streaming) path keeps
+// using `anthropic` above, untouched.
+const streamingAnthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+  fetch: ((url: any, init?: any) => fetch(url, { ...init, cache: "no-store" })) as any,
+});
+
+// Streaming switch (Oct 8 2026, see lib/chatStreaming.js). Read here at
+// module level because inside POST `process` is the guided-process object.
+// CHAT_STREAMING: off (default) | allowlist | on.
+function streamingSwitch() {
+  return { mode: process.env.CHAT_STREAMING, allowlist: process.env.CHAT_STREAMING_ALLOWLIST };
+}
 
 // How many of the most recent stored messages to send to Claude verbatim --
 // older context lives in the chat's rolling `summary` field instead (PART 7).
@@ -113,6 +136,10 @@ export async function POST(req: NextRequest) {
     // Member's IANA time zone (from the browser), used only for the dated
     // "New Chat · Oct 7" placeholder title. Falls back to America/Toronto.
     timeZone = null,
+    // Streaming (Oct 8 2026): the page sends `stream: true` when it can show
+    // a reply as it arrives. Ignored unless the CHAT_STREAMING switch allows
+    // it for this member (see lib/chatStreaming.js).
+    stream: streamRequested = false,
   } = await req.json();
 
   if (!email || !focusAreaSlug || !message) {
@@ -232,8 +259,8 @@ export async function POST(req: NextRequest) {
   // Embodied, then the background saves (bot message, title, session,
   // summary, memories, event log) handed to `schedule`. Shared by BOTH the
   // normal path (schedule = waitUntil, exactly as before) and the streaming
-  // path added next (which will only call it after a stream has fully
-  // finished). Nothing in here ever sees partial text.
+  // path (lib/chatStreaming.js, which only calls it after the stream has
+  // fully finished). Nothing in here ever sees partial text.
   // (Oct 8 2026: moved into this helper unchanged apart from indentation and
   // `waitUntil(` -> `schedule(`.)
   // ===========================================================================
@@ -553,6 +580,34 @@ export async function POST(req: NextRequest) {
 
     return { replyText, openActivationSlug };
   };
+
+  // Streaming (off by default; see lib/chatStreaming.js). Never for a
+  // guided process (processSlug), only when the page asked and the switch
+  // allows this member. Everything above this line is identical for both
+  // paths, including saving the member's message first.
+  if (
+    chatStreamingAllowed({
+      ...streamingSwitch(),
+      email,
+      processSlug,
+      requested: streamRequested,
+    })
+  ) {
+    const channel = createSseChannel();
+    // The whole job (Claude -> finishReply -> background saves) is owned by
+    // waitUntil, not by the connection: if the member disconnects mid-reply
+    // it still completes and saves exactly once.
+    waitUntil(
+      runStreamedReply({
+        channel,
+        chatId,
+        startStream: (signal: AbortSignal) =>
+          streamingAnthropic.messages.stream(claudeParams as any, { timeout: CHAT_TIMEOUT_MS, signal }),
+        finishReply,
+      })
+    );
+    return new Response(channel.readable, { headers: SSE_HEADERS });
+  }
 
   let response;
   try {
