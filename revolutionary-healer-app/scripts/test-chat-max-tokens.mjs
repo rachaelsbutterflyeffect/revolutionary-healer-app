@@ -209,8 +209,9 @@ await test("GAP Step 3 marker retry keeps max_tokens 200 and its own 12s timeout
   assert.match(route, /max_tokens:\s*200/);
   assert.match(route, /timeout:\s*DISTORTION_RETRY_TIMEOUT_MS/);
 });
-await test("GAP bots and background memory/summary/title calls untouched (own settings, don't import the new file)", () => {
-  assert.match(read("app/api/gap-chat-member/route.ts"), /max_tokens:\s*4096/);
+await test("GAP bots and background memory/summary/title calls keep their own settings (don't import the main-chat file)", () => {
+  // The member GAP bot got its own, separate fix (lib/gapChatReply.js, see npm run test:gap-max-tokens).
+  assert.match(read("app/api/gap-chat-member/route.ts"), /max_tokens:\s*GAP_CHAT_MAX_TOKENS/);
   assert.match(read("app/api/gap-chat/route.ts"), /max_tokens:\s*1024/);
   const mem = read("lib/memory.js");
   for (const n of [512, 300, 40]) assert.match(mem, new RegExp(`max_tokens:\\s*${n}\\b`));

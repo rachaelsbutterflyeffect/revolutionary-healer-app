@@ -12,7 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { buildGapMemberSystemPrompt } from "@/lib/processes";
 import { getEntitlementForEmail } from "@/lib/entitlements";
-import { logGapChatUsage } from "@/lib/gapChatReply";
+import { GAP_CHAT_MAX_TOKENS, logGapChatUsage } from "@/lib/gapChatReply";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
@@ -31,15 +31,17 @@ export async function POST(req: NextRequest) {
 
   const systemPrompt = buildGapMemberSystemPrompt(gapContext);
 
+  // Long-reply fix (Oct 8 2026, see lib/gapChatReply.js): 4096 had to hold
+  // hidden thinking + reply + the Shift-saving markers; now 10,000.
   const claudeStartedAt = Date.now();
   const response = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    max_tokens: GAP_CHAT_MAX_TOKENS,
     system: systemPrompt,
     messages: [...history, { role: "user", content: message }],
   });
 
-  logGapChatUsage(response, Date.now() - claudeStartedAt, 4096); // log-only (Vercel logs)
+  logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS); // log-only (Vercel logs)
 
   const replyText = response.content
     .filter((block: any) => block.type === "text")
