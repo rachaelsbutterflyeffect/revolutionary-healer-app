@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "test:entitlements": "node scripts/test-entitlements.mjs",
-    "test:chat-speed": "node scripts/test-chat-speed.mjs"
+    "test:chat-speed": "node scripts/test-chat-speed.mjs",
+    "test:chat-max-tokens": "node scripts/test-chat-max-tokens.mjs",
+    "test:gap-max-tokens": "node scripts/test-gap-max-tokens.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
