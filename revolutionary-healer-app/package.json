@@ -15,7 +15,8 @@
     "test:gap-max-tokens": "node scripts/test-gap-max-tokens.mjs",
     "test:gap-reading": "node scripts/test-gap-reading.mjs",
     "test:remove-relationships": "node scripts/test-remove-relationships.mjs",
-    "test:gap-shift-once": "node scripts/test-gap-shift-once.mjs"
+    "test:gap-shift-once": "node scripts/test-gap-shift-once.mjs",
+    "test:testers": "node scripts/test-testers.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",

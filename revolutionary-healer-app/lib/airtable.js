@@ -5,6 +5,7 @@ import Airtable from "airtable";
 import crypto from "crypto";
 import { sendGapMethodMagicLink } from "./email";
 import { DIVINE_IDENTITIES } from "./divineIdentities";
+import { testerRecordFields, isUnknownAirtableField } from "./testers.js";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -24,7 +25,29 @@ function getBase() {
     }
     return _base;
 }
+
 const base = (...args) => getBase()(...args);
+
+// Optional tester checkbox. Omitted entirely unless TESTER_RECORD_FIELD=is_test,
+// and dropped if that column is not on the base yet, so a save never fails
+// because the live base has not been changed.
+async function writeRow(op, table, id, fields, email) {
+    const extra = testerRecordFields(email);
+    let payload = Object.keys(extra).length ? { ...fields, ...extra } : { ...fields };
+    try {
+        if (op === "create") return await base(table).create(payload);
+        return await base(table).update(id, payload);
+    } catch (err) {
+        if (payload.is_test && (isUnknownAirtableField(err, "is_test") || err.error === "UNKNOWN_FIELD_NAME")) {
+            console.warn(`${op} ${table}: is_test field missing; saved without the tester flag`);
+            const { is_test, ...rest } = payload;
+            if (op === "create") return base(table).create(rest);
+            return base(table).update(id, rest);
+        }
+        throw err;
+    }
+}
+
 
 export const Tables = {
     Members: "Members",
@@ -70,9 +93,9 @@ export async function upsertChats(email, convos) {
     const existing = await getChatsByEmail(email);
     const fields = { convos: JSON.stringify(convos), updated: new Date().toISOString() };
     if (existing) {
-        return base(Tables.Chats).update(existing.id, fields);
+        return writeRow("update", Tables.Chats, existing.id, fields, email);
     }
-    return base(Tables.Chats).create({ email, ...fields });
+    return writeRow("create", Tables.Chats, null, { email, ...fields }, email);
 }
 
 export async function listActiveFocusAreas() {
@@ -112,9 +135,9 @@ export async function upsertGapMethodResultOnPurchase({ email, offerId, firstNam
         fields.status = "awaiting_diagnostic";
     }
     if (existing) {
-        await base(Tables.GapMethodResults).update(existing.id, fields);
+        await writeRow("update", Tables.GapMethodResults, existing.id, fields, normalized);
     } else {
-        await base(Tables.GapMethodResults).create({ ...fields, status: "awaiting_diagnostic" });
+        await writeRow("create", Tables.GapMethodResults, null, { ...fields, status: "awaiting_diagnostic" }, normalized);
     }
     return { email: normalized, sessionToken };
 }
@@ -155,8 +178,8 @@ export async function saveGapMethodDiagnostic({
         status: "diagnostic_complete",
     };
     const saved = existing
-        ? await base(Tables.GapMethodResults).update(existing.id, fields)
-        : await base(Tables.GapMethodResults).create({ ...fields, source: "diagnostic_save" });
+        ? await writeRow("update", Tables.GapMethodResults, existing.id, fields, normalized)
+        : await writeRow("create", Tables.GapMethodResults, null, { ...fields, source: "diagnostic_save" }, normalized);
     const member = await getMemberByEmail(normalized);
     if (member) {
         await linkGapMethodResultToMember(normalized, member.id);
@@ -168,11 +191,11 @@ export async function linkGapMethodResultToMember(email, memberRecordId) {
     const normalized = normalizeEmail(email);
     const existing = await getGapMethodResultByEmail(normalized);
     if (!existing) return null;
-    const updated = await base(Tables.GapMethodResults).update(existing.id, {
+    const updated = await writeRow("update", Tables.GapMethodResults, existing.id, {
         linked_member: [memberRecordId],
         linked_at: new Date().toISOString(),
         status: "linked_to_member",
-    });
+    }, normalized);
     if (existing.fields.divine_identity && !existing.fields.shift_created) {
         await createGapMethodShift(existing, memberRecordId);
     }
@@ -183,7 +206,7 @@ export async function createGapMethodShift(gapMethodResultRecord, memberRecordId
     const f = gapMethodResultRecord.fields;
     const identity = DIVINE_IDENTITIES.find((d) => d.displayName === f.divine_identity);
     const now = new Date().toISOString();
-    await base(Tables.Shifts).create({
+    await writeRow("create", Tables.Shifts, null, {
         member_email: f.email,
         member: [memberRecordId],
         gap_method_result: [gapMethodResultRecord.id],
@@ -199,7 +222,7 @@ export async function createGapMethodShift(gapMethodResultRecord, memberRecordId
         ready_for_embodied: false,
         created_at: now,
         updated_at: now,
-    });
+    }, f.email);
     await base(Tables.GapMethodResults).update(gapMethodResultRecord.id, { shift_created: true });
 }
 
@@ -251,18 +274,25 @@ export async function createShiftFromChat({
     // Shifts table doesn't have the todays_focus field yet (e.g. the live
     // base before Rachael adds it), the Shift is saved exactly as before
     // without it -- the save itself must never fail because of this field.
-    let created;
-    if (todaysFocus) {
+    const flagged = { ...fields, ...testerRecordFields(normalized) };
+    const createShiftRow = async (payload) => {
         try {
-            created = await base(Tables.Shifts).create({ ...fields, todays_focus: todaysFocus });
+            return await base(Tables.Shifts).create(payload);
         } catch (err) {
-            if (!(err && (err.error === "UNKNOWN_FIELD_NAME" || /todays_focus/i.test(String(err.message || ""))))) throw err;
-            console.warn("createShiftFromChat: todays_focus field missing on Shifts; saved without it");
-            created = await base(Tables.Shifts).create(fields);
+            if (payload.is_test && (isUnknownAirtableField(err, "is_test") || (err.error === "UNKNOWN_FIELD_NAME" && !isUnknownAirtableField(err, "todays_focus")))) {
+                console.warn("createShiftFromChat: is_test field missing on Shifts; saved without it");
+                const { is_test, ...rest } = payload;
+                return createShiftRow(rest);
+            }
+            if (payload.todays_focus && (isUnknownAirtableField(err, "todays_focus") || err.error === "UNKNOWN_FIELD_NAME")) {
+                console.warn("createShiftFromChat: todays_focus field missing on Shifts; saved without it");
+                const { todays_focus, ...rest } = payload;
+                return createShiftRow(rest);
+            }
+            throw err;
         }
-    } else {
-        created = await base(Tables.Shifts).create(fields);
-    }
+    };
+    let created = await createShiftRow(todaysFocus ? { ...flagged, todays_focus: todaysFocus } : flagged);
     if (chatId) {
         try {
             await base(Tables.ChatSessions).update(chatId, { linked_shift_id: created.id });
@@ -275,11 +305,11 @@ export async function createShiftFromChat({
 
 export async function logActivationCompleted(email, activationSlug) {
     const normalized = normalizeEmail(email);
-    return base(Tables.ActivationCompletions).create({
+    return writeRow("create", Tables.ActivationCompletions, null, {
         member_email: normalized,
         activation_slug: activationSlug,
         completed_at: new Date().toISOString(),
-    });
+    }, normalized);
 }
 
 export async function getCompletedActivationSlugsByEmail(email) {
@@ -299,11 +329,11 @@ export async function getCompletedActivationSlugsByEmail(email) {
 // ActivationCompletions pattern above.
 export async function addFavoriteActivation(email, activationSlug) {
     const normalized = normalizeEmail(email);
-    return base(Tables.Favorites).create({
+    return writeRow("create", Tables.Favorites, null, {
         member_email: normalized,
         activation_slug: activationSlug,
         favorited_at: new Date().toISOString(),
-    });
+    }, normalized);
 }
 
 export async function removeFavoriteActivation(email, activationSlug) {
@@ -383,16 +413,17 @@ export async function clearMemberResetToken(recordId) {
 
 export async function createChatSession({ email, title = "New Chat", focusAreaSlug = "general" }) {
     const now = new Date().toISOString();
-    const record = await base(Tables.ChatSessions).create({
+    const normalized = normalizeEmail(email);
+    const record = await writeRow("create", Tables.ChatSessions, null, {
         title,
-        member_email: normalizeEmail(email),
+        member_email: normalized,
         created_at: now,
         updated_at: now,
         last_message_at: now,
         archived: false,
         title_is_auto: true,
         focus_area_slug: focusAreaSlug,
-    });
+    }, normalized);
     return record;
 }
 
@@ -439,14 +470,15 @@ export async function deleteChatSession(chatId) {
 }
 
 export async function createMessage({ chatId, email, role, text, activationRecommended = "" }) {
-    const record = await base(Tables.ChatMessages).create({
+    const normalized = normalizeEmail(email);
+    const record = await writeRow("create", Tables.ChatMessages, null, {
         chat_session_id: chatId,
-        member_email: normalizeEmail(email),
+        member_email: normalized,
         role,
         message_text: text,
         created_at: new Date().toISOString(),
         activation_recommended: activationRecommended,
-    });
+    }, normalized);
     return record;
 }
 
@@ -467,8 +499,9 @@ export async function listMessagesByChatId(chatId, options = {}) {
 
 export async function createMemory({ email, type, topic, statement, status = "hypothesis", sourceChatId = "" }) {
     const now = new Date().toISOString();
-    return base(Tables.MemberMemories).create({
-        member_email: normalizeEmail(email),
+    const normalized = normalizeEmail(email);
+    return writeRow("create", Tables.MemberMemories, null, {
+        member_email: normalized,
         type,
         topic,
         statement,
@@ -477,7 +510,7 @@ export async function createMemory({ email, type, topic, statement, status = "hy
         created_at: now,
         updated_at: now,
         active: true,
-    });
+    }, normalized);
 }
 
 export async function updateMemory(memoryId, fields) {
@@ -567,11 +600,11 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
     let memberRecordId;
     let outcome;
     if (existing) {
-        await base(Tables.Members).update(existing.id, fields);
+        await writeRow("update", Tables.Members, existing.id, fields, normalizedEmail);
         memberRecordId = existing.id;
         outcome = "already_existed";
     } else {
-        const created = await base(Tables.Members).create({ email: normalizedEmail, member_active: !isCancellation, ...fields });
+        const created = await writeRow("create", Tables.Members, null, { email: normalizedEmail, member_active: !isCancellation, ...fields }, normalizedEmail);
         memberRecordId = created.id;
         outcome = "created";
     }
