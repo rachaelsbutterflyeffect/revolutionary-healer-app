@@ -141,25 +141,48 @@ export async function updateRollingSummary({ previousSummary, userText, assistan
 }
 
 // -----------------------------------------------------------------------
-// Auto-title (first exchange of a new chat) -- PART 4/6.
+// Auto-title -- PART 4/6, reworked Oct 7 2026 ("Smarter chat titles", see
+// lib/chatTitles.js for the rules). Returns a cleaned title string, or null
+// when there's no clear theme yet / on any failure, so callers keep the
+// existing (placeholder) title instead of overwriting it.
 // -----------------------------------------------------------------------
 
-export async function generateChatTitle(userText) {
+const TITLE_SYSTEM_PROVISIONAL = `You name coaching chats in a member app. Read the conversation so far (the member may only have sent one or two messages).
+
+If the member's messages are only a greeting, small talk, a test, or otherwise have no clear theme yet (e.g. "hi", "hello", "hey there", "good morning", "testing"), reply with exactly: NONE
+
+Otherwise reply with a short chat title of 3-6 words, in Title Case, about the real theme of what the member is working on. No quotes, no emoji, no trailing punctuation. Reply with only the title or NONE.`;
+
+const TITLE_SYSTEM_FINAL = `You name coaching chats in a member app. Read the conversation so far (both the member's and the coach's messages) and reply with a short chat title of 3-6 words, in Title Case, about the real theme of what the member is working on -- e.g. "Feeling Unseen at Work". No quotes, no emoji, no trailing punctuation, no generic words like "Chat" or "Conversation".
+
+Only if the member's messages are purely greetings or small talk with no theme at all, reply with exactly: NONE
+
+Reply with only the title or NONE.`;
+
+/**
+ * @param {{ transcript: {role: string, text: string}[], mode?: "provisional" | "final" }} args
+ */
+export async function generateChatTitle({ transcript = [], mode = "final" } = {}) {
+  const { cleanGeneratedTitle } = await import("./chatTitles");
   try {
+    const lines = (transcript || [])
+      .filter((m) => m && m.text)
+      .map((m) => `${m.role === "assistant" ? "Coach" : "Member"}: ${String(m.text).slice(0, 700)}`)
+      .join("\n\n");
+    if (!lines) return null;
     const resp = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 20,
-      system: `Generate a short chat title (3-6 words, no quotes, no trailing punctuation) summarizing what this coaching conversation is about, based on the member's first message. Return only the title.`,
-      messages: [{ role: "user", content: userText }],
+      max_tokens: 24,
+      system: mode === "provisional" ? TITLE_SYSTEM_PROVISIONAL : TITLE_SYSTEM_FINAL,
+      messages: [{ role: "user", content: `Conversation so far:\n\n${lines}` }],
     });
-    const title = resp.content
+    const raw = resp.content
       .filter((b) => b.type === "text")
       .map((b) => b.text)
-      .join("")
-      .trim();
-    return title.replace(/^["']|["']$/g, "").slice(0, 60) || "New Chat";
+      .join("");
+    return cleanGeneratedTitle(raw);
   } catch (err) {
     console.error("generateChatTitle failed", err);
-    return "New Chat";
+    return null;
   }
 }

@@ -37,6 +37,7 @@ import {
   updateRollingSummary,
   generateChatTitle,
 } from "@/lib/memory";
+import { placeholderChatTitle, titleActionForMessage } from "@/lib/chatTitles";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
@@ -108,6 +109,9 @@ export async function POST(req: NextRequest) {
     processSlug = null,
     gapMethodResult = null,
     shiftId = null,
+    // Member's IANA time zone (from the browser), used only for the dated
+    // "New Chat · Oct 7" placeholder title. Falls back to America/Toronto.
+    timeZone = null,
   } = await req.json();
 
   if (!email || !focusAreaSlug || !message) {
@@ -147,7 +151,7 @@ export async function POST(req: NextRequest) {
 
   let session = chatIdInput ? await getChatSessionById(chatIdInput) : null;
   if (!session) {
-    session = await createChatSession({ email, focusAreaSlug });
+    session = await createChatSession({ email, focusAreaSlug, title: placeholderChatTitle(new Date(), timeZone) });
   }
   const chatId = session.id;
 
@@ -427,7 +431,18 @@ let shiftCreatedViaMarker = false;
   // catch exactly as before, so one failure still can't take down another.
   const now = new Date().toISOString();
   const sessionUpdates: Record<string, any> = { updated_at: now, last_message_at: now };
-  const shouldAutoTitle = session.fields.title_is_auto !== false && priorMessageCount === 0;
+  // Smarter chat titles (Oct 7 2026, see lib/chatTitles.js): count the
+  // member's messages in this chat (this one included) to decide whether to
+  // try a provisional title (1st/2nd message, only if there's a clear theme),
+  // the one final title (3rd message, from the conversation so far, both
+  // sides), or nothing at all (4th+ message, or the member renamed the chat).
+  const memberMessageNumber =
+    priorMessages.filter((m: any) => m.fields.role !== "assistant").length + 1;
+  const titleAction = titleActionForMessage({
+    titleIsAuto: session.fields.title_is_auto,
+    currentTitle: session.fields.title,
+    memberMessageNumber,
+  });
 
   waitUntil(
     (async () => {
@@ -437,15 +452,32 @@ let shiftCreatedViaMarker = false;
         "createMessage(assistant)"
       );
 
-      // Auto-title after the first full exchange -- never overwrites a manual
+      // Auto-title (see titleAction above) -- never overwrites a manual
       // rename (title_is_auto flips to false the moment a member renames a
-      // chat, see lib/airtable.js's renameChatSession). Has its own timeout
-      // wrapper (it calls Claude via lib/memory.js's generateChatTitle,
-      // which previously had none at all) even though it now only ever runs
-      // in the background, for consistency/safety with every other call here.
-      if (shouldAutoTitle) {
-        const title = await withTimeout(generateChatTitle(message), BOOKKEEPING_TIMEOUT_MS, "generateChatTitle");
-        if (title) sessionUpdates.title = title;
+      // chat, see lib/airtable.js's renameChatSession). Runs only here in the
+      // background with its own timeout, so it can never delay the reply.
+      // generateChatTitle returns null for "no clear theme yet" or on any
+      // failure, which keeps the existing (dated placeholder) title.
+      if (titleAction) {
+        const transcript = [
+          ...priorMessages.map((m: any) => ({
+            role: m.fields.role === "assistant" ? "assistant" : "user",
+            text: m.fields.message_text || "",
+          })),
+          { role: "user", text: message },
+          ...(titleAction === "final" ? [{ role: "assistant", text: replyText }] : []),
+        ];
+        const title = await withTimeout(
+          generateChatTitle({ transcript, mode: titleAction }),
+          BOOKKEEPING_TIMEOUT_MS,
+          "generateChatTitle"
+        );
+        if (title) {
+          // Re-check right before writing in case the member renamed the
+          // chat while this reply was being generated.
+          const fresh = await withTimeout(getChatSessionById(chatId), BOOKKEEPING_TIMEOUT_MS, "getChatSessionById(title)");
+          if (fresh && fresh.fields.title_is_auto !== false) sessionUpdates.title = title;
+        }
       }
 
       await withTimeout(updateChatSession(chatId, sessionUpdates), BOOKKEEPING_TIMEOUT_MS, "updateChatSession");

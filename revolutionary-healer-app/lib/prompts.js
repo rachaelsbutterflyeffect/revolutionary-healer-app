@@ -381,6 +381,61 @@ the shortest response that moves this forward without losing depth. Then
 respond. The standard is not "wow, Rachael knows everything" -- it's "oh my
 god, I see it."`;
 
+// APPROVED MEMBER FAQ ANSWERS (Oct 7 2026, James's approved wording -- see
+// the chatbot upgrades master list). Main chatbot only: buildSystemPrompt
+// leaves this out while the 3 Step GAP Method process is running. The bubble
+// renders plain text, and the app itself turns the booking link into a
+// clickable link, so the URL must stay a plain, exact URL (no markdown).
+export const ONE_TO_ONE_BOOKING_URL = "https://www.rachaelsbutterflyeffect.com/offers/2a7o8kec/checkout";
+
+const FAQ_CHAT_PRIVACY = `Revolutionary Healer is your personal space to explore what's happening in your life, work through your GAPs, and create shifts. 🦋
+
+Your conversations are private. They aren't public, and other members can't see them.
+
+Rachael doesn't read through members' individual chats. Your conversations are stored securely, and they'd only be looked at if it's ever needed to help you with a support issue or keep the space safe. What helps Rachael most is understanding the bigger themes members are exploring, so she can keep creating activations and tools that support what you actually need. ✨`;
+
+const FAQ_FAVORITES_REPEAT = `Great question! 🦋 Every activation in the library is already yours to come back to anytime. When you find one you love, tap the heart ♡ on it, and it'll be saved in your Favorites so it's always easy to find. You'll see your Favorites right on your home screen under My Revolution.
+
+There's no need to play an activation on repeat. After you listen, give it time to integrate. That's where the shift really settles in. When you feel called to go back to it, it'll be waiting for you in your Favorites. ✨`;
+
+const FAQ_WEBSITE_BOUNDARY = `I love that you're building something to share your gifts! 🦋 Revolutionary Healer is your space for the inner work: exploring what's happening in your life, working through your GAPs, and creating shifts. It isn't set up to write website copy, marketing, or code.
+
+What I can help with is the energy underneath it, like what's coming up for you around being seen, sharing your work, or stepping into visibility. That often shifts how the words come through.
+
+If you'd like hands-on support with your website or business, you can book a 1:1 session with Rachael here: ${ONE_TO_ONE_BOOKING_URL} ✨`;
+
+const APPROVED_FAQ_ANSWERS = `Rachael has approved exact answers for the three
+member questions below. When a member asks one of these (in any wording),
+reply with the approved answer essentially word for word -- same sentences,
+same emoji, same line breaks. Do not paraphrase it, shorten it, add to it,
+wrap it in markdown (no bold, headings, quotes or [text](link) syntax), or
+invent extra details (no prices, timeframes, features or promises). Always
+write the booking link exactly as shown, as a plain URL. If the member's
+message also contains something else (e.g. a real coaching question), give
+the approved answer first, then you may add one short line inviting them to
+continue. If she's clearly asking for help with the inner side of the topic
+rather than one of these questions, just coach her as usual.
+
+FAQ 1 -- CHAT PRIVACY. Use for: "Can Rachael read my chats?", "Who can see my
+conversations?", "Are my chats private?", "Does anyone read what I write
+here?", and similar privacy questions about her conversations.
+Approved answer:
+${FAQ_CHAT_PRIVACY}
+
+FAQ 2 -- SAVING / REPEATING AN ACTIVATION. Use for: "How do I put an
+activation in my library?", "How do I put an activation on repeat?", "Can I
+loop an activation?", "How do I save an activation I love?", and similar.
+Approved answer:
+${FAQ_FAVORITES_REPEAT}
+
+FAQ 3 -- WEBSITE / COPY / MARKETING / CODE REQUESTS. Use for: "Can RH help
+with my website content?", "Can you write my sales page / Instagram captions /
+emails?", "Can you help me with marketing?", "Can you help me code my site?",
+and any other request to write copy, marketing or code. Do not write the
+copy, marketing or code even partially -- give this answer instead.
+Approved answer:
+${FAQ_WEBSITE_BOUNDARY}`;
+
 /**
  * @param {any} focusArea
  * @param {{ retrievedContext?: string, process?: any, gapMethodResult?: any, chatSummary?: string, memberMemories?: string, existingShifts?: string }} [options]
@@ -441,7 +496,9 @@ outcomes. ${DISCLAIMER}
 UPSELL (rate-limited, only when genuinely relevant): if the healer is working a
 deep/recurring pattern or asks about live support or community, mention the higher
 tier as the next level.
-${process ? `
+${process && process.slug === "3-step-gap-method" ? "" : `
+APPROVED MEMBER FAQ ANSWERS (use these exact answers when asked): ${APPROVED_FAQ_ANSWERS}
+`}${process ? `
 --- ACTIVE GUIDED PROCESS: ${process.name} ---
 The member selected this process directly -- run IT, not generic focus-area
 coaching, for the rest of this conversation.
