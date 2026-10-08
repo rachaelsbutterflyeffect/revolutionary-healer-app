@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEntitlementForEmail } from "@/lib/entitlements";
 import { createShiftFromChat } from "@/lib/airtable";
+import { gapShiftOnce } from "@/lib/gapShiftOnce"; // one GAP run = one Shift (duplicate-save fix, Oct 8 2026)
 
 export async function POST(req: NextRequest) {
   const {
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
     recommendedActivation = "",
     chatId = null,
     todaysFocus = "",
+    clientRunId = "",
   } = await req.json();
 
   if (!email || !divineIdentitySlug) {
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "not entitled", entitlement }, { status: 403 });
   }
 
-  const shift = await createShiftFromChat({
+  const shift: any = await gapShiftOnce({ email, clientRunId, divineIdentitySlug, gapExplanation, whatWeNoticed, recommendedActivation }, () => createShiftFromChat({
     email,
     memberRecordId: record?.id,
     chatId,
@@ -52,7 +54,7 @@ export async function POST(req: NextRequest) {
     recommendedActivation,
     // GAP reading restructure (Oct 8 2026): optional, only when the page sends it.
     ...(typeof todaysFocus === "string" && todaysFocus.trim() ? { todaysFocus: todaysFocus.trim().slice(0, 1500) } : {}),
-  });
+  }));
 
-  return NextResponse.json({ shiftId: shift.id });
+  return NextResponse.json(shift.deduped ? { shiftId: shift.id, deduped: true } : { shiftId: shift.id });
 }

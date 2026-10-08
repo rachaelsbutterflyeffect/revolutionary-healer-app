@@ -1,3 +1,4 @@
+import { undoGapShiftOnce } from "./gap-shift-once-scope.mjs"; // duplicate-save fix (Oct 8 2026)
 // Dev-only helper for the scope checks in the older test scripts (Oct 8 2026,
 // GAP reading restructure -- TEST preview). The restructure makes exactly
 // these small, additive changes to the Shift-saving files (an OPTIONAL
@@ -39,6 +40,7 @@ export const GAP_READING_RESTRUCTURE_HUNKS = {
  ]
 };
 export function undoGapReadingRestructure(file, src) {
+  src = undoGapShiftOnce(file, src); // duplicate-save fix (Oct 8 2026): its own reviewed hunks come off first
   const hunks = GAP_READING_RESTRUCTURE_HUNKS[file];
   if (!hunks) return src;
   let t = src;
