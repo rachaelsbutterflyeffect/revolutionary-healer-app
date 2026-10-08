@@ -589,6 +589,7 @@
   .rh-chat-welcome p{color:var(--taupe);font-size:14px;line-height:1.6;margin:0;}
   .rh-msg{max-width:82%;font-size:14.5px;line-height:1.65;white-space:pre-wrap;word-wrap:break-word;}
   .rh-msg-user{align-self:flex-end;background:var(--gold);color:var(--black);padding:10px 14px;border-radius:14px 14px 4px 14px;}
+  .rh-msg-link{color:var(--gold);text-decoration:underline;word-break:break-all;}
   .rh-msg-assistant{align-self:flex-start;background:transparent;color:var(--white);padding:2px 2px;max-width:92%;position:relative;padding-left:14px;border-left:2px solid var(--taupe-line);}
   .rh-msg-error{align-self:flex-start;color:var(--taupe);font-style:italic;padding-left:14px;border-left:2px solid var(--gold);}
   .rh-try-again{margin-top:6px;background:none;border:1px solid var(--gold-soft);color:var(--gold-soft);font-size:12px;padding:5px 12px;border-radius:20px;cursor:pointer;}
@@ -3048,7 +3049,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     input.value = '';
     autoGrowChatInput();
     window.__rhLastFailedText = null;
-        var thinkingEl = showRhThinking(); var rhAbortController = new AbortController(); var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, 30000); try { var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text }; if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId; if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId; if (processSlug) payload.processSlug = processSlug; var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal }); clearTimeout(rhAbortTimeout); var data = await res.json(); removeRhThinking(thinkingEl); if (!res.ok || data.error) { window.__rhLastFailedText = text; addRhError(); } else { if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); } var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?"); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); } } catch (e) { clearTimeout(rhAbortTimeout); removeRhThinking(thinkingEl); window.__rhLastFailedText = text; if (e && e.name === 'AbortError') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); } } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; } }
+        var thinkingEl = showRhThinking(); var rhAbortController = new AbortController(); var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, 30000); try { var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text }; try { payload.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {} if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId; if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId; if (processSlug) payload.processSlug = processSlug; var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal }); clearTimeout(rhAbortTimeout); var data = await res.json(); removeRhThinking(thinkingEl); if (!res.ok || data.error) { window.__rhLastFailedText = text; addRhError(); } else { if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); } var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?"); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); } } catch (e) { clearTimeout(rhAbortTimeout); removeRhThinking(thinkingEl); window.__rhLastFailedText = text; if (e && e.name === 'AbortError') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); } } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; } }
 
   function rhRetryLastMessage() {
     var t = window.__rhLastFailedText;
@@ -3094,13 +3095,57 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     });
   }
 
+  // Smarter chat titles (Oct 7 2026): dated placeholder for an untitled chat,
+  // in the member's own local date, e.g. "New Chat · Oct 7".
+  function rhPlaceholderChatTitle(iso) {
+    var d = iso ? new Date(iso) : new Date();
+    if (isNaN(d)) return 'New Chat';
+    try { return 'New Chat \u00b7 ' + d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); } catch (e) { return 'New Chat'; }
+  }
+
+  // Chatbot FAQ answers (Oct 7 2026): assistant replies stay plain text
+  // (textContent + white-space:pre-wrap) -- this only turns links to Rachael's
+  // own site (e.g. the 1:1 booking link) into real, clickable links, built with
+  // DOM nodes (never innerHTML), so nothing else about the bubble changes.
+  // A markdown-style [label](url) for an allowed link shows just the label.
+  var RH_LINK_RE = /\[([^\]\n]{1,120})\]\((https:\/\/[^\s)]+)\)|(https:\/\/[^\s<>"')\]]+)/g;
+  function rhIsAllowedLink(url) {
+    try {
+      var u = new URL(url);
+      return u.protocol === 'https:' && /(^|\.)rachaelsbutterflyeffect\.com$/i.test(u.hostname);
+    } catch (e) { return false; }
+  }
+  function rhSetTextWithLinks(el, text) {
+    var s = String(text == null ? '' : text);
+    el.textContent = '';
+    var last = 0, m;
+    RH_LINK_RE.lastIndex = 0;
+    while ((m = RH_LINK_RE.exec(s))) {
+      var url = m[2] || m[3];
+      var trail = '';
+      if (m[3]) { var tm = url.match(/[.,!?;:]+$/); if (tm) { trail = tm[0]; url = url.slice(0, -trail.length); } }
+      if (!rhIsAllowedLink(url)) continue;
+      if (m.index > last) el.appendChild(document.createTextNode(s.slice(last, m.index)));
+      var a = document.createElement('a');
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.className = 'rh-msg-link';
+      a.textContent = m[1] || url;
+      el.appendChild(a);
+      if (trail) el.appendChild(document.createTextNode(trail));
+      last = m.index + m[0].length;
+    }
+    if (last < s.length) el.appendChild(document.createTextNode(s.slice(last)));
+  }
+
   function addRhMessage(role, text) {
     var t = rhThread();
     if (!t) return null;
     var wasNear = rhIsNearBottom();
     var el = document.createElement('div');
     el.className = 'rh-msg ' + (role === 'user' ? 'rh-msg-user' : 'rh-msg-assistant');
-    el.textContent = text;
+    if (role === 'user') el.textContent = text; else rhSetTextWithLinks(el, text);
     t.appendChild(el);
     if (role === 'user' || wasNear) rhScrollToBottom(true);
     return el;
@@ -3229,7 +3274,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
       }
       var active = c.id === window.__rhActiveChatId ? ' rh-active' : '';
       html += '<div class="rh-drawer-item' + active + '" data-chat-id="' + c.id + '">' +
-        '<span class="rh-drawer-item-title" data-open="' + c.id + '">' + rhEscapeHtml(c.title || 'New Chat') + '</span>' +
+        '<span class="rh-drawer-item-title" data-open="' + c.id + '">' + rhEscapeHtml(c.title || rhPlaceholderChatTitle(c.createdAt)) + '</span>' +
         '<button type="button" class="rh-drawer-item-menu" data-menu="' + c.id + '">⋯</button>' +
         '</div>';
     });
@@ -3328,7 +3373,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
       msgs.forEach(function (m) {
         var el = document.createElement('div');
         el.className = 'rh-msg ' + (m.role === 'assistant' ? 'rh-msg-assistant' : 'rh-msg-user');
-        el.textContent = m.text;
+        if (m.role === 'assistant') rhSetTextWithLinks(el, m.text); else el.textContent = m.text;
         t.appendChild(el);
       });
       rhScrollToBottom(false);

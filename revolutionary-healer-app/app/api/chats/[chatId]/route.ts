@@ -2,6 +2,7 @@
 // delete it entirely (DELETE). Spec ref: Rachael's Aug 13 Chat History +
 // Memory Architecture doc, PART 3-5.
 import { NextRequest, NextResponse } from "next/server";
+import { placeholderChatTitle } from "@/lib/chatTitles";
 import {
   getChatSessionById,
   listMessagesByChatId,
@@ -23,7 +24,7 @@ export async function GET(
   return NextResponse.json({
     chat: {
       id: session.id,
-      title: session.fields.title || "New Chat",
+      title: session.fields.title || placeholderChatTitle(session.fields.created_at || new Date()),
       archived: !!session.fields.archived,
       focusAreaSlug: session.fields.focus_area_slug || "general",
     },

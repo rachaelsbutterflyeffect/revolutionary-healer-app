@@ -381,9 +381,101 @@ the shortest response that moves this forward without losing depth. Then
 respond. The standard is not "wow, Rachael knows everything" -- it's "oh my
 god, I see it."`;
 
+// APPROVED MEMBER FAQ ANSWERS (Oct 7 2026, James's approved wording -- see
+// the chatbot upgrades master list). Main chatbot only: buildSystemPrompt
+// leaves this out while the 3 Step GAP Method process is running. The bubble
+// renders plain text, and the app itself turns the booking link into a
+// clickable link, so the URL must stay a plain, exact URL (no markdown).
+export const ONE_TO_ONE_BOOKING_URL = "https://www.rachaelsbutterflyeffect.com/offers/2a7o8kec/checkout";
+
+const FAQ_CHAT_PRIVACY = `Revolutionary Healer is your personal space to explore what's happening in your life, work through your GAPs, and create shifts. 🦋
+
+Your conversations are private. They aren't public, and other members can't see them.
+
+Rachael doesn't read through members' individual chats. Your conversations are stored securely, and they'd only be looked at if it's ever needed to help you with a support issue or keep the space safe. What helps Rachael most is understanding the bigger themes members are exploring, so she can keep creating activations and tools that support what you actually need. ✨`;
+
+const FAQ_FAVORITES_REPEAT = `Great question! 🦋 Every activation in the library is already yours to come back to anytime. When you find one you love, tap the heart ♡ on it, and it'll be saved in your Favorites so it's always easy to find. You'll see your Favorites right on your home screen under My Revolution.
+
+There's no need to play an activation on repeat. After you listen, give it time to integrate. That's where the shift really settles in. When you feel called to go back to it, it'll be waiting for you in your Favorites. ✨`;
+
+const FAQ_WEBSITE_BOUNDARY = `I love that you're building something to share your gifts! 🦋 Revolutionary Healer is your space for the inner work: exploring what's happening in your life, working through your GAPs, and creating shifts. It isn't set up to write website copy, marketing, or code.
+
+What I can help with is the energy underneath it, like what's coming up for you around being seen, sharing your work, or stepping into visibility. That often shifts how the words come through.
+
+If you'd like hands-on support with your website or business, you can book a 1:1 session with Rachael here: ${ONE_TO_ONE_BOOKING_URL} ✨`;
+
+const APPROVED_FAQ_HEADER = `Rachael has approved exact answers for the
+member question(s) below. When a member asks one of these (in any wording),
+reply with the approved answer essentially word for word -- same sentences,
+same emoji, same line breaks. Do not paraphrase it, shorten it, add to it,
+wrap it in markdown (no bold, headings, quotes or [text](link) syntax), or
+invent extra details (no prices, timeframes, features or promises). Always
+write the booking link exactly as shown, as a plain URL. Send the approved
+answer on its own -- nothing before it and no follow-up question after it.
+Only if the member's message also contains a separate, real coaching
+question may you add one short line after the approved answer about that.
+If she's clearly asking for help with the inner side of the topic rather
+than one of these questions, just coach her as usual.`;
+
+const APPROVED_FAQ_BLOCKS = {
+  privacy: `FAQ -- CHAT PRIVACY. Use for: "Can Rachael read my chats?", "Who can see my
+conversations?", "Are my chats private?", "Does anyone read what I write
+here?", and similar privacy questions about her conversations.
+Approved answer:
+${FAQ_CHAT_PRIVACY}`,
+  favorites: `FAQ -- SAVING / REPEATING AN ACTIVATION. Use for: "How do I put an
+activation in my library?", "How do I put an activation on repeat?", "Can I
+loop an activation?", "How do I save an activation I love?", and similar.
+Approved answer:
+${FAQ_FAVORITES_REPEAT}`,
+  website: `FAQ -- WEBSITE / COPY / MARKETING / CODE REQUESTS. Use for: "Can RH help
+with my website content?", "Can you write my sales page / Instagram captions /
+emails?", "Can you help me with marketing?", "Can you help me code my site?",
+and any other request to write copy, marketing or code. Do not write the
+copy, marketing or code even partially -- give this answer instead.
+Approved answer:
+${FAQ_WEBSITE_BOUNDARY}`,
+};
+
+// Non-regression (James's hard gate): the approved answers are only added to
+// the system prompt when the member's CURRENT message looks like one of these
+// questions. Every other message gets a system prompt byte-identical to
+// main's, so normal coaching (tone, greetings, emoji, activation
+// recommendations) can't drift. Side-by-side QA showed that always including
+// the emoji-rich approved answers nudged ordinary greetings toward emoji.
+// Matching is deliberately generous -- a false positive only means the
+// answers are available to the model, which still decides whether the member
+// actually asked; a miss just means today's normal reply.
+const FAQ_TRIGGERS = {
+  privacy: [
+    /\b(read|reads|reading|see|sees|seeing|look(?:s|ing)? at|access(?:es)?|view|views|monitor(?:s|ing)?|review(?:s|ing)?)\b[^.?!\n]{0,40}\b(chats?|conversations?|messages?|what i (?:write|type|say|share))\b/i,
+    /\b(chats?|conversations?|messages?)\b[^.?!\n]{0,40}\b(private|confidential|secure|safe|visible|public|anonymous|stored|saved)\b/i,
+    /\b(is|are) (?:this|it|my chats?|my conversations?|everything) (?:really |actually )?(?:private|confidential|secure)\b/i,
+    /\bwho (?:else )?(?:can|could|will) (?:see|read)\b/i,
+    /\bprivacy\b/i,
+  ],
+  favorites: [
+    /\bon (?:a )?(?:repeat|loop)\b/i,
+    /\b(loop|looping|repeat|repeating|replay|replaying|save|saving|bookmark|keep)\b[^.?!\n]{0,40}\bactivations?\b/i,
+    /\bactivations?\b[^.?!\n]{0,40}\b(loop|looping|repeat|repeating|replay|library|favou?rites?|save|saved)\b/i,
+    /\b(save|saving|add|adding|put|putting|keep|bookmark)\b[^.?!\n]{0,40}\b(library|favou?rites?)\b/i,
+    /\bmy library\b/i,
+  ],
+  website: [
+    /\b(website|web ?site|web ?page|sales ?page|landing ?page|home ?page|about page|copywriting|copy|captions?|instagram|tiktok|social media posts?|marketing|seo|email (?:sequence|newsletter|campaign)|newsletter|funnel|ad copy|code|coding|html|css|javascript|wordpress|squarespace|shopify|wix|kajabi page)\b/i,
+  ],
+};
+
+/** Which approved FAQ answers (if any) the member's current message may be asking for. */
+export function detectFaqTopics(message) {
+  const text = String(message || "");
+  if (!text.trim()) return [];
+  return Object.keys(FAQ_TRIGGERS).filter((topic) => FAQ_TRIGGERS[topic].some((re) => re.test(text)));
+}
+
 /**
  * @param {any} focusArea
- * @param {{ retrievedContext?: string, process?: any, gapMethodResult?: any, chatSummary?: string, memberMemories?: string, existingShifts?: string }} [options]
+ * @param {{ retrievedContext?: string, process?: any, gapMethodResult?: any, chatSummary?: string, memberMemories?: string, existingShifts?: string, faqTopics?: string[] }} [options]
  */
 export function buildSystemPrompt(
   focusArea,
@@ -394,8 +486,13 @@ export function buildSystemPrompt(
     chatSummary = "",
     memberMemories = "",
     existingShifts = "",
+    faqTopics = [],
   } = {}
 ) {
+  const faqBlocks =
+    process && process.slug === "3-step-gap-method"
+      ? []
+      : (faqTopics || []).filter((t) => APPROVED_FAQ_BLOCKS[t]).map((t) => APPROVED_FAQ_BLOCKS[t]);
   return `You are Rachael's healing companion for healers -- The Revolutionary Healer AI.
 You coach ONLY in Rachael's methodology, in her actual voice and discernment --
 not a generic spiritual-coach imitation. You are currently in the "${focusArea.name}"
@@ -441,7 +538,11 @@ outcomes. ${DISCLAIMER}
 UPSELL (rate-limited, only when genuinely relevant): if the healer is working a
 deep/recurring pattern or asks about live support or community, mention the higher
 tier as the next level.
-${process ? `
+${faqBlocks.length ? `
+APPROVED MEMBER FAQ ANSWERS (use these exact answers when asked): ${APPROVED_FAQ_HEADER}
+
+${faqBlocks.join("\n\n")}
+` : ""}${process ? `
 --- ACTIVE GUIDED PROCESS: ${process.name} ---
 The member selected this process directly -- run IT, not generic focus-area
 coaching, for the rest of this conversation.

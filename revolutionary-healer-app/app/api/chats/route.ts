@@ -5,11 +5,14 @@
 // rewrite -- the ChatSessions/ChatMessages tables are the real store now).
 import { NextRequest, NextResponse } from "next/server";
 import { createChatSession, listChatSessionsByEmail } from "@/lib/airtable";
+import { placeholderChatTitle } from "@/lib/chatTitles";
 
 function serializeSession(record: any) {
   return {
     id: record.id,
-    title: record.fields.title || "New Chat",
+    // Smarter chat titles (Oct 7 2026): an untitled chat shows the dated
+    // placeholder ("New Chat · Oct 7") instead of a bare "New Chat".
+    title: record.fields.title || placeholderChatTitle(record.fields.created_at || new Date()),
     createdAt: record.fields.created_at || null,
     updatedAt: record.fields.updated_at || null,
     lastMessageAt: record.fields.last_message_at || null,
@@ -29,13 +32,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { email, title, focusAreaSlug } = await req.json();
+  const { email, title, focusAreaSlug, timeZone } = await req.json();
   if (!email) {
     return NextResponse.json({ error: "email is required" }, { status: 400 });
   }
   const record = await createChatSession({
     email,
-    title: title || "New Chat",
+    title: title || placeholderChatTitle(new Date(), timeZone),
     focusAreaSlug: focusAreaSlug || "general",
   });
   return NextResponse.json({ chat: serializeSession(record) });
