@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
     whatWeNoticed = "",
     recommendedActivation = "",
     chatId = null,
+    todaysFocus = "",
   } = await req.json();
 
   if (!email || !divineIdentitySlug) {
@@ -49,6 +50,8 @@ export async function POST(req: NextRequest) {
     gapExplanation,
     whatWeNoticed,
     recommendedActivation,
+    // GAP reading restructure (Oct 8 2026): optional, only when the page sends it.
+    ...(typeof todaysFocus === "string" && todaysFocus.trim() ? { todaysFocus: todaysFocus.trim().slice(0, 1500) } : {}),
   });
 
   return NextResponse.json({ shiftId: shift.id });

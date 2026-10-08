@@ -226,10 +226,11 @@ export async function createShiftFromChat({
     gapExplanation = "",
     whatWeNoticed = "",
     recommendedActivation = "",
+    todaysFocus = "",
 }) {
     const normalized = normalizeEmail(email);
     const now = new Date().toISOString();
-    const created = await base(Tables.Shifts).create({
+    const fields = {
         member_email: normalized,
         ...(memberRecordId ? { member: [memberRecordId] } : {}),
         method_name: methodName,
@@ -244,7 +245,24 @@ export async function createShiftFromChat({
         ready_for_embodied: false,
         created_at: now,
         updated_at: now,
-    });
+    };
+    // GAP reading restructure (Oct 8 2026, TEST preview): optional Today's
+    // Focus text from the deep reading, written ONLY when present. If the
+    // Shifts table doesn't have the todays_focus field yet (e.g. the live
+    // base before Rachael adds it), the Shift is saved exactly as before
+    // without it -- the save itself must never fail because of this field.
+    let created;
+    if (todaysFocus) {
+        try {
+            created = await base(Tables.Shifts).create({ ...fields, todays_focus: todaysFocus });
+        } catch (err) {
+            if (!(err && (err.error === "UNKNOWN_FIELD_NAME" || /todays_focus/i.test(String(err.message || ""))))) throw err;
+            console.warn("createShiftFromChat: todays_focus field missing on Shifts; saved without it");
+            created = await base(Tables.Shifts).create(fields);
+        }
+    } else {
+        created = await base(Tables.Shifts).create(fields);
+    }
     if (chatId) {
         try {
             await base(Tables.ChatSessions).update(chatId, { linked_shift_id: created.id });

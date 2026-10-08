@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
       undercurrent: r.fields.undercurrent ?? "",
       nextSuggestedActivation: r.fields.next_suggested_activation ?? "",
       readyForEmbodied: !!r.fields.ready_for_embodied,
+      todaysFocus: r.fields.todays_focus ?? "", // GAP reading restructure (Oct 8 2026); "" for older Shifts
     }));
     return NextResponse.json({ shifts });
   } catch (err) {

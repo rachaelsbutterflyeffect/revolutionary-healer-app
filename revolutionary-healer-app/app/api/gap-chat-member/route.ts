@@ -31,6 +31,19 @@
 //     (the GAP conversation lives in the page; the Shift is only created
 //     later by /api/gap-shift from a COMPLETE reply), so a partial can never
 //     be saved.
+//
+// READING RESTRUCTURE (Oct 8 2026, TEST PREVIEW for Rachael -- see
+// lib/gapReading.js). OFF BY DEFAULT (GAP_FAST_READING); when off, every
+// request below is exactly what it was before. When on for this member:
+//   * Step 2 chat turns ({phase: "chat"}, the default) add only
+//     output_config.effort "low" -- same model, prompt and messages.
+//   * The one deep reading ({phase: "reading"}, sent once by the page while
+//     the Step 3 animation runs) keeps the default (high) effort, is never
+//     streamed, and its message is the page's hidden completion request with
+//     an appended block (Step 1 answers, exact activation titles, and the
+//     ACTIVATION_WHY / TODAYS_FOCUS markers). The JSON reply carries the same
+//     `reply` text plus `reading` (validated activation pick, Today's Focus).
+//   * GAP's instruction text (system prompt) is never touched.
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { waitUntil } from "@vercel/functions";
@@ -43,6 +56,22 @@ import {
   runStreamedReply,
   SSE_HEADERS,
 } from "@/lib/chatStreaming";
+import {
+  GAP_CHAT_TURN_EFFORT,
+  GAP_ACTIVATION_RETRY_MAX_TOKENS,
+  gapFastReadingSwitch,
+  gapFastReadingEnabled,
+  sanitizeStep1,
+  sanitizeLibrary,
+  buildReadingMessage,
+  buildActivationRetryMessage,
+  parseReadingReply,
+  parseActivationRetry,
+  matchLibraryTitle,
+  normalizeTodaysFocus,
+  isHealerContext,
+  logGapReading,
+} from "@/lib/gapReading";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
@@ -74,7 +103,17 @@ function replyTextOf(message: any): string {
 }
 
 export async function POST(req: NextRequest) {
-  const { email, message, history = [], gapContext = null, stream: streamRequested = false } = await req.json();
+  const {
+    email,
+    message,
+    history = [],
+    gapContext = null,
+    stream: streamRequested = false,
+    phase = "chat",
+    step1 = null,
+    activationLibrary = null,
+    fixedActivation = "",
+  } = await req.json();
 
   if (!email || !message) {
     return NextResponse.json({ error: "email and message are required" }, { status: 400 });
@@ -90,14 +129,85 @@ export async function POST(req: NextRequest) {
   // Long-reply fix (Oct 8 2026, see lib/gapChatReply.js): 4096 had to hold
   // hidden thinking + reply + the Shift-saving markers; now 10,000. Same
   // ceiling for the streamed and JSON paths.
-  const claudeParams = {
+  const fast = gapFastReadingEnabled({ ...gapFastReadingSwitch(), email });
+  const isReading = fast && phase === "reading";
+  const library = isReading ? sanitizeLibrary(activationLibrary) : [];
+  const identityName = String((gapContext && gapContext.divineIdentity) || "");
+  const claudeParams: any = {
     model: MODEL,
     max_tokens: GAP_CHAT_MAX_TOKENS,
     system: systemPrompt,
-    messages: [...history, { role: "user", content: message }],
+    messages: [
+      ...history,
+      {
+        role: "user",
+        content: isReading ? buildReadingMessage(message, { step1: sanitizeStep1(step1), library, identityName }) : message,
+      },
+    ],
   };
+  // Light Step 2 chat (restructure on): lowest-latency thinking setting.
+  if (fast && !isReading) claudeParams.output_config = { effort: GAP_CHAT_TURN_EFFORT };
+  const logExtra = fast ? { phase: isReading ? "reading" : "chat", effort: isReading ? "default" : GAP_CHAT_TURN_EFFORT } : undefined;
 
   const claudeStartedAt = Date.now();
+  if (isReading) {
+    // The ONE deep reading: never streamed (nothing shows until it's complete).
+    const response = await anthropic.messages.create(claudeParams as any);
+    logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, logExtra); // log-only
+    const replyText = replyTextOf(response);
+    const parsed = parseReadingReply(replyText);
+    let pick = matchLibraryTitle(parsed.activationPick, library);
+    let source = pick ? "ai" : "fallback";
+    let healerRetry = false;
+    // Healer only (Rachael, Oct 8): no fixed Remembrance -- ask once more for a valid pick.
+    if (!pick && library.length && isHealerContext(gapContext)) {
+      healerRetry = true;
+      try {
+        const retry = await anthropic.messages.create({
+          model: MODEL,
+          max_tokens: GAP_ACTIVATION_RETRY_MAX_TOKENS,
+          system: systemPrompt,
+          messages: [
+            ...claudeParams.messages,
+            { role: "assistant", content: replyText.trim() || "(reading)" },
+            { role: "user", content: buildActivationRetryMessage(library) },
+          ],
+          output_config: { effort: GAP_CHAT_TURN_EFFORT },
+        } as any);
+        pick = matchLibraryTitle(parseActivationRetry(replyTextOf(retry)), library);
+        if (pick) source = "ai-retry";
+      } catch (err) {
+        console.error("[gap-reading] healer activation retry failed", err);
+      }
+    }
+    const focus = normalizeTodaysFocus(parsed.todaysFocus, identityName);
+    logGapReading({
+      identity: identityName,
+      save_shift: !!parsed.saveShift,
+      ai_pick: parsed.activationPick || null,
+      ai_pick_valid: !!matchLibraryTitle(parsed.activationPick, library),
+      used: pick || fixedActivation || null,
+      source,
+      old_fixed: fixedActivation || null,
+      same_as_old: !!pick && !!fixedActivation && pick === fixedActivation,
+      healer_retry: healerRetry,
+      healer_fallback_needs_rachael: source === "fallback" && isHealerContext(gapContext),
+      todays_focus_sentences: focus.sentences,
+      todays_focus_names_identity: focus.namesIdentity,
+      todays_focus_trimmed: focus.trimmed,
+      library_titles: library.length,
+      ms: Date.now() - claudeStartedAt,
+    });
+    return NextResponse.json({
+      reply: replyText,
+      reading: {
+        activation: { title: pick, source, aiPick: parsed.activationPick || null, oldFixed: fixedActivation || null, healerRetry },
+        activationWhy: parsed.activationWhy ? parsed.activationWhy.replace(/\s+/g, " ").trim() : null,
+        todaysFocus: focus.text || null,
+        todaysFocusCheck: { sentences: focus.sentences, inRange: focus.inRange, namesIdentity: focus.namesIdentity, trimmed: focus.trimmed },
+      },
+    });
+  }
   if (chatStreamingAllowed({ ...gapStreamingSwitch(), email, requested: streamRequested })) {
     const channel = createSseChannel();
     waitUntil(
@@ -109,7 +219,7 @@ export async function POST(req: NextRequest) {
           streamingAnthropic.messages.stream(claudeParams as any, { timeout: GAP_STREAM_CONNECT_TIMEOUT_MS, signal }),
         // Nothing to save here: hand back the complete reply, same text as JSON.
         finishReply: async (finalMessage: any) => {
-          logGapChatUsage(finalMessage, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS); // log-only (Vercel logs)
+          logGapChatUsage(finalMessage, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, logExtra); // log-only (Vercel logs)
           return { replyText: replyTextOf(finalMessage), openActivationSlug: null };
         },
       })
@@ -119,7 +229,7 @@ export async function POST(req: NextRequest) {
 
   const response = await anthropic.messages.create(claudeParams as any);
 
-  logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS); // log-only (Vercel logs)
+  logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, logExtra); // log-only (Vercel logs)
 
   const replyText = replyTextOf(response);
 
