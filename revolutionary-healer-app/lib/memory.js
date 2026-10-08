@@ -172,10 +172,16 @@ export async function generateChatTitle({ transcript = [], mode = "final" } = {}
     if (!lines) return null;
     const resp = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 24,
+      max_tokens: 40,
       system: mode === "provisional" ? TITLE_SYSTEM_PROVISIONAL : TITLE_SYSTEM_FINAL,
       messages: [{ role: "user", content: `Conversation so far:\n\n${lines}` }],
     });
+    // A cut-off reply would leave a half-word title (seen in preview QA as
+    // "Saving Activ") -- keep the current title instead.
+    if (resp.stop_reason === "max_tokens") {
+      console.warn("generateChatTitle: reply hit max_tokens, keeping current title");
+      return null;
+    }
     const raw = resp.content
       .filter((b) => b.type === "text")
       .map((b) => b.text)

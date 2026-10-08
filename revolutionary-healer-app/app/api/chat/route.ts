@@ -476,7 +476,7 @@ let shiftCreatedViaMarker = false;
           // Re-check right before writing in case the member renamed the
           // chat while this reply was being generated.
           const fresh = await withTimeout(getChatSessionById(chatId), BOOKKEEPING_TIMEOUT_MS, "getChatSessionById(title)");
-          if (fresh && fresh.fields.title_is_auto !== false) sessionUpdates.title = title;
+          if (fresh && fresh.fields.title_is_auto === true) sessionUpdates.title = title;
         }
       }
 

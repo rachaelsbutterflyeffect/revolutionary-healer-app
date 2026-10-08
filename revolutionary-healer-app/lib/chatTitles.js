@@ -50,7 +50,11 @@ export function isPlaceholderTitle(title) {
  * Returns "final" | "provisional" | null.
  */
 export function titleActionForMessage({ titleIsAuto, currentTitle, memberMessageNumber }) {
-  if (titleIsAuto === false) return null; // manual rename always wins
+  // Manual rename always wins. Strict check on purpose: Airtable omits an
+  // unchecked checkbox entirely (undefined, never false), so after a rename
+  // title_is_auto reads as undefined -- only an explicit true may auto-title.
+  // Every chat is created with title_is_auto: true (lib/airtable.js).
+  if (titleIsAuto !== true) return null;
   if (memberMessageNumber === FINAL_TITLE_AT_MEMBER_MESSAGE) return "final";
   if (memberMessageNumber < FINAL_TITLE_AT_MEMBER_MESSAGE && isPlaceholderTitle(currentTitle)) {
     return "provisional";
@@ -65,6 +69,7 @@ export function cleanGeneratedTitle(raw) {
   t = t.replace(/^["'“”‘’*_`]+|["'“”‘’*_`]+$/g, "").trim();
   t = t.replace(/[.!?,;:]+$/, "").trim();
   if (!t || /^none$/i.test(t)) return null;
+  if (t.split(/\s+/).length > 8) return null; // not a short title -- keep the current one
   if (t.length > 60) t = t.slice(0, 60).replace(/\s+\S*$/, "").trim() || t.slice(0, 60);
   return t;
 }
