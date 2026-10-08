@@ -3078,6 +3078,142 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
   var RH_CHAT_CLIENT_TIMEOUT_MS = 180000;
   var RH_STILL_WORKING_TEXT = "Still with you \u2014 this one is taking a little longer than usual. Your reply is on its way\u2026";
 
+  // ---------------------------------------------------------------------------
+  // Streaming replies (Oct 8 2026, see lib/chatStreaming.js). The page asks
+  // for a streamed reply ({ stream: true }); the SERVER decides (switch
+  // CHAT_STREAMING, off by default). If the answer is the usual JSON, the
+  // code below runs exactly as before. If it's a stream:
+  //   * the rotating thinking lines stay until the first visible words
+  //     arrive, then the thinking bubble becomes the reply bubble (and the
+  //     30s "still with you" timer is cancelled);
+  //   * words are drawn as they arrive, at most once per screen frame, and
+  //     the chat follows them down only if she was at the bottom (James's
+  //     rule) -- if she scrolls up, it stops following and the arrow glows;
+  //   * the server's final "done" message replaces the bubble's text with
+  //     the exact saved reply and adds the activation button, as before;
+  //   * if the reply breaks part-way, the half reply is removed. A server
+  //     error -> Try Again (nothing was saved, so resending is safe). A
+  //     dropped connection -> check the chat's saved messages for ~40s
+  //     first (the server keeps going and saves even if we're gone).
+  // ---------------------------------------------------------------------------
+  var RH_STREAM_IDLE_MS = 30000; // no bytes at all for 30s (server pings every 10s) = connection dead
+  var RH_STREAM_DROP_RECHECKS = 10; // saved-reply checks after a dropped stream (~40s)
+
+  function rhCanStream() {
+    return typeof TextDecoder !== 'undefined' && typeof ReadableStream !== 'undefined';
+  }
+  function rhIsChatStream(res) {
+    try {
+      return !!(res && res.ok && res.body && res.body.getReader && res.headers && res.headers.get &&
+        /text\/event-stream/i.test(res.headers.get('content-type') || ''));
+    } catch (e) { return false; }
+  }
+  function rhParseSseBlock(block) {
+    var lines = String(block).split('\n');
+    var dataLines = [];
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i].replace(/\r$/, '');
+      if (line.indexOf('data:') === 0) dataLines.push(line.slice(5).replace(/^ /, ''));
+    }
+    if (!dataLines.length) return null; // keep-alive comment
+    try { return JSON.parse(dataLines.join('\n')); } catch (e) { return null; }
+  }
+  function rhNextFrame(fn) {
+    if (window.requestAnimationFrame) window.requestAnimationFrame(fn); else setTimeout(fn, 16);
+  }
+  function rhGlowScrollDownBtn() {
+    var sdb = document.getElementById('rh-scroll-down-btn');
+    if (sdb && sdb.classList && sdb.classList.contains('rh-show')) sdb.classList.add('rh-glow');
+  }
+  // While words are arriving: keep the end of the reply (and the message
+  // box) on screen, instantly (smooth scrolling every frame jitters), but
+  // only if she's following, and never while her finger/wheel is moving.
+  function rhFollowStreamingReply() {
+    if (!rhFollowReply) return;
+    if (Date.now() < rhUserScrollUntil) return;
+    var t = rhThread();
+    if (t) t.scrollTop = t.scrollHeight;
+    var input = document.getElementById('chat-input');
+    if (!input || !input.getBoundingClientRect) return;
+    var r = input.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    if (r.height && r.bottom > vh - 8) window.scrollBy(0, Math.ceil(r.bottom - vh + 16));
+  }
+  function rhRemovePartialReply(el) {
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+
+  // Reads the streamed reply. Returns { kind: 'done', data } | { kind:
+  // 'error' } (server says it failed; nothing saved) | { kind: 'dropped',
+  // timedOut } (connection ended without a final answer) | { kind:
+  // 'switched' } (she opened another chat; the server still saves it there).
+  async function rhReadChatStream(res, st) {
+    var reader = res.body.getReader();
+    var decoder = new TextDecoder();
+    var buf = '';
+    var idleTimer = null;
+    var idleFired = false;
+    var framePending = false;
+    function stopReading() { try { reader.cancel(); } catch (e) {} }
+    function armIdle() {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(function () { idleFired = true; stopReading(); }, RH_STREAM_IDLE_MS);
+    }
+    function switched() {
+      var el = st.bubble || st.thinkingEl;
+      return !!(el && el.isConnected === false);
+    }
+    function draw() {
+      framePending = false;
+      if (!st.bubble || st.bubble.isConnected === false) return;
+      rhSetTextWithLinks(st.bubble, st.text);
+      rhFollowStreamingReply();
+    }
+    function onDelta(piece) {
+      st.text += piece;
+      if (!st.bubble) {
+        if (!st.text.trim()) return;
+        // First visible words: the thinking bubble becomes the reply bubble.
+        clearTimeout(st.stillWorkingTimer);
+        var follow = rhFollowReply;
+        removeRhThinking(st.thinkingEl);
+        st.bubble = addRhMessage('assistant', st.text, { follow: follow });
+        if (st.bubble && st.bubble.classList) st.bubble.classList.add('rh-msg-streaming');
+        rhUpdateScrollDownBtn();
+        if (!follow) rhGlowScrollDownBtn();
+        return;
+      }
+      if (!framePending) { framePending = true; rhNextFrame(draw); }
+    }
+    try {
+      armIdle();
+      while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        armIdle();
+        buf += decoder.decode(chunk.value, { stream: true });
+        var sep;
+        while ((sep = buf.indexOf('\n\n')) !== -1) {
+          var ev = rhParseSseBlock(buf.slice(0, sep));
+          buf = buf.slice(sep + 2);
+          if (switched()) { stopReading(); return { kind: 'switched' }; }
+          if (!ev) continue;
+          if (ev.type === 'meta') { if (ev.chatId) st.chatId = ev.chatId; }
+          else if (ev.type === 'delta') onDelta(ev.text || '');
+          else if (ev.type === 'done') { stopReading(); return { kind: 'done', data: ev }; }
+          else if (ev.type === 'error') { stopReading(); return { kind: 'error' }; }
+        }
+        if (switched()) { stopReading(); return { kind: 'switched' }; }
+      }
+      return { kind: switched() ? 'switched' : 'dropped', timedOut: false };
+    } catch (e) {
+      if (switched()) return { kind: 'switched' };
+      return { kind: 'dropped', timedOut: !idleFired && !!(e && e.name === 'AbortError') };
+    } finally {
+      if (idleTimer) clearTimeout(idleTimer);
+    }
+  }
+
   async function rhSendMessage(text, processSlug) {
     var input = document.getElementById('chat-input');
     var sendBtn = document.getElementById('hero-speak-btn');
@@ -3098,20 +3234,33 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, RH_CHAT_CLIENT_TIMEOUT_MS);
     // failure: null = got a reply; 'server' = the server answered with an
     // error (it really failed); 'timeout' / 'unclear' = we never got a usable
-    // answer, so the reply may still have been generated and saved.
+    // answer, so the reply may still have been generated and saved;
+    // 'switched' = streamed reply, she opened another chat meanwhile.
     var failure = null;
     var data = null;
+    var st = null; // streaming state, only when the server streamed
     try {
       var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text };
       try { payload.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {}
       if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId;
       if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId;
       if (processSlug) payload.processSlug = processSlug;
+      if (rhCanStream()) payload.stream = true;
       var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal });
-      clearTimeout(rhAbortTimeout);
-      try { data = await res.json(); } catch (jsonErr) { data = null; }
-      if (!data) failure = 'unclear'; // not JSON, e.g. a hosting error page
-      else if (!res.ok || data.error) failure = 'server';
+      if (rhIsChatStream(res)) {
+        // The 180s last-resort cap keeps running while the reply streams.
+        st = { thinkingEl: thinkingEl, stillWorkingTimer: rhStillWorkingTimer, bubble: null, text: '', chatId: null };
+        var out = await rhReadChatStream(res, st);
+        if (out.kind === 'done') data = out.data;
+        else if (out.kind === 'error') failure = 'server';
+        else if (out.kind === 'switched') failure = 'switched';
+        else failure = out.timedOut ? 'timeout' : 'unclear';
+      } else {
+        clearTimeout(rhAbortTimeout);
+        try { data = await res.json(); } catch (jsonErr) { data = null; }
+        if (!data) failure = 'unclear'; // not JSON, e.g. a hosting error page
+        else if (!res.ok || data.error) failure = 'server';
+      }
     } catch (e) {
       failure = (e && e.name === 'AbortError') ? 'timeout' : 'unclear';
     }
@@ -3119,16 +3268,29 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     clearTimeout(rhStillWorkingTimer);
     try {
       // If the member started a new chat or opened another one while waiting,
-      // the thinking bubble is gone: don't drop this reply (or an error) into
-      // a different conversation. The reply is saved in its own chat.
-      if (thinkingEl && thinkingEl.isConnected === false) return;
+      // the thinking bubble (or the streaming reply) is gone: don't drop this
+      // reply (or an error) into a different conversation. The reply is saved
+      // in its own chat.
+      if (failure === 'switched') return;
+      var liveEl = (st && st.bubble) ? st.bubble : thinkingEl;
+      if (liveEl && liveEl.isConnected === false) return;
       if (!failure) {
+        if (st && st.bubble) { rhShowChatReply(data, st.bubble); return; }
         removeRhThinking(thinkingEl);
         rhShowChatReply(data);
         return;
       }
+      // A streamed reply that broke off part-way: never leave half a reply on
+      // screen. While we check whether it was saved anyway, show the calm
+      // "still with you" bubble again.
+      if (st && st.bubble) {
+        rhRemovePartialReply(st.bubble);
+        st.bubble = null;
+        if (failure !== 'server') { thinkingEl = showRhThinking(); rhMarkThinkingStillWorking(thinkingEl); }
+      }
+      var chatIdForCheck = (st && st.chatId) || chatIdAtSend;
       if (failure !== 'server') {
-        var saved = await rhFindSavedReply(text, chatIdAtSend, sentAt, 3);
+        var saved = await rhFindSavedReply(text, chatIdForCheck, sentAt, st ? RH_STREAM_DROP_RECHECKS : 3);
         if (thinkingEl && thinkingEl.isConnected === false) return;
         if (saved) {
           removeRhThinking(thinkingEl);
@@ -3138,15 +3300,20 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
       }
       removeRhThinking(thinkingEl);
       window.__rhLastFailedText = text;
-      window.__rhLastFailedSend = { text: text, chatId: chatIdAtSend, sentAt: sentAt };
+      window.__rhLastFailedSend = { text: text, chatId: chatIdForCheck, sentAt: sentAt };
       if (failure === 'timeout') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); }
     } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; }
   }
 
   // Renders a reply exactly the way a normal successful send always has.
-  function rhShowChatReply(data) {
+  // streamedEl (streaming only): the bubble the words were already drawn
+  // into -- it gets the final saved text instead of adding a new bubble.
+  function rhShowChatReply(data, streamedEl) {
     if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); }
-    var follow = rhFollowReply; var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?", { follow: follow }); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); rhKeepComposerInView(follow); rhUpdateScrollDownBtn(); if (!follow) { var sdb = document.getElementById('rh-scroll-down-btn'); if (sdb && sdb.classList.contains('rh-show')) sdb.classList.add('rh-glow'); }
+    var follow = rhFollowReply; var assistantEl;
+    if (streamedEl) { assistantEl = streamedEl; rhSetTextWithLinks(assistantEl, data.reply || "I didn't quite catch that — try again?"); if (assistantEl.classList) assistantEl.classList.remove('rh-msg-streaming'); if (follow) rhScrollToBottom(false); }
+    else { assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?", { follow: follow }); }
+    if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); rhKeepComposerInView(follow); rhUpdateScrollDownBtn(); if (!follow) { var sdb = document.getElementById('rh-scroll-down-btn'); if (sdb && sdb.classList.contains('rh-show')) sdb.classList.add('rh-glow'); }
   }
 
   // At 30s: stop rotating the thinking lines and show one calm "still
@@ -4876,7 +5043,126 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
   }
   function removeTypingBubble() {
     var el = document.getElementById('typing-bubble');
+    if (el && el.__gapThinkingTimer) clearInterval(el.__gapThinkingTimer);
     if (el) el.remove();
+  }
+
+  // ---------------------------------------------------------------------------
+  // GAP bot streaming (Oct 8 2026, approved by Rachael; same design as the
+  // main chat's streaming above, server switch GAP_STREAMING, off by
+  // default). The page asks for a streamed reply; if the server answers with
+  // the usual JSON, everything below runs exactly as before. If it streams:
+  //   * the '···' bubble shows the rotating thinking lines until the first
+  //     words arrive, then becomes the reply bubble and words are drawn as
+  //     they arrive (at most once per screen frame);
+  //   * the hidden markers ([[FINAL_IDENTITY]], [[SAVE_SHIFT]], ...) are held
+  //     back by the server, so they never appear while words arrive;
+  //   * the final "done" reply goes through the SAME code as a JSON reply
+  //     (marker parsing, Shift card data, history, Step 3), and replaces
+  //     the streamed text with the exact cleaned reply;
+  //   * if the reply breaks part-way, the half reply is removed, nothing is
+  //     added to the conversation, and a Try Again button resends it.
+  // ---------------------------------------------------------------------------
+  var GAP_STREAM_IDLE_MS = 30000; // no bytes at all for 30s (server pings every 10s) = connection dead
+  function gapStartThinkingLines() {
+    var el = document.getElementById('typing-bubble');
+    if (!el || el.__gapThinkingTimer || typeof RH_THINKING_MESSAGES === 'undefined' || !RH_THINKING_MESSAGES.length) return;
+    var i = Math.floor(Math.random() * RH_THINKING_MESSAGES.length);
+    el.classList.add('gap-thinking');
+    el.textContent = RH_THINKING_MESSAGES[i];
+    el.__gapThinkingTimer = setInterval(function () {
+      if (!el.isConnected) { clearInterval(el.__gapThinkingTimer); return; }
+      var n; do { n = Math.floor(Math.random() * RH_THINKING_MESSAGES.length); } while (n === i && RH_THINKING_MESSAGES.length > 1);
+      i = n; el.textContent = RH_THINKING_MESSAGES[i];
+    }, 5500);
+  }
+  function gapLogNearBottom(log) {
+    return !log || (log.scrollHeight - log.scrollTop - log.clientHeight) < 80;
+  }
+  // Reads the streamed GAP reply. Resolves to the same shape as the JSON
+  // path ({ ok, status, body: { reply } }) plus streamedBubble, or to
+  // { streamBroke: true } if no complete reply arrived.
+  async function gapReadStream(res) {
+    var reader = res.body.getReader();
+    var decoder = new TextDecoder();
+    var buf = '', text = '', bubble = null, framePending = false, idleTimer = null;
+    function stopReading() { try { reader.cancel(); } catch (e) {} }
+    function armIdle() { if (idleTimer) clearTimeout(idleTimer); idleTimer = setTimeout(stopReading, GAP_STREAM_IDLE_MS); }
+    function draw() {
+      framePending = false;
+      if (!bubble || !bubble.isConnected) return;
+      var log = document.getElementById('chat-log');
+      var follow = gapLogNearBottom(log);
+      bubble.textContent = rhCleanAiText(text);
+      if (follow && log) log.scrollTop = log.scrollHeight;
+    }
+    function onDelta(piece) {
+      text += piece;
+      if (!bubble) {
+        if (!text.trim()) return;
+        // First visible words: the thinking bubble becomes the reply bubble.
+        var el = document.getElementById('typing-bubble');
+        if (!el) return; // conversation was reset meanwhile; the final reply is handled as before
+        if (el.__gapThinkingTimer) { clearInterval(el.__gapThinkingTimer); el.__gapThinkingTimer = null; }
+        el.removeAttribute('id');
+        el.classList.remove('gap-thinking');
+        el.classList.add('gap-streaming');
+        bubble = el;
+      }
+      if (!framePending) { framePending = true; rhNextFrame(draw); }
+    }
+    try {
+      armIdle();
+      while (true) {
+        var chunk = await reader.read();
+        if (chunk.done) break;
+        armIdle();
+        buf += decoder.decode(chunk.value, { stream: true });
+        var sep;
+        while ((sep = buf.indexOf('\n\n')) !== -1) {
+          var ev = rhParseSseBlock(buf.slice(0, sep));
+          buf = buf.slice(sep + 2);
+          if (!ev) continue;
+          if (ev.type === 'meta') gapStartThinkingLines();
+          else if (ev.type === 'delta') onDelta(ev.text || '');
+          else if (ev.type === 'done') { stopReading(); return { ok: true, status: 200, body: { reply: ev.reply }, streamedBubble: bubble }; }
+          else if (ev.type === 'error') { stopReading(); return { streamBroke: true, bubble: bubble }; }
+        }
+      }
+      return { streamBroke: true, bubble: bubble };
+    } catch (e) {
+      return { streamBroke: true, bubble: bubble };
+    } finally {
+      if (idleTimer) clearTimeout(idleTimer);
+    }
+  }
+  // A streamed reply broke part-way: remove the half reply, add nothing to
+  // the conversation, and offer Try Again (resends the same message once).
+  function gapShowStreamBreak(result, userText, forceComplete) {
+    var input = document.getElementById('gap-chat-input');
+    if (result && result.bubble && result.bubble.parentNode) result.bubble.parentNode.removeChild(result.bubble);
+    removeTypingBubble();
+    gapChatRequestPending = false;
+    addBotBubble("Sorry, something glitched on my end there -- can you try sending that again?");
+    var log = document.getElementById('chat-log');
+    var errBubble = log ? log.lastElementChild : null;
+    if (errBubble) {
+      errBubble.classList.add('gap-stream-error');
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'gap-try-again';
+      btn.textContent = 'Try Again';
+      btn.addEventListener('click', function () {
+        if (btn.disabled || gapChatRequestPending) return;
+        btn.disabled = true;
+        if (errBubble.parentNode) errBubble.parentNode.removeChild(errBubble);
+        sendToGapChat(userText, true, forceComplete); // her message is already on screen
+      });
+      errBubble.appendChild(document.createElement('br'));
+      errBubble.appendChild(btn);
+    }
+    input.disabled = false;
+    if (forceComplete) { document.getElementById('ready-btn-wrap').style.display = 'block'; }
   }
 
   // Sends one turn to the real GAP Method Step 2 chatbot. isKickoff=true means
@@ -4890,12 +5176,18 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     input.disabled = true;
     gapChatRequestPending = true;
     addTypingBubble();
+    var gapPayload = { email: RH_EMAIL, message: userText, history: gapChatHistory, gapContext: buildGapContext() };
+    if (typeof rhCanStream === 'function' && rhCanStream()) gapPayload.stream = true; // server decides (GAP_STREAMING)
     fetch('/api/gap-chat-member', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: RH_EMAIL, message: userText, history: gapChatHistory, gapContext: buildGapContext() })
-    }).then(function(res) { return res.json().then(function(body) { return { ok: res.ok, status: res.status, body: body }; }); })
+      body: JSON.stringify(gapPayload)
+    }).then(function(res) {
+        if (typeof rhIsChatStream === 'function' && rhIsChatStream(res)) return gapReadStream(res);
+        return res.json().then(function(body) { return { ok: res.ok, status: res.status, body: body }; });
+      })
       .then(function(result) {
+        if (result && result.streamBroke) { gapShowStreamBreak(result, userText, forceComplete); return; }
         removeTypingBubble();
         gapChatRequestPending = false;
         if (!result.ok) {
@@ -4938,7 +5230,15 @@ var distortionsMatch = reply.match(/\[\[DISTORTIONS:[\s\S]*?\]\]/i);
 if (distortionsMatch) { reply = reply.replace(distortionsMatch[0], '').trim(); }
 var topicMarkerMatch = reply.match(/\[\[TOPIC:[\s\S]*?\]\]/i);
 if (topicMarkerMatch) { reply = reply.replace(topicMarkerMatch[0], '').trim(); }
-addBotBubble(reply);
+if (result.streamedBubble && result.streamedBubble.isConnected) {
+  // Streamed: the words are already on screen -- swap in the exact final reply.
+  result.streamedBubble.classList.remove('gap-streaming');
+  result.streamedBubble.textContent = rhCleanAiText(reply);
+  var gapLogEl = document.getElementById('chat-log'); if (gapLogEl) gapLogEl.scrollTop = gapLogEl.scrollHeight;
+} else {
+  if (result.streamedBubble && result.streamedBubble.parentNode) result.streamedBubble.parentNode.removeChild(result.streamedBubble);
+  addBotBubble(reply);
+}
         gapChatHistory.push({ role: 'user', content: userText });
         gapChatHistory.push({ role: 'assistant', content: reply });
         day2TurnCount++;
@@ -5255,6 +5555,9 @@ if (forceComplete) { goDay(3); }
 
   /* Step 2 chat + Step 3 reveal */
   #hero-gap-embed.gm-modal .bubble.bot { background: rgba(1,103,108,0.22) !important; border: 1px solid rgba(43,179,173,0.35) !important; color: #fff !important; }
+  #hero-gap-embed .bubble.bot.gap-thinking { font-style: italic; opacity: .85; }
+  #hero-gap-embed .bubble.bot .gap-try-again { margin-top: 10px; padding: 8px 18px; border-radius: 999px; border: 1px solid rgba(207,166,70,0.7); background: rgba(207,166,70,0.14); color: #F1D58A; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+  #hero-gap-embed .bubble.bot .gap-try-again:disabled { opacity: .5; cursor: default; }
   #hero-gap-embed.gm-modal .bubble.user { background: linear-gradient(180deg, #F1D58A, #CFA646) !important; color: #0A0A0A !important; }
   #hero-gap-embed.gm-modal .gap-chat-input-row { border-top-color: rgba(207,166,70,0.2) !important; }
   #hero-gap-embed.gm-modal .gap-chat-input-row textarea { background: rgba(0,0,0,0.5) !important; border: 1px solid rgba(207,166,70,0.3) !important; border-radius: 16px !important; color: #fff !important; }
