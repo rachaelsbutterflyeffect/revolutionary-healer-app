@@ -611,6 +611,17 @@
   .rh-send-btn{flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--gold);border:none;color:var(--black);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;}
   .rh-send-btn:hover{background:var(--gold-soft);}
   .rh-send-btn:disabled{opacity:.5;cursor:default;}
+  /* Scroll-to-latest arrow (Oct 7 2026): sits inside the chat box, just above
+     the message row, only while the member is scrolled up in the thread. The
+     zero-height wrapper sits on the thread/message-row boundary, so the arrow
+     can never cover the text box or the send button. */
+  .rh-scroll-down-wrap{position:relative;height:0;z-index:3;}
+  .rh-scroll-down-btn{position:absolute;left:50%;bottom:12px;width:36px;height:36px;border-radius:50%;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;background:rgba(20,18,15,0.92);color:var(--gold-soft);border:1px solid var(--gold);box-shadow:0 4px 14px rgba(0,0,0,0.45);opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,6px);transition:opacity .2s ease,transform .2s ease,visibility 0s linear .2s,background .2s ease,color .2s ease;}
+  .rh-scroll-down-btn.rh-show{opacity:1;visibility:visible;pointer-events:auto;transform:translate(-50%,0);transition:opacity .2s ease,transform .2s ease,visibility 0s,background .2s ease,color .2s ease;}
+  .rh-scroll-down-btn:hover{background:var(--gold);color:var(--black);}
+  .rh-scroll-down-btn.rh-glow{animation:rhScrollGlow 1.8s ease-in-out infinite;}
+  @keyframes rhScrollGlow{0%,100%{box-shadow:0 4px 14px rgba(0,0,0,0.45),0 0 0 0 rgba(207,166,70,0.55);}50%{box-shadow:0 4px 14px rgba(0,0,0,0.45),0 0 14px 4px rgba(207,166,70,0.55);}}
+  @media (prefers-reduced-motion: reduce){.rh-scroll-down-btn.rh-glow{animation:none;box-shadow:0 0 10px 3px rgba(207,166,70,0.55);}}
   .rh-drawer-overlay{position:fixed;inset:0;background:rgba(18,17,16,.6);z-index:98;opacity:0;pointer-events:none;transition:opacity .2s ease;}
   .rh-drawer-overlay.rh-open{opacity:1;pointer-events:auto;}
   .rh-drawer{position:fixed;top:0;left:0;bottom:0;width:300px;max-width:85vw;background:var(--panel);border-right:1px solid var(--taupe-line);z-index:99;transform:translateX(-100%);transition:transform .22s ease;display:flex;flex-direction:column;}
@@ -1023,6 +1034,11 @@
           <h3>Hiiii &#128064; What are we looking at today?</h3>
           <p>Continue a shift, tell me what's happening, or bring whatever feels off.</p>
         </div>
+      </div>
+      <div class="rh-scroll-down-wrap">
+        <button type="button" class="rh-scroll-down-btn" id="rh-scroll-down-btn" aria-label="Scroll to latest message" title="Latest message">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+        </button>
       </div>
       <div class="rh-chat-inputrow">
         <textarea id="chat-input" class="rh-chat-textarea" rows="1" placeholder="What's showing up today?"></textarea>
@@ -3045,11 +3061,12 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     window.__rhSending = true;
     if (sendBtn) sendBtn.disabled = true;
     hideRhWelcome();
+    rhStartFollowingReply();
     addRhMessage('user', text);
     input.value = '';
     autoGrowChatInput();
     window.__rhLastFailedText = null;
-        var thinkingEl = showRhThinking(); var rhAbortController = new AbortController(); var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, 30000); try { var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text }; try { payload.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {} if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId; if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId; if (processSlug) payload.processSlug = processSlug; var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal }); clearTimeout(rhAbortTimeout); var data = await res.json(); removeRhThinking(thinkingEl); if (!res.ok || data.error) { window.__rhLastFailedText = text; addRhError(); } else { if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); } var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?"); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); rhKeepComposerInView(); } } catch (e) { clearTimeout(rhAbortTimeout); removeRhThinking(thinkingEl); window.__rhLastFailedText = text; if (e && e.name === 'AbortError') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); } } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; } }
+        var thinkingEl = showRhThinking(); var rhAbortController = new AbortController(); var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, 30000); try { var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text }; try { payload.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {} if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId; if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId; if (processSlug) payload.processSlug = processSlug; var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal }); clearTimeout(rhAbortTimeout); var data = await res.json(); removeRhThinking(thinkingEl); if (!res.ok || data.error) { window.__rhLastFailedText = text; addRhError(); } else { if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); } var follow = rhFollowReply; var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?", { follow: follow }); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); rhKeepComposerInView(follow); rhUpdateScrollDownBtn(); if (!follow) { var sdb = document.getElementById('rh-scroll-down-btn'); if (sdb && sdb.classList.contains('rh-show')) sdb.classList.add('rh-glow'); } } } catch (e) { clearTimeout(rhAbortTimeout); removeRhThinking(thinkingEl); window.__rhLastFailedText = text; if (e && e.name === 'AbortError') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); } } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; } }
 
   function rhRetryLastMessage() {
     var t = window.__rhLastFailedText;
@@ -3143,10 +3160,56 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
   // card grows when a long reply arrives (the thread can stretch to 60vh), but
   // the page itself never moved, so on phones the end of a long reply -- and
   // the message box -- ended up below the bottom of the screen. The answer was
-  // complete; it just looked cut off mid-sentence at the screen edge. After a
-  // reply lands, gently scroll the page just enough to bring the message box
-  // (and so the end of the reply right above it) back on screen.
-  function rhKeepComposerInView() {
+  // complete; it just looked cut off mid-sentence at the screen edge.
+  //
+  // James's rule: only follow a reply down if the member was already at (or
+  // within ~80px of) the bottom of the chat. If she scrolled up while waiting
+  // or reading, hold her position -- never yank her back down. "At the
+  // bottom" is tracked from her own scrolling (wheel / touch / keys /
+  // scrollbar), not just checked when the reply lands, so the app's own
+  // smooth scrolls never count as her moving away.
+  var RH_FOLLOW_SLACK_PX = 80;
+  var rhFollowReply = true;
+  var rhUserScrollUntil = 0;
+  function rhComposerNearView() {
+    var input = document.getElementById('chat-input');
+    if (!input || !input.getBoundingClientRect) return true;
+    var r = input.getBoundingClientRect();
+    if (!r.height) return true;
+    var vh = window.innerHeight || document.documentElement.clientHeight;
+    return r.bottom <= vh + RH_FOLLOW_SLACK_PX && r.top >= -RH_FOLLOW_SLACK_PX;
+  }
+  function rhAtChatBottom() {
+    var t = rhThread();
+    var threadAtBottom = !t || (t.scrollHeight - t.scrollTop - t.clientHeight) <= RH_FOLLOW_SLACK_PX;
+    return threadAtBottom && rhComposerNearView();
+  }
+  (function () {
+    function markUserScroll(ms) { return function () { rhUserScrollUntil = Date.now() + ms; }; }
+    var opts = { passive: true, capture: true };
+    window.addEventListener('wheel', markUserScroll(1200), opts);
+    window.addEventListener('touchstart', markUserScroll(1500), opts);
+    window.addEventListener('touchmove', markUserScroll(1500), opts);
+    // Momentum scrolling keeps going after the finger lifts.
+    window.addEventListener('touchend', markUserScroll(1500), opts);
+    window.addEventListener('mousedown', markUserScroll(1200), opts);
+    window.addEventListener('keydown', function (e) {
+      if (/^(PageUp|PageDown|ArrowUp|ArrowDown|Home|End| |Spacebar)$/.test(e.key)) rhUserScrollUntil = Date.now() + 1200;
+    }, opts);
+    // Capture phase catches both the page and the chat thread scrolling.
+    document.addEventListener('scroll', function () {
+      if (Date.now() < rhUserScrollUntil) rhFollowReply = rhAtChatBottom();
+    }, opts);
+  })();
+  // Called when the member sends: she's following along if the message box
+  // is (nearly) on screen. Sending always scrolls the thread itself to the
+  // bottom, so only the page position matters here.
+  function rhStartFollowingReply() { rhFollowReply = rhComposerNearView(); }
+  // After a reply lands: if she's still following, gently scroll the page
+  // just enough to bring the message box (and so the end of the reply right
+  // above it) on screen. If she scrolled away, do nothing.
+  function rhKeepComposerInView(follow) {
+    if (!follow) return;
     var input = document.getElementById('chat-input');
     if (!input || !input.getBoundingClientRect) return;
     var raf = window.requestAnimationFrame || function (fn) { return setTimeout(fn, 16); };
@@ -3159,10 +3222,42 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     });
   }
 
-  function addRhMessage(role, text) {
+  // Scroll-to-latest arrow: shown while the member is more than ~140px up
+  // from the bottom of the thread (same threshold as rhIsNearBottom), hidden
+  // at the bottom. Tapping it scrolls to the latest message and, on phones,
+  // brings the message box back on screen. It glows softly if a new reply
+  // lands while she's scrolled up.
+  function rhUpdateScrollDownBtn() {
+    var btn = document.getElementById('rh-scroll-down-btn');
+    var t = rhThread();
+    if (!btn || !t) return;
+    var away = (t.scrollHeight - t.scrollTop - t.clientHeight) > 140;
+    btn.classList.toggle('rh-show', away);
+    if (!away) btn.classList.remove('rh-glow');
+  }
+  (function () {
+    function init() {
+      var btn = document.getElementById('rh-scroll-down-btn');
+      var t = rhThread();
+      if (!btn || !t) return;
+      t.addEventListener('scroll', rhUpdateScrollDownBtn, { passive: true });
+      window.addEventListener('resize', rhUpdateScrollDownBtn, { passive: true });
+      if (window.MutationObserver) new MutationObserver(rhUpdateScrollDownBtn).observe(t, { childList: true, subtree: true, characterData: true });
+      btn.addEventListener('click', function () {
+        btn.classList.remove('rh-glow');
+        rhFollowReply = true;
+        rhScrollToBottom(true);
+        rhKeepComposerInView(true);
+      });
+      rhUpdateScrollDownBtn();
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  })();
+
+  function addRhMessage(role, text, opts) {
     var t = rhThread();
     if (!t) return null;
-    var wasNear = rhIsNearBottom();
+    var wasNear = (opts && typeof opts.follow === 'boolean') ? opts.follow : rhIsNearBottom();
     var el = document.createElement('div');
     el.className = 'rh-msg ' + (role === 'user' ? 'rh-msg-user' : 'rh-msg-assistant');
     if (role === 'user') el.textContent = text; else rhSetTextWithLinks(el, text);
