@@ -5671,7 +5671,9 @@ if (forceComplete) { goDay(3); }
     var m = t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?),\\s+into\\s+(.{2,60}?)' + END, 'i')) || t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?)\\s+into\\s+(.{2,60}?)' + END, 'i')) || t.match(new RegExp('^(?:moving\\s+)?from\\s+(.{2,60}?)\\s+to\\s+(.{2,60}?)' + END, 'i'));
     if (!m) return null;
     var clean = function (x) { return x.replace(/[\s,;:]+$/, '').trim(); };
-    return { from: clean(m[1]), to: clean(m[2]) };
+    var n = { from: clean(m[1]), to: clean(m[2]) };
+    if (n.from.length + n.to.length > 60) return null; // only short names make a clean headline; long ones stay in the paragraph
+    return n;
   }
   function gapRenderInto(el, shift) {
     if (!el) return;
@@ -6351,6 +6353,7 @@ if (forceComplete) { goDay(3); }
   .gap-into .gap-into-to { color: #F1D58A; font-weight: 600; }
   #view-day3.gap-v2 #d3-shift-into { font-size: clamp(18px, 2.6vh, 24px); margin: 0 0 clamp(4px, .8vh, 8px); }
   #shift-modal .gap-shift-close { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-style: italic; color: #E2BE68; font-size: 16px; }
+  #shift-modal p.gap-into { font-size: 20px !important; line-height: 1.3 !important; color: #fff !important; margin: 2px 0 8px !important; }
   .gap-v2-focus-gap { margin-top: 14px; } .gap-v2-focus-gap .gap-into { font-size: 19px; margin: 2px 0 0; }
   @media (max-width: 600px) { #view-day3.gap-v2 #d3-shift-into { font-size: 18px; } }
   /* tighter summary card so Step 3 doesn't run long; borders always end inside the pop-up */
