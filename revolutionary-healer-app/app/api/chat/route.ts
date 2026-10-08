@@ -7,7 +7,7 @@ import { waitUntil } from "@vercel/functions";
 import Anthropic from "@anthropic-ai/sdk";
 import { getFocusAreaBySlug } from "@/lib/focusAreas";
 import { getProcessBySlug } from "@/lib/processes";
-import { buildSystemPrompt } from "@/lib/prompts";
+import { buildSystemPrompt, detectFaqTopics } from "@/lib/prompts";
 import { retrieveContextForFocusArea } from "@/lib/retrieval";
 import { getEntitlementForEmail } from "@/lib/entitlements";
 import { getDivineIdentityBySlug } from "@/lib/divineIdentities";
@@ -193,6 +193,10 @@ export async function POST(req: NextRequest) {
     chatSummary,
     memberMemories,
     existingShifts,
+    // Approved FAQ answers are only added when this message looks like one of
+    // those questions (see lib/prompts.js detectFaqTopics) -- otherwise the
+    // prompt is identical to before this change.
+    faqTopics: isGapMethodProcess ? [] : detectFaqTopics(message),
   });
   if (embodimentShift) {
     const f = embodimentShift.fields;
