@@ -3049,7 +3049,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     input.value = '';
     autoGrowChatInput();
     window.__rhLastFailedText = null;
-        var thinkingEl = showRhThinking(); var rhAbortController = new AbortController(); var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, 30000); try { var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text }; try { payload.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {} if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId; if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId; if (processSlug) payload.processSlug = processSlug; var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal }); clearTimeout(rhAbortTimeout); var data = await res.json(); removeRhThinking(thinkingEl); if (!res.ok || data.error) { window.__rhLastFailedText = text; addRhError(); } else { if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); } var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?"); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); } } catch (e) { clearTimeout(rhAbortTimeout); removeRhThinking(thinkingEl); window.__rhLastFailedText = text; if (e && e.name === 'AbortError') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); } } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; } }
+        var thinkingEl = showRhThinking(); var rhAbortController = new AbortController(); var rhAbortTimeout = setTimeout(function() { rhAbortController.abort(); }, 30000); try { var payload = { email: RH_EMAIL, focusAreaSlug: 'general', message: text }; try { payload.timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) {} if (window.__rhActiveChatId) payload.chatId = window.__rhActiveChatId; if (window.__rhEmbodimentShiftId) payload.shiftId = window.__rhEmbodimentShiftId; if (processSlug) payload.processSlug = processSlug; var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal }); clearTimeout(rhAbortTimeout); var data = await res.json(); removeRhThinking(thinkingEl); if (!res.ok || data.error) { window.__rhLastFailedText = text; addRhError(); } else { if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); } var assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?"); if (data.openActivationSlug) addRhActivationButton(assistantEl, data.openActivationSlug); rhKeepComposerInView(); } } catch (e) { clearTimeout(rhAbortTimeout); removeRhThinking(thinkingEl); window.__rhLastFailedText = text; if (e && e.name === 'AbortError') { addRhError("This is taking longer than expected -- please try again."); } else { addRhError(); } } finally { window.__rhSending = false; if (sendBtn) sendBtn.disabled = false; } }
 
   function rhRetryLastMessage() {
     var t = window.__rhLastFailedText;
@@ -3137,6 +3137,26 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
       last = m.index + m[0].length;
     }
     if (last < s.length) el.appendChild(document.createTextNode(s.slice(last)));
+  }
+
+  // Bug fix (Oct 7 2026, Ray's "privacy answer cuts off" report): the chat
+  // card grows when a long reply arrives (the thread can stretch to 60vh), but
+  // the page itself never moved, so on phones the end of a long reply -- and
+  // the message box -- ended up below the bottom of the screen. The answer was
+  // complete; it just looked cut off mid-sentence at the screen edge. After a
+  // reply lands, gently scroll the page just enough to bring the message box
+  // (and so the end of the reply right above it) back on screen.
+  function rhKeepComposerInView() {
+    var input = document.getElementById('chat-input');
+    if (!input || !input.getBoundingClientRect) return;
+    var raf = window.requestAnimationFrame || function (fn) { return setTimeout(fn, 16); };
+    raf(function () {
+      var r = input.getBoundingClientRect();
+      var vh = window.innerHeight || document.documentElement.clientHeight;
+      if (r.height && r.bottom > vh - 8) {
+        window.scrollBy({ top: Math.ceil(r.bottom - vh + 16), behavior: 'smooth' });
+      }
+    });
   }
 
   function addRhMessage(role, text) {
