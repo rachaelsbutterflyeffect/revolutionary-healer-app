@@ -2964,6 +2964,7 @@ function resetGapMethodState() {
   gapChatReadyQueued = false;
   window.__gapCardData = null;
   window.__gapShiftAutoCreated = false;
+  window.__gapShiftRunId = null; // one GAP run = one Shift: the next run gets a new run id
   if (typeof gapCancelReading === 'function') gapCancelReading(); // GAP reading restructure
   window.__gapReading = null;
   if (typeof gapCurrentStep !== 'undefined') gapCurrentStep = 1;
@@ -4797,6 +4798,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     if (n < gapCurrentStep) {
       gapClearChecksFrom(n);
       if (n <= 2) { window.__gapCardData = null; window.__gapShiftAutoCreated = false; }
+      if (n <= 2) window.__gapShiftRunId = null; // one GAP run = one Shift: going back starts a new run
       if (n === 1) {
         // Back on Step 1: land on its last question so an answer can be changed (Step 1 is no longer complete).
         day1Done = false; gapChatHistory = []; gapChatRequestPending = false; gapChatReadyQueued = false; day2TurnCount = 0;
@@ -5852,9 +5854,16 @@ if (forceComplete) { goDay(3); }
     var slug = resolved.source === 'ai' ? resolved.slug : getGapActivationSlugForKey(key);
     if (typeof handleActivationCardClick === 'function') handleActivationCardClick(slug);
   }
+  // One GAP run = one Shift (duplicate-save fix, Oct 8 2026). Each run gets a random run id, sent with the save.
+  // A save that failed or lost its response is retried with the SAME id, so the server hands back the Shift it
+  // already made instead of a second card; once this run's Shift is saved it is never posted again.
+  function gapShiftNewRunId() { return 'gr_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 12); }
   function autoCreateMemberShift() {
     if (window.__gapShiftAutoCreated) return;
+    if (window.__gapShiftRunId && window.__gapShiftSavedRunId === window.__gapShiftRunId && window.__gapShiftSavedId) { window.__gapShiftAutoCreated = true; return; }
     window.__gapShiftAutoCreated = true;
+    if (!window.__gapShiftRunId) window.__gapShiftRunId = gapShiftNewRunId();
+    var runId = window.__gapShiftRunId;
     try {
       var key = (typeof winnerKey !== 'undefined' && winnerKey) ? winnerKey : 'overworker';
       var a = (typeof ARCHETYPES !== 'undefined') ? ARCHETYPES[key] : null;
@@ -5882,6 +5891,7 @@ if (forceComplete) { goDay(3); }
             return (a && a.activation && a.activation.title) ? a.activation.title : '';
           })(),
           todaysFocus: (window.__gapReading && window.__gapReading.todaysFocus) ? window.__gapReading.todaysFocus : undefined,
+          clientRunId: runId,
         })
       }).then(function(res) {
         return res.json().catch(function() { return null; }).then(function(body) {
@@ -5897,7 +5907,7 @@ if (forceComplete) { goDay(3); }
           // pinned for the browser session to whichever Shift was newest at login (Sept 23 "stable Today's
           // Focus"), so the new Shift never showed until the next visit. Pin it to the Shift just saved.
           var newShiftId = result.body && result.body.shiftId ? String(result.body.shiftId) : null;
-          if (newShiftId) { window.__gapShiftSavedId = newShiftId; try { sessionStorage.setItem('rhFocusShiftId', newShiftId); } catch (e) {} }
+          if (newShiftId) { window.__gapShiftSavedId = newShiftId; window.__gapShiftSavedRunId = runId; try { sessionStorage.setItem('rhFocusShiftId', newShiftId); } catch (e) {} }
           if (typeof loadMemberRevolutionData === 'function') return Promise.resolve(loadMemberRevolutionData()).then(function() { return true; });
           return true;
         }
