@@ -1123,16 +1123,8 @@
 
     <div id="view-day2" class="view">
       <div class="card">
-        <!-- Step 2 header (Oct 8 2026, Rachael): the title stays; the intro below folds away once when the member starts
-             her first message, and the small gold arrow shows / hides it again. Intro wording unchanged. -->
-        <div class="gap-s2-head"><div class="eyebrow">Step 2: Explore the Gap</div><button type="button" class="gap-s2-toggle" id="d2-intro-toggle" aria-controls="d2-intro" aria-expanded="true" aria-label="Hide intro" hidden><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" focusable="false"><path d="M3.5 6l4.5 4.5L12.5 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
-        <div class="gap-s2-intro" id="d2-intro">
-        <h1 class="serif" style="font-size:22px;">Now let's make this specific.</h1>
-        <p class="copy" id="d2-intro-1" style="margin-bottom: 10px;"></p>
-        <p class="copy" style="margin-bottom: 10px;">Go deeper into how it's showing up in thoughts, emotions, behavior, choices, and reality.</p>
-        <p class="copy" style="margin-bottom: 20px;">This is where the pattern stops being just a label and starts becoming something you can actually recognize.</p>
-        <p class="note" id="d2-note"></p>
-        </div>
+        <!-- Step 2 (Oct 8 2026): plain chat. No intro, title or fold. The first bubble is a display-only
+             greeting; it is never added to gapChatHistory, so the AI, the reading and the Shift never see it. -->
         <div class="chat-log" id="chat-log"></div>
         <div class="gap-chat-input-row">
           <textarea id="gap-chat-input" rows="3" placeholder="Type anything to continue the conversation..." oninput="gapAutoGrowChatInput(this);" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();sendChat();}"></textarea>
@@ -2988,14 +2980,9 @@ function resetGapMethodState() {
 function startGapMethodInChat() {
         var embedWrap = document.getElementById('hero-gap-embed');
         window.__rhGapMethodActive = true;
-        if (embedWrap) {
-                embedWrap.style.display = '';
-                requestAnimationFrame(function () {
-                        requestAnimationFrame(function () {
-                                embedWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        });
-                });
-        }
+        // The dialog is position:fixed, so scrolling it into view only moves the page behind it
+        // (on iPhone that is what let the home chat bar show through while the keyboard was open).
+        if (embedWrap) embedWrap.style.display = '';
         resetGapMethodState();
         if (typeof goDay === 'function') { try { goDay(1); } catch (e) {} }
 }
@@ -5002,9 +4989,9 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     var domainLabel = DOMAINS.filter(function(d) { return d.key === selectedDomain; })[0].label;
     document.getElementById('r-transition-text').textContent =
       "Okayyyy, I think I have an idea of where we should start. \u{1F440}\n\n" +
-      "You want to look at what's happening around your " + domainLabel + ".\n\n" +
-      "I have an idea of what may be showing up here, but I want to hear what's actually happening for you before I name anything.\n\n" +
-      "Let's explore it.";
+      "Let's explore what's actually happening around your " + domainLabel + ", and how it's showing up in your thoughts, emotions, behavior, choices and reality.\n\n" +
+      "I have a feeling about what's here, but I want to hear it from you first.\n\n" +
+      "Let's chat.";
     day1Done = true;
     document.getElementById('check1').textContent = '✓';
     showEl('d1-quiz', false);
@@ -5059,15 +5046,20 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
 
   function setupDay2() {
     var domainLabel = selectedDomain ? DOMAINS.filter(function(d) { return d.key === selectedDomain; })[0].label : null;
-    document.getElementById('d2-intro-1').textContent = "Let's explore what's actually happening" + (domainLabel ? ' around your ' + domainLabel : '') + ".";
-    document.getElementById('d2-note').textContent = 'One question at a time -- answer honestly, there\'s no wrong answer.';
     gapChatHistory = [];
     day2TurnCount = 0;
     subActivationKey = null;
-    document.getElementById('chat-log').innerHTML = '';
+    var log = document.getElementById('chat-log');
+    log.innerHTML = '';
     document.getElementById('d2-continue').style.display = 'none';
     document.getElementById('ready-btn-wrap').style.display = 'none';
     document.getElementById('gap-chat-input').disabled = false;
+    // Display only. Not pushed to gapChatHistory, so it is never sent, saved or read back.
+    // setupDay2 always clears the log first, so Start over, going back and a fresh run add it exactly once.
+    if (domainLabel) {
+      addBotBubble("I'm excited to go deeper into this gap around your " + domainLabel + ".");
+      log.lastElementChild.setAttribute('data-gap-greeting', '1');
+    }
     var openingQ = STEP2_OPENING_QUESTIONS[selectedDomain] || STEP2_OPENING_QUESTIONS.business;
     addBotBubble(openingQ);
     gapChatHistory.push({ role: 'assistant', content: openingQ });
@@ -6021,6 +6013,7 @@ if (forceComplete) { goDay(3); }
   #hero-gap-embed.gm-modal .activation-card, #hero-gap-embed.gm-modal .reveal-block, #hero-gap-embed.gm-modal .reading-card { background: linear-gradient(140deg, rgba(1,103,108,0.25), rgba(0,0,0,0.3)) !important; border: 1px solid rgba(207,166,70,0.45) !important; border-radius: 18px !important; padding: 22px 22px !important; }
   #hero-gap-embed.gm-modal :focus-visible { outline: 2px solid #F1D58A; outline-offset: 3px; }
   body.gm-lock { overflow: hidden !important; touch-action: none; }
+  html.gm-noscroll, html.gm-noscroll body { overflow: hidden !important; position: fixed !important; width: 100% !important; height: 100% !important; overscroll-behavior: none; }
 
   /* Mobile: full-screen sheet + sticky footer actions */
   @media (max-width: 600px) {
@@ -6398,106 +6391,16 @@ if (forceComplete) { goDay(3); }
   @keyframes gap-an-spark { 0% { transform: translate(0, 0) scale(.3); opacity: 0; } 30% { opacity: 1; } 100% { transform: translate(var(--x), var(--y)) scale(1); opacity: 0; } }
   @keyframes gap-an-gleam { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0 0; } }
   @media (prefers-reduced-motion: reduce) { .gap-an-core, .gap-an-ring, .gap-an-title { animation: none !important; } .gap-an-orb i { animation-duration: 4s; } .gap-an-bar span { transition: none; } }
-  /* ===== Step 2 header fold (Oct 8 2026, Rachael): Step 2 only; Steps 1 and 3 untouched ===== */
-  #view-day2 .gap-s2-head { position: relative; padding-right: 40px; }
-  #view-day2.gap-s2-collapsed .gap-s2-head > .eyebrow { margin-bottom: 4px !important; }
-  #view-day2 .gap-s2-toggle { position: absolute; right: -6px; top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin: 0; padding: 0; border-radius: 999px; border: 1px solid rgba(226,190,104,0.55); background: rgba(0,0,0,0.35); color: #E2BE68; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-  #view-day2 .gap-s2-toggle[hidden] { display: none; }
-  #view-day2 .gap-s2-toggle:hover, #view-day2 .gap-s2-toggle:focus-visible { color: #F8E7B0; border-color: #F1D58A; box-shadow: 0 0 0 3px rgba(207,166,70,.18); outline: none; }
-  #view-day2 .gap-s2-toggle svg { transition: transform .22s ease; transform: rotate(180deg); }
-  #view-day2.gap-s2-collapsed .gap-s2-toggle svg { transform: rotate(0deg); }
-  #view-day2 .gap-s2-intro { overflow: hidden; transition: max-height .26s ease, opacity .2s ease, transform .26s ease; }
-  #view-day2.gap-s2-collapsed .gap-s2-intro { max-height: 0 !important; opacity: 0; transform: translateY(-8px); pointer-events: none; }
-  #view-day2.gap-s2-collapsed .gap-s2-intro[data-folded="1"] { visibility: hidden; }
-  #hero-gap-embed.gm-modal.gap-s2-tucked .access-note, #hero-gap-embed.gm-modal.gap-s2-tucked #gm-start-over { display: none !important; }
-  @media (prefers-reduced-motion: reduce) { #view-day2 .gap-s2-intro, #view-day2 .gap-s2-toggle svg { transition: none !important; } }
+  /* Step 2 is a plain chat now, so the log uses the room the intro used to take. */
+  /* Step 2 chat fills the dialog: messages on top, input pinned to the bottom (Oct 8 polish). */
+  #hero-gap-embed.gm-modal > .stage:has(#view-day2.active) { justify-content: flex-start !important; }
+  #hero-gap-embed.gm-modal > .stage:has(#view-day2.active) > .wrap { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  #hero-gap-embed.gm-modal #view-day2.active { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
+  #hero-gap-embed.gm-modal #view-day2.active > .card { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; background: transparent; border: none; padding-top: 4px; }
+  #hero-gap-embed.gm-modal #view-day2 .chat-log { flex: 1 1 auto; min-height: 0; max-height: none !important; }
+  #hero-gap-embed.gm-modal #view-day2 .gap-chat-input-row { flex: 0 0 auto; }
+  #hero-gap-embed.gm-modal #view-day2 .gap-chat-input-row textarea { min-height: 68px !important; height: 68px; line-height: 1.35; }
 </style>
-<script id="gap-s2-header-js">
-// Step 2 header fold (Oct 8 2026, Rachael). Step 2 only. The intro (headline, three lines, note) folds away ONCE, when
-// the member starts her first message (first typing or first send, whichever comes first); the "Step 2: Explore the
-// Gap" title stays. A small gold arrow then shows / hides the intro (no further automatic folding). While folded, the
-// chat grows into the freed space (the tracker's "included" line and Start over tuck away and come back with the
-// intro), and the newest AI reply is kept readable from its first line. Nothing here touches prompts, text or saving.
-(function () {
-  var view, intro, toggle, log, input, modal, autoDone = false, collapsed = false, userScrolledAt = 0, fitQueued = false;
-  function reduced() { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-  function onStep2() { return !!view && view.classList.contains('active'); }
-  function syncTuck() { if (modal) modal.classList.toggle('gap-s2-tucked', collapsed && onStep2()); }
-  function setCollapsed(c) {
-    collapsed = !!c;
-    toggle.hidden = false;
-    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
-    toggle.setAttribute('aria-label', collapsed ? 'Show intro' : 'Hide intro');
-    if (collapsed) {
-      intro.style.maxHeight = intro.scrollHeight + 'px'; void intro.offsetHeight; // animate from its real height
-      view.classList.add('gap-s2-collapsed');
-      var done = function () { if (collapsed) { intro.setAttribute('data-folded', '1'); fit(); keepLatestReadable(true); } };
-      if (reduced()) done(); else setTimeout(done, 280);
-    } else {
-      intro.removeAttribute('data-folded');
-      intro.style.maxHeight = intro.scrollHeight + 'px';
-      view.classList.remove('gap-s2-collapsed');
-      var open = function () { if (!collapsed) { intro.style.maxHeight = ''; } fit(); keepLatestReadable(true); };
-      if (reduced()) open(); else setTimeout(open, 280);
-    }
-    syncTuck(); fit();
-  }
-  function reset() { // a new Step 2 conversation: back to the original layout
-    autoDone = false; collapsed = false;
-    view.classList.remove('gap-s2-collapsed'); intro.removeAttribute('data-folded'); intro.style.maxHeight = '';
-    toggle.hidden = true; toggle.setAttribute('aria-expanded', 'true'); toggle.setAttribute('aria-label', 'Hide intro');
-    log.style.removeProperty('max-height'); syncTuck();
-  }
-  function autoCollapse() { if (autoDone || !onStep2()) return; autoDone = true; if (!collapsed) setCollapsed(true); }
-  // While folded the chat fills the space the member can actually see (keyboard included).
-  function fit() {
-    if (!log) return;
-    if (!collapsed || !onStep2() || !modal || !modal.classList.contains('gm-modal')) { log.style.removeProperty('max-height'); return; }
-    var vv = window.visualViewport;
-    var visBottom = Math.min(modal.getBoundingClientRect().bottom, vv ? vv.offsetTop + vv.height : window.innerHeight);
-    var stage = view.closest('.stage');
-    var padB = stage ? parseFloat(getComputedStyle(stage).paddingBottom) || 0 : 0;
-    var below = view.getBoundingClientRect().bottom - log.getBoundingClientRect().bottom; // input row, buttons, spacing
-    var h = Math.floor(visBottom - log.getBoundingClientRect().top - below - padB - 10);
-    log.style.setProperty('max-height', Math.max(140, h) + 'px', 'important');
-  }
-  function queueFit() { if (fitQueued) return; fitQueued = true; requestAnimationFrame(function () { fitQueued = false; fit(); keepLatestReadable(false); }); }
-  // The newest AI reply is read from its first line: if it is taller than the chat box, its top stays in view
-  // (instead of the box sticking to the bottom and hiding the question under the header).
-  function keepLatestReadable(force) {
-    if (!log || !onStep2()) return;
-    if (!force && Date.now() - userScrolledAt < 4000) return; // the member is scrolling; don't fight her
-    var bubbles = log.querySelectorAll('.bubble');
-    var last = bubbles[bubbles.length - 1];
-    if (!last || !last.classList.contains('bot') || last.id === 'typing-bubble') return;
-    var lr = log.getBoundingClientRect(), br = last.getBoundingClientRect();
-    if (br.height > log.clientHeight - 8) log.scrollTop += (br.top - lr.top) - 4;
-    else if (br.bottom > lr.bottom || br.top < lr.top) log.scrollTop = log.scrollHeight;
-  }
-  function init() {
-    view = document.getElementById('view-day2'); intro = document.getElementById('d2-intro'); toggle = document.getElementById('d2-intro-toggle');
-    log = document.getElementById('chat-log'); input = document.getElementById('gap-chat-input'); modal = document.getElementById('hero-gap-embed');
-    if (!view || !intro || !toggle || !log || !input || view.__gapS2) return; view.__gapS2 = true;
-    toggle.addEventListener('click', function () { autoDone = true; setCollapsed(!collapsed); });
-    input.addEventListener('input', function () { if (input.value.trim()) autoCollapse(); queueFit(); });
-    ['touchmove', 'wheel'].forEach(function (ev) { log.addEventListener(ev, function () { userScrolledAt = Date.now(); }, { passive: true }); });
-    new MutationObserver(function (muts) {
-      if (!log.children.length) { reset(); return; } // setupDay2 cleared the conversation
-      for (var i = 0; i < muts.length; i++) for (var j = 0; j < muts[i].addedNodes.length; j++) {
-        var n = muts[i].addedNodes[j];
-        if (n.nodeType === 1 && n.classList.contains('bubble') && n.classList.contains('user')) autoCollapse(); // first send
-        if (n.nodeType === 1 && n.classList.contains('bubble')) userScrolledAt = 0; // a new message: follow it again
-      }
-      queueFit();
-    }).observe(log, { childList: true, subtree: true, characterData: true });
-    new MutationObserver(function () { syncTuck(); queueFit(); }).observe(view, { attributes: true, attributeFilter: ['class'] });
-    window.addEventListener('resize', queueFit);
-    if (window.visualViewport) { window.visualViewport.addEventListener('resize', queueFit); window.visualViewport.addEventListener('scroll', queueFit); }
-    ['ready-btn-wrap', 'd2-continue'].forEach(function (id) { var e = document.getElementById(id); if (e) new MutationObserver(queueFit).observe(e, { attributes: true, attributeFilter: ['style'] }); });
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
-})();
-</script>
 <script id="gm-modal-js">
 (function () {
   function init() {
@@ -6512,19 +6415,69 @@ if (forceComplete) { goDay(3); }
     el.classList.add('gm-modal');
     el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'GAP Method');
     if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
-    var isOpen = false, lastFocus = null, session = false, starter = document.getElementById('gap-method-starter-btn');
+    var isOpen = false, lastFocus = null, session = false, starter = document.getElementById('gap-method-starter-btn'), lockedScroll = 0;
     function shown() { return el.style.display !== 'none'; }
+    // Keep the dialog in the area the member can actually see. iOS pans the visual viewport when the
+    // keyboard opens and does not move position:fixed + 100dvh with it, which is what shoved the input
+    // to the top and uncovered the home page. Only applied while the keyboard is open, so Steps 1 and 3
+    // at full height stay on their normal styles.
+    function keyboardOpen() {
+      var vv = window.visualViewport;
+      return !!(vv && (vv.offsetTop > 2 || (window.innerHeight - vv.height) > 40));
+    }
+    function pinToVisible() {
+      if (!shown()) return;
+      // Drop any layout scroll first. Reading offsetTop before this latched the dialog
+      // to a stale pan and left the input off screen.
+      if (window.scrollY || document.documentElement.scrollTop) window.scrollTo(0, 0);
+      var vv = window.visualViewport;
+      var top = vv ? vv.offsetTop : 0, h = vv ? vv.height : window.innerHeight;
+      var r = el.getBoundingClientRect();
+      var aligned = top < 1 && Math.abs(h - window.innerHeight) < 2 && r.top > -2 && r.top < 2 && Math.abs(r.height - h) < 30;
+      if (aligned) {
+        if (el.style.getPropertyPriority('height') === 'important') {
+          ['top','height','max-height','bottom'].forEach(function (p) { el.style.removeProperty(p); });
+          var log0 = document.getElementById('chat-log'); if (log0) log0.style.removeProperty('max-height');
+        }
+        return;
+      }
+      el.style.setProperty('top', top + 'px', 'important');
+      el.style.setProperty('height', h + 'px', 'important');
+      el.style.setProperty('max-height', h + 'px', 'important');
+      el.style.setProperty('bottom', 'auto', 'important');
+      fitChat();
+      requestAnimationFrame(function () { if (shown()) fitChat(); });
+    }
+    function fitChat() {
+      var view = document.getElementById('view-day2'), log = document.getElementById('chat-log');
+      if (!view || !view.classList.contains('active') || !log) return;
+      log.style.removeProperty('max-height'); // flex layout keeps the input at the bottom; don't cap the log
+      log.scrollTop = log.scrollHeight;
+    }
+    function lockPage() {
+      lockedScroll = window.scrollY || 0;
+      document.documentElement.classList.add('gm-noscroll');
+      document.body.style.position = 'fixed';
+      document.body.style.top = (-lockedScroll) + 'px';
+      document.body.style.left = '0'; document.body.style.right = '0'; document.body.style.width = '100%';
+    }
+    function unlockPage() {
+      document.documentElement.classList.remove('gm-noscroll');
+      document.body.style.position = ''; document.body.style.top = '';
+      document.body.style.left = ''; document.body.style.right = ''; document.body.style.width = '';
+      window.scrollTo(0, lockedScroll);
+    }
     function onOpen() {
       isOpen = true; session = true;
       lastFocus = document.activeElement;
-      bd.style.display = 'block'; document.body.classList.add('gm-lock');
+      bd.style.display = 'block'; document.body.classList.add('gm-lock'); lockPage(); pinToVisible();
       requestAnimationFrame(function () { requestAnimationFrame(function () { bd.classList.add('gm-show'); el.classList.add('gm-in'); }); });
       setTimeout(function () { var c = document.getElementById('hero-gap-embed-close'); try { (c || el).focus({ preventScroll: true }); } catch (e) {} }, 60);
     }
     function onClose() {
       isOpen = false;
       el.classList.remove('gm-in'); bd.classList.remove('gm-show');
-      document.body.classList.remove('gm-lock');
+      document.body.classList.remove('gm-lock'); unlockPage(); ['top','height','max-height','bottom'].forEach(function (p) { el.style.removeProperty(p); });
       setTimeout(function () { if (!isOpen) bd.style.display = 'none'; }, 300);
       var t = lastFocus || starter; if (t && t.focus) { try { t.focus({ preventScroll: true }); } catch (e) {} }
     }
@@ -6547,6 +6500,16 @@ if (forceComplete) { goDay(3); }
     if (starter) starter.addEventListener('click', function (e) {
       if (session && !shown()) { e.stopImmediatePropagation(); window.__rhGapMethodActive = true; el.style.display = ''; }
     }, true);
+    window.addEventListener('resize', pinToVisible);
+    window.addEventListener('scroll', function () { if (shown()) pinToVisible(); }, true);
+    if (window.visualViewport) { window.visualViewport.addEventListener('resize', pinToVisible); window.visualViewport.addEventListener('scroll', pinToVisible); }
+    var gapInput = document.getElementById('gap-chat-input');
+    if (gapInput) gapInput.addEventListener('focus', function () {
+      try { gapInput.focus({ preventScroll: true }); } catch (e) {}
+      window.scrollTo(0, 0); pinToVisible();
+      var log = document.getElementById('chat-log'); if (log) log.scrollTop = log.scrollHeight;
+      setTimeout(pinToVisible, 60); setTimeout(pinToVisible, 350);
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
