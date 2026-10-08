@@ -1017,7 +1017,7 @@
     <p class="sub">Identify the GAP. Shift the frequency. Begin your Revolution.</p>
 
     <div class="starters starters-top">
-      <button class="starter process" id="gap-method-starter-btn">GAP Method</button>
+      <button class="starter process" id="gap-method-starter-btn">GAP Method™</button>
     </div>
 
     <div class="rh-chat-shell" id="rh-chat-shell">
@@ -1240,8 +1240,8 @@
       </div>
     </div>
     <div class="card center" data-role="focus-empty" style="display:none;">
-      <p class="copy" style="margin: 0 0 18px; text-align:center;">You haven't started a Shift yet. Complete the GAP Method to create your first one.</p>
-      <button class="btn-primary focus-empty-cta">Start the GAP Method →</button>
+      <p class="copy" style="margin: 0 0 18px; text-align:center;">You haven't started a Shift yet. Complete the GAP Method™ to create your first one.</p>
+      <button class="btn-primary focus-empty-cta">Start the GAP Method™ →</button>
     </div>
 
     <div class="revolution-subsection">
@@ -1332,8 +1332,8 @@
     </div>
 
 <div class="revolution-subsection" id="gap-method-activations-subsection">
-      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> GAP Method Activations</h3></div>
-      <p class="subsection-copy">Unlocked with your GAP Method access.</p>
+      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> GAP Method™ Activations</h3></div>
+      <p class="subsection-copy">Unlocked with your GAP Method™ access.</p>
       <div class="card-grid">
         <div class="media-card" onclick="handleActivationCardClick('gap-method-guardian')" style="cursor: pointer;" data-activation-slug="gap-method-guardian">
           <div class="media-thumb glyph-eye">
@@ -1898,7 +1898,7 @@
       <ul class="benefits-list">
         <li>Every activation in the library, all 29 and counting</li>
         <li>Unlimited chat with your AI guide, no chat passes needed</li>
-        <li>The full GAP Method, run as many times as you need</li>
+        <li>The full GAP Method™, run as many times as you need</li>
         <li>My Revolution: your Favorites, My Activations, and My Shifts, all in one place</li>
       </ul>
     </div>
@@ -2025,7 +2025,7 @@
       <div class="info-row"><div class="info-label">Renewal Date</div><div class="info-value">September 3, 2026</div></div>
       <div class="eyebrow" style="margin: 20px 0 10px;">What's Included</div>
       <ul class="benefits-list">
-        <li>Full access to chat &mdash; the AI Guide and the GAP Method</li>
+        <li>Full access to chat &mdash; the AI Guide and the GAP Method™</li>
         <li>Rachael's entire Kajabi activation library</li>
         <li>The Healer Calibration</li>
         <li>My Revolution &mdash; Today's Focus, Favorites, My Activations, My Shifts</li>
@@ -2752,6 +2752,12 @@
     } catch (e) { return ''; }
   }
 
+  // Display-only (Oct 8, Rachael): show the trademark after "GAP Method" on
+  // Shift cards. The stored method_name stays "GAP Method" (code matches on it).
+  function rhGapMethodTm(name) {
+    return String(name == null ? '' : name).replace(/GAP Method(?!\u2122)/gi, function(m) { return m + '\u2122'; });
+  }
+
   function renderFocusAndShifts(shifts) {
     var hasShifts = shifts.length > 0;
 
@@ -2780,7 +2786,7 @@
     shifts.forEach(function(s) {
       listHtml += '<button class="shift-row" onclick="openShiftModal(\'' + s.id + '\')">' +
         '<div class="shift-row-main">' +
-          '<div class="shift-method">' + s.method + '</div>' +
+          '<div class="shift-method">' + rhGapMethodTm(s.method) + '</div>' +
           '<div class="shift-identity serif">' + s.identity + '</div>' +
           '<div class="shift-freq">Current Frequency: ' + s.frequency + '</div>' +
         '</div>' +
@@ -2789,7 +2795,7 @@
       '</button>';
     });
     if (!listHtml) {
-      listHtml = '<div class="card center"><p class="copy">No Shifts yet. <a href="#" onclick="showMain(); startGapMethodInChat(); return false;" style="color: var(--gold);">Start the GAP Method</a> to create your first one.</p></div>';
+      listHtml = '<div class="card center"><p class="copy">No Shifts yet. <a href="#" onclick="showMain(); startGapMethodInChat(); return false;" style="color: var(--gold);">Start the GAP Method™</a> to create your first one.</p></div>';
     }
     document.querySelectorAll('[data-role="shifts-list"]').forEach(function(el) { el.innerHTML = listHtml; });
 
@@ -2927,7 +2933,7 @@
     var embedWrap = document.getElementById('hero-gap-embed');
     if (embedWrap) embedWrap.style.display = 'none';
     hideRhWelcome();
-    addRhMessage('assistant', "Say yes if you would like to start your GAP Method now.");
+    addRhMessage('assistant', "Say yes if you would like to start your GAP Method™ now.");
     window.__awaitingGapMethodYes = true;
     var input = document.getElementById('chat-input');
     if (input) input.focus();
@@ -3076,7 +3082,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
         startGapMethodInChat();
         return;
       }
-      addRhMessage('assistant', "No problem — click GAP Method above whenever you're ready.");
+      addRhMessage('assistant', "No problem — click GAP Method™ above whenever you're ready.");
       return;
     }
 
@@ -4823,7 +4829,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
   function gapStartOver() {
     var reachedStep3 = gapCurrentStep === 3;
     var started = !reachedStep3 && (gapCurrentStep === 2 || identityAnswers.some(function (x) { return !!x; }) || !!selectedDomain);
-    if (started && !window.confirm('Start a new GAP Method run? Your answers from this run will be cleared. Your saved Shifts stay in My Revolution.')) return;
+    if (started && !window.confirm('Start a new GAP Method™ run? Your answers from this run will be cleared. Your saved Shifts stay in My Revolution.')) return;
     resetGapMethodState();
     goDay(1);
     var stage = document.querySelector('#hero-gap-embed .stage'); var wrapEl = document.getElementById('hero-gap-embed');
@@ -5774,11 +5780,11 @@ if (forceComplete) { goDay(3); }
     var personalizedReveal = window.__gapCardData || null;
     if (personalizedReveal && personalizedReveal.gap) {
       document.getElementById('d3-gap-contradiction').textContent = rhCleanAiText(personalizedReveal.gap);
-      document.getElementById('d3-gap-example').textContent = rhCleanAiText(personalizedReveal.howItShowsUp) || "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
+      document.getElementById('d3-gap-example').textContent = rhCleanAiText(personalizedReveal.howItShowsUp) || "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method™ walkthrough to generate it.";
       document.getElementById('d3-gap-restated').textContent = rhCleanAiText(personalizedReveal.primaryShift || '');
     } else if (RH_EMAIL) {
-      document.getElementById('d3-gap-contradiction').textContent = "This reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
-      document.getElementById('d3-gap-example').textContent = "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method walkthrough to generate it.";
+      document.getElementById('d3-gap-contradiction').textContent = "This reflection wasn't captured this time -- reopen a fresh GAP Method™ walkthrough to generate it.";
+      document.getElementById('d3-gap-example').textContent = "This part of the reflection wasn't captured this time -- reopen a fresh GAP Method™ walkthrough to generate it.";
       document.getElementById('d3-gap-restated').textContent = '';
     } else {
       document.getElementById('d3-gap-contradiction').innerHTML = reveal.gapReadyLine + '<br>' + reveal.gapStillLine;

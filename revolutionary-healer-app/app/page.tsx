@@ -110,7 +110,7 @@ export default function Home() {
           The Revolutionary<span style={{ color: GOLD }}> Healer</span>
         </div>
         <p style={{ color: MUTED, fontSize: 16, lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
-          Your daily home for the GAP Method, guided activations, and a chat companion that knows your
+          Your daily home for the GAP Method™, guided activations, and a chat companion that knows your
           Revolution — so every shift you make actually sticks.
         </p>
       </div>
@@ -281,7 +281,7 @@ export default function Home() {
               $9<span style={{ fontSize: 15, color: MUTED, fontWeight: 400 }}> for 7 days</span>
             </div>
             <p style={{ color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
-              Full access to the app, the GAP Method, and the entire Activation Library.
+              Full access to the app, the GAP Method™, and the entire Activation Library.
             </p>
             <a
               href={MONTHLY_CHECKOUT}

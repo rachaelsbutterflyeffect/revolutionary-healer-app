@@ -40,17 +40,17 @@ export async function sendGapMethodMagicLink({ email, firstName, sessionToken })
 
   const link = `${appBaseUrl()}/gap-method.html?t=${encodeURIComponent(sessionToken)}`;
   const greeting = firstName ? `Hi ${firstName},` : "Hi,";
-  const subject = "Your GAP Method is ready";
+  const subject = "Your GAP Method™ is ready";
   const text = `${greeting}
 
-Thanks for grabbing The GAP Method! Tap the link below to start your personalized 3-step diagnostic -- it's already linked to your purchase, so there's nothing else to enter.
+Thanks for grabbing The GAP Method™! Tap the link below to start your personalized 3-step diagnostic -- it's already linked to your purchase, so there's nothing else to enter.
 
 ${link}
 
 This link is just for you, so please don't share it.
 
 -- The Revolutionary Healer`;
-  const html = `<p>${greeting}</p><p>Thanks for grabbing The GAP Method! Tap the button below to start your personalized 3-step diagnostic -- it's already linked to your purchase, so there's nothing else to enter.</p><p><a href="${link}" style="display:inline-block;padding:14px 28px;background:#CFA646;color:#121110;text-decoration:none;border-radius:6px;font-weight:bold;">Start The GAP Method</a></p><p style="color:#8C8272;font-size:13px;">This link is just for you, so please don't share it.</p><p>-- The Revolutionary Healer</p>`;
+  const html = `<p>${greeting}</p><p>Thanks for grabbing The GAP Method™! Tap the button below to start your personalized 3-step diagnostic -- it's already linked to your purchase, so there's nothing else to enter.</p><p><a href="${link}" style="display:inline-block;padding:14px 28px;background:#CFA646;color:#121110;text-decoration:none;border-radius:6px;font-weight:bold;">Start The GAP Method™</a></p><p style="color:#8C8272;font-size:13px;">This link is just for you, so please don't share it.</p><p>-- The Revolutionary Healer</p>`;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",

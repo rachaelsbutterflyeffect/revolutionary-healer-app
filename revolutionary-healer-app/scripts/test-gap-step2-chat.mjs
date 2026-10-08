@@ -45,7 +45,11 @@ test("the request payload is built exactly as on main (history is gapChatHistory
 test("the fold, the intro and the arrow are gone; the tracker and Step 3 markup are untouched", () => {
   for (const gone of ["gap-s2-", "d2-intro", "d2-note", "Now let's make this specific."]) assert.equal(html.includes(gone), false, gone);
   assert.ok(html.includes(">Step 1<") || html.includes("STEP 1") || html.includes("Step 1"));
-  assert.equal(grab(html, '<div id="view-day3"'), grab(main, '<div id="view-day3"'));
+  // Oct 8 (GAP Method™ PR): compare exactly the Step 3 element (<div id="view-day3"> to its closing tag). grab() ran on
+  // past it into the My Revolution markup, whose "GAP Method" copy now carries the ™.
+  const el = (src) => { const i = src.indexOf('<div id="view-day3"'); assert.ok(i >= 0); const re = /<div\b|<\/div>/g; re.lastIndex = i; let d = 0, m;
+    while ((m = re.exec(src))) { d += m[0] === "</div>" ? -1 : 1; if (d === 0) return src.slice(i, re.lastIndex); } assert.fail("view-day3 not closed"); };
+  assert.equal(el(html), el(main));
 });
 
 test("Step 1 Complete copy is the approved text and keeps its label, button and back link", () => {
