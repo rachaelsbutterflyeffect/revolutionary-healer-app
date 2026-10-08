@@ -30,11 +30,14 @@
 // (gap-chat-member / gap-chat), the GAP Step 3 marker retry and the
 // background memory/summary/title calls keep their own settings.
 
-// Ceiling for hidden thinking + visible reply, in tokens. ~8k leaves room
-// for a reply of roughly 4,000+ words even after a long think, and is still
-// fast enough to finish inside the deadline below (8,000 tokens at a slow
-// ~60 tokens/s is ~135s; at the measured ~80-90 tokens/s it's ~95s).
-export const MAIN_CHAT_MAX_TOKENS = 8000;
+// Ceiling for hidden thinking + visible reply, in tokens. Measured on the
+// TEST preview: a typical long reply (a full 30-day plan) needed ~5,500
+// (about 1,900 thinking + 3,500 reply); thinking alone has been seen at
+// ~7,300 on a heavy "explain all my Shifts in depth" request. 10,000 leaves
+// a long reply real room in both cases and can still be written inside the
+// deadline below (10,000 tokens at the measured ~80-90 tokens/s is
+// ~110-125s; even at a slow ~65 tokens/s it's ~155s).
+export const MAIN_CHAT_MAX_TOKENS = 10000;
 
 // One overall deadline for the reply call, including SDK retries.
 // 160s + the dormant GAP marker retry (12s) + Airtable (~5s) = ~177s, still
