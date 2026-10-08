@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:entitlements": "node scripts/test-entitlements.mjs"
+    "test:entitlements": "node scripts/test-entitlements.mjs",
+    "test:chat-speed": "node scripts/test-chat-speed.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
