@@ -1091,6 +1091,95 @@
     #shift-modal .rhs-sheen { display: none; }
   }
 </style>
+<!-- Home "Today's Focus" card restyle (Oct 8, presentation only): a smaller
+     sibling of the doorway-style Shift pop-up above. Same fields, IDs and
+     handlers; motion is opacity/box-shadow only and off under reduced motion. -->
+<style id="rh-focus-home-css">
+  .focus-card.rhh-card { position: relative; isolation: isolate; padding: 60px 36px 28px; margin-bottom: 40px; color: var(--white);
+    border: 1px solid rgba(226,190,104,0.6); border-radius: 50% 50% 18px 18px / 44px 44px 18px 18px;
+    background: radial-gradient(70% 240px at 50% 0%, rgba(43,179,173,0.22), transparent 72%), radial-gradient(60% 200px at 50% 100%, rgba(226,190,104,0.07), transparent 70%), linear-gradient(180deg, #04201F 0%, #020D0E 55%, #010505 100%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 4px rgba(226,190,104,0.04), 0 22px 60px rgba(0,0,0,0.5), 0 0 44px rgba(1,103,108,0.22); }
+  .rhh-card .rhh-glow { position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; z-index: -2; box-shadow: 0 0 36px rgba(226,190,104,0.18), 0 0 90px rgba(1,103,108,0.28); opacity: .5; animation: rhs-breathe 7s ease-in-out infinite; }
+  .rhh-card .rhh-arch, .rhh-empty .rhh-arch { position: absolute; inset: 8px; border-radius: 50% 50% 12px 12px / 38px 38px 12px 12px; border: 1px solid rgba(226,190,104,0.2); pointer-events: none; z-index: -1;
+    background: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%280%2060%29%20scale%281%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3C/g%3E%3C/svg%3E") bottom left / 22px no-repeat, url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%2860%2060%29%20scale%28-1%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3C/g%3E%3C/svg%3E") bottom right / 22px no-repeat; }
+  .rhh-card .rhh-crest { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 9px; pointer-events: none; }
+  .rhh-card .rhh-crest-line { width: 40px; height: 1px; background: linear-gradient(90deg, transparent, rgba(226,190,104,0.85)); }
+  .rhh-card .rhh-crest-line.rhh-flip { transform: scaleX(-1); }
+  .rhh-card .rhh-crest-gem { width: 8px; height: 8px; transform: rotate(45deg); border: 1px solid rgba(226,190,104,0.8); background: #030606; box-shadow: 0 0 9px rgba(226,190,104,0.45); }
+  .rhh-card .rhh-label, .rhh-empty .rhh-label { text-align: center; color: #F1D58A; font-size: 11.5px; letter-spacing: .3em; padding-left: .3em; margin-bottom: 26px; }
+  .rhh-card .rhh-kicker { font-size: 10.5px; letter-spacing: .28em; text-transform: uppercase; color: rgba(127,224,218,0.9); margin: 0 0 8px; }
+
+  .rhh-card .rhh-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 26px; align-items: start; }
+  .rhh-card .rhh-grid.rhh-has-shift { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 40px; }
+  .rhh-card .rhh-top { margin-bottom: 20px; align-items: flex-start; }
+  .rhh-card .rhh-identity { font-family: "RH Shift Serif", "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 36px; line-height: 1.06; margin: 0; color: #F3DE9F;
+    background: linear-gradient(100deg, #E2BE68 0%, #FFF6DA 45%, #CFA646 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .rhh-card .status-pill { font-size: 11.5px; letter-spacing: .08em; padding: 6px 14px; margin-top: 4px; }
+  .rhh-card .status-pill.shifting { animation: rhs-pill 3.4s ease-in-out infinite; }
+  .rhh-card .status-pill.embodied { color: #CFEBD5; border-color: rgba(120,190,140,0.75); }
+  .focus-card.rhh-card .rhf-attn { margin-bottom: 6px; border-left: 1px solid rgba(226,190,104,0.35); padding-left: 16px; }
+  .focus-card.rhh-card .rhf-teaser { color: rgba(246,242,233,0.86); font-size: 15.5px; line-height: 1.65; }
+  .focus-card.rhh-card .rhf-teaser.rhf-muted { color: var(--taupe); }
+  .rhh-card .rhh-activity { margin: 10px 0 0; font-size: 12.5px; color: var(--taupe); }
+
+  /* the Primary Shift, as a small arched panel */
+  .rhh-card .rhh-shift { position: relative; text-align: center; padding: 30px 22px 22px; border: 1px solid rgba(226,190,104,0.45); border-radius: 50% 50% 14px 14px / 30px 30px 14px 14px;
+    background: radial-gradient(90% 140px at 50% 0%, rgba(43,179,173,0.20), transparent 75%), linear-gradient(180deg, rgba(4,30,32,0.7), rgba(0,0,0,0.5)); box-shadow: inset 0 0 0 3px rgba(226,190,104,0.04), 0 0 26px rgba(226,190,104,0.08); }
+  .rhh-card .rhh-shift[hidden] { display: none; }
+  .rhh-card .rhh-shift::before { content: ""; position: absolute; left: 50%; top: -5px; width: 8px; height: 8px; margin-left: -4px; transform: rotate(45deg); border: 1px solid rgba(226,190,104,0.85); background: #030606; box-shadow: 0 0 9px rgba(226,190,104,0.55); }
+  .rhh-card .rhh-ft-label { display: block; font-size: 9.5px; letter-spacing: .34em; padding-left: .34em; text-transform: uppercase; color: rgba(127,224,218,0.85); margin-bottom: 4px; }
+  .rhh-card .rhh-from, .rhh-card .rhh-into { margin: 0; font-family: "RH Shift Serif", Georgia, serif; display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+  .rhh-card .rhh-from { font-style: italic; font-size: 17px; line-height: 1.4; color: rgba(255,255,255,0.72); -webkit-line-clamp: 2; line-clamp: 2; }
+  .rhh-card .rhh-into { font-weight: 500; font-size: 20px; line-height: 1.35; color: #F6E3A8; text-shadow: 0 0 16px rgba(226,190,104,0.22); -webkit-line-clamp: 3; line-clamp: 3; }
+  .rhh-card .rhh-ft-arrow { display: flex; flex-direction: column; align-items: center; height: 30px; width: 16px; margin: 8px auto; }
+  .rhh-card .rhh-ft-arrow::before { content: ""; width: 1px; flex: 1; background: linear-gradient(180deg, transparent, rgba(226,190,104,0.9)); }
+  .rhh-card .rhh-ft-arrow svg { width: 14px; height: 14px; margin-top: -2px; filter: drop-shadow(0 0 5px rgba(226,190,104,0.7)); }
+
+  /* footer: activation chip + Continue */
+  .focus-card.rhh-card .rhh-footer { margin-top: 26px; padding-top: 20px; border-top: 1px solid rgba(226,190,104,0.2); gap: 18px; align-items: flex-end; }
+  .rhh-card .rhh-activation { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+  .rhh-card .rhh-activation[hidden] { display: none; }
+  .rhh-card .rhh-chip { display: inline-flex; align-items: center; gap: 10px; max-width: 100%; min-height: 44px; padding: 7px 18px 7px 7px; border-radius: 999px; border: 1px solid rgba(226,190,104,0.5); background: rgba(2,12,13,0.6); color: #F3DE9F; font-family: inherit; font-size: 14px; text-align: left; cursor: pointer; transition: border-color .3s ease, box-shadow .3s ease; }
+  .rhh-card .rhh-chip strong { font-weight: 500; color: inherit; }
+  .rhh-card .rhh-chip:hover { border-color: rgba(248,231,176,0.95); box-shadow: 0 0 16px rgba(226,190,104,0.3); }
+  .rhh-card .rhh-chip-play { flex: 0 0 30px; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #F8E7B0, #CFA646); box-shadow: 0 0 10px rgba(226,190,104,0.45); }
+  .rhh-card .rhh-continue { border-radius: 999px; padding: 13px 28px; letter-spacing: .04em; color: #1A1408; background: linear-gradient(100deg, #CFA646 0%, #F8E7B0 48%, #CFA646 100%); background-size: 200% 100%; box-shadow: 0 0 18px rgba(226,190,104,0.28); transition: background-position .8s ease, box-shadow .4s ease; }
+  .rhh-card .rhh-continue:hover { background-position: 100% 0; box-shadow: 0 0 26px rgba(226,190,104,0.45); }
+  .rhh-card button:focus-visible, .rhh-empty button:focus-visible { outline: 2px solid #F1D58A; outline-offset: 3px; }
+
+  /* empty state (no Shifts yet) gets the same frame, quietly */
+  .card.rhh-empty { position: relative; isolation: isolate; padding: 52px 28px 30px; border: 1px solid rgba(226,190,104,0.5); border-radius: 50% 50% 18px 18px / 44px 44px 18px 18px;
+    background: radial-gradient(70% 220px at 50% 0%, rgba(43,179,173,0.18), transparent 72%), linear-gradient(180deg, #04201F 0%, #020D0E 60%, #010505 100%); }
+  .card.rhh-empty .copy { color: rgba(246,242,233,0.82); }
+  .card.rhh-empty .focus-empty-cta { border-radius: 999px; padding: 13px 26px; background: linear-gradient(100deg, #CFA646 0%, #F8E7B0 48%, #CFA646 100%); color: #1A1408; }
+
+  @media (max-width: 760px) {
+    .rhh-card .rhh-grid.rhh-has-shift { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  }
+  @media (max-width: 640px) {
+    .focus-card.rhh-card { padding: 52px 18px 22px; margin-bottom: 28px; border-radius: 50% 50% 16px 16px / 34px 34px 16px 16px; }
+    .rhh-card .rhh-arch, .rhh-empty .rhh-arch { border-radius: 50% 50% 11px 11px / 28px 28px 11px 11px; }
+    .rhh-card .rhh-crest { top: 15px; }
+    .rhh-card .rhh-crest-line { width: 28px; }
+    .rhh-card .rhh-label { margin-bottom: 20px; }
+    .rhh-card .rhh-identity { font-size: 31px; }
+    .focus-card.rhh-card .rhf-attn { padding-left: 13px; }
+    .rhh-card .rhh-grid.rhh-has-shift { gap: 20px; }
+    .rhh-card .rhh-shift { padding: 22px 14px 16px; border-radius: 50% 50% 12px 12px / 22px 22px 12px 12px; }
+    .rhh-card .rhh-shift .rhh-kicker { margin-bottom: 6px; }
+    .rhh-card .rhh-from { font-size: 15.5px; }
+    .rhh-card .rhh-into { font-size: 18px; -webkit-line-clamp: 2; line-clamp: 2; }
+    .rhh-card .rhh-ft-arrow { height: 22px; margin: 4px auto 6px; }
+    .focus-card.rhh-card .rhh-footer { margin-top: 20px; padding-top: 16px; }
+    .focus-card.rhh-card .rhh-footer { flex-direction: column; align-items: stretch; }
+    .rhh-card .rhh-chip { width: 100%; }
+    .rhh-card .rhh-continue { width: 100%; }
+    .card.rhh-empty { border-radius: 50% 50% 16px 16px / 34px 34px 16px 16px; padding: 46px 18px 24px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rhh-card .rhh-glow, .rhh-card .status-pill, .rhh-card .rhh-chip, .rhh-card .rhh-continue { animation: none !important; transition: none !important; }
+  }
+</style>
 <div class="modal-overlay" id="shift-modal">
   <div class="modal-card rhs-card" role="dialog" aria-modal="true" aria-labelledby="shift-modal-identity" tabindex="-1">
     <span class="rhs-glow" aria-hidden="true"></span>
@@ -1337,32 +1426,50 @@
       </div>
     </div>
 
-    <div class="focus-card" data-role="focus-card">
-      <div class="focus-card-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
-      <div class="rhf-top">
-        <div class="focus-card-identity">
-          <div class="focus-card-kicker">Your Divine Identity</div>
-          <h3 class="serif" data-role="focus-identity">The Leader</h3>
+    <div class="focus-card rhh-card" data-role="focus-card">
+      <span class="rhh-glow" aria-hidden="true"></span>
+      <span class="rhh-arch" aria-hidden="true"></span>
+      <span class="rhh-crest" aria-hidden="true"><span class="rhh-crest-line"></span><span class="rhh-crest-gem"></span><span class="rhh-crest-line rhh-flip"></span></span>
+      <div class="focus-card-label rhh-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
+      <div class="rhh-grid" data-role="focus-grid">
+        <div class="rhh-main">
+          <div class="rhf-top rhh-top">
+            <div class="focus-card-identity">
+              <div class="focus-card-kicker rhh-kicker">Your Divine Identity</div>
+              <h3 class="serif rhh-identity" data-role="focus-identity">The Leader</h3>
+            </div>
+            <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
+          </div>
+          <div class="rhf-attn" data-role="focus-attn">
+            <div class="focus-card-kicker rhh-kicker" id="focus-attn-label">What's Asking For Attention</div>
+            <p class="rhf-teaser" id="focus-attn-teaser" data-role="focus-freq" aria-labelledby="focus-attn-label">Hiddenness</p>
+            <div class="rhf-controls">
+              <button type="button" class="rhf-more" data-role="focus-more" aria-expanded="false" aria-controls="focus-attn-teaser" hidden><span data-role="focus-more-label">Read more</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+              <button type="button" class="rhf-open-full" data-role="focus-open-full" onclick="rhOpenFocusShift()" hidden>Open your full Shift →</button>
+            </div>
+          </div>
+          <div class="focus-card-activity rhh-activity" data-role="focus-activity">
+            <div data-role="focus-activity-line">Started August 4, 2026</div>
+          </div>
         </div>
-        <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
-      </div>
-      <div class="rhf-attn" data-role="focus-attn">
-        <div class="focus-card-kicker" id="focus-attn-label">What's Asking For Attention</div>
-        <p class="rhf-teaser" id="focus-attn-teaser" data-role="focus-freq" aria-labelledby="focus-attn-label">Hiddenness</p>
-        <div class="rhf-controls">
-          <button type="button" class="rhf-more" data-role="focus-more" aria-expanded="false" aria-controls="focus-attn-teaser" hidden><span data-role="focus-more-label">Read more</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-          <button type="button" class="rhf-open-full" data-role="focus-open-full" onclick="rhOpenFocusShift()" hidden>Open your full Shift →</button>
+        <div class="rhh-shift" data-role="focus-primary" hidden>
+          <div class="rhh-kicker">Your Primary Shift</div>
+          <div class="rhh-ft"><span class="rhh-ft-label">From</span><p class="rhh-from" data-role="focus-primary-from"></p></div>
+          <div class="rhh-ft-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#F1D58A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+          <div class="rhh-ft"><span class="rhh-ft-label">Into</span><p class="rhh-into" data-role="focus-primary-into"></p></div>
         </div>
       </div>
-      <div class="focus-card-activity" data-role="focus-activity">
-        <div data-role="focus-activity-line">Started August 4, 2026</div>
-      </div>
-      <div class="focus-card-footer">
-        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation">Expansion Activation</strong></div>
-        <button class="btn-primary" data-role="focus-continue" onclick="rhOpenFocusShift()">Continue Your Revolution</button>
+      <div class="focus-card-footer rhh-footer">
+        <div class="focus-card-activation rhh-activation" data-role="focus-activation-wrap">
+          <span class="rhh-kicker rhh-act-label">Recommended activation</span>
+          <button type="button" class="rhh-chip" data-role="focus-activation-chip" onclick="rhOpenFocusActivation()"><span class="rhh-chip-play" aria-hidden="true"><svg viewBox="0 0 24 24" width="10" height="10"><polygon points="7,4 20,12 7,20" fill="#1A1408"/></svg></span><strong data-role="focus-activation">Expansion Activation</strong></button>
+        </div>
+        <button class="btn-primary rhh-continue" data-role="focus-continue" onclick="rhOpenFocusShift()">Continue Your Revolution</button>
       </div>
     </div>
-    <div class="card center" data-role="focus-empty" style="display:none;">
+    <div class="card center rhh-empty" data-role="focus-empty" style="display:none;">
+      <span class="rhh-arch" aria-hidden="true"></span>
+      <div class="focus-card-label rhh-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
       <p class="copy" style="margin: 0 0 18px; text-align:center;">You haven't started a Shift yet. Complete the GAP Method to create your first one.</p>
       <button class="btn-primary focus-empty-cta">Start the GAP Method →</button>
     </div>
@@ -2438,6 +2545,30 @@
   }
   // "Continue Your Revolution" / "Open your full Shift" open the exact Shift the card shows.
   function rhOpenFocusShift() { openShiftModal(window.__rhFocusShiftId); }
+  // Home card extras (display only): the Primary Shift From -> Into preview and
+  // the Recommended activation chip, which opens the same activation the
+  // Shift pop-up's "Listen Now" opens.
+  function rhRenderFocusExtras(top) {
+    var parsed = rhParseAttention(top && top.maintaining);
+    var pr = parsed.primary;
+    document.querySelectorAll('[data-role="focus-primary"]').forEach(function(box) {
+      box.hidden = !pr;
+      if (pr) {
+        var f = box.querySelector('[data-role="focus-primary-from"]'); if (f) f.textContent = pr.from;
+        var t = box.querySelector('[data-role="focus-primary-into"]'); if (t) t.textContent = pr.into;
+      }
+    });
+    document.querySelectorAll('[data-role="focus-grid"]').forEach(function(g) { g.classList.toggle('rhh-has-shift', !!pr); });
+    var title = (top && top.activation) ? String(top.activation) : '';
+    document.querySelectorAll('[data-role="focus-activation-wrap"]').forEach(function(w) { w.hidden = !title; });
+    document.querySelectorAll('[data-role="focus-activation-chip"]').forEach(function(chip) { chip.setAttribute('aria-label', 'Recommended activation: ' + title); });
+  }
+  function rhOpenFocusActivation() {
+    var shift = SHIFTS.filter(function(s) { return String(s.id) === String(window.__rhFocusShiftId); })[0];
+    var slug = shift && rhSlugForActivationTitle(shift.activation);
+    if (slug && typeof handleActivationCardClick === 'function') handleActivationCardClick(slug);
+    else rhOpenFocusShift();
+  }
 
   function rhRenderMaintaining(shift) {
     var section = document.getElementById('shift-modal-maintaining-section');
@@ -3170,6 +3301,7 @@
       });
       document.querySelectorAll('[data-role="focus-activation"]').forEach(function(el) { el.textContent = top.activation || ''; });
       document.querySelectorAll('[data-role="focus-activity-line"]').forEach(function(el) { el.textContent = 'Started ' + top.date; });
+      rhRenderFocusExtras(top);
     }
 
     var listHtml = '';
