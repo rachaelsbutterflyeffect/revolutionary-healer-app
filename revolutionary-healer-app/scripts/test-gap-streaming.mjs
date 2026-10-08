@@ -27,6 +27,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript";
 import { undoGapReadingRestructure } from "./gap-reading-scope.mjs"; // GAP reading restructure (Oct 8 2026): see that file
+import { undoRemoveRelationships } from "./remove-relationships-scope.mjs"; // Remove Relationships option (Oct 8 2026): see that file
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(here, "..");
@@ -359,7 +360,7 @@ await test("scope: the GAP route saves nothing (no Airtable write imports) and t
   const src = read(ROUTE);
   assert.ok(!/from\s+["']@\/lib\/(airtable|memory)["']/.test(src));
   for (const f of ["app/api/gap-chat/route.ts", "app/api/gap-shift/route.ts", "lib/processes.js", "lib/airtable.js"]) {
-    assert.equal(undoGapReadingRestructure(f, read(f)), execFileSync("git", ["show", `7d13fab:revolutionary-healer-app/${f}`], { cwd: appRoot, encoding: "utf8", maxBuffer: 64 << 20 }), `${f} changed`);
+    assert.equal(undoRemoveRelationships(f, undoGapReadingRestructure(f, read(f))), execFileSync("git", ["show", `7d13fab:revolutionary-healer-app/${f}`], { cwd: appRoot, encoding: "utf8", maxBuffer: 64 << 20 }), `${f} changed`);
   }
 });
 

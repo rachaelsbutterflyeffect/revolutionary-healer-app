@@ -27,6 +27,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript";
 import { undoGapReadingRestructure } from "./gap-reading-scope.mjs"; // GAP reading restructure (Oct 8 2026): see that file
+import { undoRemoveRelationships } from "./remove-relationships-scope.mjs"; // Remove Relationships option (Oct 8 2026): see that file
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(here, "..");
@@ -213,7 +214,7 @@ await test("funnel GAP bot (/api/gap-chat, 1024), GAP Step 3 marker retry (200) 
 await test("GAP prompt and Shift-saving code untouched by this fix (processes.js, gap-shift route, airtable.js identical to 7d13fab; gap-shift/airtable apart from ONLY the reviewed optional Today's Focus hunks of the GAP reading restructure)", () => {
   for (const f of ["lib/processes.js", "app/api/gap-shift/route.ts", "lib/airtable.js"]) {
     const old = execFileSync("git", ["show", `7d13fab:revolutionary-healer-app/${f}`], { cwd: appRoot, encoding: "utf8", maxBuffer: 64 << 20 });
-    assert.equal(undoGapReadingRestructure(f, read(f)), old, `${f} changed`);
+    assert.equal(undoRemoveRelationships(f, undoGapReadingRestructure(f, read(f))), old, `${f} changed`);
   }
 });
 

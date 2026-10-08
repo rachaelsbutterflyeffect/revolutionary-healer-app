@@ -4003,8 +4003,7 @@ var DOMAINS = [
     { key: "business", label: "Business + Visibility" },
     { key: "money", label: "Money" },
     { key: "gifts", label: "Spiritual Gifts" },
-    { key: "energy", label: "Energy + Frequency" },
-    { key: "relationships", label: "Relationships" }
+    { key: "energy", label: "Energy + Frequency" }
   ];
 
   var QUESTION_BANKS = {
@@ -5040,8 +5039,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     business: "What is happening in your business right now that has you feeling like something isn't adding up?",
     money: "When you look at money right now, what feels different from the way you actually want it to be?",
     gifts: "When your gifts aren't feeling the way you want them to right now, what is actually happening?\n\nTell me what you notice -- maybe in what you're receiving, what happens afterward, or what you find yourself doing.",
-    energy: "What has been happening in your energy that made you choose Energy + Frequency today?",
-    relationships: "Who is the relationship you're feeling this in right now -- a partner, family member, friend, or someone else -- and what has been happening between you that doesn't feel the way you want it to?"
+    energy: "What has been happening in your energy that made you choose Energy + Frequency today?"
   };
   var IDENTITY_SLUG_TO_KEY = {
     guardian: 'overworker',
@@ -6293,8 +6291,6 @@ if (forceComplete) { goDay(3); }
     #hero-gap-embed.gm-modal .topbar .wrap { display: flex; flex-direction: column; align-items: center; }
     #hero-gap-embed.gm-modal .topbar .wrap > .day-tabs { width: 100%; }
   }
-  /* Oct 7 fixes: 5th focus option (Relationships) spans the full row so the 2-column grid stays balanced */
-  #hero-gap-embed.gm-modal #domain-chips > .domain-chip:last-child:nth-child(odd) { grid-column: 1 / -1; }
   /* Oct 7 fixes: Step 3 text always shows in full -- no inner scroll boxes / cut-off. If a long reflection
      needs more room than the window, the pop-up panel scrolls as a whole instead. */
   #hero-gap-embed.gm-modal #view-day3 .card > .reveal-block, #hero-gap-embed.gm-modal #view-day3 .card > #d3-activation-card { max-height: none !important; overflow: visible !important; }
