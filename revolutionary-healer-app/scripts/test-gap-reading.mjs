@@ -155,7 +155,7 @@ async function run(mod, { body, env, api, fx = fresh() } = {}) {
     const ctype = res.headers.get("content-type") || "";
     const text = await res.text();
     for (let k = 0; k < 20 && fx.pending.length; k++) await Promise.all(fx.pending.splice(0));
-    return { status: res.status, ctype, text, apiBodies: apiRequests.slice() };
+    return { status: res.status, ctype, text, apiBodies: apiRequests.slice(), fastHeader: res.headers.get("x-gap-fast-reading"), headerNames: [...res.headers.keys()].sort().join(",") };
   });
 }
 
@@ -225,6 +225,17 @@ await test("chat turns and the reading request, every 'off' setting: same Claude
     const a = await run(oldRoute, { body, env, api: () => ({ text }) }), b = await run(newRoute, { body, env, api: () => ({ text }) });
     assert.equal(b.status, a.status); assert.equal(b.ctype, a.ctype); assert.equal(b.text, a.text);
     assert.equal(b.apiBodies.length, 1); assert.deepEqual(b.apiBodies[0], a.apiBodies[0]);
+    assert.equal(b.fastHeader, null, "switch off must not send the new-flow header"); assert.equal(b.headerNames, a.headerNames, "switch off: same response headers as main");
+  }
+});
+await test("switch on/off signal to the page: chat replies (JSON and streamed) carry x-gap-fast-reading: 1 ONLY when the switch is on for this member", async () => {
+  for (const stream of [false, true]) {
+    const on = await run(newRoute, { body: stream ? { ...CHAT, stream: true } : CHAT, env: { GAP_STREAMING: "on", ...ON } });
+    assert.equal(on.fastHeader, "1");
+    for (const env of [...OFFS, { GAP_STREAMING: "on" }, { GAP_FAST_READING: "allowlist", GAP_FAST_READING_ALLOWLIST: "someone-else@example.com", GAP_STREAMING: "on" }]) {
+      const off = await run(newRoute, { body: stream ? { ...CHAT, stream: true } : CHAT, env });
+      assert.equal(off.fastHeader, null, "header leaked with switch off: " + JSON.stringify(env));
+    }
   }
 });
 await test("GAP streaming still works with the restructure off and on (allowlisted chat turn streams; done.reply == JSON reply)", async () => {

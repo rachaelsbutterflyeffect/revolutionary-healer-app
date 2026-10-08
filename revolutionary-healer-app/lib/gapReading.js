@@ -32,6 +32,9 @@ export const GAP_READING_KICKOFF =
 
 export const GAP_CHAT_TURN_EFFORT = "low";
 export const GAP_ACTIVATION_RETRY_MAX_TOKENS = 2000;
+// Added to Step 2 chat replies ONLY when the switch is on for this member, so the page knows to use the new
+// Step 2 -> Step 3 flow. Switch off: no header, page behaves exactly like main.
+export const GAP_FAST_READING_HEADER = { "x-gap-fast-reading": "1" };
 
 export function gapFastReadingSwitch(env = process.env) {
   return {

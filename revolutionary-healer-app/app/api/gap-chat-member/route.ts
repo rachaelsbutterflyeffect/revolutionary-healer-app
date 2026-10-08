@@ -61,6 +61,7 @@ import {
   GAP_ACTIVATION_RETRY_MAX_TOKENS,
   gapFastReadingSwitch,
   gapFastReadingEnabled,
+  GAP_FAST_READING_HEADER,
   sanitizeStep1,
   sanitizeLibrary,
   buildReadingMessage,
@@ -224,7 +225,7 @@ export async function POST(req: NextRequest) {
         },
       })
     );
-    return new Response(channel.readable, { headers: SSE_HEADERS });
+    return new Response(channel.readable, { headers: fast ? { ...SSE_HEADERS, ...GAP_FAST_READING_HEADER } : SSE_HEADERS });
   }
 
   const response = await anthropic.messages.create(claudeParams as any);
@@ -233,5 +234,6 @@ export async function POST(req: NextRequest) {
 
   const replyText = replyTextOf(response);
 
+  if (fast) return NextResponse.json({ reply: replyText }, { headers: GAP_FAST_READING_HEADER }); // tells the page the new flow is on
   return NextResponse.json({ reply: replyText });
 }

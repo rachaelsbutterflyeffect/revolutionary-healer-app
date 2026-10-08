@@ -4779,7 +4779,7 @@ var DOMAINS = [
     for (var i = n; i <= 3; i++) { var c = document.getElementById('check' + i); if (c) c.textContent = ''; }
   }
   function goDay(n) {
-if (typeof gapReadingNavGuard === 'function' && gapReadingNavGuard(n)) return; // GAP reading restructure: one reading, no early Step 3
+if (typeof gapReadingNavGuard === 'function' && gapFastReadingOn() && gapReadingNavGuard(n)) return; // GAP reading restructure (switch on only): one reading, no early Step 3
 if (n === 2) { var c1el = document.getElementById('check1'); if (!c1el || c1el.textContent !== '✓') { n = 1; } }
 if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.textContent !== '✓') { n = 2; } }
     if (n < gapCurrentStep) {
@@ -5207,6 +5207,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(gapPayload)
     }).then(function(res) {
+        gapNoteFastReading(res); // GAP reading restructure: the server says (header) whether the new flow is on for this member
         if (typeof rhIsChatStream === 'function' && rhIsChatStream(res)) return gapReadStream(res);
         return res.json().then(function(body) { return { ok: res.ok, status: res.status, body: body }; });
       })
@@ -5254,7 +5255,7 @@ var distortionsMatch = reply.match(/\[\[DISTORTIONS:[\s\S]*?\]\]/i);
 if (distortionsMatch) { reply = reply.replace(distortionsMatch[0], '').trim(); }
 var topicMarkerMatch = reply.match(/\[\[TOPIC:[\s\S]*?\]\]/i);
 if (topicMarkerMatch) { reply = reply.replace(topicMarkerMatch[0], '').trim(); }
-reply = gapStripHiddenMarkers(reply); // any other hidden [[...]] marker never reaches the screen
+if (gapFastReadingOn()) reply = gapStripHiddenMarkers(reply); // switch on: the new hidden markers never reach the screen
 if (result.streamedBubble && result.streamedBubble.isConnected) {
   // Streamed: the words are already on screen -- swap in the exact final reply.
   result.streamedBubble.classList.remove('gap-streaming');
@@ -5359,7 +5360,8 @@ if (forceComplete) { goDay(3); }
   function skipToReveal() {
     document.getElementById('ready-btn-wrap').style.display = 'none';
     if (gapChatRequestPending) { gapChatReadyQueued = true; return; }
-    startGapReading(); // GAP reading restructure: the ONE deep reading (was: the hidden completion request as a chat turn)
+    if (gapFastReadingOn()) { startGapReading(); return; } // GAP reading restructure (switch on): the ONE deep reading
+    sendToGapChat("(The member is ready to move forward. Give your Step 2 completion summary now, in the style already described, then stop.)", true, true); // switch off: exactly main
   }
 
   // ===========================================================================
@@ -5379,6 +5381,12 @@ if (forceComplete) { goDay(3); }
   var gapReadingRun = 0;        // bumps on every start/cancel; stale replies are ignored
   window.__gapReading = null;
 
+  // The switch (GAP_FAST_READING) lives on the server. It marks Step 2 chat replies with the header
+  // x-gap-fast-reading: 1 ONLY when the new flow is on for this member; switch off = no header = every
+  // Step 2 -> Step 3 path below behaves exactly like main (no analyzing screen, today's completion request).
+  window.__gapFastReading = false;
+  function gapNoteFastReading(res) { try { if (res && res.headers && res.headers.get('x-gap-fast-reading') === '1') window.__gapFastReading = true; } catch (e) {} }
+  function gapFastReadingOn() { return window.__gapFastReading === true; }
   function gapStripHiddenMarkers(text) {
     return String(text == null ? '' : text).replace(/\[\[[\s\S]*?\]\]/g, '').replace(/\[\[[\s\S]*$/, '').trim();
   }
@@ -5740,7 +5748,7 @@ if (forceComplete) { goDay(3); }
     var activationTeaser = resolvedActivation.teaser;
     document.getElementById('a-tag').textContent = activationData.type;
     document.getElementById('a-title').textContent = activationData.title;
-    document.getElementById('a-meta').textContent = activationData.duration ? (activationData.type + ' · ' + activationData.duration) : activationData.type;
+    document.getElementById('a-meta').textContent = (activationData.duration || !gapFastReadingOn()) ? (activationData.type + ' · ' + activationData.duration) : activationData.type; // switch off: exactly main
     document.getElementById('a-teaser').textContent = activationTeaser;
     gapV2SetStep3(!!(window.__gapReading && window.__gapReading.enabled));
     document.getElementById('check3').textContent = '✓';
