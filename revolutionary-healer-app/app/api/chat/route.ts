@@ -39,6 +39,12 @@ import {
 } from "@/lib/memory";
 import { placeholderChatTitle, titleActionForMessage } from "@/lib/chatTitles";
 import { toCachedSystemBlocks } from "@/lib/promptCache";
+import {
+  MAIN_CHAT_MAX_TOKENS,
+  mainChatReplyRequestOptions,
+  noteMainChatReplyStop,
+  thinkingTokensFromUsage,
+} from "@/lib/mainChatReply";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
@@ -58,6 +64,9 @@ const SUMMARY_TRIGGER_COUNT = 12;
 // reply is already generated is non-critical persistence/bookkeeping, so
 // it's bounded individually with this helper -- a timeout there just skips
 // that one side effect instead of blocking or failing the member's response.
+// (Oct 8 2026: the main reply call now uses the longer overall deadline in
+// lib/mainChatReply.js so long replies can finish; this stays for any
+// connection-phase timeout that still wants the old 45s.)
 const CHAT_TIMEOUT_MS = 45000;
 const BOOKKEEPING_TIMEOUT_MS = 10000;
 // Small, focused call used only to re-prompt the model for a corrected
@@ -218,17 +227,22 @@ export async function POST(req: NextRequest) {
   // difference is that `system` is sent as two text blocks (same text, same
   // order) with a cache breakpoint after the fixed instructions, so Anthropic
   // can reuse them instead of re-reading ~14k tokens on every message.
+  //
+  // Long-reply fix (Oct 8 2026, see lib/mainChatReply.js): max_tokens was
+  // 4096 for hidden thinking + visible reply combined, so long replies were
+  // cut off mid-sentence. The ceiling and the time allowed are now set in
+  // lib/mainChatReply.js (model, prompt, thinking and effort unchanged).
   let response;
   const claudeStartedAt = Date.now();
   try {
     response = await anthropic.messages.create(
       {
         model: MODEL,
-        max_tokens: 4096,
+        max_tokens: MAIN_CHAT_MAX_TOKENS,
         system: toCachedSystemBlocks(systemPrompt),
         messages: [...historyForClaude, { role: "user", content: message }],
       },
-      { timeout: CHAT_TIMEOUT_MS }
+      mainChatReplyRequestOptions()
     );
   } catch (err) {
     return NextResponse.json(
@@ -250,12 +264,14 @@ export async function POST(req: NextRequest) {
           cache_read_input_tokens: u.cache_read_input_tokens ?? 0,
           cache_creation_input_tokens: u.cache_creation_input_tokens ?? 0,
           output_tokens: u.output_tokens,
+          thinking_tokens: thinkingTokensFromUsage(u),
           stop_reason: response.stop_reason,
         })
     );
   } catch (logErr) {
     // logging must never affect the reply
   }
+  noteMainChatReplyStop(response); // log-only
 
   const rawReplyText = response.content
     .filter((block: any) => block.type === "text")
