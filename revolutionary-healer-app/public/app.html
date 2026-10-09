@@ -6425,26 +6425,43 @@ if (forceComplete) { goDay(3); }
       var vv = window.visualViewport;
       return !!(vv && (vv.offsetTop > 2 || (window.innerHeight - vv.height) > 40));
     }
+    // Inline styles the keyboard pin sets; cleared together whenever the pin is not needed.
+    var PIN_PROPS = ['top','height','max-height','bottom','left','transform'];
+    function clearPin() {
+      if (el.style.getPropertyPriority('height') !== 'important') return;
+      // Snap straight back to the normal layout (no slide animation between pinned and centred).
+      el.style.setProperty('transition', 'none', 'important');
+      PIN_PROPS.forEach(function (p) { el.style.removeProperty(p); });
+      var log0 = document.getElementById('chat-log'); if (log0) log0.style.removeProperty('max-height');
+      void el.offsetHeight;
+      requestAnimationFrame(function () { requestAnimationFrame(function () { el.style.removeProperty('transition'); }); });
+    }
+    function typingInDialog() {
+      var a = document.activeElement;
+      return !!(a && el.contains(a) && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && !/^(button|checkbox|radio|submit|reset|range|color|file|image)$/i.test(a.type || ''))));
+    }
     function pinToVisible() {
       if (!shown()) return;
+      // Oct 8 fix: pin ONLY while the on-screen keyboard is open over a field in this dialog.
+      // Pinning on every open/resize put top:0 + full height on the desktop dialog while its
+      // centring transform (-50%,-50%) still applied, so the top half (title, close X) sat
+      // above the window and members on desktop/tablet were stuck. Without a keyboard the
+      // normal CSS layout (centred on desktop, full screen on phones) is always right.
+      if (!keyboardOpen() || !typingInDialog()) { clearPin(); return; }
       // Drop any layout scroll first. Reading offsetTop before this latched the dialog
       // to a stale pan and left the input off screen.
       if (window.scrollY || document.documentElement.scrollTop) window.scrollTo(0, 0);
       var vv = window.visualViewport;
       var top = vv ? vv.offsetTop : 0, h = vv ? vv.height : window.innerHeight;
-      var r = el.getBoundingClientRect();
-      var aligned = top < 1 && Math.abs(h - window.innerHeight) < 2 && r.top > -2 && r.top < 2 && Math.abs(r.height - h) < 30;
-      if (aligned) {
-        if (el.style.getPropertyPriority('height') === 'important') {
-          ['top','height','max-height','bottom'].forEach(function (p) { el.style.removeProperty(p); });
-          var log0 = document.getElementById('chat-log'); if (log0) log0.style.removeProperty('max-height');
-        }
-        return;
-      }
       el.style.setProperty('top', top + 'px', 'important');
       el.style.setProperty('height', h + 'px', 'important');
       el.style.setProperty('max-height', h + 'px', 'important');
       el.style.setProperty('bottom', 'auto', 'important');
+      // Cancel the centring/slide transforms while pinned so top is the real top, and keep it
+      // horizontally centred (full width on phones, centred card on wider screens).
+      el.style.setProperty('transition', 'none', 'important');
+      el.style.setProperty('transform', 'none', 'important');
+      el.style.setProperty('left', Math.max(0, Math.round((window.innerWidth - el.offsetWidth) / 2)) + 'px', 'important');
       fitChat();
       requestAnimationFrame(function () { if (shown()) fitChat(); });
     }
@@ -6477,7 +6494,7 @@ if (forceComplete) { goDay(3); }
     function onClose() {
       isOpen = false;
       el.classList.remove('gm-in'); bd.classList.remove('gm-show');
-      document.body.classList.remove('gm-lock'); unlockPage(); ['top','height','max-height','bottom'].forEach(function (p) { el.style.removeProperty(p); });
+      document.body.classList.remove('gm-lock'); unlockPage(); PIN_PROPS.concat('transition').forEach(function (p) { el.style.removeProperty(p); });
       setTimeout(function () { if (!isOpen) bd.style.display = 'none'; }, 300);
       var t = lastFocus || starter; if (t && t.focus) { try { t.focus({ preventScroll: true }); } catch (e) {} }
     }
