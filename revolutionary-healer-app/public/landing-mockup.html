@@ -128,6 +128,9 @@ section{position:relative;padding:76px 0}
 .who p{font-size:clamp(20px,4.9vw,24px)}
 .who .not{color:var(--brown-soft);font-style:italic}
 
+.why p{font-size:clamp(20px,4.9vw,24px)}
+.why-sign{color:var(--gold-deep);margin-top:8px}
+.why-note{margin-top:18px}
 /* steps */
 .steps{list-style:none;counter-reset:s;display:grid;gap:0;margin-top:14px}
 .steps li{counter-increment:s;position:relative;padding:26px 0 26px 66px;border-bottom:1px solid rgba(184,145,58,.4)}
@@ -147,6 +150,16 @@ section{position:relative;padding:76px 0}
 .price-card .yr b{font-family:var(--serif-caps);font-weight:600;letter-spacing:.04em;color:var(--brown)}
 .price-card .fine{color:var(--gray);font-size:17px;margin:20px 0 26px;font-style:italic}
 
+
+.price-grid{display:grid;gap:26px;max-width:560px;margin:0 auto}
+.price-grid .price-card{margin:0;width:100%}
+.price-card .plan{font-family:var(--serif-caps);font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:10px}
+.price-card.yearly{padding-top:52px;background:var(--ivory)}
+.price-card .free{font-family:var(--serif-caps);font-size:clamp(17px,4.6vw,21px);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep);margin:12px 0 4px}
+.price-card .per{font-size:21px;margin:0 0 4px}
+.price-card .save{font-size:19px;color:var(--brown-soft);font-style:italic;margin:0 0 26px}
+.ribbon-gold{position:absolute;top:-1px;left:50%;transform:translateX(-50%);font-family:var(--serif-caps);font-size:12px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:#1d140b;background:linear-gradient(180deg,#ecd48c,#c9a24a 60%,#b8913a);padding:7px 20px 8px;z-index:2;clip-path:polygon(0 0,100% 0,96% 50%,100% 100%,0 100%,4% 50%)}
+@media(min-width:900px){.price-grid{grid-template-columns:1fr 1fr;max-width:960px;align-items:stretch}.price-grid .price-card{padding:54px 34px}.price-card.yearly{padding-top:62px}}
 /* door */
 .door{padding:70px 0 80px}
 .door .rule svg{width:30px;height:26px}
@@ -265,6 +278,18 @@ footer b{color:var(--gold-lite);font-weight:600}
 </style>
 </head>
 <body>
+<script>
+/* ===== YEARLY PRICE CONFIG — change ONE number =====
+   YEARLY_FREE_MONTHS = 3  ->  $270/year, ~$22.50/mo, $90 saving   (default; 9 paid months)
+   YEARLY_FREE_MONTHS = 4  ->  $240/year, $20/mo,    $120 saving  (8 paid months)
+   Monthly price stays $30; 12 x $30 = $360. For no-JS the HTML below already shows the 3-month version. */
+var YEARLY_FREE_MONTHS = 3, MONTHLY = 30;
+(function(){var p=(12-YEARLY_FREE_MONTHS)*MONTHLY,per=p/12,sv=12*MONTHLY-p;
+ var m={free:YEARLY_FREE_MONTHS,price:p,per:(per%1?per.toFixed(2):per),save:sv};
+ var q=new URLSearchParams(location.search).get('free'); /* ?free=4 previews the 4-month version locally */
+ if(q==='4'||q==='3'){var f=+q;p=(12-f)*MONTHLY;per=p/12;sv=12*MONTHLY-p;m={free:f,price:p,per:(per%1?per.toFixed(2):per),save:sv}}
+ document.addEventListener('DOMContentLoaded',function(){for(var k in m){document.querySelectorAll('[data-y="'+k+'"]').forEach(function(e){e.textContent=m[k]})}})})();
+</script>
 <script>document.documentElement.classList.add('js')</script>
 
 <div class="ribbon"><b>MOCKUP — not live.</b> All buttons and checkout links are placeholders. Static design draft.</div>
@@ -382,7 +407,16 @@ footer b{color:var(--gold-lite);font-weight:600}
     <p class="rv lead">Spiritually gifted healers who are done outsourcing their power and ready to become the authority over their own energy, gifts, and transformation.</p>
     <p class="rv">You feel deeply, you sense more than you can explain, and you're tired of carrying what isn't yours.</p>
     <p class="rv not">It isn't for you if you want someone to fix you. This is a place to take your power back.</p>
-    <div class="rv" style="margin-top:34px"><span class="ph"><b>[Placeholder — Rachael's story]</b> A short "Why I built this" paragraph in your voice goes here. Not provided yet; nothing has been invented.</span></div>
+    <div class="rv why">
+      <div class="rule left" style="margin:44px 0 26px"><i></i><svg viewBox="0 0 100 80" style="width:30px;height:24px"><use href="#bfs"/></svg><i></i></div>
+      <span class="eyebrow">Why I built this</span>
+      <p>I kept watching gifted people do the work. The activations, the clearings, the sessions, the practices. They'd feel a shift, and then it would slip, and they'd start to wonder what was wrong with them.</p>
+      <p>Nothing was wrong with them. A shift in one place doesn't hold when the rest of you is left out of it. Real change needs support across your spirit, your mind, your emotions, your energy, and your body, and it needs that support over time, not for one weekend. That kind of care has mostly lived behind one-on-one work and mentorship, and I never wanted your growth to depend on spending thousands and thousands of dollars.</p>
+      <p>I genuinely want you to have access to me, and I want to support you as you make these shifts, step into your power, and become a new earth leader, a revolutionary healer. So I built Revolutionary Healer to be that support, every day, at a fraction of the price.</p>
+      <p class="why-sign italic">— Rachael</p>
+      <p class="why-note"><span class="ph"><b>[Draft for Rachael to approve]</b> Written for this mockup from your direction. Edit freely.</span></p>
+    </div>
+
   </div>
 </section>
 
@@ -404,13 +438,25 @@ footer b{color:var(--gold-lite);font-weight:600}
   <div class="wrap">
     <div class="rule rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">One membership</h2>
+    <div class="price-grid">
     <div class="price-card rv">
+      <p class="plan">Monthly</p>
       <div class="big">$30<small> / month</small></div>
       <p class="cancel">Cancel anytime, right from inside the app.</p>
-      <p class="yr"><b>$347/year</b> for members who know they're staying.</p>
       <p class="fine">$30 is due today, then $30/month until you cancel. Cancel any time.</p>
       <a class="btn block" href="#checkout-placeholder" data-ph>Begin your Revolution</a>
     </div>
+    <div class="price-card yearly rv" id="yearlyCard">
+      <span class="ribbon-gold">Best value</span>
+      <p class="plan">Yearly</p>
+      <div class="big">$<span data-y="price">270</span><small> / year</small></div>
+      <p class="free"><span data-y="free">3</span> months free</p>
+      <p class="per">About $<span data-y="per">22.50</span>/month</p>
+      <p class="save">A $<span data-y="save">90</span> saving vs paying monthly ($360)</p>
+      <a class="btn block" href="#checkout-placeholder-yearly" data-ph>Begin your Revolution</a>
+    </div>
+    </div>
+
   </div>
 </section>
 
