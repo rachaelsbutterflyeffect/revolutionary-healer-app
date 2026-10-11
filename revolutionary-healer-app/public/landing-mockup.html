@@ -155,6 +155,7 @@ section{position:relative;padding:76px 0}
 .price-grid .price-card{margin:0;width:100%}
 .price-card .plan{font-family:var(--serif-caps);font-size:14px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:10px}
 .price-card.yearly{padding-top:52px;background:var(--ivory)}
+.price-card .yhead{font-family:var(--serif);font-weight:600;font-style:italic;font-size:clamp(24px,6vw,29px);line-height:1.25;color:var(--brown);margin:4px 0 18px}
 .price-card .free{font-family:var(--serif-caps);font-size:clamp(17px,4.6vw,21px);letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep);margin:12px 0 4px}
 .price-card .per{font-size:21px;margin:0 0 4px}
 .price-card .save{font-size:19px;color:var(--brown-soft);font-style:italic;margin:0 0 26px}
@@ -278,18 +279,6 @@ footer b{color:var(--gold-lite);font-weight:600}
 </style>
 </head>
 <body>
-<script>
-/* ===== YEARLY PRICE CONFIG — change ONE number =====
-   YEARLY_FREE_MONTHS = 3  ->  $270/year, ~$22.50/mo, $90 saving   (default; 9 paid months)
-   YEARLY_FREE_MONTHS = 4  ->  $240/year, $20/mo,    $120 saving  (8 paid months)
-   Monthly price stays $30; 12 x $30 = $360. For no-JS the HTML below already shows the 3-month version. */
-var YEARLY_FREE_MONTHS = 3, MONTHLY = 30;
-(function(){var p=(12-YEARLY_FREE_MONTHS)*MONTHLY,per=p/12,sv=12*MONTHLY-p;
- var m={free:YEARLY_FREE_MONTHS,price:p,per:(per%1?per.toFixed(2):per),save:sv};
- var q=new URLSearchParams(location.search).get('free'); /* ?free=4 previews the 4-month version locally */
- if(q==='4'||q==='3'){var f=+q;p=(12-f)*MONTHLY;per=p/12;sv=12*MONTHLY-p;m={free:f,price:p,per:(per%1?per.toFixed(2):per),save:sv}}
- document.addEventListener('DOMContentLoaded',function(){for(var k in m){document.querySelectorAll('[data-y="'+k+'"]').forEach(function(e){e.textContent=m[k]})}})})();
-</script>
 <script>document.documentElement.classList.add('js')</script>
 
 <div class="ribbon"><b>MOCKUP — not live.</b> All buttons and checkout links are placeholders. Static design draft.</div>
@@ -449,10 +438,10 @@ var YEARLY_FREE_MONTHS = 3, MONTHLY = 30;
     <div class="price-card yearly rv" id="yearlyCard">
       <span class="ribbon-gold">Best value</span>
       <p class="plan">Yearly</p>
-      <div class="big">$<span data-y="price">270</span><small> / year</small></div>
-      <p class="free"><span data-y="free">3</span> months free</p>
-      <p class="per">About $<span data-y="per">22.50</span>/month</p>
-      <p class="save">A $<span data-y="save">90</span> saving vs paying monthly ($360)</p>
+      <h3 class="yhead">Join for a year and you get three free months.</h3>
+      <div class="big">$270<small> / year</small></div>
+      <p class="per">About $22.50/month</p>
+      <p class="save">That's nine months paid instead of twelve. Paying monthly would be $360.</p>
       <a class="btn block" href="#checkout-placeholder-yearly" data-ph>Begin your Revolution</a>
     </div>
     </div>
