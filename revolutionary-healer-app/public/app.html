@@ -5718,7 +5718,7 @@ if (forceComplete) { goDay(3); }
   .cu-stack img { position: absolute; left: 50%; top: 50%; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 2px 3px rgba(0,0,0,0.45), 0 0 14px rgba(1,103,108,0.18); transform: translate(-50%, -50%); transition-property: transform; transition-timing-function: cubic-bezier(.3,.7,.25,1); will-change: transform; user-select: none; -webkit-user-drag: none; }
   .cu-deck { overflow: visible; }
   .cu-deck:disabled { cursor: default; }
-  .cu-deck.cu-ready { animation: cu-ready 2.8s ease-in-out infinite; border-radius: 14px; }
+  .cu-hint .cu-pick { margin-top: 4px; }
   @keyframes cu-ready { 0%,100% { filter: drop-shadow(0 0 0 rgba(226,190,104,0)); } 50% { filter: drop-shadow(0 0 18px rgba(226,190,104,0.45)); } }
   /* GAP Method teal treatment (exact GAP modal background: #01676C glow over #071414 > #050909 > #030505) on the Code Upgrade door + screen */
   #lux-codepull-pop { background: radial-gradient(120% 60% at 50% -10%, rgba(1,103,108,0.55), transparent 60%), radial-gradient(80% 50% at 100% 110%, rgba(207,166,70,0.14), transparent 60%), linear-gradient(180deg, #071414 0%, #050909 55%, #030505 100%); }
@@ -6071,7 +6071,7 @@ if (forceComplete) { goDay(3); }
         '<div class="lux-pop-body cu-body">' +
           '<section class="cu-view cu-pull" data-cu="pull">' +
             '<p class="cu-eyebrow">Pull a card</p><h2 class="cu-h">Which code is ready to upgrade?</h2>' +
-            '<p class="cu-sub cu-hint">Shuffling the deck&hellip;</p>' +
+            '<div class="cu-sub cu-hint"></div>' +
             '<button type="button" class="cu-deck" aria-label="Draw a card" disabled><span class="cu-stack" aria-hidden="true">' + stack + '</span></button>' +
             '<div class="cu-flip" aria-live="polite" hidden><div class="cu-flip-in"><img class="cu-face cu-back" src="' + CU_DIR + 'card-back.webp" alt=""><img class="cu-face cu-front" alt=""></div></div>' +
             '<div class="cu-revealed" hidden><p class="cu-name"></p><button type="button" class="cu-btn cu-gold" data-cu-go="reading">Read my card</button></div>' +
@@ -6109,12 +6109,12 @@ if (forceComplete) { goDay(3); }
         var w = deckW(), half = Math.floor(N / 2) + (Math.random() < .5 ? -1 : 1);
         var bottom = order.slice(0, half), top = order.slice(half);
         // split: cut the top half off and set the two packets side by side
-        top.forEach(function (c, d) { place(c, d + half, w * 0.36, -10, 7, 380); });
+        top.forEach(function (c, d) { place(c, d + half, w * 0.36, 0, 7, 380); });
         bottom.forEach(function (c, d) { place(c, d, -w * 0.36, 0, -7, 380); });
         await sleep(420); if (id !== runId) return;
         // thumbs bend the inner corners up before the riffle
-        top.forEach(function (c, d) { place(c, d + half, w * 0.30, -18, 13, 220); });
-        bottom.forEach(function (c, d) { place(c, d, -w * 0.30, -18, -13, 220); });
+        top.forEach(function (c, d) { place(c, d + half, w * 0.30, 0, 13, 220); });
+        bottom.forEach(function (c, d) { place(c, d, -w * 0.30, 0, -13, 220); });
         await sleep(240); if (id !== runId) return;
         // riffle: cards fall alternately from each packet, interleaving into one stack
         var merged = [], a = bottom.slice(), b = top.slice();
@@ -6131,7 +6131,7 @@ if (forceComplete) { goDay(3); }
         for (var r = 0; r < 3; r++) {
           var n = 3 + Math.floor(Math.random() * 3);
           var chunk = order.slice(order.length - n);
-          chunk.forEach(function (c, i) { place(c, order.length - n + i, w * 0.04, -w * 0.55, 3, 220); });
+          chunk.forEach(function (c, i) { place(c, order.length - n + i, w * 0.42, 0, 4, 220); });
           await sleep(240); if (id !== runId) return;
           order = chunk.concat(order.slice(0, order.length - n));
           order.forEach(function (c, d) { if (chunk.indexOf(c) === -1) place(c, d, 0, 0, 0, 200); });
@@ -6139,18 +6139,18 @@ if (forceComplete) { goDay(3); }
           await sleep(260); if (id !== runId) return;
         }
       }
+      // The shuffle loops until the member taps "Press to pick a card" (or the deck). Reduced motion: still, squared deck.
       async function shuffle() {
         var id = ++runId, deck = q('.cu-deck');
-        deck.disabled = true; q('.cu-hint').innerHTML = 'Shuffling the deck&hellip;';
         order = cards.slice(); squared(0);
-        if (!reduceM) {
-          await sleep(350); if (id !== runId) return;
+        deck.disabled = false; deck.classList.remove('cu-ready');
+        q('.cu-hint').innerHTML = '<button type="button" class="cu-btn cu-gold cu-pick">Press to pick a card</button>';
+        if (reduceM) return;
+        await sleep(300);
+        while (id === runId && cp.classList.contains('lux-open')) {
           await riffle(id); if (id !== runId) return;
           await overhand(id); if (id !== runId) return;
-          await riffle(id); if (id !== runId) return;
         }
-        deck.disabled = false; deck.classList.add('cu-ready');
-        q('.cu-hint').textContent = 'The deck is ready. Take a breath, then tap it to pull your card.';
       }
       function show(v) {
         Array.prototype.forEach.call(cp.querySelectorAll('.cu-view'), function (s) { s.hidden = s.getAttribute('data-cu') !== v; });
@@ -6169,13 +6169,14 @@ if (forceComplete) { goDay(3); }
       }
       window.__cuShuffle = shuffle; // test hook
       async function draw() {
-        if (busy || q('.cu-deck').disabled) return; busy = true;
+        if (busy || q('.cu-deck').hidden) return; busy = true; runId++;
+        q('.cu-hint').textContent = 'Drawing your card\u2026';
         var i; do { i = Math.floor(Math.random() * CU_CARDS.length); } while (i === last && CU_CARDS.length > 1);
         last = i; cur = CU_CARDS[i];
         q('.cu-front').src = CU_DIR + cur.f + '.webp';
         q('.cu-front').alt = cur.n + ' ' + cur.c + ' code card';
         var topCard = order[order.length - 1];
-        if (!reduceM) { place(topCard, N, 0, -deckW() * 0.5, 0, 380); await sleep(400); }
+        if (!reduceM) { squared(220); await sleep(260); place(topCard, N, deckW() * 0.15, 0, 4, 300); await sleep(320); }
         q('.cu-deck').hidden = true; q('.cu-flip').hidden = false;
         await sleep(reduceM ? 0 : 60);
         q('.cu-flip').classList.add('cu-flipped');
@@ -6184,6 +6185,7 @@ if (forceComplete) { goDay(3); }
         q('.cu-revealed').hidden = false; busy = false;
       }
       q('.cu-deck').addEventListener('click', draw);
+      cp.addEventListener('click', function (e) { if (e.target.closest('.cu-pick')) draw(); });
       var saving = false;
       async function saveShift(btn) {
         var out = q('.cu-out');
