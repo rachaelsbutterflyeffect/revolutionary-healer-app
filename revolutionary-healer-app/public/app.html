@@ -3045,7 +3045,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
           id: r.id,
           method: r.methodName || 'GAP Method',
           focusArea: r.focusArea || '',
-          identity: r.divineIdentityName,
+          identity: r.methodName === 'Code Upgrade' ? String(r.divineIdentityName || '').replace(/\s+\d+$/, '') : r.divineIdentityName,
           frequency: r.currentFrequency,
           statusLabel: r.progressStatus === 'embodied' ? '🟢 Embodied' : '● Shifting',
           statusClass: r.progressStatus === 'embodied' ? 'embodied' : 'shifting',
@@ -6032,6 +6032,7 @@ if (forceComplete) { goDay(3); }
       var box = document.getElementById('shift-modal-code');
       var isCU = shift && shift.method === 'Code Upgrade';
       modal.classList.toggle('cu-shift-mode', !!isCU);
+      if (isCU) { var idEl = document.getElementById('shift-modal-identity'); if (idEl) idEl.textContent = String(shift.identity || '').replace(/\s+\d+$/, ''); }
       var eb = cardEl.querySelector(':scope > .eyebrow');
       if (eb) { if (!eb.hasAttribute('data-orig')) eb.setAttribute('data-orig', eb.textContent); eb.textContent = isCU ? 'Your Code' : eb.getAttribute('data-orig'); }
       if (!isCU) { if (box) box.hidden = true; return r; }
@@ -6044,7 +6045,7 @@ if (forceComplete) { goDay(3); }
         if (anchor && anchor.parentNode === cardEl) cardEl.insertBefore(box, anchor.nextSibling); else cardEl.appendChild(box);
       }
       box.hidden = false;
-      box.innerHTML = (card ? '<img class="cu-code-thumb" src="' + CU_DIR + card.f + '.webp" alt="' + cuEsc(card.n + ' ' + card.c) + ' code card">' : '') +
+      box.innerHTML = (card ? '<img class="cu-code-thumb" src="' + CU_DIR + card.f + '.webp" alt="' + cuEsc(card.n) + ' code card">' : '') +
         '<div class="cu-code-text"><span class="cu-tag">Code Upgrade</span><p class="cu-code-reading">' + cuEsc(shift.gap) + '</p>' +
         '<button type="button" class="btn-primary cu-code-play" data-cu-slug="' + cuEsc(card ? card.s : '') + '">Play ' + cuEsc(shift.activation || 'the activation') + '</button></div>';
       return r;
@@ -6174,14 +6175,15 @@ if (forceComplete) { goDay(3); }
         var i; do { i = Math.floor(Math.random() * CU_CARDS.length); } while (i === last && CU_CARDS.length > 1);
         last = i; cur = CU_CARDS[i];
         q('.cu-front').src = CU_DIR + cur.f + '.webp';
-        q('.cu-front').alt = cur.n + ' ' + cur.c + ' code card';
+        q('.cu-front').alt = cur.n + ' code card';
         var topCard = order[order.length - 1];
         if (!reduceM) { squared(220); await sleep(260); place(topCard, N, deckW() * 0.15, 0, 4, 300); await sleep(320); }
         q('.cu-deck').hidden = true; q('.cu-flip').hidden = false;
         await sleep(reduceM ? 0 : 60);
         q('.cu-flip').classList.add('cu-flipped');
         await sleep(reduceM ? 0 : 750);
-        q('.cu-name').innerHTML = cuEsc(cur.n) + ' <span>' + cuEsc(cur.c) + '</span>';
+        q('.cu-name').textContent = cur.n;
+        q('.cu-hint').textContent = '';
         q('.cu-revealed').hidden = false; busy = false;
       }
       q('.cu-deck').addEventListener('click', draw);
@@ -6195,7 +6197,7 @@ if (forceComplete) { goDay(3); }
         try {
           var res = await fetch('/api/gap-shift', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
             source: 'code-upgrade', email: email,
-            divineIdentityName: cur.n + ' ' + cur.c,
+            divineIdentityName: cur.n, // the code number stays in focus_area (code-upgrade:<name>-<number>)
             currentFrequency: 'Code Upgrade',
             focusArea: 'code-upgrade:' + cur.f,
             gapExplanation: cur.r,
@@ -6205,7 +6207,7 @@ if (forceComplete) { goDay(3); }
           if (!res.ok || !data.shiftId) throw new Error(data.error || ('HTTP ' + res.status));
           if (typeof loadMemberRevolutionData === 'function') await loadMemberRevolutionData();
           out.innerHTML = '<div class="cu-shift"><span class="cu-tag">Code Upgrade</span><p class="cu-shift-k">Shifting card saved</p>' +
-            '<h3>' + cuEsc(cur.n) + ' ' + cuEsc(cur.c) + '</h3><p class="cu-shift-a">Paired activation: ' + cuEsc(cur.a) + '</p>' +
+            '<h3>' + cuEsc(cur.n) + '</h3><p class="cu-shift-a">Paired activation: ' + cuEsc(cur.a) + '</p>' +
             '<button type="button" class="cu-btn cu-line cu-view-shift" data-shift-id="' + cuEsc(data.shiftId) + '">Open it in My Revolution</button></div>';
           btn.textContent = 'Saved to your Shifts';
         } catch (err) {
@@ -6219,11 +6221,11 @@ if (forceComplete) { goDay(3); }
           var v = go.getAttribute('data-cu-go');
           if (v === 'reading') {
             q('.cu-thumb').src = CU_DIR + cur.f + '.webp'; q('.cu-thumb').alt = cur.n + ' code card';
-            q('.cu-rname').innerHTML = cuEsc(cur.n) + ' <span>' + cuEsc(cur.c) + '</span>';
+            q('.cu-rname').textContent = cur.n;
             q('.cu-rtext').textContent = cur.r;
           } else if (v === 'choice') {
             q('.cu-act').textContent = cur.a;
-            q('.cu-csub').textContent = 'Your ' + cur.n + ' ' + cur.c + ' code goes with this activation. Save it as a Shifting card to work with, or begin the upgrade right now.';
+            q('.cu-csub').textContent = 'Your ' + cur.n + ' code goes with this activation. Save it as a Shifting card to work with, or begin the upgrade right now.';
             q('.cu-out').innerHTML = '';
             var sb = q('[data-cu-act="shift"]'); sb.disabled = false; sb.textContent = 'Create a Shifting card';
           }
