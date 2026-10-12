@@ -989,7 +989,7 @@
       <button class="heart-btn filled" onclick="toggleHeart(this)" style="font-size: 20px;">♥</button>
     </div>
     <div class="shift-modal-actions" style="margin-top: 10px;">
-      <button class="btn-secondary" id="shift-modal-update-progress-btn">Update Progress</button>
+      <button class="btn-secondary" id="shift-modal-update-progress-btn">Upgrade Progress</button>
     </div>
     <div id="shift-modal-embodied-ready" style="display: none; margin-top: 20px;">
       <p style="margin: 0 0 10px; color: var(--gold-soft); font-size: 13.5px;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> This Gap may be ready to mark as Embodied.</p>
@@ -2298,7 +2298,7 @@
       var shift2 = window.__rhCurrentShift;
       if (!shift2) return;
       rhOpenChatWithMessage(
-        "You're ready to make this shift embodied \u2014 tell me, what's your main shift, and what's making you feel like this is fully embodied?",
+        "You're ready to make the shift.",
         { shiftId: shift2.id }
       );
       return;
@@ -5700,6 +5700,19 @@ if (forceComplete) { goDay(3); }
     .lux-sky::before, .lux-sky::after, #lux-backdrop::before, #lux-backdrop::after, .lux-embers span, .lux-title, .lux-pop-title, .lux-pop.lux-in, .lux-bfly, .lux-bfly .lux-bfly-wing, .lux-cue-chev, .lux-portal, .lux-head, .cu-view, .cu-revealed, .cu-shift { animation: none !important; }
     .cu-flip-in, .cu-stack img, .lux-portal, .lux-pop { transition: none !important; }
   }
+  /* ---------- Today's Focus: softer, easier-to-read "asking for attention" ---------- */
+  body.lux-home #my-revolution .focus-card-kicker { text-transform: lowercase; letter-spacing: .02em; font-size: 13px; color: rgba(255,255,255,0.62); }
+  body.lux-home #my-revolution .focus-card-kicker::first-letter { text-transform: uppercase; }
+  body.lux-home #my-revolution .focus-card-freq-value { position: relative; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-style: normal; font-size: 16px; line-height: 1.65; letter-spacing: .005em; color: rgba(255,255,255,0.9); max-width: 560px; margin-top: 4px; padding: 4px 0 4px 16px; border-left: 2px solid rgba(63,168,163,0.75); }
+  body.lux-home #my-revolution .focus-card-freq-value::before { content: "\201C"; }
+  body.lux-home #my-revolution .focus-card-freq-value::after { content: "\201D"; }
+  /* ---------- Opened Shift card: GAP Method teal, plain upright text ---------- */
+  #shift-modal .modal-card { background: radial-gradient(120% 60% at 50% -10%, rgba(1,103,108,0.55), transparent 60%), radial-gradient(80% 50% at 100% 110%, rgba(207,166,70,0.14), transparent 60%), linear-gradient(180deg, #071414 0%, #050909 55%, #030505 100%); border-color: rgba(207,166,70,0.55); box-shadow: 0 0 40px rgba(207,166,70,0.2), 0 0 90px rgba(1,103,108,0.35); }
+  #shift-modal .modal-card, #shift-modal .modal-card * { font-style: normal !important; }
+  #shift-modal .modal-card p, #shift-modal .modal-card .serif, #shift-modal .modal-card h2 { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  #shift-modal .modal-card h2 { font-weight: 600; font-size: 22px; line-height: 1.3; letter-spacing: 0; }
+  #shift-modal .modal-card p { font-size: 15px; line-height: 1.6; }
+  #shift-modal .modal-card .eyebrow { letter-spacing: .06em; }
   /* Code Upgrade: real deck (riffle + overhand shuffle driven by lux-home-js) */
   .cu-stack { position: absolute; inset: 0; }
   .cu-stack img { position: absolute; left: 50%; top: 50%; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 2px 3px rgba(0,0,0,0.45), 0 0 14px rgba(1,103,108,0.18); transform: translate(-50%, -50%); transition-property: transform; transition-timing-function: cubic-bezier(.3,.7,.25,1); will-change: transform; user-select: none; -webkit-user-drag: none; }
