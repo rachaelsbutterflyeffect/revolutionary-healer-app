@@ -5755,6 +5755,8 @@ if (forceComplete) { goDay(3); }
   .lux-watermark .wm-2 { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-size: clamp(30px, 6vmin, 56px); letter-spacing: .08em; margin-top: 4px; }
   .lux-watermark .wm-3 { font-family: "Great Vibes", "Allura", "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive; font-size: clamp(26px, 5vmin, 48px); margin-top: -6px; }
   @media (prefers-reduced-motion: reduce) { .lux-sky::before { animation: none !important; } }
+  /* ---------- Chatbot pop-up: near-black with a faint GAP teal (#01676C) glow at the edges ---------- */
+  #lux-chat-pop { background: radial-gradient(130% 110% at 50% 50%, #050606 58%, rgba(1,103,108,0.22) 100%), #050606; box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 6px rgba(226,190,104,0.05), inset 0 0 70px rgba(1,103,108,0.22), 0 0 50px rgba(1,103,108,0.25), 0 40px 120px rgba(0,0,0,0.75); animation: none; }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
