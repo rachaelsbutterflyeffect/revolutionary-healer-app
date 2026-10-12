@@ -5703,6 +5703,14 @@ if (forceComplete) { goDay(3); }
     .lux-sky::before, .lux-sky::after, #lux-backdrop::before, #lux-backdrop::after, .lux-embers span, .lux-title, .lux-pop-title, .lux-pop.lux-in, .lux-bfly, .lux-bfly .lux-bfly-wing, .lux-cue-chev, .lux-portal, .lux-head, .cu-view, .cu-revealed, .cu-shift, .cu-deck.cu-shuffling .cu-fan img { animation: none !important; }
     .cu-flip-in, .cu-fan img, .lux-portal, .lux-pop { transition: none !important; }
   }
+  /* ---------- Activations: two across on phones ---------- */
+  @media (max-width: 640px) {
+    #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+    #activations-page .media-thumb { height: 128px; }
+    #activations-page .media-body { padding: 12px 12px 14px; }
+    #activations-page .media-body h3 { font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; hyphens: auto; }
+    #activations-page .media-meta, #activations-page .media-description { font-size: 12.5px; line-height: 1.4; }
+  }
 </style>
 
 <script id="lux-home-js">
