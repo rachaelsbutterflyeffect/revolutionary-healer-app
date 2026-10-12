@@ -1028,22 +1028,22 @@
         <span class="lux-portal-desc">Bring whatever feels off</span>
         <span class="lux-portal-enter" aria-hidden="true">Enter</span>
       </button>
-      <button type="button" class="lux-portal" id="gap-method-starter-btn" style="--i:1" aria-haspopup="dialog" aria-label="Revolutionary Healer Gap Method">
+      <button type="button" class="lux-portal" id="gap-method-starter-btn" style="--i:1" aria-haspopup="dialog" aria-label="Revolutionary Healer GAP Method™">
         <span class="lux-portal-frame" aria-hidden="true"></span>
         <span class="lux-portal-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="url(#lux-gold-stroke)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="12" opacity=".4"/><path d="M8.5 24h31" opacity=".55"/><path d="M13.5 24l3-3 3 3-3 3z"/><path d="M21 24l3-3 3 3-3 3z" fill="url(#lux-gold-stroke)"/><path d="M28.5 24l3-3 3 3-3 3z"/></svg></span>
         <span class="lux-portal-kicker">Revolutionary Healer</span>
-        <span class="lux-portal-name">Gap Method<span class="lux-tm">&trade;</span></span>
+        <span class="lux-portal-name">GAP Method<span class="lux-tm">&trade;</span></span>
         <span class="lux-portal-rule" aria-hidden="true"></span>
         <span class="lux-portal-desc">Find what isn&rsquo;t adding up</span>
         <span class="lux-portal-enter" aria-hidden="true">Enter</span>
       </button>
-      <!-- Code Pull doorway: shown ONLY when CODE_PULL_ENABLED is true (non-production hosts).
+      <!-- Code Upgrade doorway (formerly Code Pull): shown ONLY when CODE_PULL_ENABLED is true (non-production hosts).
            Hidden by default, so production never shows it even if scripts fail. -->
-      <button type="button" class="lux-portal lux-portal-codepull" id="lux-portal-codepull" style="--i:2" hidden aria-haspopup="dialog" aria-controls="lux-codepull-pop" aria-label="Code Pull (mockup placeholder)">
+      <button type="button" class="lux-portal lux-portal-codepull" id="lux-portal-codepull" style="--i:2" hidden aria-haspopup="dialog" aria-controls="lux-codepull-pop" aria-label="Code Upgrade (mockup preview)">
         <span class="lux-portal-frame" aria-hidden="true"></span>
         <span class="lux-portal-icon" aria-hidden="true"><svg class="lux-bfly" viewBox="0 0 48 48" fill="none" stroke="url(#lux-gold-stroke)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><g class="lux-bfly-wing lux-bfly-l"><path d="M22.8 22.6C20 16.4 13.6 11.6 8.9 12.3c-2.9.4-3.2 4.3-1.3 7.5 2.3 3.9 7.4 5.2 15.2 4.6z"/><path d="M22.8 25.4c-5.6.1-10.6 2.6-11.5 6.4-.7 3.1 1.8 5.3 4.8 4.5 3.7-1 5.9-5 6.7-10.9z"/><path d="M21.6 22.4c-3.3-2.8-7.1-4.6-10.6-5" stroke-width=".7" opacity=".55"/><path d="M21.2 26.8c-2.6 1.1-4.6 3-5.6 5.3" stroke-width=".7" opacity=".55"/></g><g class="lux-bfly-wing lux-bfly-r"><path d="M25.2 22.6C28 16.4 34.4 11.6 39.1 12.3c2.9.4 3.2 4.3 1.3 7.5-2.3 3.9-7.4 5.2-15.2 4.6z"/><path d="M25.2 25.4c5.6.1 10.6 2.6 11.5 6.4.7 3.1-1.8 5.3-4.8 4.5-3.7-1-5.9-5-6.7-10.9z"/><path d="M26.4 22.4c3.3-2.8 7.1-4.6 10.6-5" stroke-width=".7" opacity=".55"/><path d="M26.8 26.8c2.6 1.1 4.6 3 5.6 5.3" stroke-width=".7" opacity=".55"/></g><path d="M24 18.6c.9 0 1.4 1 1.4 2.6v9.6c0 2.2-.6 3.8-1.4 3.8s-1.4-1.6-1.4-3.8v-9.6c0-1.6.5-2.6 1.4-2.6z"/><path d="M23.4 18.8c-.5-2.6-1.7-4.6-3.6-6.2M24.6 18.8c.5-2.6 1.7-4.6 3.6-6.2" stroke-width=".9"/><circle cx="19.6" cy="12.4" r=".9" fill="url(#lux-gold-stroke)" stroke="none"/><circle cx="28.4" cy="12.4" r=".9" fill="url(#lux-gold-stroke)" stroke="none"/></svg></span>
         <span class="lux-portal-kicker">Revolutionary Healer</span>
-        <span class="lux-portal-name">Code Pull</span>
+        <span class="lux-portal-name">Code Upgrade</span>
         <span class="lux-portal-rule" aria-hidden="true"></span>
         <span class="lux-portal-desc lux-portal-mock">Mockup preview</span>
         <span class="lux-portal-enter" aria-hidden="true">Enter</span>
@@ -5653,6 +5653,79 @@ if (forceComplete) { goDay(3); }
     body.lux-home #my-revolution .shift-row, body.lux-home #my-revolution .fav-card, body.lux-home #my-revolution .btn-primary { transition: none !important; }
     body.lux-home #my-revolution .shift-row:hover, body.lux-home #my-revolution .fav-card:hover, body.lux-home #my-revolution .btn-primary:hover { transform: none !important; }
   }
+  /* ---------- Warm gold palette override (doors + pop-ups): brown-black + gold, no teal ---------- */
+  .lux-sky { background: radial-gradient(70% 60% at 50% 46%, rgba(120,78,28,0.42) 0%, rgba(60,36,14,0.35) 35%, rgba(14,9,5,0.94) 70%, #000 100%), #080503; }
+  .lux-sky::after, #lux-backdrop::after { background: conic-gradient(from 200deg at 50% -10%, transparent 0deg, rgba(226,190,104,0.08) 18deg, transparent 34deg, rgba(248,231,176,0.06) 52deg, transparent 70deg, rgba(207,166,70,0.07) 95deg, transparent 120deg, transparent 360deg); }
+  .lux-embers span:nth-child(even) { background: #F8E7B0; box-shadow: 0 0 10px 3px rgba(226,190,104,0.45); }
+  .lux-eyebrow, .lux-portal-kicker, .lux-portal-mock, .lux-pop-kicker { color: rgba(241,213,138,0.88); }
+  .lux-rh { box-shadow: 0 0 0 1px rgba(226,190,104,0.55), 0 0 22px rgba(226,190,104,0.35), 0 0 50px rgba(120,78,28,0.45); }
+  .lux-portal { background: radial-gradient(90% 55% at 50% 0%, rgba(226,190,104,0.20), transparent 70%), radial-gradient(80% 40% at 50% 100%, rgba(226,190,104,0.10), transparent 70%), linear-gradient(180deg, rgba(34,22,11,0.90) 0%, rgba(16,10,5,0.93) 55%, rgba(0,0,0,0.95) 100%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 5px rgba(226,190,104,0.05), 0 18px 50px rgba(0,0,0,0.55), 0 0 40px rgba(120,78,28,0.28); }
+  .lux-portal-icon { background: radial-gradient(circle, rgba(226,190,104,0.18), rgba(120,78,28,0.12) 55%, transparent 72%); }
+  @media (hover: hover) { .lux-portal:hover { box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 6px rgba(226,190,104,0.09), 0 28px 70px rgba(0,0,0,0.6), 0 0 60px rgba(226,190,104,0.30), 0 0 120px rgba(150,100,35,0.40); } }
+  .lux-portal:active { box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 50px rgba(226,190,104,0.35), 0 0 100px rgba(150,100,35,0.40); }
+  #lux-backdrop { background: radial-gradient(120% 90% at 50% 40%, rgba(120,78,28,0.34), rgba(20,12,6,0.88) 55%, rgba(0,0,0,0.95) 100%); }
+  .lux-pop { background: radial-gradient(70% 55% at 50% 0%, rgba(120,78,28,0.40), transparent 70%), radial-gradient(60% 40% at 50% 100%, rgba(90,58,22,0.22), transparent 70%), radial-gradient(130% 100% at 50% 50%, rgba(14,9,5,0.86) 40%, rgba(0,0,0,0.94) 100%);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 6px rgba(226,190,104,0.06), 0 0 60px rgba(226,190,104,0.18), 0 0 140px rgba(120,78,28,0.32), 0 40px 120px rgba(0,0,0,0.75); }
+  .lux-pop.lux-in { animation: lux-glow-warm 6s ease-in-out infinite; }
+  @keyframes lux-glow-warm { 0%,100% { box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 6px rgba(226,190,104,0.05), 0 0 50px rgba(226,190,104,0.14), 0 0 130px rgba(120,78,28,0.3), 0 40px 120px rgba(0,0,0,0.75); } 50% { box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 6px rgba(226,190,104,0.09), 0 0 80px rgba(226,190,104,0.26), 0 0 170px rgba(150,100,35,0.4), 0 40px 120px rgba(0,0,0,0.75); } }
+  .lux-pop-head::after { background: linear-gradient(90deg, transparent, #F1D58A, #B98A2E, transparent); background-size: 220% 100%; }
+
+  /* ---------- Code Upgrade flow ---------- */
+  #lux-codepull-pop .cu-body { overflow-y: auto; overflow-x: hidden; align-items: center; text-align: center; padding-top: clamp(10px, 2vh, 22px); scrollbar-width: thin; scrollbar-color: rgba(226,190,104,.4) transparent; }
+  .cu-view { width: 100%; max-width: 880px; display: flex; flex-direction: column; align-items: center; margin: auto 0; animation: lux-fade .7s cubic-bezier(.16,1,.3,1) both; }
+  .cu-view[hidden] { display: none; }
+  .cu-eyebrow { margin: 0 0 6px; font-size: 11px; letter-spacing: .34em; padding-left: .34em; text-transform: uppercase; color: rgba(241,213,138,0.85); }
+  .cu-h { margin: 0; font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-weight: 500; font-size: clamp(26px, 4.6vh, 44px); line-height: 1.12; text-transform: uppercase; letter-spacing: .06em; background: linear-gradient(100deg, #B98A2E 0%, #F8E7B0 30%, #CFA646 55%, #FFF6DA 75%, #E2BE68 100%); -webkit-background-clip: text; background-clip: text; color: transparent; overflow-wrap: anywhere; }
+  .cu-h:focus { outline: none; }
+  .cu-h span, .cu-name span { font-size: .55em; letter-spacing: .2em; opacity: .8; }
+  .cu-sub { margin: 8px 0 0; color: rgba(255,255,255,0.72); font-size: 15px; line-height: 1.5; max-width: 560px; }
+  .cu-deck { position: relative; margin: clamp(18px, 4vh, 40px) 0 10px; width: min(70vw, 300px); height: clamp(220px, 40vh, 340px); background: none; border: 0; padding: 0; cursor: pointer; }
+  .cu-deck[hidden] { display: none; }
+  .cu-deck:focus-visible { outline: 2px solid #F1D58A; outline-offset: 6px; border-radius: 14px; }
+  .cu-fan img { position: absolute; left: 50%; top: 50%; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 20px rgba(226,190,104,0.15); transform: translate(-50%, -50%) rotate(calc(var(--k) * 7deg)) translateX(calc(var(--k) * 16px)); transform-origin: 50% 110%; transition: transform .5s cubic-bezier(.16,1,.3,1); }
+  @media (hover: hover) { .cu-deck:hover .cu-fan img { transform: translate(-50%, -50%) rotate(calc(var(--k) * 10deg)) translateX(calc(var(--k) * 22px)); } }
+  .cu-deck.cu-shuffling .cu-fan img { animation: cu-shuffle 1.2s cubic-bezier(.5,0,.3,1) both; animation-delay: calc((var(--k) + 2) * 40ms); }
+  @keyframes cu-shuffle { 0% { transform: translate(-50%, -50%) rotate(calc(var(--k) * 7deg)) translateX(calc(var(--k) * 16px)); } 30% { transform: translate(-50%, -50%) rotate(calc(var(--k) * -9deg)) translateX(calc(var(--k) * -34px)); } 60% { transform: translate(-50%, -50%) rotate(calc(var(--k) * 12deg)) translateX(calc(var(--k) * 30px)); } 100% { transform: translate(-50%, -50%) rotate(0) translateX(0); } }
+  .cu-flip { margin: clamp(14px, 3vh, 30px) 0 8px; perspective: 1400px; }
+  .cu-flip[hidden] { display: none; }
+  .cu-flip-in { position: relative; height: clamp(260px, 50vh, 460px); aspect-ratio: 2 / 3; max-width: 78vw; transform-style: preserve-3d; transition: transform .75s cubic-bezier(.3,.7,.2,1); }
+  .cu-flipped .cu-flip-in { transform: rotateY(180deg); }
+  .cu-face { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 14px; border: 1px solid rgba(226,190,104,0.7); backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(226,190,104,0.25); }
+  .cu-front { transform: rotateY(180deg); }
+  .cu-revealed { display: flex; flex-direction: column; align-items: center; gap: 12px; animation: lux-fade .7s both; }
+  .cu-revealed[hidden] { display: none; }
+  .cu-name { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: 26px; letter-spacing: .14em; text-transform: uppercase; color: #F8E7B0; }
+  .cu-btn { font: inherit; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; padding: 13px 24px; border-radius: 999px; cursor: pointer; max-width: 100%; transition: transform .2s ease, box-shadow .2s ease; }
+  .cu-gold { border: 0; color: #1A1208; font-weight: 600; background: linear-gradient(180deg, #F8E7B0 0%, #E2BE68 50%, #B98A2E 100%); box-shadow: 0 0 0 1px rgba(255,240,200,.4) inset, 0 0 22px rgba(207,166,70,.4); }
+  .cu-line { background: rgba(0,0,0,0.35); color: #F8E7B0; border: 1px solid rgba(226,190,104,0.65); }
+  @media (hover: hover) { .cu-btn:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(207,166,70,.5); } }
+  .cu-row { display: flex; gap: clamp(18px, 4vw, 44px); align-items: center; text-align: left; width: 100%; }
+  .cu-thumb { flex: 0 0 auto; width: clamp(150px, 22vw, 260px); aspect-ratio: 2 / 3; object-fit: cover; border-radius: 12px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 16px 40px rgba(0,0,0,0.6), 0 0 30px rgba(226,190,104,0.18); }
+  .cu-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .cu-badge { display: inline-block; padding: 6px 14px; border-radius: 999px; border: 1px dashed rgba(226,190,104,0.75); color: #F1D58A; font-size: 10.5px; letter-spacing: .26em; text-transform: uppercase; }
+  .cu-rtext { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(18px, 2.4vh, 22px); line-height: 1.5; color: rgba(255,255,255,0.9); }
+  .cu-btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 22px; }
+  .cu-out { width: 100%; display: flex; justify-content: center; margin-top: 18px; }
+  .cu-shift { position: relative; width: min(100%, 420px); padding: 22px 22px 18px; border-radius: 16px; border: 1px solid rgba(226,190,104,0.6); background: linear-gradient(180deg, rgba(40,26,12,0.9), rgba(10,7,4,0.95)); box-shadow: 0 0 30px rgba(226,190,104,0.15); text-align: left; animation: lux-fade .6s both; }
+  .cu-tag { position: absolute; top: 14px; right: 14px; padding: 4px 10px; border-radius: 999px; background: linear-gradient(180deg, #F8E7B0, #CFA646); color: #1A1208; font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; }
+  .cu-shift-k { margin: 0; font-size: 10.5px; letter-spacing: .3em; text-transform: uppercase; color: rgba(241,213,138,0.85); }
+  .cu-shift h3 { margin: 6px 0 4px; padding-right: 110px; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 500; font-size: 24px; text-transform: uppercase; letter-spacing: .06em; color: #F8E7B0; }
+  .cu-start h3 { padding-right: 0; }
+  .cu-shift-a { margin: 0; color: rgba(255,255,255,0.8); font-size: 14.5px; }
+  .cu-note { margin: 10px 0 0; color: rgba(255,255,255,0.5); font-size: 12.5px; font-style: italic; }
+  .cu-again { margin: 18px 0 4px; background: none; border: 0; color: rgba(248,231,176,0.85); font: inherit; font-size: 11.5px; letter-spacing: .28em; text-transform: uppercase; cursor: pointer; text-decoration: underline; text-underline-offset: 5px; }
+  .cu-again[hidden] { display: none; }
+  @media (max-width: 760px) {
+    .cu-row { flex-direction: column; text-align: center; }
+    .cu-text { align-items: center; }
+    .cu-thumb { width: 150px; }
+    .cu-btns .cu-btn { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lux-sky::before, .lux-sky::after, #lux-backdrop::before, #lux-backdrop::after, .lux-embers span, .lux-title, .lux-pop-title, .lux-pop.lux-in, .lux-bfly, .lux-bfly .lux-bfly-wing, .lux-cue-chev, .lux-portal, .lux-head, .cu-view, .cu-revealed, .cu-shift, .cu-deck.cu-shuffling .cu-fan img { animation: none !important; }
+    .cu-flip-in, .cu-fan img, .lux-portal, .lux-pop { transition: none !important; }
+  }
 </style>
 
 <script id="lux-home-js">
@@ -5861,22 +5934,134 @@ if (forceComplete) { goDay(3); }
   // ---------- Doorway 2: GAP Method ----------
   // #gap-method-starter-btn keeps its id, so the existing GAP Method handlers open the pop-up as before.
 
-  // ---------- Doorway 3: Code Pull (flagged) ----------
+  // ---------- Doorway 3: Code Upgrade (flagged; MOCKUP ONLY) ----------
+  // Pull a card -> sample reading -> pairs-with-an-activation choice. Pure front-end:
+  // no API calls, nothing saved (the Shifting card is a mock and is never written to Airtable).
   if (CODE_PULL_ENABLED) {
     var cpCard = document.getElementById('lux-portal-codepull');
     if (cpCard) {
+      var CU_CARDS = [
+        { n: 'Psychic', c: '96311', f: 'psychic-96311', a: 'Activating Your Gifts Activation', r: 'This card is calling your sight back home. Somewhere along the way you learned it was safer to keep what you know quiet, to second-guess the nudge and wait for proof. That old code of hiddenness is upgrading now. Your knowing is allowed to be clear, spoken and trusted, and it doesn\u2019t need anyone\u2019s permission to be real.' },
+        { n: 'Sovereignty', c: '11211', f: 'sovereignty-11211', a: 'Leadership Recode Activation', r: 'Love, this one is about taking your power back from every room you shrank in. The old code said your needs came last and your voice had to be earned. Sovereignty rewrites that: you are the authority in your own field. Decisions get simpler when you stop asking who you have to be to stay safe.' },
+        { n: 'Vibration', c: '12127', f: 'vibration-12127', a: 'Pink Cloud Activation', r: 'Your frequency has been carrying other people\u2019s weather. This card says it\u2019s time to set it down. The old code of matching whatever heaviness is around you is lifting, and your natural vibration is light, steady and yours. Notice how quickly things move when you stop dimming to fit in.' },
+        { n: 'Prosperity Flow', c: '36951', f: 'prosperity-flow-36951', a: 'More Than Enough Activation', r: 'Here\u2019s what I see: you\u2019ve been bracing around money, holding on tight in case it stops. That scarcity code is ready to dissolve. Prosperity isn\u2019t a reward you earn by overgiving, it\u2019s a current you are allowed to stand in. Let it come in, and let it stay.' },
+        { n: 'Expansion', c: '71325', f: 'expansion-71325', a: 'Expansion Activation', r: 'You\u2019ve outgrown the container you\u2019ve been living in, and part of you already knows it. The old code of limitation kept you small so nobody would be uncomfortable. Expansion means taking up the space your gifts were always meant to fill. You don\u2019t have to have it all figured out to grow into it.' },
+        { n: 'Embody', c: '61374', f: 'embody-61374', a: 'Creator Within Activation', r: 'This is the card of bringing it all down into your body. You\u2019ve done so much learning, and now the upgrade is living it. The old code kept your power in your head, in plans and in someday. Embodiment says it\u2019s here, in how you move, speak and choose today.' },
+        { n: 'Embody', c: '98321', f: 'embody-98321', a: 'Merkabah Activation', r: 'Your light body is asking to be fully lived in. The old code taught you to leave your body when things got intense, to float above it all. This Embody code calls every part of you back in, so your energy has a home and your shifts finally hold.' },
+        { n: 'Grounding', c: '97531', f: 'grounding-97531', a: 'Grounding Activation', r: 'Babe, you\u2019ve been holding everyone, and it\u2019s left you a little untethered. This card roots you back down. The old code said safety came from staying alert; the upgrade is safety that lives in your body. From here you can be seen without being swept away.' },
+        { n: 'Clear', c: '7112', f: 'clear-7112', a: 'Clearing Activation', r: 'There\u2019s some static in your field that isn\u2019t yours. Clear is the reset. The old code of carrying it all quietly is releasing, and clarity is what\u2019s left underneath. Expect your next step to feel obvious once the noise moves out.' },
+        { n: 'Nervous System', c: '9383', f: 'nervous-system-9383', a: 'Nervous System Recalibration Activation', r: 'Your system has been running on high alert for a long time, and it makes sense. This card is permission to soften. The old code said rest had to be earned; the upgrade is a body that knows it\u2019s safe now. When your nervous system settles, the shifts you\u2019ve been working for start to stick.' },
+        { n: 'Protection', c: '7891', f: 'protection-7891', a: 'Protection & Shielding Activation', r: 'You\u2019re so open and so sensitive, and that\u2019s a gift. The old code said being open meant absorbing everything. Protection rewrites it: you can stay soft-hearted and still have strong edges. What isn\u2019t yours doesn\u2019t get to stay.' },
+        { n: 'Wealth', c: '88118', f: 'wealth-88118', a: 'Wealth Frequency Activation', r: 'This one is big. Wealth is showing up because you\u2019re ready to hold more than you\u2019ve allowed yourself before. The old lack code kept a ceiling on what felt safe to receive. That ceiling is lifting. Let your energy get used to more, so your bank account can follow.' },
+        { n: 'Receiving', c: '7127', f: 'receiving-7127', a: 'Magnetic Field Activation', r: 'You are amazing at giving, and receiving has been the harder side. The old code said you had to earn every good thing. Receiving opens your hands: support, money, love and opportunity are allowed to come to you easily. Practice saying thank you and letting it land.' },
+        { n: 'Throat Chakra', c: '86116', f: 'throat-chakra-86116', a: 'Throat Chakra Activation', r: 'There\u2019s something you\u2019ve been holding back from saying. This card says your voice is safe now. The old code of hiding your truth to keep the peace is upgrading into clear, warm expression. People are waiting to hear exactly what you know.' },
+        { n: 'Sacral Chakra', c: '22317', f: 'sacral-chakra-22317', a: 'Chakra Balancing and Activation', r: 'Your creative, joyful energy wants to move again. The old code turned pleasure and play into something you had to justify. Sacral energy is your flow: creating, feeling and enjoying your life. When you let yourself want things, everything gets easier to receive.' },
+        { n: 'Earth Star', c: '93321', f: 'earth-star-93321', a: '10 Min Earth Star Activation', r: 'This card anchors you into something deeper than this moment\u2019s chaos. The old code was instability, never quite sure where you stand. Your Earth Star connects you to a foundation that doesn\u2019t move. From here, your big visions have something solid to grow from.' },
+        { n: 'Third Eye Chakra', c: '53682', f: 'third-eye-chakra-53682', a: 'Third Eye Activation', r: 'Your inner vision is getting sharper, and you may have been doubting what you see. The old code said you had to prove it before you trusted it. The upgrade is clear sight you can rely on. Pay attention to the images and the knowings that come this week.' }
+      ];
+      var CU_DIR = '/code-cards/';
       var cp = document.createElement('div');
       cp.className = 'lux-pop'; cp.id = 'lux-codepull-pop';
-      cp.setAttribute('role', 'dialog'); cp.setAttribute('aria-modal', 'true'); cp.setAttribute('aria-label', 'Code Pull'); cp.setAttribute('aria-hidden', 'true'); cp.setAttribute('tabindex', '-1');
+      cp.setAttribute('role', 'dialog'); cp.setAttribute('aria-modal', 'true'); cp.setAttribute('aria-label', 'Code Upgrade'); cp.setAttribute('aria-hidden', 'true'); cp.setAttribute('tabindex', '-1');
       cp.innerHTML = '<div class="lux-pop-head"><img class="lux-pop-rh" src="/images/icons/rh-icon.jpg" alt="" aria-hidden="true">' +
-        '<div class="lux-pop-titles"><div class="lux-pop-title">Revolutionary Healer</div><div class="lux-pop-kicker">Code Pull</div></div>' +
-        '<button type="button" class="lux-pop-close" data-lux-close aria-label="Close Code Pull">&#10005;</button></div>' +
-        '<div class="lux-pop-body"><div class="lux-cp-medallion" aria-hidden="true"></div><h2 class="lux-cp-title">Code Pull</h2>' +
-        '<div class="lux-cp-rule" aria-hidden="true"></div><span class="lux-cp-badge">Mockup placeholder</span>' +
-        '<p class="lux-cp-note">Design preview only. Nothing here is connected yet.</p></div>';
+        '<div class="lux-pop-titles"><div class="lux-pop-title">Code Upgrade</div><div class="lux-pop-kicker">Mockup preview</div></div>' +
+        '<button type="button" class="lux-pop-close" data-lux-close aria-label="Close Code Upgrade">&#10005;</button></div>' +
+        '<div class="lux-pop-body cu-body">' +
+          '<section class="cu-view cu-pull" data-cu="pull">' +
+            '<p class="cu-eyebrow">Pull a card</p><h2 class="cu-h">Which code is ready to upgrade?</h2>' +
+            '<p class="cu-sub">Take a breath, then tap the deck.</p>' +
+            '<button type="button" class="cu-deck" aria-label="Shuffle and draw a card">' +
+              '<span class="cu-fan" aria-hidden="true">' + [0,1,2,3,4].map(function (i) { return '<img src="' + CU_DIR + 'card-back.webp" alt="" style="--k:' + (i - 2) + '">'; }).join('') + '</span>' +
+            '</button>' +
+            '<div class="cu-flip" aria-live="polite" hidden><div class="cu-flip-in"><img class="cu-face cu-back" src="' + CU_DIR + 'card-back.webp" alt=""><img class="cu-face cu-front" alt=""></div></div>' +
+            '<div class="cu-revealed" hidden><p class="cu-name"></p><button type="button" class="cu-btn cu-gold" data-cu-go="reading">Read my card</button></div>' +
+          '</section>' +
+          '<section class="cu-view cu-reading" data-cu="reading" hidden>' +
+            '<div class="cu-row"><img class="cu-thumb" alt=""><div class="cu-text"><span class="cu-badge">Sample reading</span><h2 class="cu-h cu-rname"></h2><p class="cu-rtext"></p>' +
+            '<button type="button" class="cu-btn cu-gold" data-cu-go="choice">What does this card open?</button></div></div>' +
+          '</section>' +
+          '<section class="cu-view cu-choice" data-cu="choice" hidden>' +
+            '<p class="cu-eyebrow">Your card pairs with an activation</p><h2 class="cu-h cu-act"></h2>' +
+            '<p class="cu-sub cu-csub"></p>' +
+            '<div class="cu-btns"><button type="button" class="cu-btn cu-gold" data-cu-act="shift">Create a Shifting card</button><button type="button" class="cu-btn cu-line" data-cu-act="start">Start this activation now</button></div>' +
+            '<div class="cu-out" aria-live="polite"></div>' +
+          '</section>' +
+          '<button type="button" class="cu-again" hidden>Pull another card</button>' +
+        '</div>';
       body.appendChild(cp);
+      // Preload the card faces so the flip never shows a blank.
+      CU_CARDS.forEach(function (k) { var i = new Image(); i.src = CU_DIR + k.f + '.webp'; });
+
+      var reduceM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var cur = null, last = -1, busy = false;
+      var q = function (s) { return cp.querySelector(s); };
+      function esc(s) { return String(s).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
+      function show(v) {
+        Array.prototype.forEach.call(cp.querySelectorAll('.cu-view'), function (s) { s.hidden = s.getAttribute('data-cu') !== v; });
+        q('.cu-again').hidden = v === 'pull';
+        q('.cu-body').scrollTop = 0;
+        var h = q('[data-cu="' + v + '"] .cu-h, [data-cu="' + v + '"] .cu-btn');
+        if (v !== 'pull' && h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) {} }
+      }
+      function reset() {
+        cur = null; busy = false;
+        q('.cu-deck').hidden = false; q('.cu-deck').classList.remove('cu-shuffling');
+        q('.cu-flip').hidden = true; q('.cu-flip').classList.remove('cu-flipped');
+        q('.cu-revealed').hidden = true; q('.cu-out').innerHTML = '';
+        show('pull');
+      }
+      function draw() {
+        if (busy) return; busy = true;
+        var i; do { i = Math.floor(Math.random() * CU_CARDS.length); } while (i === last && CU_CARDS.length > 1);
+        last = i; cur = CU_CARDS[i];
+        var deck = q('.cu-deck'), flip = q('.cu-flip');
+        q('.cu-front').src = CU_DIR + cur.f + '.webp';
+        q('.cu-front').alt = cur.n + ' ' + cur.c + ' code card';
+        deck.classList.add('cu-shuffling');
+        setTimeout(function () {
+          deck.hidden = true; flip.hidden = false;
+          setTimeout(function () {
+            flip.classList.add('cu-flipped');
+            setTimeout(function () {
+              q('.cu-name').innerHTML = esc(cur.n) + ' <span>' + esc(cur.c) + '</span>';
+              q('.cu-revealed').hidden = false; busy = false;
+            }, reduceM ? 0 : 750);
+          }, reduceM ? 0 : 60);
+        }, reduceM ? 0 : 1200);
+      }
+      q('.cu-deck').addEventListener('click', draw);
+      cp.addEventListener('click', function (e) {
+        var go = e.target.closest('[data-cu-go]');
+        if (go && cur) {
+          var v = go.getAttribute('data-cu-go');
+          if (v === 'reading') {
+            q('.cu-thumb').src = CU_DIR + cur.f + '.webp'; q('.cu-thumb').alt = cur.n + ' code card';
+            q('.cu-rname').innerHTML = esc(cur.n) + ' <span>' + esc(cur.c) + '</span>';
+            q('.cu-rtext').textContent = cur.r;
+          } else if (v === 'choice') {
+            q('.cu-act').textContent = cur.a;
+            q('.cu-csub').textContent = 'Your ' + cur.n + ' ' + cur.c + ' code goes with this activation. Save it as a Shifting card to work with, or begin the upgrade right now.';
+            q('.cu-out').innerHTML = '';
+          }
+          show(v); return;
+        }
+        var act = e.target.closest('[data-cu-act]');
+        if (act && cur) {
+          var out = q('.cu-out');
+          if (act.getAttribute('data-cu-act') === 'shift') {
+            out.innerHTML = '<div class="cu-shift"><span class="cu-tag">Code Upgrade</span><p class="cu-shift-k">Shifting card</p>' +
+              '<h3>' + esc(cur.n) + ' ' + esc(cur.c) + '</h3><p class="cu-shift-a">Paired activation: ' + esc(cur.a) + '</p>' +
+              '<p class="cu-note">Mockup only. This card is not saved anywhere.</p></div>';
+          } else {
+            out.innerHTML = '<div class="cu-shift cu-start"><p class="cu-shift-k">Starting</p><h3>' + esc(cur.a) + '</h3>' +
+              '<p class="cu-note">Mockup placeholder. In the real app this opens the activation player.</p></div>';
+          }
+          return;
+        }
+        if (e.target.closest('.cu-again')) reset();
+      });
       cpCard.hidden = false;
-      cpCard.addEventListener('click', function () { openPop('lux-codepull-pop'); });
+      cpCard.addEventListener('click', function () { reset(); openPop('lux-codepull-pop'); });
     }
   }
 })();
