@@ -223,6 +223,70 @@ footer b{color:var(--gold-lite);font-weight:600}
   .price-card{padding:54px 52px}
 }
 
+
+/* ===== in-app graphics ===== */
+.marquee{position:relative;overflow:hidden;margin:-30px -22px 34px;padding:14px 0;border-top:1px solid rgba(228,201,120,.25);border-bottom:1px solid rgba(228,201,120,.25);-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);display:flex;width:calc(100% + 44px)}
+.mq-track{list-style:none;display:flex;flex:none;gap:18px;padding-right:18px;white-space:nowrap}
+.mq-track li{font-family:var(--serif-caps);font-size:13px;letter-spacing:.18em;text-transform:uppercase;color:#d9c48d}
+.mq-track li.dot{color:var(--gold);font-size:11px;letter-spacing:0}
+.day-grid{display:grid;gap:44px}
+.phone{margin:0 auto;width:100%;max-width:330px;background:#120d09;border-radius:38px;padding:12px;box-shadow:0 0 0 1px rgba(184,145,58,.6),0 24px 60px rgba(40,25,10,.28);position:relative}
+.ph-notch{position:absolute;top:12px;left:50%;width:96px;height:20px;background:#120d09;border-radius:0 0 14px 14px;transform:translateX(-50%);z-index:2}
+.ph-top{display:flex;align-items:center;gap:10px;background:#1c150f;border-radius:28px 28px 0 0;padding:30px 16px 12px;border-bottom:1px solid rgba(228,201,120,.25)}
+.ph-top b{display:block;font-family:var(--serif-caps);font-weight:500;font-size:14px;letter-spacing:.12em;color:var(--gold-lite)}
+.ph-top small{font:12px/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:#a89d8c}
+.ph-bf{width:30px;height:24px;flex:none}
+.ph-body{background:var(--ivory);min-height:430px;padding:14px 12px 10px;display:flex;flex-direction:column;gap:10px}
+.ph-sample{margin:0 auto 2px;font:11px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gray)}
+.msg{max-width:86%;padding:10px 13px;font:15.5px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;border-radius:16px}
+.msg.me{align-self:flex-end;background:#3a2616;color:#f7f0e3;border-bottom-right-radius:4px}
+.msg.bot{align-self:flex-start;background:#fff;color:var(--brown);border:1px solid rgba(184,145,58,.45);border-bottom-left-radius:4px}
+.mem{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:5px}
+.typing{align-self:flex-start;display:none;gap:5px;padding:12px 14px;background:#fff;border:1px solid rgba(184,145,58,.45);border-radius:16px;border-bottom-left-radius:4px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.ph-input{display:flex;justify-content:space-between;align-items:center;background:#fff;border-radius:0 0 28px 28px;padding:12px 16px 16px;border-top:1px solid rgba(184,145,58,.3);font:14px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--gray)}
+.ph-input b{width:28px;height:28px;border-radius:50%;background:var(--gold);color:#1d140b;display:grid;place-items:center;font-size:14px}
+.shift-wrap{text-align:center}
+.shift-card{all:unset;box-sizing:border-box;display:grid;cursor:pointer;width:100%;max-width:400px;margin:0 auto;perspective:1200px;text-align:left}
+.shift-card:focus-visible{outline:2px solid var(--gold);outline-offset:6px}
+.sc-face{grid-area:1/1;display:flex;flex-direction:column;background:var(--white);border:1px solid var(--gold);padding:26px 24px;box-shadow:0 16px 40px rgba(90,60,20,.1);backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .9s cubic-bezier(.3,.7,.2,1);position:relative}
+.sc-face::before{content:"";position:absolute;inset:6px;border:1px solid rgba(184,145,58,.3);pointer-events:none}
+.sc-back{transform:rotateY(180deg)}
+.shift-card.flip .sc-front{transform:rotateY(-180deg)}
+.shift-card.flip .sc-back{transform:rotateY(0)}
+.sc-tag{font:11px/1 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gray);margin-bottom:18px}
+.sc-lbl{display:block;font-family:var(--serif-caps);font-size:12.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-deep)}
+.sc-id{font-family:var(--serif);font-weight:600;font-size:34px;color:var(--brown);margin:4px 0 4px}
+.sc-rule{height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:16px 0}
+.sc-old{font-family:var(--serif);font-style:italic;font-size:26px;color:var(--brown-soft);margin-top:4px}
+.sc-hint{margin-top:auto;padding-top:26px;font-family:var(--serif);font-style:italic;font-size:17px;color:var(--gold-deep)}
+.sc-row{display:block}
+.sc-txt{display:block;font-family:var(--serif);font-size:20px;line-height:1.35;color:var(--brown);margin-top:3px}
+.sc-new{font-weight:600}
+.sc-arrow{color:var(--gold);font-size:16px;margin:6px 0 6px 2px}
+.sc-act{display:block;margin-top:18px;padding:12px 14px;background:var(--cream);border:1px solid rgba(184,145,58,.45)}
+.sc-actname{display:block;font-family:var(--serif);font-weight:600;font-size:19px;color:var(--brown);margin-top:4px}
+.sc-prog{margin-top:14px;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--gray)}
+.sc-prog b{color:var(--gold-deep);font-weight:600}
+@media(min-width:820px){
+  .marquee{margin:-20px 0 40px;width:100%}
+  .day-grid{grid-template-columns:1fr 340px;align-items:center;gap:56px}
+  #day .wrap.narrow{max-width:1000px}
+}
+@media (prefers-reduced-motion:no-preference){
+  .mq-track{animation:mq 70s linear infinite}
+  @keyframes mq{to{transform:translateX(-100%)}}
+  .js .ph-body .msg.wait{display:none}
+  .typing i{animation:td 1s ease-in-out infinite}
+  .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+  @keyframes td{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+  .msg.pop{animation:pop .5s cubic-bezier(.2,.8,.2,1)}
+  @keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+}
+@media (prefers-reduced-motion:reduce){
+  .sc-face{transition:none}
+}
+
 /* ===== MOTION (only when user has no reduced-motion preference) ===== */
 @media (prefers-reduced-motion:no-preference){
   .js .rv{opacity:0;transform:translateY(22px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
@@ -306,6 +370,9 @@ footer b{color:var(--gold-lite);font-weight:600}
   <div class="sparks" id="sparks" aria-hidden="true"></div>
   <div class="hero-bf" aria-hidden="true"><svg class="bf"><use href="#bfs"/></svg></div>
   <div class="wrap narrow">
+    <div class="marquee hl" style="--d:.05s" aria-label="A few of the activations inside">
+      <ul class="mq-track"><li>Wealth Frequency Activation</li><li class="dot" aria-hidden="true">✦</li><li>Grounding Activation</li><li class="dot" aria-hidden="true">✦</li><li>Visibility Activation</li><li class="dot" aria-hidden="true">✦</li><li>Creator Within Activation</li><li class="dot" aria-hidden="true">✦</li><li>Soul Retrieval Activation</li><li class="dot" aria-hidden="true">✦</li><li>Magnetic Field Activation</li><li class="dot" aria-hidden="true">✦</li><li>Intuition Activation</li><li class="dot" aria-hidden="true">✦</li><li>More Than Enough Activation</li><li class="dot" aria-hidden="true">✦</li><li>Timeline Collapse Activation</li><li class="dot" aria-hidden="true">✦</li><li>Protection &amp; Shielding Activation</li><li class="dot" aria-hidden="true">✦</li><li>Leadership Recode Activation</li><li class="dot" aria-hidden="true">✦</li><li>Nervous System Recalibration</li><li class="dot" aria-hidden="true">✦</li><li>Million Dollar Blueprint Activation</li><li class="dot" aria-hidden="true">✦</li><li>Remembrance Activation</li><li class="dot" aria-hidden="true">✦</li><li>Third Eye Activation</li><li class="dot" aria-hidden="true">✦</li><li>Yes Factor Vibe Booster</li><li class="dot" aria-hidden="true">✦</li><li>Freedom Timeline Activation</li><li class="dot" aria-hidden="true">✦</li><li>Removing the Frequency of Doubt</li><li class="dot" aria-hidden="true">✦</li></ul><ul class="mq-track" aria-hidden="true"><li>Wealth Frequency Activation</li><li class="dot" aria-hidden="true">✦</li><li>Grounding Activation</li><li class="dot" aria-hidden="true">✦</li><li>Visibility Activation</li><li class="dot" aria-hidden="true">✦</li><li>Creator Within Activation</li><li class="dot" aria-hidden="true">✦</li><li>Soul Retrieval Activation</li><li class="dot" aria-hidden="true">✦</li><li>Magnetic Field Activation</li><li class="dot" aria-hidden="true">✦</li><li>Intuition Activation</li><li class="dot" aria-hidden="true">✦</li><li>More Than Enough Activation</li><li class="dot" aria-hidden="true">✦</li><li>Timeline Collapse Activation</li><li class="dot" aria-hidden="true">✦</li><li>Protection &amp; Shielding Activation</li><li class="dot" aria-hidden="true">✦</li><li>Leadership Recode Activation</li><li class="dot" aria-hidden="true">✦</li><li>Nervous System Recalibration</li><li class="dot" aria-hidden="true">✦</li><li>Million Dollar Blueprint Activation</li><li class="dot" aria-hidden="true">✦</li><li>Remembrance Activation</li><li class="dot" aria-hidden="true">✦</li><li>Third Eye Activation</li><li class="dot" aria-hidden="true">✦</li><li>Yes Factor Vibe Booster</li><li class="dot" aria-hidden="true">✦</li><li>Freedom Timeline Activation</li><li class="dot" aria-hidden="true">✦</li><li>Removing the Frequency of Doubt</li><li class="dot" aria-hidden="true">✦</li></ul>
+    </div>
     <span class="eyebrow hl" style="--d:.1s">The Revolutionary Healer</span>
     <h1 class="hl" style="--d:.35s">Your Divine Identity is already within you.</h1>
     <p class="sub hl" style="--d:.8s">The only question is what's interfering with it.</p>
@@ -381,6 +448,30 @@ footer b{color:var(--gold-lite);font-weight:600}
       </li>
     </ul>
     <div class="total rv"><p class="sum">$555 + $890 + $1,000 + $555 = $3,000</p><p><b>$3,000</b> in value, every single month.</p><p class="anchor">The activations alone ($890) are worth more than a full year of membership at $30 a month ($360).</p></div>
+    <div class="shift-wrap rv">
+      <p class="eyebrow center" style="margin-top:56px">A glimpse of a Shift</p>
+      <button class="shift-card" id="shiftCard" type="button" aria-label="Sample Shift card. Tap to flip.">
+        <span class="sc-face sc-front">
+          <span class="sc-tag">Sample · GAP Method™</span>
+          <span class="sc-lbl">Your Divine Identity</span>
+          <span class="sc-id">The Leader</span>
+          <span class="sc-rule"></span>
+          <span class="sc-lbl">Currently experiencing</span>
+          <span class="sc-old">Hiddenness</span>
+          <span class="sc-hint">Tap to reveal your Shift ↻</span>
+        </span>
+        <span class="sc-face sc-back">
+          <span class="sc-tag">Sample · GAP Method™</span>
+          <span class="sc-row"><span class="sc-lbl">Old pattern</span><span class="sc-txt">Hiddenness</span></span>
+          <span class="sc-arrow">↓</span>
+          <span class="sc-row"><span class="sc-lbl">Your GAP</span><span class="sc-txt">Staying small so everyone else stays comfortable.</span></span>
+          <span class="sc-arrow">↓</span>
+          <span class="sc-row"><span class="sc-lbl">Your Shift</span><span class="sc-txt sc-new">Visibility, truth and embodied authority.</span></span>
+          <span class="sc-act"><span class="sc-lbl">Primary Activation</span><span class="sc-actname">▶ Visibility Activation</span></span>
+          <span class="sc-prog">Progress: <b>● Shifting</b></span>
+        </span>
+      </button>
+    </div>
   </div>
 </section>
 
@@ -389,11 +480,28 @@ footer b{color:var(--gold-lite);font-weight:600}
   <div class="wrap narrow">
     <div class="rule left rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">What a day looks like</h2>
+    <div class="day-grid">
+    <div class="day-copy">
     <ol class="day rv" id="dayList">
       <li>Open the app. Today's Focus meets you where you are: the Divine Identity you're stepping into, and what's asking for attention.</li>
       <li>Play the activation I recommended. Bring whatever feels off to the chat. It remembers where you left off, so you never start from zero.</li>
       <li>Save the shift. Come back tomorrow and continue your Revolution. This is how it stays.</li>
     </ol>
+    </div>
+    <figure class="phone rv" id="phone" aria-label="Sample chat inside the app">
+      <div class="ph-notch"></div>
+      <div class="ph-top"><svg viewBox="0 0 100 80" class="ph-bf"><use href="#bfs"/></svg><div><b>Talk to Rachael</b><small>Revolutionary Healer</small></div></div>
+      <div class="ph-body" id="chatBody">
+        <p class="ph-sample">Sample conversation</p>
+        <div class="msg me">I'm doing it again. I said yes to everyone this week and now I'm empty.</div>
+        <div class="msg bot"><span class="mem">✦ Remembering where you left off</span>Last week you told me you were "done disappearing to keep the peace." This feels like that same place, love.</div>
+        <div class="msg me">It is. I thought I'd cleared that.</div>
+        <div class="msg bot">You did shift it. This is the pattern asking to be seen one layer deeper. Your Gap was Hiddenness. Play Visibility Activation, then come tell me what you noticed.</div>
+        <div class="typing" aria-hidden="true"><i></i><i></i><i></i></div>
+      </div>
+      <div class="ph-input"><span>Bring whatever feels off…</span><b>↑</b></div>
+    </figure>
+    </div>
   </div>
 </section>
 
@@ -533,6 +641,20 @@ footer b{color:var(--gold-lite);font-weight:600}
   /* placeholder links */
   var toast=d.getElementById('toast'),tt;
   d.addEventListener('click',function(e){var a=e.target.closest('a[data-ph]');if(!a)return;e.preventDefault();toast.classList.add('on');clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove('on')},2600)});
+  /* chat demo */
+  (function(){var body=d.getElementById('chatBody');if(!body)return;var msgs=[].slice.call(body.querySelectorAll('.msg')),typ=body.querySelector('.typing');
+    if(reduce||!('IntersectionObserver' in window))return;
+    msgs.forEach(function(m){m.classList.add('wait')});
+    function show(i){if(i>=msgs.length)return;var m=msgs[i];
+      if(m.classList.contains('bot')){typ.style.display='flex';body.appendChild(typ);setTimeout(function(){typ.style.display='none';m.classList.remove('wait');m.classList.add('pop');setTimeout(function(){show(i+1)},1100)},1400)}
+      else{m.classList.remove('wait');m.classList.add('pop');setTimeout(function(){show(i+1)},900)}}
+    new IntersectionObserver(function(en,o){if(en[0].isIntersecting){o.disconnect();setTimeout(function(){show(0)},400)}},{threshold:.45}).observe(d.getElementById('phone'));
+  })();
+  /* shift card */
+  (function(){var c=d.getElementById('shiftCard');if(!c)return;c.addEventListener('click',function(){c.classList.toggle('flip')});
+    if(reduce||!('IntersectionObserver' in window)){c.classList.add('flip');return}
+    new IntersectionObserver(function(en,o){if(en[0].isIntersecting){o.disconnect();setTimeout(function(){c.classList.add('flip')},1600)}},{threshold:.6}).observe(c);
+  })();
   /* FAQ: one open at a time */
   var ds=[].slice.call(d.querySelectorAll('.faq details'));
   ds.forEach(function(x){x.addEventListener('toggle',function(){if(x.open)ds.forEach(function(o){if(o!==x)o.open=false})})});
