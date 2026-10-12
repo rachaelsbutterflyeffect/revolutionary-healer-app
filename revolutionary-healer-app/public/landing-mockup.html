@@ -287,41 +287,6 @@ footer b{color:var(--gold-lite);font-weight:600}
   .sc-face{transition:none}
 }
 
-
-/* ===== warm dark sections (main feel) ===== */
-.wd{color:#eadfcd;overflow:hidden}
-.wd-a{background:linear-gradient(180deg,#1f160e 0%,#18110b 100%)}
-.wd-b{background:radial-gradient(ellipse 70% 60% at 50% 30%,rgba(201,162,74,.10),transparent 70%),linear-gradient(180deg,#261b12 0%,#1c140d 100%)}
-.wd + .wd::after{content:"";position:absolute;top:0;left:50%;width:min(420px,70%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(228,201,120,.55),transparent)}
-.wd .wrap{position:relative;z-index:2}
-.wd .sparks{z-index:1}
-.wd .sp{width:2px;height:2px}
-.wd h3,.wd .stack h3,.wd .steps h3{color:#f3e8d6}
-.wd .pattern p.turn{color:#f3e8d6}
-.wd .pattern .power,.wd .defn em,.wd .stack .val,.wd .why-sign,.wd .eyebrow{color:var(--gold-lite)}
-.wd .stack{border-color:rgba(228,201,120,.45)}
-.wd .stack li,.wd .steps li,.wd .faq details{border-color:rgba(228,201,120,.3)}
-.wd .stack .desc,.wd .steps p,.wd .faq .ans p{color:#d6c9b5}
-.wd .steps .quiet{color:#b9ad9b}
-.wd .stack .chk{stroke:var(--gold-lite)}
-.wd .total{background:#2a1f15;border-color:var(--gold)}
-.wd .total p{color:#f3e8d6}.wd .total p b{color:var(--gold-lite)}
-.wd .total .sum{color:#b9ad9b}.wd .total .anchor{color:#d6c9b5}
-.wd .day li::before{background:#1c140d}
-.wd .steps li::before{background:#1f160e;color:var(--gold-lite)}
-.wd .faq{border-color:rgba(228,201,120,.45)}
-.wd .faq summary{color:#f3e8d6}
-.wd .faq summary::after{border-color:var(--gold-lite)}
-.wd .textlink.light{color:var(--gold-lite);border-color:rgba(228,201,120,.45)}
-.wd .eyebrow.center{color:var(--gold-lite)}
-.wd .lead,.wd p{color:inherit}
-.wd .not{color:#cbbfab}
-.wd .ph{color:#cfc3b0;background:rgba(228,201,120,.08);border-color:rgba(228,201,120,.45)}
-.wd .ph b{color:var(--gold-lite)}
-.wd .phone{box-shadow:0 0 0 1px rgba(228,201,120,.6),0 24px 60px rgba(0,0,0,.45),0 0 60px rgba(201,162,74,.12)}
-.wd .sc-face{box-shadow:0 16px 50px rgba(0,0,0,.4),0 0 50px rgba(201,162,74,.1)}
-.wd .rule svg path{fill:var(--gold-lite)}
-
 /* ===== MOTION (only when user has no reduced-motion preference) ===== */
 @media (prefers-reduced-motion:no-preference){
   .js .rv{opacity:0;transform:translateY(22px);transition:opacity .9s cubic-bezier(.2,.7,.2,1),transform .9s cubic-bezier(.2,.7,.2,1);transition-delay:var(--d,0s)}
@@ -421,7 +386,7 @@ footer b{color:var(--gold-lite);font-weight:600}
 </header>
 
 <!-- 2. PROBLEM -->
-<section class="dark wd wd-a" id="problem">
+<section class="cream" id="problem">
   <div class="wrap narrow pattern">
     <div class="rule left rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">You're not here to outsource your power</h2>
@@ -436,7 +401,7 @@ footer b{color:var(--gold-lite);font-weight:600}
 </section>
 
 <!-- 3. ONE LINE -->
-<section class="dark wd wd-b center" id="what">
+<section class="ivory center" id="what">
   <div class="wrap">
     <div class="rule rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">Your daily home</h2>
@@ -446,7 +411,7 @@ footer b{color:var(--gold-lite);font-weight:600}
 </section>
 
 <!-- 4. STACK -->
-<section class="dark wd wd-a" id="inside">
+<section class="cream" id="inside">
   <div class="wrap narrow">
     <div class="rule left rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">Everything inside</h2>
@@ -511,7 +476,7 @@ footer b{color:var(--gold-lite);font-weight:600}
 </section>
 
 <!-- 5. A DAY INSIDE -->
-<section class="dark wd wd-b" id="day">
+<section class="ivory" id="day">
   <div class="wrap narrow">
     <div class="rule left rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">What a day looks like</h2>
@@ -541,7 +506,7 @@ footer b{color:var(--gold-lite);font-weight:600}
 </section>
 
 <!-- 6. WHO IT'S FOR -->
-<section class="cream" id="who">
+<section class="white" id="who">
   <div class="wrap narrow who">
     <div class="rule left rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">Who this is for</h2>
@@ -549,15 +514,8 @@ footer b{color:var(--gold-lite);font-weight:600}
     <p class="rv">You feel deeply, you sense more than you can explain, and you're tired of carrying what isn't yours.</p>
     <p class="rv">You don't need to be fixed. You need to be held while you become who you already are.</p>
     <p class="rv not">It isn't for you if you want someone to fix you. There is no hiding in my space. This is where you take your power back.</p>
-
-  </div>
-</section>
-
-<!-- 6b. WHY I BUILT THIS -->
-<section class="dark wd wd-b" id="why">
-  <div class="wrap narrow">
     <div class="rv why">
-      <div class="rule left" style="margin:0 0 26px"><i></i><svg viewBox="0 0 100 80" style="width:30px;height:24px"><use href="#bfs"/></svg><i></i></div>
+      <div class="rule left" style="margin:44px 0 26px"><i></i><svg viewBox="0 0 100 80" style="width:30px;height:24px"><use href="#bfs"/></svg><i></i></div>
       <span class="eyebrow">Why I built this</span>
       <p>I know what it is to be the one who holds everyone else. And I kept watching gifted healers do the work. The activations, the clearings, the sessions, the practices. They'd feel a shift, and then it would slip, and they'd start to wonder what was wrong with them.</p>
       <p>Nothing was wrong with them. A shift in one place doesn't hold when the rest of you is left out of it. Real change needs support across your spirit, your mind, your emotions, your energy, and your body, and it needs that support over time, not for one weekend. That kind of care has mostly lived behind one-on-one work and mentorship, and I never wanted your growth to depend on spending thousands and thousands of dollars.</p>
@@ -565,11 +523,12 @@ footer b{color:var(--gold-lite);font-weight:600}
       <p class="why-sign italic">— Rachael</p>
       <p class="why-note"><span class="ph"><b>[Draft for Rachael to approve]</b> Written for this mockup from your direction. Edit freely.</span></p>
     </div>
+
   </div>
 </section>
 
 <!-- 7. HOW IT WORKS -->
-<section class="dark wd wd-a" id="how">
+<section class="cream" id="how">
   <div class="wrap">
     <div class="rule left rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">How it works</h2>
@@ -609,7 +568,7 @@ footer b{color:var(--gold-lite);font-weight:600}
 </section>
 
 <!-- 9. 1:1 DOOR -->
-<section class="dark wd wd-b door center" id="door">
+<section class="cream door center" id="door">
   <div class="wrap narrow">
     <div class="rule rv"><i></i><svg viewBox="0 0 100 80" style="width:34px;height:28px"><use href="#bfs"/></svg><i></i></div>
     <h2 class="rv">Want me in the room?</h2>
@@ -619,7 +578,7 @@ footer b{color:var(--gold-lite);font-weight:600}
 </section>
 
 <!-- 10. FAQ -->
-<section class="dark wd wd-a" id="faq">
+<section class="white" id="faq">
   <div class="wrap narrow">
     <div class="rule left rv"><i></i><svg viewBox="0 0 22 22"><path d="M11 1l3 8 8 2-8 3-3 8-3-8-8-3 8-2z" fill="#b8913a"/></svg><i></i></div>
     <h2 class="rv">Questions</h2>
@@ -658,7 +617,6 @@ footer b{color:var(--gold-lite);font-weight:600}
   /* sparkles */
   function sparks(id,n){var h=d.getElementById(id);if(!h)return;for(var i=0;i<n;i++){var s=d.createElement('i');s.className='sp';s.style.left=(5+Math.random()*90)+'%';s.style.top=(8+Math.random()*84)+'%';s.style.setProperty('--t',(5+Math.random()*5)+'s');s.style.setProperty('--dl',(Math.random()*6)+'s');if(reduce)s.style.opacity=.35;h.appendChild(s);}}
   sparks('sparks',16);sparks('sparks2',10);
-  [].forEach.call(d.querySelectorAll('section.wd'),function(sec,i){var h=d.createElement('div');h.className='sparks';h.id='spw'+i;h.setAttribute('aria-hidden','true');sec.insertBefore(h,sec.firstChild);sparks(h.id,5)});
   /* reveal on scroll */
   var els=[].slice.call(d.querySelectorAll('.rv,.rule,.stack li,.total,.day'));
   var staggerIdx=0;
