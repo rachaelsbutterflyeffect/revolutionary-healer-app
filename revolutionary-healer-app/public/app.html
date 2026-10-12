@@ -503,6 +503,28 @@
   .shift-modal-section { margin-top: 16px; }
   .shift-modal-section .eyebrow { margin-bottom: 4px; }
   .shift-modal-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+  /* Week 1 visual refresh: Shift card + saved Shift modal (presentation only) */
+  #shift-modal .modal-card { position: relative; background: radial-gradient(120% 60% at 50% 0%, rgba(207,166,70,0.10), transparent 60%), var(--panel); border-color: rgba(207,166,70,0.7); box-shadow: 0 0 0 1px rgba(228,199,122,0.12) inset, 0 18px 50px rgba(0,0,0,0.45), 0 0 32px rgba(207,166,70,0.10); }
+  #shift-modal .modal-card::before { content: ""; position: absolute; left: 28px; right: 28px; top: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--gold-soft), transparent); }
+  #shift-modal .eyebrow { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-soft); font-weight: 400; }
+  #shift-modal-identity { background: linear-gradient(180deg, #FFF4D6 0%, var(--gold-soft) 55%, var(--gold) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #shift-modal .shift-modal-section { padding-top: 14px; border-top: 1px solid transparent; border-image: linear-gradient(90deg, rgba(207,166,70,0.55), rgba(207,166,70,0.08)) 1; }
+  #shift-modal .shift-modal-section:first-of-type { margin-top: 18px; }
+  #shift-modal-highest-leverage { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; font-size: 1.08em; color: var(--white); }
+  #shift-modal-activation { color: var(--gold-soft); }
+  #shift-modal.active .modal-card > * { animation: rh-shift-reveal .55s ease-out both; }
+  #shift-modal.active .modal-card > *:nth-child(2) { animation-delay: .04s; } #shift-modal.active .modal-card > *:nth-child(3) { animation-delay: .08s; }
+  #shift-modal.active .modal-card > *:nth-child(4) { animation-delay: .12s; } #shift-modal.active .modal-card > *:nth-child(5) { animation-delay: .17s; }
+  #shift-modal.active .modal-card > *:nth-child(6) { animation-delay: .22s; } #shift-modal.active .modal-card > *:nth-child(7) { animation-delay: .27s; }
+  #shift-modal.active .modal-card > *:nth-child(n+8) { animation-delay: .32s; }
+  #shift-modal.active .modal-card > .shift-modal-headerbar { animation: none; }
+  @keyframes rh-shift-reveal { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .shift-row { position: relative; overflow: hidden; background: linear-gradient(180deg, rgba(207,166,70,0.05), transparent 70%), var(--panel); transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+  .shift-row::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, transparent, var(--gold), transparent); opacity: .8; }
+  .shift-row:hover { box-shadow: 0 0 18px rgba(207,166,70,0.14); transform: translateY(-1px); }
+  .shift-method { font-family: Georgia, "Iowan Old Style", "Times New Roman", serif; letter-spacing: 0.16em; color: var(--gold-soft); }
+  .shift-identity { color: #FFF4D6; }
+  @media (prefers-reduced-motion: reduce) { #shift-modal.active .modal-card > * { animation: none !important; } .shift-row, .shift-row:hover { transition: none; transform: none; } }
 
   /* Dedicated pages (Favorites / My Activations / Go Deeper) */
   .page-view { display: none; }
