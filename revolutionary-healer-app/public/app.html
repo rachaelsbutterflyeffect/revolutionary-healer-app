@@ -5338,7 +5338,6 @@ if (forceComplete) { goDay(3); }
      --lux-top (hero's offset from the page top) is measured by lux-home-js. */
   body.lux-home > #hero-section { display: flex; padding: 0; border-bottom: none; text-align: center; position: relative; min-height: calc(100vh - var(--lux-top, 150px)); min-height: calc(100dvh - var(--lux-top, 150px)); }
   body:not(.lux-home) #hero-section .lux-sky { display: none; }
-  body.lux-home nav { position: relative; z-index: 2; border-bottom-color: rgba(226,190,104,0.16); background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.25)); }
   #hero-section > .lux-wrap { flex: 1 1 auto; width: 100%; max-width: 1240px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(12px, 2.6vh, 34px); padding: clamp(14px, 3vh, 40px) 32px clamp(12px, 2.4vh, 28px); position: relative; z-index: 1; }
 
   /* ---------- Sacred background (fixed, behind nav + home) ---------- */
@@ -5423,20 +5422,6 @@ if (forceComplete) { goDay(3); }
   @keyframes lux-flutter-idle { 0%,84%,100% { transform: scaleX(1); } 88% { transform: scaleX(.82); } 92% { transform: scaleX(1); } 95% { transform: scaleX(.88); } }
   @keyframes lux-bfly-glow { 0%,100% { filter: drop-shadow(0 0 5px rgba(226,190,104,0.3)); } 50% { filter: drop-shadow(0 0 11px rgba(248,231,176,0.65)); } }
 
-  /* ---------- Spookbound banner: compact placement on the home view (colours untouched) ---------- */
-  body.lux-home .new-activation-banner .new-activation-banner-inner { flex-direction: row; flex-wrap: wrap; align-items: center; column-gap: 22px; row-gap: 4px; padding: 14px 64px 14px 20px; }
-  body.lux-home .nab-title { font-size: clamp(26px, 3.6vh, 34px); }
-  body.lux-home .nab-sub { font-size: 14.5px; max-width: 380px; }
-  body.lux-home .new-activation-banner-cta { margin-top: 0; margin-left: auto; padding: 10px 20px; font-size: 13px; }
-  body.lux-home .nab-close { top: 50%; margin-top: -16px; }
-  @media (min-width: 761px) and (min-height: 1000px) {
-    /* tall desktop screens: the banner keeps its full size */
-    body.lux-home .new-activation-banner .new-activation-banner-inner { flex-direction: column; align-items: flex-start; flex-wrap: nowrap; gap: 10px; padding: 46px 20px 42px; }
-    body.lux-home .nab-title { font-size: clamp(32px, 6vw, 54px); }
-    body.lux-home .nab-sub { font-size: clamp(15px, 2.2vw, 18px); max-width: 460px; }
-    body.lux-home .new-activation-banner-cta { margin: 8px 0 0; padding: 12px 22px; font-size: 14px; }
-    body.lux-home .nab-close { top: 12px; margin-top: 0; }
-  }
 
   /* ---------- Pop-ups (chat + Code Pull): same near-full-window treatment as the GAP Method ---------- */
   #lux-backdrop { position: fixed; inset: 0; z-index: 8000; display: none; opacity: 0; transition: opacity .5s ease; overflow: hidden; background: radial-gradient(120% 90% at 50% 40%, rgba(1,103,108,0.38), rgba(1,20,22,0.86) 55%, rgba(0,0,0,0.94) 100%); -webkit-backdrop-filter: blur(14px) saturate(110%); backdrop-filter: blur(14px) saturate(110%); }
@@ -5594,8 +5579,6 @@ if (forceComplete) { goDay(3); }
 
   /* ---------- Phones ---------- */
   @media (max-width: 640px) {
-    body.lux-home nav { padding: 10px 0; }
-    body.lux-home nav .wrap { gap: 6px; }
     #hero-section > .lux-wrap { padding: clamp(10px, 2.2vh, 24px) 14px clamp(10px, 2vh, 20px); gap: clamp(10px, 2.2vh, 22px); }
     .lux-crest { gap: 10px; }
     .lux-rh { width: clamp(30px, 4.6vh, 42px); height: clamp(30px, 4.6vh, 42px); border-radius: 10px; }
@@ -5615,12 +5598,6 @@ if (forceComplete) { goDay(3); }
     .lux-portal-mock { font-size: 8.5px; letter-spacing: .14em; }
     .lux-portal-enter { padding-top: 8px; font-size: 8.5px; letter-spacing: .24em; gap: 6px; }
     .lux-portal-enter::before, .lux-portal-enter::after { width: 9px; }
-    body.lux-home .new-activation-banner .new-activation-banner-inner { padding: 10px 52px 12px 18px; column-gap: 12px; row-gap: 6px; }
-    body.lux-home .nab-eyebrow { flex: 1 1 100%; font-size: 10px; }
-    body.lux-home .nab-title { font-size: 25px; }
-    body.lux-home .nab-sub { display: none; }
-    body.lux-home .new-activation-banner-cta { width: auto; padding: 8px 14px; font-size: 12px; gap: 8px; }
-    body.lux-home .nab-close { top: 10px; margin-top: 0; width: 30px; height: 30px; }
     /* pop-ups go full-screen on phones, like the GAP Method */
     .lux-pop { top: 0; bottom: 0; left: 0; right: 0; border-radius: 0; border: none; transform: translateY(24px); }
     .lux-pop::after { inset: 8px; border-radius: 10px; background-size: 38px, 38px, 38px, 38px; }
