@@ -5746,6 +5746,15 @@ if (forceComplete) { goDay(3); }
   .lux-portal::before { border-color: rgba(43,179,173,0.28); }
   .lux-portal-frame::before { box-shadow: 0 0 10px rgba(226,190,104,0.4), 0 0 14px rgba(1,103,108,0.45); }
   .lux-portal-icon::before { border-color: rgba(43,179,173,0.25); }
+  /* ---------- Brand butterfly (traced from Rachael's logo) + "Rachael's Butterfly Effect" watermark: decorative background only ---------- */
+  .lux-sky::before { background: url("/images/brand-butterfly.webp") center 42% / min(78vmin, 600px) no-repeat; opacity: .16; animation: lux-brand-shimmer 12s ease-in-out infinite; }
+  @keyframes lux-brand-shimmer { 0%,100% { opacity: .12; filter: brightness(1); } 50% { opacity: .2; filter: brightness(1.25); } }
+  #lux-backdrop::before { background: url("/images/brand-butterfly.webp") center / min(78vmin, 600px) no-repeat; opacity: .12; animation: none; }
+  .lux-watermark { position: absolute; left: 50%; top: calc(42% + min(39vmin, 300px) + 10px); transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; opacity: .09; color: #E2AA60; pointer-events: none; user-select: none; white-space: nowrap; line-height: 1; }
+  .lux-watermark .wm-1 { font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(10px, 1.6vmin, 14px); letter-spacing: .5em; padding-left: .5em; }
+  .lux-watermark .wm-2 { font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-size: clamp(30px, 6vmin, 56px); letter-spacing: .08em; margin-top: 4px; }
+  .lux-watermark .wm-3 { font-family: "Great Vibes", "Allura", "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive; font-size: clamp(26px, 5vmin, 48px); margin-top: -6px; }
+  @media (prefers-reduced-motion: reduce) { .lux-sky::before { animation: none !important; } }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
@@ -5783,7 +5792,7 @@ if (forceComplete) { goDay(3); }
   // ---------- Sacred background layer for the home view ----------
   var sky = document.createElement('div');
   sky.className = 'lux-sky'; sky.setAttribute('aria-hidden', 'true');
-  sky.innerHTML = '<div class="lux-embers"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="lux-vignette"></div>';
+  sky.innerHTML = '<div class="lux-watermark" aria-hidden="true" role="presentation" data-decorative="true"><span class="wm-1">RACHAEL&rsquo;S</span><span class="wm-2">BUTTERFLY</span><span class="wm-3">Effect</span></div><div class="lux-embers"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="lux-vignette"></div>';
   hero.insertBefore(sky, hero.firstChild);
 
   // ---------- View modes ----------
