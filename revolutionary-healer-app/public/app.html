@@ -4897,7 +4897,7 @@ if (forceComplete) { goDay(3); }
   #hero-gap-embed.gm-modal .view.active { animation: gm-panel .45s cubic-bezier(.2,.8,.2,1) both; }
   @keyframes gm-panel { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   #hero-gap-embed.gm-modal .eyebrow { color: #F1D58A !important; font-size: 11px !important; letter-spacing: .28em !important; display: inline-flex; align-items: center; gap: 10px; }
-  #hero-gap-embed.gm-modal .card.center .eyebrow::before, #hero-gap-embed.gm-modal .card.center .eyebrow::after { content: ""; width: 26px; height: 1px; background: linear-gradient(90deg, transparent, #CFA646); }
+  #hero-gap-embed.gm-modal .card.center .eyebrow::before, #hero-gap-embed.gm-modal .card.center .eyebrow::after { content: ""; width: 18px; height: 1px; flex: 0 0 auto; background: linear-gradient(90deg, transparent, #CFA646); }
   #hero-gap-embed.gm-modal .card.center .eyebrow::after { transform: scaleX(-1); }
   #hero-gap-embed.gm-modal h1, #hero-gap-embed.gm-modal .q-text { color: #fff !important; font-weight: 400 !important; letter-spacing: -.005em; }
   #hero-gap-embed.gm-modal #d1-intro h1 { font-size: 40px !important; line-height: 1.15 !important; margin-bottom: 22px !important; }
@@ -5757,6 +5757,27 @@ if (forceComplete) { goDay(3); }
   @media (prefers-reduced-motion: reduce) { .lux-sky::before { animation: none !important; } }
   /* ---------- Chatbot pop-up: near-black with a faint GAP teal (#01676C) glow at the edges ---------- */
   #lux-chat-pop { background: radial-gradient(130% 110% at 50% 50%, #050606 58%, rgba(1,103,108,0.22) 100%), #050606; box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 6px rgba(226,190,104,0.05), inset 0 0 70px rgba(1,103,108,0.22), 0 0 50px rgba(1,103,108,0.25), 0 40px 120px rgba(0,0,0,0.75); animation: none; }
+  /* ---------- Premium framing for the opened Shift card + Today's Focus (modelled on the GAP Method pop-up) ---------- */
+  #shift-modal .modal-card { position: relative; isolation: isolate; border-radius: 26px; padding: 30px 26px 26px; }
+  #shift-modal .modal-card::before { content: ""; position: absolute; inset: 9px; border-radius: 18px; border: 1px solid rgba(226,190,104,0.16); pointer-events: none; z-index: -1; }
+  #shift-modal .modal-card > .eyebrow { display: flex; align-items: center; justify-content: center; gap: 10px; color: #F1D58A; font-size: 10.5px; letter-spacing: .2em; white-space: nowrap; text-transform: uppercase; margin-top: 8px; padding: 0 44px; }
+  #shift-modal .modal-card > .eyebrow::before, #shift-modal .modal-card > .eyebrow::after { content: ""; width: 18px; height: 1px; flex: 0 0 auto; background: linear-gradient(90deg, transparent, #CFA646); }
+  #shift-modal .modal-card > .eyebrow::after { transform: scaleX(-1); }
+  #shift-modal .modal-card > h2 { text-align: center; margin: 6px 0 4px !important; background: linear-gradient(90deg, #CFA646, #FFF3CF 50%, #CFA646); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  #shift-modal .modal-card > p:has(> #shift-modal-frequency) { text-align: center; padding-bottom: 18px; position: relative; }
+  #shift-modal .modal-card > p:has(> #shift-modal-frequency)::after, #shift-modal.cu-shift-mode .modal-card > h2::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, #F1D58A, #2BB3AD, transparent); }
+  #shift-modal.cu-shift-mode .modal-card > h2 { position: relative; padding-bottom: 16px; }
+  #shift-modal .shift-modal-section { margin-top: 18px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(207,166,70,0.22); background: linear-gradient(180deg, rgba(1,103,108,0.10), rgba(0,0,0,0.25)); }
+  #shift-modal .shift-modal-section .eyebrow { display: flex; align-items: center; gap: 8px; color: #F1D58A; font-size: 10.5px; letter-spacing: .24em; text-transform: uppercase; margin-bottom: 8px; }
+  #shift-modal .shift-modal-section .eyebrow::before { content: ""; width: 6px; height: 6px; transform: rotate(45deg); background: #E2BE68; box-shadow: 0 0 8px rgba(226,190,104,0.7); flex: 0 0 auto; }
+  #shift-modal .shift-modal-section:has(#shift-modal-status) { background: none; border: none; padding: 4px 2px; text-align: center; }
+  #shift-modal .shift-modal-actions { justify-content: center; }
+  /* Today's Focus */
+  body.lux-home #my-revolution .focus-card-label { justify-content: center; position: relative; padding-bottom: 16px; margin-bottom: 18px; }
+  body.lux-home #my-revolution .focus-card-label::after { content: ""; position: absolute; left: 10%; right: 10%; bottom: 0; height: 1px; background: linear-gradient(90deg, transparent, #F1D58A, #2BB3AD, transparent); }
+  body.lux-home #my-revolution .focus-card-kicker { display: flex; align-items: center; gap: 8px; }
+  body.lux-home #my-revolution .focus-card-kicker::before { content: ""; width: 6px; height: 6px; transform: rotate(45deg); background: #E2BE68; box-shadow: 0 0 8px rgba(226,190,104,0.7); flex: 0 0 auto; }
+  body.lux-home #my-revolution .focus-card-freq-value { border-left: none; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(207,166,70,0.22); background: linear-gradient(180deg, rgba(1,103,108,0.12), rgba(0,0,0,0.25)); }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
