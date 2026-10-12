@@ -3044,6 +3044,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
         SHIFTS.push({
           id: r.id,
           method: r.methodName || 'GAP Method',
+          focusArea: r.focusArea || '',
           identity: r.divineIdentityName,
           frequency: r.currentFrequency,
           statusLabel: r.progressStatus === 'embodied' ? '🟢 Embodied' : '● Shifting',
@@ -5660,10 +5661,6 @@ if (forceComplete) { goDay(3); }
   .cu-deck { position: relative; margin: clamp(18px, 4vh, 40px) 0 10px; width: min(70vw, 300px); height: clamp(220px, 40vh, 340px); background: none; border: 0; padding: 0; cursor: pointer; }
   .cu-deck[hidden] { display: none; }
   .cu-deck:focus-visible { outline: 2px solid #F1D58A; outline-offset: 6px; border-radius: 14px; }
-  .cu-fan img { position: absolute; left: 50%; top: 50%; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 20px rgba(226,190,104,0.15); transform: translate(-50%, -50%) rotate(calc(var(--k) * 7deg)) translateX(calc(var(--k) * 16px)); transform-origin: 50% 110%; transition: transform .5s cubic-bezier(.16,1,.3,1); }
-  @media (hover: hover) { .cu-deck:hover .cu-fan img { transform: translate(-50%, -50%) rotate(calc(var(--k) * 10deg)) translateX(calc(var(--k) * 22px)); } }
-  .cu-deck.cu-shuffling .cu-fan img { animation: cu-shuffle 1.2s cubic-bezier(.5,0,.3,1) both; animation-delay: calc((var(--k) + 2) * 40ms); }
-  @keyframes cu-shuffle { 0% { transform: translate(-50%, -50%) rotate(calc(var(--k) * 7deg)) translateX(calc(var(--k) * 16px)); } 30% { transform: translate(-50%, -50%) rotate(calc(var(--k) * -9deg)) translateX(calc(var(--k) * -34px)); } 60% { transform: translate(-50%, -50%) rotate(calc(var(--k) * 12deg)) translateX(calc(var(--k) * 30px)); } 100% { transform: translate(-50%, -50%) rotate(0) translateX(0); } }
   .cu-flip { margin: clamp(14px, 3vh, 30px) 0 8px; perspective: 1400px; }
   .cu-flip[hidden] { display: none; }
   .cu-flip-in { position: relative; height: clamp(260px, 50vh, 460px); aspect-ratio: 2 / 3; max-width: 78vw; transform-style: preserve-3d; transition: transform .75s cubic-bezier(.3,.7,.2,1); }
@@ -5700,9 +5697,32 @@ if (forceComplete) { goDay(3); }
     .cu-btns .cu-btn { width: 100%; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .lux-sky::before, .lux-sky::after, #lux-backdrop::before, #lux-backdrop::after, .lux-embers span, .lux-title, .lux-pop-title, .lux-pop.lux-in, .lux-bfly, .lux-bfly .lux-bfly-wing, .lux-cue-chev, .lux-portal, .lux-head, .cu-view, .cu-revealed, .cu-shift, .cu-deck.cu-shuffling .cu-fan img { animation: none !important; }
-    .cu-flip-in, .cu-fan img, .lux-portal, .lux-pop { transition: none !important; }
+    .lux-sky::before, .lux-sky::after, #lux-backdrop::before, #lux-backdrop::after, .lux-embers span, .lux-title, .lux-pop-title, .lux-pop.lux-in, .lux-bfly, .lux-bfly .lux-bfly-wing, .lux-cue-chev, .lux-portal, .lux-head, .cu-view, .cu-revealed, .cu-shift { animation: none !important; }
+    .cu-flip-in, .cu-stack img, .lux-portal, .lux-pop { transition: none !important; }
   }
+  /* Code Upgrade: real deck (riffle + overhand shuffle driven by lux-home-js) */
+  .cu-stack { position: absolute; inset: 0; }
+  .cu-stack img { position: absolute; left: 50%; top: 50%; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 2px 3px rgba(0,0,0,0.45), 0 0 14px rgba(1,103,108,0.18); transform: translate(-50%, -50%); transition-property: transform; transition-timing-function: cubic-bezier(.3,.7,.25,1); will-change: transform; user-select: none; -webkit-user-drag: none; }
+  .cu-deck { overflow: visible; }
+  .cu-deck:disabled { cursor: default; }
+  .cu-deck.cu-ready { animation: cu-ready 2.8s ease-in-out infinite; border-radius: 14px; }
+  @keyframes cu-ready { 0%,100% { filter: drop-shadow(0 0 0 rgba(226,190,104,0)); } 50% { filter: drop-shadow(0 0 18px rgba(226,190,104,0.45)); } }
+  /* GAP Method teal treatment (exact GAP modal background: #01676C glow over #071414 > #050909 > #030505) on the Code Upgrade door + screen */
+  .lux-portal.lux-portal-codepull, #lux-codepull-pop { background: radial-gradient(120% 60% at 50% -10%, rgba(1,103,108,0.55), transparent 60%), radial-gradient(80% 50% at 100% 110%, rgba(207,166,70,0.14), transparent 60%), linear-gradient(180deg, #071414 0%, #050909 55%, #030505 100%); }
+  #lux-codepull-pop { box-shadow: 0 0 0 1px rgba(255,240,200,0.08) inset, 0 0 40px rgba(207,166,70,0.28), 0 0 90px rgba(1,103,108,0.35), 0 40px 90px rgba(0,0,0,0.7); animation: none; }
+  .lux-portal.lux-portal-codepull { box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 18px 50px rgba(0,0,0,0.55), 0 0 40px rgba(1,103,108,0.35); }
+  /* Code view inside an opened Code Upgrade Shift */
+  #shift-modal.cu-shift-mode .modal-card > .shift-modal-section:not(#shift-modal-code):not(:has(#shift-modal-status)) { display: none; }
+  #shift-modal.cu-shift-mode #shift-modal-frequency { display: none; }
+  #shift-modal.cu-shift-mode .modal-card > p:has(> #shift-modal-frequency) { display: none; }
+  .cu-code-view { display: flex; gap: 16px; align-items: flex-start; }
+  .cu-code-view[hidden] { display: none; }
+  .cu-code-thumb { flex: 0 0 auto; width: 112px; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 10px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 10px 26px rgba(0,0,0,0.5); }
+  .cu-code-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+  .cu-code-text .cu-tag { position: static; }
+  .cu-code-reading { margin: 0; font-size: 15.5px; line-height: 1.6; color: rgba(255,255,255,0.9); }
+  .cu-code-play { white-space: normal; text-align: center; }
+  @media (max-width: 420px) { .cu-code-view { flex-direction: column; align-items: center; text-align: center; } .cu-code-text { align-items: center; } .cu-code-thumb { width: 140px; } }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
@@ -5919,45 +5939,92 @@ if (forceComplete) { goDay(3); }
   // ---------- Doorway 2: GAP Method ----------
   // #gap-method-starter-btn keeps its id, so the existing GAP Method handlers open the pop-up as before.
 
-  // ---------- Doorway 3: Code Upgrade (flagged; MOCKUP ONLY) ----------
-  // Pull a card -> sample reading -> pairs-with-an-activation choice. Pure front-end:
-  // no API calls, nothing saved (the Shifting card is a mock and is never written to Airtable).
+  // ---------- Code Upgrade data (17 code cards; the gold butterfly card is the deck back) ----------
+  var CU_CARDS = [
+        { n: 'Psychic', c: '96311', f: 'psychic-96311', a: 'Activating Your Gifts Activation', s: 'activating-your-gifts', r: 'This card is calling your sight back home. Somewhere along the way you learned it was safer to keep what you know quiet, to second-guess the nudge and wait for proof. That old code of hiddenness is upgrading now. Your knowing is allowed to be clear, spoken and trusted, and it doesn\u2019t need anyone\u2019s permission to be real.' },
+        { n: 'Sovereignty', c: '11211', f: 'sovereignty-11211', a: 'Leadership Recode Activation', s: 'leadership-recode-activation', r: 'Love, this one is about taking your power back from every room you shrank in. The old code said your needs came last and your voice had to be earned. Sovereignty rewrites that: you are the authority in your own field. Decisions get simpler when you stop asking who you have to be to stay safe.' },
+        { n: 'Vibration', c: '12127', f: 'vibration-12127', a: 'Pink Cloud Activation', s: 'pink-cloud-activation', r: 'Your frequency has been carrying other people\u2019s weather. This card says it\u2019s time to set it down. The old code of matching whatever heaviness is around you is lifting, and your natural vibration is light, steady and yours. Notice how quickly things move when you stop dimming to fit in.' },
+        { n: 'Prosperity Flow', c: '36951', f: 'prosperity-flow-36951', a: 'More Than Enough Activation', s: 'more-than-enough-activation', r: 'Here\u2019s what I see: you\u2019ve been bracing around money, holding on tight in case it stops. That scarcity code is ready to dissolve. Prosperity isn\u2019t a reward you earn by overgiving, it\u2019s a current you are allowed to stand in. Let it come in, and let it stay.' },
+        { n: 'Expansion', c: '71325', f: 'expansion-71325', a: 'Expansion Activation', s: 'expansion-activation', r: 'You\u2019ve outgrown the container you\u2019ve been living in, and part of you already knows it. The old code of limitation kept you small so nobody would be uncomfortable. Expansion means taking up the space your gifts were always meant to fill. You don\u2019t have to have it all figured out to grow into it.' },
+        { n: 'Embody', c: '61374', f: 'embody-61374', a: 'Creator Within Activation', s: 'creator-within-activation', r: 'This is the card of bringing it all down into your body. You\u2019ve done so much learning, and now the upgrade is living it. The old code kept your power in your head, in plans and in someday. Embodiment says it\u2019s here, in how you move, speak and choose today.' },
+        { n: 'Embody', c: '98321', f: 'embody-98321', a: 'Remembrance Activation', s: 'remembrance-activation', r: 'Your light body is asking to be fully lived in. The old code taught you to leave your body when things got intense, to float above it all. This Embody code calls every part of you back in, so your energy has a home and your shifts finally hold.' },
+        { n: 'Grounding', c: '97531', f: 'grounding-97531', a: 'Grounding Activation', s: 'grounding', r: 'Babe, you\u2019ve been holding everyone, and it\u2019s left you a little untethered. This card roots you back down. The old code said safety came from staying alert; the upgrade is safety that lives in your body. From here you can be seen without being swept away.' },
+        { n: 'Clear', c: '7112', f: 'clear-7112', a: 'Clearing Activation', s: 'clearing-activation', r: 'There\u2019s some static in your field that isn\u2019t yours. Clear is the reset. The old code of carrying it all quietly is releasing, and clarity is what\u2019s left underneath. Expect your next step to feel obvious once the noise moves out.' },
+        { n: 'Nervous System', c: '9383', f: 'nervous-system-9383', a: 'Nervous System Recalibration Activation', s: 'nervous-system-recalibration', r: 'Your system has been running on high alert for a long time, and it makes sense. This card is permission to soften. The old code said rest had to be earned; the upgrade is a body that knows it\u2019s safe now. When your nervous system settles, the shifts you\u2019ve been working for start to stick.' },
+        { n: 'Protection', c: '7891', f: 'protection-7891', a: 'Protection & Shielding Activation', s: 'protection-shielding', r: 'You\u2019re so open and so sensitive, and that\u2019s a gift. The old code said being open meant absorbing everything. Protection rewrites it: you can stay soft-hearted and still have strong edges. What isn\u2019t yours doesn\u2019t get to stay.' },
+        { n: 'Wealth', c: '88118', f: 'wealth-88118', a: 'Wealth Frequency Activation', s: 'wealth-frequency-activation', r: 'This one is big. Wealth is showing up because you\u2019re ready to hold more than you\u2019ve allowed yourself before. The old lack code kept a ceiling on what felt safe to receive. That ceiling is lifting. Let your energy get used to more, so your bank account can follow.' },
+        { n: 'Receiving', c: '7127', f: 'receiving-7127', a: 'Magnetic Field Activation', s: 'magnetic-field-activation', r: 'You are amazing at giving, and receiving has been the harder side. The old code said you had to earn every good thing. Receiving opens your hands: support, money, love and opportunity are allowed to come to you easily. Practice saying thank you and letting it land.' },
+        { n: 'Throat Chakra', c: '86116', f: 'throat-chakra-86116', a: 'Throat Chakra Activation', s: 'throat-chakra-activation', r: 'There\u2019s something you\u2019ve been holding back from saying. This card says your voice is safe now. The old code of hiding your truth to keep the peace is upgrading into clear, warm expression. People are waiting to hear exactly what you know.' },
+        { n: 'Sacral Chakra', c: '22317', f: 'sacral-chakra-22317', a: 'Yes Factor Vibe Booster', s: 'yes-factor-vibe-booster', r: 'Your creative, joyful energy wants to move again. The old code turned pleasure and play into something you had to justify. Sacral energy is your flow: creating, feeling and enjoying your life. When you let yourself want things, everything gets easier to receive.' },
+        { n: 'Earth Star', c: '93321', f: 'earth-star-93321', a: '10 Min Earth Star Activation', s: '10-min-earth-star-activation', r: 'This card anchors you into something deeper than this moment\u2019s chaos. The old code was instability, never quite sure where you stand. Your Earth Star connects you to a foundation that doesn\u2019t move. From here, your big visions have something solid to grow from.' },
+        { n: 'Third Eye Chakra', c: '53682', f: 'third-eye-chakra-53682', a: 'Third Eye Activation', s: 'third-eye-activation', r: 'Your inner vision is getting sharper, and you may have been doubting what you see. The old code said you had to prove it before you trusted it. The upgrade is clear sight you can rely on. Pay attention to the images and the knowings that come this week.' }
+      ];
+  var CU_DIR = '/code-cards/';
+  function cuEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
+  function cuFindByKey(key) { for (var i = 0; i < CU_CARDS.length; i++) if (CU_CARDS[i].f === key) return CU_CARDS[i]; return null; }
+  function cuPlay(slug, title) {
+    var sl = slug || (typeof rhSlugForActivationTitle === 'function' ? rhSlugForActivationTitle(title) : null);
+    if (!sl) return false;
+    if (typeof closeShiftModal === 'function') closeShiftModal();
+    closePop(true);
+    if (typeof handleActivationCardClick === 'function') { handleActivationCardClick(sl); return true; }
+    if (typeof openActivationDetail === 'function') { openActivationDetail(sl); return true; }
+    return false;
+  }
+
+  // ---------- Saved Code Upgrade Shifts: code view inside the opened Shift card ----------
+  // A Code Upgrade Shift is a normal Shift row (method_name "Code Upgrade", focus_area "code-upgrade:<card>").
+  if (typeof window.renderShiftModal === 'function') {
+    var origRender = window.renderShiftModal;
+    window.renderShiftModal = function (shift) {
+      var r = origRender.apply(this, arguments);
+      var modal = document.getElementById('shift-modal');
+      var cardEl = modal && modal.querySelector('.modal-card');
+      if (!cardEl) return r;
+      var box = document.getElementById('shift-modal-code');
+      var isCU = shift && shift.method === 'Code Upgrade';
+      modal.classList.toggle('cu-shift-mode', !!isCU);
+      var eb = cardEl.querySelector(':scope > .eyebrow');
+      if (eb) { if (!eb.hasAttribute('data-orig')) eb.setAttribute('data-orig', eb.textContent); eb.textContent = isCU ? 'Your Code' : eb.getAttribute('data-orig'); }
+      if (!isCU) { if (box) box.hidden = true; return r; }
+      var key = String(shift.focusArea || '').replace(/^code-upgrade:/, '');
+      var card = cuFindByKey(key);
+      if (!box) {
+        box = document.createElement('div'); box.id = 'shift-modal-code'; box.className = 'shift-modal-section cu-code-view';
+        var freq = document.getElementById('shift-modal-frequency');
+        var anchor = freq ? freq.parentNode : null;
+        if (anchor && anchor.parentNode === cardEl) cardEl.insertBefore(box, anchor.nextSibling); else cardEl.appendChild(box);
+      }
+      box.hidden = false;
+      box.innerHTML = (card ? '<img class="cu-code-thumb" src="' + CU_DIR + card.f + '.webp" alt="' + cuEsc(card.n + ' ' + card.c) + ' code card">' : '') +
+        '<div class="cu-code-text"><span class="cu-tag">Code Upgrade</span><p class="cu-code-reading">' + cuEsc(shift.gap) + '</p>' +
+        '<button type="button" class="btn-primary cu-code-play" data-cu-slug="' + cuEsc(card ? card.s : '') + '">Play ' + cuEsc(shift.activation || 'the activation') + '</button></div>';
+      return r;
+    };
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('.cu-code-play'); if (!b) return;
+      var sh = window.__rhCurrentShift;
+      cuPlay(b.getAttribute('data-cu-slug'), sh && sh.activation);
+    });
+  }
+
+  // ---------- Doorway 3: Code Upgrade (flagged: preview hosts only) ----------
   if (CODE_PULL_ENABLED) {
     var cpCard = document.getElementById('lux-portal-codepull');
     if (cpCard) {
-      var CU_CARDS = [
-        { n: 'Psychic', c: '96311', f: 'psychic-96311', a: 'Activating Your Gifts Activation', r: 'This card is calling your sight back home. Somewhere along the way you learned it was safer to keep what you know quiet, to second-guess the nudge and wait for proof. That old code of hiddenness is upgrading now. Your knowing is allowed to be clear, spoken and trusted, and it doesn\u2019t need anyone\u2019s permission to be real.' },
-        { n: 'Sovereignty', c: '11211', f: 'sovereignty-11211', a: 'Leadership Recode Activation', r: 'Love, this one is about taking your power back from every room you shrank in. The old code said your needs came last and your voice had to be earned. Sovereignty rewrites that: you are the authority in your own field. Decisions get simpler when you stop asking who you have to be to stay safe.' },
-        { n: 'Vibration', c: '12127', f: 'vibration-12127', a: 'Pink Cloud Activation', r: 'Your frequency has been carrying other people\u2019s weather. This card says it\u2019s time to set it down. The old code of matching whatever heaviness is around you is lifting, and your natural vibration is light, steady and yours. Notice how quickly things move when you stop dimming to fit in.' },
-        { n: 'Prosperity Flow', c: '36951', f: 'prosperity-flow-36951', a: 'More Than Enough Activation', r: 'Here\u2019s what I see: you\u2019ve been bracing around money, holding on tight in case it stops. That scarcity code is ready to dissolve. Prosperity isn\u2019t a reward you earn by overgiving, it\u2019s a current you are allowed to stand in. Let it come in, and let it stay.' },
-        { n: 'Expansion', c: '71325', f: 'expansion-71325', a: 'Expansion Activation', r: 'You\u2019ve outgrown the container you\u2019ve been living in, and part of you already knows it. The old code of limitation kept you small so nobody would be uncomfortable. Expansion means taking up the space your gifts were always meant to fill. You don\u2019t have to have it all figured out to grow into it.' },
-        { n: 'Embody', c: '61374', f: 'embody-61374', a: 'Creator Within Activation', r: 'This is the card of bringing it all down into your body. You\u2019ve done so much learning, and now the upgrade is living it. The old code kept your power in your head, in plans and in someday. Embodiment says it\u2019s here, in how you move, speak and choose today.' },
-        { n: 'Embody', c: '98321', f: 'embody-98321', a: 'Merkabah Activation', r: 'Your light body is asking to be fully lived in. The old code taught you to leave your body when things got intense, to float above it all. This Embody code calls every part of you back in, so your energy has a home and your shifts finally hold.' },
-        { n: 'Grounding', c: '97531', f: 'grounding-97531', a: 'Grounding Activation', r: 'Babe, you\u2019ve been holding everyone, and it\u2019s left you a little untethered. This card roots you back down. The old code said safety came from staying alert; the upgrade is safety that lives in your body. From here you can be seen without being swept away.' },
-        { n: 'Clear', c: '7112', f: 'clear-7112', a: 'Clearing Activation', r: 'There\u2019s some static in your field that isn\u2019t yours. Clear is the reset. The old code of carrying it all quietly is releasing, and clarity is what\u2019s left underneath. Expect your next step to feel obvious once the noise moves out.' },
-        { n: 'Nervous System', c: '9383', f: 'nervous-system-9383', a: 'Nervous System Recalibration Activation', r: 'Your system has been running on high alert for a long time, and it makes sense. This card is permission to soften. The old code said rest had to be earned; the upgrade is a body that knows it\u2019s safe now. When your nervous system settles, the shifts you\u2019ve been working for start to stick.' },
-        { n: 'Protection', c: '7891', f: 'protection-7891', a: 'Protection & Shielding Activation', r: 'You\u2019re so open and so sensitive, and that\u2019s a gift. The old code said being open meant absorbing everything. Protection rewrites it: you can stay soft-hearted and still have strong edges. What isn\u2019t yours doesn\u2019t get to stay.' },
-        { n: 'Wealth', c: '88118', f: 'wealth-88118', a: 'Wealth Frequency Activation', r: 'This one is big. Wealth is showing up because you\u2019re ready to hold more than you\u2019ve allowed yourself before. The old lack code kept a ceiling on what felt safe to receive. That ceiling is lifting. Let your energy get used to more, so your bank account can follow.' },
-        { n: 'Receiving', c: '7127', f: 'receiving-7127', a: 'Magnetic Field Activation', r: 'You are amazing at giving, and receiving has been the harder side. The old code said you had to earn every good thing. Receiving opens your hands: support, money, love and opportunity are allowed to come to you easily. Practice saying thank you and letting it land.' },
-        { n: 'Throat Chakra', c: '86116', f: 'throat-chakra-86116', a: 'Throat Chakra Activation', r: 'There\u2019s something you\u2019ve been holding back from saying. This card says your voice is safe now. The old code of hiding your truth to keep the peace is upgrading into clear, warm expression. People are waiting to hear exactly what you know.' },
-        { n: 'Sacral Chakra', c: '22317', f: 'sacral-chakra-22317', a: 'Chakra Balancing and Activation', r: 'Your creative, joyful energy wants to move again. The old code turned pleasure and play into something you had to justify. Sacral energy is your flow: creating, feeling and enjoying your life. When you let yourself want things, everything gets easier to receive.' },
-        { n: 'Earth Star', c: '93321', f: 'earth-star-93321', a: '10 Min Earth Star Activation', r: 'This card anchors you into something deeper than this moment\u2019s chaos. The old code was instability, never quite sure where you stand. Your Earth Star connects you to a foundation that doesn\u2019t move. From here, your big visions have something solid to grow from.' },
-        { n: 'Third Eye Chakra', c: '53682', f: 'third-eye-chakra-53682', a: 'Third Eye Activation', r: 'Your inner vision is getting sharper, and you may have been doubting what you see. The old code said you had to prove it before you trusted it. The upgrade is clear sight you can rely on. Pay attention to the images and the knowings that come this week.' }
-      ];
-      var CU_DIR = '/code-cards/';
+      var N = 14;
       var cp = document.createElement('div');
       cp.className = 'lux-pop'; cp.id = 'lux-codepull-pop';
       cp.setAttribute('role', 'dialog'); cp.setAttribute('aria-modal', 'true'); cp.setAttribute('aria-label', 'Code Upgrade'); cp.setAttribute('aria-hidden', 'true'); cp.setAttribute('tabindex', '-1');
+      var stack = ''; for (var k = 0; k < N; k++) stack += '<img src="' + CU_DIR + 'card-back.webp" alt="" draggable="false">';
       cp.innerHTML = '<div class="lux-pop-head"><img class="lux-pop-rh" src="/images/icons/rh-icon.jpg" alt="" aria-hidden="true">' +
-        '<div class="lux-pop-titles"><div class="lux-pop-title">Code Upgrade</div><div class="lux-pop-kicker">Mockup preview</div></div>' +
+        '<div class="lux-pop-titles"><div class="lux-pop-title">Code Upgrade</div><div class="lux-pop-kicker">Preview</div></div>' +
         '<button type="button" class="lux-pop-close" data-lux-close aria-label="Close Code Upgrade">&#10005;</button></div>' +
         '<div class="lux-pop-body cu-body">' +
           '<section class="cu-view cu-pull" data-cu="pull">' +
             '<p class="cu-eyebrow">Pull a card</p><h2 class="cu-h">Which code is ready to upgrade?</h2>' +
-            '<p class="cu-sub">Take a breath, then tap the deck.</p>' +
-            '<button type="button" class="cu-deck" aria-label="Shuffle and draw a card">' +
-              '<span class="cu-fan" aria-hidden="true">' + [0,1,2,3,4].map(function (i) { return '<img src="' + CU_DIR + 'card-back.webp" alt="" style="--k:' + (i - 2) + '">'; }).join('') + '</span>' +
-            '</button>' +
+            '<p class="cu-sub cu-hint">Shuffling the deck&hellip;</p>' +
+            '<button type="button" class="cu-deck" aria-label="Draw a card" disabled><span class="cu-stack" aria-hidden="true">' + stack + '</span></button>' +
             '<div class="cu-flip" aria-live="polite" hidden><div class="cu-flip-in"><img class="cu-face cu-back" src="' + CU_DIR + 'card-back.webp" alt=""><img class="cu-face cu-front" alt=""></div></div>' +
             '<div class="cu-revealed" hidden><p class="cu-name"></p><button type="button" class="cu-btn cu-gold" data-cu-go="reading">Read my card</button></div>' +
           '</section>' +
@@ -5974,79 +6041,161 @@ if (forceComplete) { goDay(3); }
           '<button type="button" class="cu-again" hidden>Pull another card</button>' +
         '</div>';
       body.appendChild(cp);
-      // Preload the card faces so the flip never shows a blank.
-      CU_CARDS.forEach(function (k) { var i = new Image(); i.src = CU_DIR + k.f + '.webp'; });
+      CU_CARDS.forEach(function (c) { var i = new Image(); i.src = CU_DIR + c.f + '.webp'; });
 
       var reduceM = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var cur = null, last = -1, busy = false;
+      var cur = null, last = -1, busy = false, runId = 0;
       var q = function (s) { return cp.querySelector(s); };
-      function esc(s) { return String(s).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
+      var cards = Array.prototype.slice.call(cp.querySelectorAll('.cu-stack img'));
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+      // order[] = bottom..top. Each card sits at depth d (a hair higher per card) so the deck reads as a real stack.
+      var order = cards.slice();
+      function place(c, d, x, y, rot, ms) {
+        c.style.transitionDuration = (ms || 0) + 'ms';
+        c.style.zIndex = String(d + 1);
+        c.style.transform = 'translate(calc(-50% + ' + (x || 0) + 'px), calc(-50% + ' + ((y || 0) - d * 0.8) + 'px)) rotate(' + (rot || 0) + 'deg)';
+      }
+      function squared(ms) { order.forEach(function (c, d) { place(c, d, 0, 0, 0, ms); }); }
+      function deckW() { return q('.cu-deck').getBoundingClientRect().width || 200; }
+      async function riffle(id) {
+        var w = deckW(), half = Math.floor(N / 2) + (Math.random() < .5 ? -1 : 1);
+        var bottom = order.slice(0, half), top = order.slice(half);
+        // split: cut the top half off and set the two packets side by side
+        top.forEach(function (c, d) { place(c, d + half, w * 0.36, -10, 7, 380); });
+        bottom.forEach(function (c, d) { place(c, d, -w * 0.36, 0, -7, 380); });
+        await sleep(420); if (id !== runId) return;
+        // thumbs bend the inner corners up before the riffle
+        top.forEach(function (c, d) { place(c, d + half, w * 0.30, -18, 13, 220); });
+        bottom.forEach(function (c, d) { place(c, d, -w * 0.30, -18, -13, 220); });
+        await sleep(240); if (id !== runId) return;
+        // riffle: cards fall alternately from each packet, interleaving into one stack
+        var merged = [], a = bottom.slice(), b = top.slice();
+        while (a.length || b.length) { if (a.length) merged.push(a.shift()); if (b.length && Math.random() < .85) merged.push(b.shift()); else if (b.length && !a.length) merged.push(b.shift()); }
+        order = merged;
+        for (var d = 0; d < merged.length; d++) { place(merged[d], d, (merged[d] && top.indexOf(merged[d]) > -1 ? 1 : -1) * 6, 0, (top.indexOf(merged[d]) > -1 ? 2 : -2), 200); await sleep(42); if (id !== runId) return; }
+        await sleep(160);
+        squared(260); // square the deck up
+        await sleep(300);
+      }
+      async function overhand(id) {
+        var w = deckW();
+        // lift the whole deck, then drop small chunks from the top to the bottom
+        for (var r = 0; r < 3; r++) {
+          var n = 3 + Math.floor(Math.random() * 3);
+          var chunk = order.slice(order.length - n);
+          chunk.forEach(function (c, i) { place(c, order.length - n + i, w * 0.04, -w * 0.55, 3, 220); });
+          await sleep(240); if (id !== runId) return;
+          order = chunk.concat(order.slice(0, order.length - n));
+          order.forEach(function (c, d) { if (chunk.indexOf(c) === -1) place(c, d, 0, 0, 0, 200); });
+          chunk.forEach(function (c, i) { c.style.zIndex = String(i + 1); place(c, i, 0, 0, 0, 230); });
+          await sleep(260); if (id !== runId) return;
+        }
+      }
+      async function shuffle() {
+        var id = ++runId, deck = q('.cu-deck');
+        deck.disabled = true; q('.cu-hint').innerHTML = 'Shuffling the deck&hellip;';
+        order = cards.slice(); squared(0);
+        if (!reduceM) {
+          await sleep(350); if (id !== runId) return;
+          await riffle(id); if (id !== runId) return;
+          await overhand(id); if (id !== runId) return;
+          await riffle(id); if (id !== runId) return;
+        }
+        deck.disabled = false; deck.classList.add('cu-ready');
+        q('.cu-hint').textContent = 'The deck is ready. Take a breath, then tap it to pull your card.';
+      }
       function show(v) {
         Array.prototype.forEach.call(cp.querySelectorAll('.cu-view'), function (s) { s.hidden = s.getAttribute('data-cu') !== v; });
         q('.cu-again').hidden = v === 'pull';
         q('.cu-body').scrollTop = 0;
-        var h = q('[data-cu="' + v + '"] .cu-h, [data-cu="' + v + '"] .cu-btn');
+        var h = q('[data-cu="' + v + '"] .cu-h');
         if (v !== 'pull' && h) { h.setAttribute('tabindex', '-1'); try { h.focus({ preventScroll: true }); } catch (e) {} }
       }
       function reset() {
         cur = null; busy = false;
-        q('.cu-deck').hidden = false; q('.cu-deck').classList.remove('cu-shuffling');
+        var deck = q('.cu-deck'); deck.hidden = false; deck.classList.remove('cu-ready');
         q('.cu-flip').hidden = true; q('.cu-flip').classList.remove('cu-flipped');
         q('.cu-revealed').hidden = true; q('.cu-out').innerHTML = '';
         show('pull');
+        shuffle();
       }
-      function draw() {
-        if (busy) return; busy = true;
+      window.__cuShuffle = shuffle; // test hook
+      async function draw() {
+        if (busy || q('.cu-deck').disabled) return; busy = true;
         var i; do { i = Math.floor(Math.random() * CU_CARDS.length); } while (i === last && CU_CARDS.length > 1);
         last = i; cur = CU_CARDS[i];
-        var deck = q('.cu-deck'), flip = q('.cu-flip');
         q('.cu-front').src = CU_DIR + cur.f + '.webp';
         q('.cu-front').alt = cur.n + ' ' + cur.c + ' code card';
-        deck.classList.add('cu-shuffling');
-        setTimeout(function () {
-          deck.hidden = true; flip.hidden = false;
-          setTimeout(function () {
-            flip.classList.add('cu-flipped');
-            setTimeout(function () {
-              q('.cu-name').innerHTML = esc(cur.n) + ' <span>' + esc(cur.c) + '</span>';
-              q('.cu-revealed').hidden = false; busy = false;
-            }, reduceM ? 0 : 750);
-          }, reduceM ? 0 : 60);
-        }, reduceM ? 0 : 1200);
+        var topCard = order[order.length - 1];
+        if (!reduceM) { place(topCard, N, 0, -deckW() * 0.5, 0, 380); await sleep(400); }
+        q('.cu-deck').hidden = true; q('.cu-flip').hidden = false;
+        await sleep(reduceM ? 0 : 60);
+        q('.cu-flip').classList.add('cu-flipped');
+        await sleep(reduceM ? 0 : 750);
+        q('.cu-name').innerHTML = cuEsc(cur.n) + ' <span>' + cuEsc(cur.c) + '</span>';
+        q('.cu-revealed').hidden = false; busy = false;
       }
       q('.cu-deck').addEventListener('click', draw);
+      var saving = false;
+      async function saveShift(btn) {
+        var out = q('.cu-out');
+        var email = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) ? RH_EMAIL : null;
+        if (!email) { out.innerHTML = '<p class="cu-note">Please log in to save this Shift.</p>'; return; }
+        if (saving) return; saving = true; btn.disabled = true; btn.textContent = 'Saving\u2026';
+        try {
+          var res = await fetch('/api/gap-shift', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+            source: 'code-upgrade', email: email,
+            divineIdentityName: cur.n + ' ' + cur.c,
+            currentFrequency: 'Code Upgrade',
+            focusArea: 'code-upgrade:' + cur.f,
+            gapExplanation: cur.r,
+            recommendedActivation: cur.a
+          }) });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok || !data.shiftId) throw new Error(data.error || ('HTTP ' + res.status));
+          if (typeof loadMemberRevolutionData === 'function') await loadMemberRevolutionData();
+          out.innerHTML = '<div class="cu-shift"><span class="cu-tag">Code Upgrade</span><p class="cu-shift-k">Shifting card saved</p>' +
+            '<h3>' + cuEsc(cur.n) + ' ' + cuEsc(cur.c) + '</h3><p class="cu-shift-a">Paired activation: ' + cuEsc(cur.a) + '</p>' +
+            '<button type="button" class="cu-btn cu-line cu-view-shift" data-shift-id="' + cuEsc(data.shiftId) + '">Open it in My Revolution</button></div>';
+          btn.textContent = 'Saved to your Shifts';
+        } catch (err) {
+          btn.disabled = false; btn.textContent = 'Create a Shifting card';
+          out.innerHTML = '<p class="cu-note">Something went wrong saving this Shift. Please try again.</p>';
+        } finally { saving = false; }
+      }
       cp.addEventListener('click', function (e) {
         var go = e.target.closest('[data-cu-go]');
         if (go && cur) {
           var v = go.getAttribute('data-cu-go');
           if (v === 'reading') {
             q('.cu-thumb').src = CU_DIR + cur.f + '.webp'; q('.cu-thumb').alt = cur.n + ' code card';
-            q('.cu-rname').innerHTML = esc(cur.n) + ' <span>' + esc(cur.c) + '</span>';
+            q('.cu-rname').innerHTML = cuEsc(cur.n) + ' <span>' + cuEsc(cur.c) + '</span>';
             q('.cu-rtext').textContent = cur.r;
           } else if (v === 'choice') {
             q('.cu-act').textContent = cur.a;
             q('.cu-csub').textContent = 'Your ' + cur.n + ' ' + cur.c + ' code goes with this activation. Save it as a Shifting card to work with, or begin the upgrade right now.';
             q('.cu-out').innerHTML = '';
+            var sb = q('[data-cu-act="shift"]'); sb.disabled = false; sb.textContent = 'Create a Shifting card';
           }
           show(v); return;
         }
         var act = e.target.closest('[data-cu-act]');
         if (act && cur) {
-          var out = q('.cu-out');
-          if (act.getAttribute('data-cu-act') === 'shift') {
-            out.innerHTML = '<div class="cu-shift"><span class="cu-tag">Code Upgrade</span><p class="cu-shift-k">Shifting card</p>' +
-              '<h3>' + esc(cur.n) + ' ' + esc(cur.c) + '</h3><p class="cu-shift-a">Paired activation: ' + esc(cur.a) + '</p>' +
-              '<p class="cu-note">Mockup only. This card is not saved anywhere.</p></div>';
-          } else {
-            out.innerHTML = '<div class="cu-shift cu-start"><p class="cu-shift-k">Starting</p><h3>' + esc(cur.a) + '</h3>' +
-              '<p class="cu-note">Mockup placeholder. In the real app this opens the activation player.</p></div>';
-          }
+          if (act.getAttribute('data-cu-act') === 'shift') saveShift(act);
+          else if (!cuPlay(cur.s, cur.a)) q('.cu-out').innerHTML = '<p class="cu-note">This activation isn\u2019t available in the library yet.</p>';
+          return;
+        }
+        var vs = e.target.closest('.cu-view-shift');
+        if (vs) {
+          var sid = vs.getAttribute('data-shift-id');
+          closePop(true);
+          if (typeof openShiftModal === 'function') openShiftModal(sid);
           return;
         }
         if (e.target.closest('.cu-again')) reset();
       });
       cpCard.hidden = false;
-      cpCard.addEventListener('click', function () { reset(); openPop('lux-codepull-pop'); });
+      cpCard.addEventListener('click', function () { openPop('lux-codepull-pop'); reset(); });
     }
   }
 })();

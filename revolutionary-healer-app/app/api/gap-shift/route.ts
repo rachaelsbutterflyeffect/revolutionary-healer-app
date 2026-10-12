@@ -23,9 +23,18 @@ export async function POST(req: NextRequest) {
     whatWeNoticed = "",
     recommendedActivation = "",
     chatId = null,
+    source = "",
   } = await req.json();
 
-  if (!email || !divineIdentitySlug) {
+  // Code Upgrade (preview-only mockup on feat/luxury-home): saves a normal
+  // Shift through the same createShiftFromChat write, tagged method_name
+  // "Code Upgrade". Never accepted on production deployments.
+  const isCodeUpgrade = source === "code-upgrade";
+  if (isCodeUpgrade && process.env.VERCEL_ENV === "production") {
+    return NextResponse.json({ error: "not available" }, { status: 404 });
+  }
+
+  if (!email || (!divineIdentitySlug && !isCodeUpgrade)) {
     return NextResponse.json(
       { error: "email and divineIdentitySlug are required" },
       { status: 400 }
@@ -40,8 +49,8 @@ export async function POST(req: NextRequest) {
   const shift = await createShiftFromChat({
     email,
     memberRecordId: record?.id,
-    chatId,
-    methodName: "GAP Method",
+    chatId: isCodeUpgrade ? null : chatId,
+    methodName: isCodeUpgrade ? "Code Upgrade" : "GAP Method",
     divineIdentitySlug,
     divineIdentityName,
     currentFrequency,
