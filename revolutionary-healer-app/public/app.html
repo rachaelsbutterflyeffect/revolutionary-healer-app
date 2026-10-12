@@ -5715,7 +5715,7 @@ if (forceComplete) { goDay(3); }
   #shift-modal .modal-card .eyebrow { letter-spacing: .06em; }
   /* Code Upgrade: real deck (riffle + overhand shuffle driven by lux-home-js) */
   .cu-stack { position: absolute; inset: 0; }
-  .cu-stack img { position: absolute; left: 50%; top: 50%; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 2px 3px rgba(0,0,0,0.45), 0 0 14px rgba(1,103,108,0.18); transform: translate(-50%, -50%); transition-property: transform; transition-timing-function: cubic-bezier(.3,.7,.25,1); will-change: transform; user-select: none; -webkit-user-drag: none; }
+  .cu-stack img { will-change: transform; position: absolute; left: 50%; top: 50%; height: 100%; aspect-ratio: 2 / 3; border-radius: 12px; border: 1px solid rgba(226,190,104,0.6); box-shadow: 0 2px 3px rgba(0,0,0,0.45), 0 0 14px rgba(1,103,108,0.18); transform: translate(-50%, -50%); transition-property: transform; transition-timing-function: cubic-bezier(.3,.7,.25,1); will-change: transform; user-select: none; -webkit-user-drag: none; }
   .cu-deck { overflow: visible; }
   .cu-deck:disabled { cursor: default; }
   .cu-hint .cu-pick { margin-top: 4px; }
@@ -5756,7 +5756,7 @@ if (forceComplete) { goDay(3); }
   .lux-watermark .wm-3 { font-family: "Great Vibes", "Allura", "Snell Roundhand", "Apple Chancery", "Brush Script MT", cursive; font-size: clamp(26px, 5vmin, 48px); margin-top: -6px; }
   @media (prefers-reduced-motion: reduce) { .lux-sky::before { animation: none !important; } }
   /* ---------- Chatbot pop-up: near-black with a faint GAP teal (#01676C) glow at the edges ---------- */
-  #lux-chat-pop { background: radial-gradient(130% 110% at 50% 50%, #050606 58%, rgba(1,103,108,0.22) 100%), #050606; box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 6px rgba(226,190,104,0.05), inset 0 0 70px rgba(1,103,108,0.22), 0 0 50px rgba(1,103,108,0.25), 0 40px 120px rgba(0,0,0,0.75); animation: none; }
+  #lux-chat-pop { background: #050606; border-color: rgba(1,103,108,0.75); box-shadow: 0 0 0 1px rgba(1,103,108,0.55), 0 0 18px rgba(1,103,108,0.55), 0 0 50px rgba(1,103,108,0.45), 0 0 110px rgba(1,103,108,0.25), 0 40px 120px rgba(0,0,0,0.75); animation: none; }
   /* ---------- Premium framing for the opened Shift card + Today's Focus (modelled on the GAP Method pop-up) ---------- */
   #shift-modal .modal-card { position: relative; isolation: isolate; border-radius: 26px; padding: 30px 26px 26px; }
   #shift-modal .modal-card::before { content: ""; position: absolute; inset: 9px; border-radius: 18px; border: 1px solid rgba(226,190,104,0.16); pointer-events: none; z-index: -1; }
@@ -5780,6 +5780,30 @@ if (forceComplete) { goDay(3); }
   body.lux-home #my-revolution .focus-card-freq-value { border-left: none; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(207,166,70,0.22); background: linear-gradient(180deg, rgba(1,103,108,0.12), rgba(0,0,0,0.25)); }
   /* ---------- Doors: teal edge glow matching the chatbot pop-up (c4a88ee) ---------- */
   .lux-portal { box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 5px rgba(226,190,104,0.05), inset 0 0 70px rgba(1,103,108,0.22), 0 0 50px rgba(1,103,108,0.25), 0 18px 50px rgba(0,0,0,0.55); }
+  /* ---------- Saved Code Upgrade Shift: three sideways panels (reuses the GAP Step 3 swipe approach) ---------- */
+  #shift-modal .cu-code-view { display: block; padding: 0; border: none; background: none; }
+  .cu-swipe { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; column-gap: 12px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .cu-swipe::-webkit-scrollbar { display: none; }
+  .cu-panel { scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 16px; border-radius: 14px; border: 1px solid rgba(207,166,70,0.22); background: linear-gradient(180deg, rgba(1,103,108,0.10), rgba(0,0,0,0.25)); min-height: 300px; }
+  .cu-panel { position: relative; }
+  .cu-panel .cu-tag { position: static; transform: none; margin: 0; }
+  .cu-panel .cu-code-thumb { width: 150px; }
+  .cu-panel-reading { justify-content: flex-start; text-align: left; align-items: flex-start; }
+  .cu-panel-reading .cu-code-reading { max-height: 300px; overflow-y: auto; overscroll-behavior: contain; }
+  .cu-code-name { margin: 0; color: #F1D58A; font-size: 18px; font-weight: 600; }
+  .cu-swipe-dots { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+  .cu-swipe-dots i { width: 6px; height: 6px; border-radius: 50%; background: rgba(226,190,104,0.3); transition: background .3s; }
+  .cu-swipe-dots i.on { background: #E2BE68; box-shadow: 0 0 6px rgba(226,190,104,0.7); }
+  /* Chatbot on phones: small inset so the teal outer glow shows around the window */
+  @media (max-width: 600px) { #lux-chat-pop.lux-pop { inset: 10px !important; width: auto !important; height: auto !important; max-height: none !important; border-radius: 20px !important; } }
+  /* ---------- Swipe-hint arrow (overlay only) ---------- */
+  .cu-code-view, #hero-gap-embed #view-day3 { position: relative; }
+  .rh-swipe-arrow { position: absolute; right: 2px; top: 50%; z-index: 30; width: 30px; height: 30px; margin-top: -15px; border-radius: 50%; border: 1px solid rgba(226,190,104,0.6); background: rgba(5,6,6,0.75); color: #F1D58A; font-size: 22px; line-height: 26px; padding: 0; cursor: pointer; box-shadow: 0 0 12px rgba(226,190,104,0.35); animation: rh-nudge 1.8s ease-in-out infinite; }
+  .rh-swipe-arrow[hidden] { display: none; }
+  @keyframes rh-nudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(5px); } }
+  @media (prefers-reduced-motion: reduce) { .rh-swipe-arrow { animation: none; } }
+  @media (min-width: 601px) { #hero-gap-embed #view-day3 > .rh-swipe-arrow { display: none; } }
+  [data-role="focus-activation"] { cursor: pointer; text-decoration: underline; text-decoration-color: rgba(226,190,104,0.45); text-underline-offset: 3px; }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
@@ -6079,9 +6103,18 @@ if (forceComplete) { goDay(3); }
         if (anchor && anchor.parentNode === cardEl) cardEl.insertBefore(box, anchor.nextSibling); else cardEl.appendChild(box);
       }
       box.hidden = false;
-      box.innerHTML = (card ? '<img class="cu-code-thumb" src="' + CU_DIR + card.f + '.webp" alt="' + cuEsc(card.n) + ' code card">' : '') +
-        '<div class="cu-code-text"><span class="cu-tag">Code Upgrade</span><p class="cu-code-reading">' + cuEsc(shift.gap) + '</p>' +
-        '<button type="button" class="btn-primary cu-code-play" data-cu-slug="' + cuEsc(card ? card.s : '') + '">Play ' + cuEsc(shift.activation || 'the activation') + '</button></div>';
+      var nm = cuEsc(card ? card.n : String(shift.identity || '').replace(/\s+\d+$/, ''));
+      // Three swipeable panels, same sideways scroll-snap pattern as the GAP Method Step 3 YOUR GAP card
+      box.innerHTML = '<div class="cu-swipe" aria-label="Your code, swipe sideways">' +
+        '<div class="cu-panel cu-panel-code">' + (card ? '<img class="cu-code-thumb" src="' + CU_DIR + card.f + '.webp" alt="' + nm + ' code card">' : '') + '<span class="cu-tag">Code Upgrade</span><p class="cu-code-name">' + nm + '</p></div>' +
+        '<div class="cu-panel cu-panel-reading"><span class="cu-tag">Your reading</span><p class="cu-code-reading">' + cuEsc(shift.gap) + '</p></div>' +
+        '<div class="cu-panel cu-panel-act"><span class="cu-tag">Your activation</span><p class="cu-code-name">' + cuEsc(shift.activation || '') + '</p>' +
+        '<button type="button" class="btn-primary cu-code-play" data-cu-slug="' + cuEsc(card ? card.s : '') + '">Play ' + cuEsc(shift.activation || 'the activation') + '</button></div>' +
+        '</div><div class="cu-swipe-dots" aria-hidden="true"><i></i><i></i><i></i></div>';
+      var sw = box.querySelector('.cu-swipe'), dots = box.querySelectorAll('.cu-swipe-dots i');
+      var setDot = function () { var k = Math.round(sw.scrollLeft / Math.max(1, sw.clientWidth)); dots.forEach(function (d, i) { d.classList.toggle('on', i === k); }); };
+      sw.addEventListener('scroll', setDot, { passive: true }); setDot();
+      if (window.rhSwipeArrow) window.rhSwipeArrow(sw, box);
       return r;
     };
     document.addEventListener('click', function (e) {
@@ -6095,7 +6128,7 @@ if (forceComplete) { goDay(3); }
   if (CODE_PULL_ENABLED) {
     var cpCard = document.getElementById('lux-portal-codepull');
     if (cpCard) {
-      var N = 14;
+      var N = 48; // a full-feeling deck
       var cp = document.createElement('div');
       cp.className = 'lux-pop'; cp.id = 'lux-codepull-pop';
       cp.setAttribute('role', 'dialog'); cp.setAttribute('aria-modal', 'true'); cp.setAttribute('aria-label', 'Code Upgrade'); cp.setAttribute('aria-hidden', 'true'); cp.setAttribute('tabindex', '-1');
@@ -6133,10 +6166,12 @@ if (forceComplete) { goDay(3); }
       function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
       // order[] = bottom..top. Each card sits at depth d (a hair higher per card) so the deck reads as a real stack.
       var order = cards.slice();
-      function place(c, d, x, y, rot, ms) {
+      function place(c, d, x, y, rot, ms, h) {
+        // h (optional) = height within its own packet, so each half shows a thick stack of layered edges
+        var hh = (h == null) ? d * 0.8 : h * 1.3;
         c.style.transitionDuration = (ms || 0) + 'ms';
         c.style.zIndex = String(d + 1);
-        c.style.transform = 'translate(calc(-50% + ' + (x || 0) + 'px), calc(-50% + ' + ((y || 0) - d * 0.8) + 'px)) rotate(' + (rot || 0) + 'deg)';
+        c.style.transform = 'translate(calc(-50% + ' + ((x || 0) + (h == null ? 0 : (x > 0 ? -1 : 1) * h * 0.35)) + 'px), calc(-50% + ' + ((y || 0) - hh) + 'px)) rotate(' + (rot || 0) + 'deg)';
       }
       function squared(ms) { order.forEach(function (c, d) { place(c, d, 0, 0, 0, ms); }); }
       function deckW() { return q('.cu-deck').getBoundingClientRect().width || 200; }
@@ -6144,20 +6179,20 @@ if (forceComplete) { goDay(3); }
         var w = deckW(), half = Math.floor(N / 2) + (Math.random() < .5 ? -1 : 1);
         var bottom = order.slice(0, half), top = order.slice(half);
         // split: cut the top half off and set the two packets side by side
-        top.forEach(function (c, d) { place(c, d + half, w * 0.36, 0, 7, 380); });
-        bottom.forEach(function (c, d) { place(c, d, -w * 0.36, 0, -7, 380); });
-        await sleep(420); if (id !== runId) return;
+        top.forEach(function (c, d) { place(c, d + half, w * 0.36, 0, 7, 620, d); });
+        bottom.forEach(function (c, d) { place(c, d, -w * 0.36, 0, -7, 620, d); });
+        await sleep(760); if (id !== runId) return;
         // thumbs bend the inner corners up before the riffle
-        top.forEach(function (c, d) { place(c, d + half, w * 0.30, 0, 13, 220); });
-        bottom.forEach(function (c, d) { place(c, d, -w * 0.30, 0, -13, 220); });
-        await sleep(240); if (id !== runId) return;
+        top.forEach(function (c, d) { place(c, d + half, w * 0.30, 0, 13, 340, d); });
+        bottom.forEach(function (c, d) { place(c, d, -w * 0.30, 0, -13, 340, d); });
+        await sleep(420); if (id !== runId) return;
         // riffle: cards fall alternately from each packet, interleaving into one stack
         var merged = [], a = bottom.slice(), b = top.slice();
         while (a.length || b.length) { if (a.length) merged.push(a.shift()); if (b.length && Math.random() < .85) merged.push(b.shift()); else if (b.length && !a.length) merged.push(b.shift()); }
         order = merged;
-        for (var d = 0; d < merged.length; d++) { place(merged[d], d, (merged[d] && top.indexOf(merged[d]) > -1 ? 1 : -1) * 6, 0, (top.indexOf(merged[d]) > -1 ? 2 : -2), 200); await sleep(42); if (id !== runId) return; }
-        await sleep(160);
-        squared(260); // square the deck up
+        for (var d = 0; d < merged.length; d++) { place(merged[d], d, (merged[d] && top.indexOf(merged[d]) > -1 ? 1 : -1) * 6, 0, (top.indexOf(merged[d]) > -1 ? 2 : -2), 260); await sleep(64); if (id !== runId) return; }
+        await sleep(240);
+        squared(320); // square the deck up
         await sleep(300);
       }
       async function overhand(id) {
@@ -6287,5 +6322,46 @@ if (forceComplete) { goDay(3); }
 })();
 </script>
 
+  <script id="lux-swipe-arrow-js">
+  /* Gold swipe-hint arrow for the three-slide sideways cards (GAP Step 3 + Code Upgrade Shift). Overlay only. */
+  (function () {
+    function rhSwipeArrow(sc, host) {
+      if (!sc || !host) return;
+      var a = host.querySelector(':scope > .rh-swipe-arrow');
+      if (a) { if (a._sc !== sc) a._bind(sc); return; }
+      a = document.createElement('button');
+      a.type = 'button'; a.className = 'rh-swipe-arrow'; a.setAttribute('aria-label', 'Next'); a.innerHTML = '&#8250;';
+      host.appendChild(a);
+      function upd() { var c = a._sc; if (!c) return; var max = c.scrollWidth - c.clientWidth; a.hidden = !(max > 8 && c.scrollLeft < max - 8); }
+      var ro = window.ResizeObserver ? new ResizeObserver(upd) : null;
+      a._bind = function (c) {
+        if (a._sc) { a._sc.removeEventListener('scroll', upd); if (ro) ro.unobserve(a._sc); }
+        a._sc = c; c.addEventListener('scroll', upd, { passive: true }); if (ro) ro.observe(c); upd(); setTimeout(upd, 400);
+      };
+      window.addEventListener('resize', upd);
+      a.addEventListener('click', function (e) {
+        e.stopPropagation(); e.preventDefault();
+        var c = a._sc, base = c.getBoundingClientRect().left - c.scrollLeft, pad = parseFloat(getComputedStyle(c).scrollPaddingLeft) || 0, next = null;
+        Array.prototype.forEach.call(c.children, function (k) { var x = k.getBoundingClientRect().left - base - pad; if (next === null && x > c.scrollLeft + 8 && getComputedStyle(k).scrollSnapAlign.indexOf('start') > -1) next = x; });
+        c.scrollTo({ left: next === null ? c.scrollLeft + c.clientWidth : next, behavior: reduce() ? 'auto' : 'smooth' });
+      });
+      a._bind(sc);
+    }
+    function reduce() { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    window.rhSwipeArrow = rhSwipeArrow;
+    // Today's Focus: the recommended activation name opens it in the player (text unchanged)
+    document.addEventListener('click', function (e) {
+      var el = e.target.closest('[data-role="focus-activation"]'); if (!el) return;
+      var sl = typeof rhSlugForActivationTitle === 'function' ? rhSlugForActivationTitle(el.textContent) : null;
+      if (sl && typeof handleActivationCardClick === 'function') { e.preventDefault(); handleActivationCardClick(sl); }
+    });
+    function hookGap() {
+      var card = document.querySelector('#hero-gap-embed #view-day3 .card');
+      if (card) rhSwipeArrow(card, card.parentNode);
+    }
+    new MutationObserver(hookGap).observe(document.documentElement, { childList: true, subtree: true });
+    document.addEventListener('DOMContentLoaded', hookGap); hookGap();
+  })();
+  </script>
 </body>
 </html>
