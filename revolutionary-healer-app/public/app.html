@@ -5804,6 +5804,23 @@ if (forceComplete) { goDay(3); }
   @media (prefers-reduced-motion: reduce) { .rh-swipe-arrow { animation: none; } }
   @media (min-width: 601px) { #hero-gap-embed #view-day3 > .rh-swipe-arrow { display: none; } }
   [data-role="focus-activation"] { cursor: pointer; text-decoration: underline; text-decoration-color: rgba(226,190,104,0.45); text-underline-offset: 3px; }
+  /* ---------- Saved GAP Shift: three sideways panels (same template as Code Upgrade) ---------- */
+  #shift-modal.cu-shift-mode #shift-modal-gapswipe { display: none; }
+  #shift-modal #shift-modal-gapswipe .cu-panel .shift-modal-section { margin: 0 0 14px; padding: 0; border: none; background: none; width: 100%; }
+  #shift-modal #shift-modal-gapswipe .cu-panel-act .shift-modal-section { text-align: center; }
+  #shift-modal #shift-modal-gapswipe .cu-panel-act .shift-modal-section .eyebrow { justify-content: center; }
+  #shift-modal #shift-modal-gapswipe .cu-panel { max-height: 340px; overflow-y: auto; overscroll-behavior: contain; }
+  #shift-modal #shift-modal-gapswipe .cu-panel[data-p="1"] .shift-modal-section { text-align: center; }
+  /* section labels become the same gold pill tag the Code Upgrade panels use */
+  #shift-modal #shift-modal-gapswipe .cu-panel .shift-modal-section .eyebrow { display: inline-flex; width: auto; padding: 4px 10px; border-radius: 999px; background: linear-gradient(180deg, #F8E7B0, #CFA646); color: #1A1208 !important; font-size: 10px; font-weight: 600; letter-spacing: .18em; margin-bottom: 10px; }
+  #shift-modal #shift-modal-gapswipe .cu-panel .shift-modal-section .eyebrow::before { display: none; }
+  #shift-modal #shift-modal-gapswipe .cu-panel-act strong { color: #F1D58A; font-size: 18px; }
+  /* Slide-1 cleanup: bigger card picture; Listen Now + heart live on the activation slide only */
+  #shift-modal .cu-panel-code .cu-code-thumb { width: min(230px, 64vw); }
+  #shift-modal .modal-card > .shift-modal-actions:has(#shift-modal-listen-btn) { display: none; }
+  #shift-modal .cu-listen-proxy { width: 100%; }
+  #shift-modal .cu-panel:not(.cu-panel-code) { padding-left: 38px; padding-right: 38px; }
+  #shift-modal .cu-panel-act .cu-code-play { width: 100%; }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
@@ -6078,6 +6095,31 @@ if (forceComplete) { goDay(3); }
     return false;
   }
 
+  // ---------- Saved GAP Method Shift: same three-panel sideways template as the Code Upgrade Shift ----------
+  // Moves the existing sections (same ids, same wording) into panels once; renderShiftModal keeps filling them.
+  function cuGapSwipe(cardEl) {
+    if (document.getElementById('shift-modal-gapswipe')) return;
+    var gap = document.getElementById('shift-modal-gap'), mt = document.getElementById('shift-modal-maintaining'), act = document.getElementById('shift-modal-activation');
+    if (!gap || !mt || !act) return;
+    var sec = function (el) { return el.closest('.shift-modal-section'); };
+    var wrap = document.createElement('div'); wrap.id = 'shift-modal-gapswipe'; wrap.className = 'shift-modal-section cu-code-view';
+    wrap.innerHTML = '<div class="cu-swipe" aria-label="Your Shift, swipe sideways"><div class="cu-panel" data-p="1"></div><div class="cu-panel cu-panel-reading" data-p="2"></div><div class="cu-panel cu-panel-act" data-p="3"></div></div><div class="cu-swipe-dots" aria-hidden="true"><i></i><i></i><i></i></div>';
+    var gs = sec(gap); cardEl.insertBefore(wrap, gs);
+    var P = function (n) { return wrap.querySelector('[data-p="' + n + '"]'); };
+    P(1).appendChild(gs);
+    [sec(mt), document.getElementById('shift-modal-highest-leverage-section'), document.getElementById('shift-modal-deeper-section')].forEach(function (x) { if (x) P(2).appendChild(x); });
+    P(3).appendChild(sec(act));
+    var play = document.createElement('button'); play.type = 'button'; play.className = 'btn-primary cu-code-play cu-gap-play';
+    P(3).appendChild(play);
+    var lp = document.createElement('button'); lp.type = 'button'; lp.className = 'btn-primary cu-listen-proxy'; lp.textContent = 'Listen Now'; P(3).appendChild(lp);
+    play.addEventListener('click', function (e) { e.stopPropagation(); var l = document.getElementById('shift-modal-listen-btn'); if (l) l.click(); });
+    var setPlay = function () { play.textContent = 'Play ' + (act.textContent || 'the activation'); };
+    new MutationObserver(setPlay).observe(act, { childList: true, characterData: true, subtree: true }); setPlay();
+    var sw = wrap.querySelector('.cu-swipe'), dots = wrap.querySelectorAll('.cu-swipe-dots i');
+    var setDot = function () { var k = Math.round(sw.scrollLeft / Math.max(1, sw.clientWidth)); dots.forEach(function (d, i) { d.classList.toggle('on', i === k); }); };
+    sw.addEventListener('scroll', setDot, { passive: true }); setDot();
+    if (window.rhSwipeArrow) window.rhSwipeArrow(sw, wrap);
+  }
   // ---------- Saved Code Upgrade Shifts: code view inside the opened Shift card ----------
   // A Code Upgrade Shift is a normal Shift row (method_name "Code Upgrade", focus_area "code-upgrade:<card>").
   if (typeof window.renderShiftModal === 'function') {
@@ -6093,6 +6135,7 @@ if (forceComplete) { goDay(3); }
       if (isCU) { var idEl = document.getElementById('shift-modal-identity'); if (idEl) idEl.textContent = String(shift.identity || '').replace(/\s+\d+$/, ''); }
       var eb = cardEl.querySelector(':scope > .eyebrow');
       if (eb) { if (!eb.hasAttribute('data-orig')) eb.setAttribute('data-orig', eb.textContent); eb.textContent = isCU ? 'Your Code' : eb.getAttribute('data-orig'); }
+      cuGapSwipe(cardEl);
       if (!isCU) { if (box) box.hidden = true; return r; }
       var key = String(shift.focusArea || '').replace(/^code-upgrade:/, '');
       var card = cuFindByKey(key);
@@ -6106,10 +6149,11 @@ if (forceComplete) { goDay(3); }
       var nm = cuEsc(card ? card.n : String(shift.identity || '').replace(/\s+\d+$/, ''));
       // Three swipeable panels, same sideways scroll-snap pattern as the GAP Method Step 3 YOUR GAP card
       box.innerHTML = '<div class="cu-swipe" aria-label="Your code, swipe sideways">' +
-        '<div class="cu-panel cu-panel-code">' + (card ? '<img class="cu-code-thumb" src="' + CU_DIR + card.f + '.webp" alt="' + nm + ' code card">' : '') + '<span class="cu-tag">Code Upgrade</span><p class="cu-code-name">' + nm + '</p></div>' +
+        '<div class="cu-panel cu-panel-code">' + (card ? '<img class="cu-code-thumb" src="' + CU_DIR + card.f + '.webp" alt="' + nm + ' code card">' : '<p class="cu-code-name">' + nm + '</p>') + '</div>' +
         '<div class="cu-panel cu-panel-reading"><span class="cu-tag">Your reading</span><p class="cu-code-reading">' + cuEsc(shift.gap) + '</p></div>' +
         '<div class="cu-panel cu-panel-act"><span class="cu-tag">Your activation</span><p class="cu-code-name">' + cuEsc(shift.activation || '') + '</p>' +
-        '<button type="button" class="btn-primary cu-code-play" data-cu-slug="' + cuEsc(card ? card.s : '') + '">Play ' + cuEsc(shift.activation || 'the activation') + '</button></div>' +
+        '<button type="button" class="btn-primary cu-code-play" data-cu-slug="' + cuEsc(card ? card.s : '') + '">Play ' + cuEsc(shift.activation || 'the activation') + '</button>' +
+        '<button type="button" class="btn-primary cu-listen-proxy">Listen Now</button></div>' +
         '</div><div class="cu-swipe-dots" aria-hidden="true"><i></i><i></i><i></i></div>';
       var sw = box.querySelector('.cu-swipe'), dots = box.querySelectorAll('.cu-swipe-dots i');
       var setDot = function () { var k = Math.round(sw.scrollLeft / Math.max(1, sw.clientWidth)); dots.forEach(function (d, i) { d.classList.toggle('on', i === k); }); };
@@ -6118,7 +6162,8 @@ if (forceComplete) { goDay(3); }
       return r;
     };
     document.addEventListener('click', function (e) {
-      var b = e.target.closest('.cu-code-play'); if (!b) return;
+      if (e.target.closest('.cu-listen-proxy')) { e.stopPropagation(); var l = document.getElementById('shift-modal-listen-btn'); if (l) l.click(); return; }
+      var b = e.target.closest('.cu-code-play'); if (!b || b.classList.contains('cu-gap-play')) return;
       var sh = window.__rhCurrentShift;
       cuPlay(b.getAttribute('data-cu-slug'), sh && sh.activation);
     });
