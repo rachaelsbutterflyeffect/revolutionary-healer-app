@@ -355,7 +355,14 @@ export async function getFavoriteActivationSlugsByEmail(email) {
         filterByFormula: `{member_email} = "${normalized}"`,
     })
     .all();
-    const slugs = records.map((r) => r.fields.activation_slug).filter(Boolean);
+    // Newest first (most recently favorited first). Use favorited_at, falling
+    // back to the Airtable record createdTime when the field is empty.
+    const ts = (r) => {
+        const t = Date.parse(r.fields.favorited_at || r._rawJson?.createdTime || "");
+        return isNaN(t) ? 0 : t;
+    };
+    const sorted = records.slice().sort((a, b) => ts(b) - ts(a));
+    const slugs = sorted.map((r) => r.fields.activation_slug).filter(Boolean);
     return Array.from(new Set(slugs));
 }
 
