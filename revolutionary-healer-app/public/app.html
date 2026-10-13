@@ -5782,6 +5782,8 @@ if (forceComplete) { goDay(3); }
   .lux-portal { box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 0 5px rgba(226,190,104,0.05), inset 0 0 70px rgba(1,103,108,0.22), 0 0 50px rgba(1,103,108,0.25), 0 18px 50px rgba(0,0,0,0.55); }
   /* ---------- Saved Code Upgrade Shift: three sideways panels (reuses the GAP Step 3 swipe approach) ---------- */
   #shift-modal .cu-code-view { display: block; padding: 0; border: none; background: none; }
+  /* the code view must never show on a GAP Shift (was overriding [hidden]) */
+  #shift-modal .cu-code-view[hidden], #shift-modal:not(.cu-shift-mode) #shift-modal-code { display: none !important; }
   .cu-swipe { display: grid; grid-auto-flow: column; grid-auto-columns: 100%; column-gap: 12px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; overscroll-behavior-x: contain; }
   .cu-swipe::-webkit-scrollbar { display: none; }
   .cu-panel { scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 16px; border-radius: 14px; border: 1px solid rgba(207,166,70,0.22); background: linear-gradient(180deg, rgba(1,103,108,0.10), rgba(0,0,0,0.25)); min-height: 300px; }
@@ -6256,7 +6258,8 @@ if (forceComplete) { goDay(3); }
       var cardEl = modal && modal.querySelector('.modal-card');
       if (!cardEl) return r;
       var box = document.getElementById('shift-modal-code');
-      var isCU = shift && shift.method === 'Code Upgrade';
+      // Strict: only real Code Upgrade Shifts get the code view; every other Shift stays a GAP card.
+      var isCU = !!shift && (shift.method === 'Code Upgrade' || /^code-upgrade:/.test(String(shift.focusArea || '')));
       modal.classList.toggle('cu-shift-mode', !!isCU);
       if (isCU) { var idEl = document.getElementById('shift-modal-identity'); if (idEl) idEl.textContent = String(shift.identity || '').replace(/\s+\d+$/, ''); }
       var eb = cardEl.querySelector(':scope > .eyebrow');
