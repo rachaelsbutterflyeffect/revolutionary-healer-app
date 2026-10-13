@@ -200,7 +200,8 @@
   .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 34px; }
   .section-head h2 { font-size: 26px; font-weight: 400; margin: 0; color: var(--white); }
   .section-head p { color: var(--taupe); font-size: 14px; margin: 6px 0 0; }
-  .see-all { color: var(--gold); font-size: 13px; letter-spacing: 0.04em; }
+  .see-all { color: var(--gold); font-size: 13px; letter-spacing: 0.04em; text-decoration: none; cursor: pointer; }
+  .see-all:focus-visible { outline: 1px solid var(--gold); outline-offset: 3px; border-radius: 3px; }
   .rh-skeleton { pointer-events: none; }
   .rh-skeleton .fav-thumb, .rh-skeleton .media-thumb { background: linear-gradient(90deg, #14110c 0%, #221c12 50%, #14110c 100%); background-size: 200% 100%; animation: rhSkel 1.6s ease-in-out infinite; }
   .rh-skel-line { height: 10px; width: 70%; border-radius: 5px; background: rgba(201,168,92,0.14); margin: 6px 0; }
@@ -1259,7 +1260,7 @@
     <div class="revolution-subsection" data-role="demo-activity" style="display:none;">
       <div class="subsection-head">
         <h3 onclick="showPage('favorites-page')"><span class="heart-glow-emoji">♥</span> Favorites</h3>
-        <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
+        <a class="see-all" href="#favorites-page" role="link" tabindex="0" onclick="showPage('favorites-page'); return false;" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPage('favorites-page');}">See all →</a>
       </div>
       <div class="favorites-row" aria-busy="true">
         <div class="fav-card rh-skeleton" aria-hidden="true"><div class="fav-thumb"></div><div class="fav-body"><div class="rh-skel-line"></div></div></div>
