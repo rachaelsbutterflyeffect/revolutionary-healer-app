@@ -5879,6 +5879,31 @@ if (forceComplete) { goDay(3); }
   .lux-tile-label { font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: #F1D58A; }
   .lux-tile-sub { font-size: 11px; color: rgba(255,255,255,0.6); min-height: 1em; }
   @media (hover: hover) { .lux-focus-strip:hover, .lux-tile:hover .lux-tile-icon { border-color: #F1D58A; box-shadow: 0 0 26px rgba(1,103,108,0.35); } }
+  /* ---------- Shift cards (GAP + Code Upgrade) in the GAP Method Step 3 look ---------- */
+  #shift-modal .modal-card { background: radial-gradient(120% 60% at 50% 0%, rgba(1,103,108,0.30), transparent 70%), linear-gradient(180deg, #06201F 0%, #041413 55%, #020909 100%) !important; border: 1px solid rgba(207,166,70,0.55) !important; }
+  #shift-modal .modal-card::after { content: ""; position: absolute; inset: 8px; pointer-events: none; z-index: 0;
+    background:
+      linear-gradient(#CFA646,#CFA646) top left / 14px 1px no-repeat, linear-gradient(#CFA646,#CFA646) top left / 1px 14px no-repeat,
+      linear-gradient(#CFA646,#CFA646) top right / 14px 1px no-repeat, linear-gradient(#CFA646,#CFA646) top right / 1px 14px no-repeat,
+      linear-gradient(#CFA646,#CFA646) bottom left / 14px 1px no-repeat, linear-gradient(#CFA646,#CFA646) bottom left / 1px 14px no-repeat,
+      linear-gradient(#CFA646,#CFA646) bottom right / 14px 1px no-repeat, linear-gradient(#CFA646,#CFA646) bottom right / 1px 14px no-repeat; opacity: .8; }
+  #shift-modal .modal-card > h2 { font-family: "Cormorant Garamond", Georgia, serif !important; font-weight: 500; font-size: 30px; }
+  #shift-modal .cu-swipe { grid-auto-columns: 86%; column-gap: 10px; }
+  #shift-modal .cu-panel { align-items: flex-start; justify-content: flex-start; text-align: left; border: 1px solid rgba(207,166,70,0.55); border-radius: 18px; background: linear-gradient(180deg, rgba(1,60,62,0.35), rgba(2,14,14,0.75)); padding: 18px 18px 20px !important; }
+  #shift-modal .cu-panel-code { align-items: center; justify-content: center; }
+  #shift-modal .cu-panel-code .cu-code-thumb { width: min(230px, 58vw); }
+  /* letter-spaced gold eyebrows instead of pills */
+  #shift-modal .cu-panel .cu-tag, #shift-modal #shift-modal-gapswipe .cu-panel .shift-modal-section .eyebrow { position: static; display: block; padding: 0; background: none !important; border-radius: 0; color: #E2BE68 !important; font-size: 11px; font-weight: 500; letter-spacing: .28em; text-transform: uppercase; margin: 0 0 10px; box-shadow: none; }
+  #shift-modal #shift-modal-gapswipe .cu-panel[data-p="1"] .shift-modal-section, #shift-modal #shift-modal-gapswipe .cu-panel-act .shift-modal-section { text-align: left; }
+  #shift-modal #shift-modal-gapswipe .cu-panel-act .shift-modal-section .eyebrow { justify-content: flex-start; }
+  /* serif body like Step 3 */
+  #shift-modal .cu-panel p, #shift-modal .cu-code-reading { font-family: "Cormorant Garamond", Georgia, serif; font-size: 18px; line-height: 1.45; color: #F6F2E9; }
+  #shift-modal .cu-panel-act .cu-code-name, #shift-modal #shift-modal-gapswipe .cu-panel-act strong { display: inline-block; padding: 5px 14px; border: 1px solid rgba(226,190,104,0.75); border-radius: 999px; font-family: "Cormorant Garamond", Georgia, serif; font-size: 19px; font-weight: 600; color: #F1D58A; margin: 0 0 6px; }
+  #shift-modal .cu-panel-act { gap: 12px; }
+  #shift-modal .cu-listen-proxy { order: 10; border-radius: 999px !important; padding: 14px 18px !important; background: linear-gradient(180deg, #F8E7B0, #CFA646) !important; color: #1A1208 !important; letter-spacing: .2em; text-transform: uppercase; font-weight: 700; font-size: 13px; box-shadow: 0 0 22px rgba(226,190,104,0.35); }
+  #shift-modal .cu-listen-proxy::after { content: " \2192"; }
+  #shift-modal .cu-panel-act .cu-code-play { background: none !important; border: 1px solid rgba(226,190,104,0.6) !important; color: #F1D58A !important; border-radius: 999px !important; font-size: 13px; }
+  #shift-modal .rh-swipe-arrow { right: 6px; }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
