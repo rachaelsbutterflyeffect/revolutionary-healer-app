@@ -1262,6 +1262,7 @@
     <div class="revolution-subsection">
       <div class="subsection-head">
         <h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
+        <div class="see-all lux-shifts-seeall" role="link" tabindex="0" onclick="rhOpenAllShifts()">See all →</div>
       </div>
       <div class="shifts-list" data-role="shifts-list"></div>
     </div>
@@ -2796,7 +2797,7 @@
         '<div class="shift-row-main">' +
           '<div class="shift-method">' + s.method + '</div>' +
           '<div class="shift-identity serif">' + s.identity + '</div>' +
-          '<div class="shift-freq">Current Frequency: ' + s.frequency + '</div>' +
+          '<div class="shift-freq">' + (cuLead && window.rhCuCodeName ? 'Your Code: ' + window.rhCuCodeName(s) : 'Current Frequency: ' + s.frequency) + '</div>' +
         '</div>' +
         '<div class="shift-date">' + s.date + '</div>' +
         '<div class="status-pill ' + s.statusClass + '">' + s.statusLabel + '</div>' +
@@ -5911,13 +5912,15 @@ if (forceComplete) { goDay(3); }
   body.lux-rev-short #my-revolution .section-head { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   body.lux-rev-short #my-revolution .shifts-list > .shift-row:nth-child(n+3) { display: none !important; }
   body.lux-rev-short #my-revolution .lux-see-all { display: none !important; }
+  #my-revolution .lux-shifts-seeall { display: none; }
+  body.lux-rev-short #my-revolution .lux-shifts-seeall { display: block; }
   body.lux-rev-short #my-revolution .favorites-row > .fav-card:nth-child(n+4) { display: none !important; }
   /* Favorites page: two across on phones, same grid as the Activations page */
   @media (max-width: 640px) {
     #favorites-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
     #favorites-page .media-thumb { height: 128px; }
     #favorites-page .media-body { padding: 12px 12px 14px; }
-    #favorites-page .media-body h3 { font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; hyphens: auto; }
+    #favorites-page .media-body h3 { font-size: 15px; line-height: 1.25; overflow-wrap: normal; word-break: normal; hyphens: none; -webkit-hyphens: none; }
     #favorites-page .media-meta, #favorites-page .media-description { font-size: 12.5px; line-height: 1.4; }
     #favorites-page .media-actions { flex-wrap: wrap; gap: 6px; }
   }
@@ -5958,7 +5961,7 @@ if (forceComplete) { goDay(3); }
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
     #activations-page .media-thumb { height: 128px; }
     #activations-page .media-body { padding: 12px 12px 14px; }
-    #activations-page .media-body h3 { font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; hyphens: auto; }
+    #activations-page .media-body h3 { font-size: 15px; line-height: 1.25; overflow-wrap: normal; word-break: normal; hyphens: none; -webkit-hyphens: none; }
     #activations-page .media-meta, #activations-page .media-description { font-size: 12.5px; line-height: 1.4; }
   }
 </style>
@@ -6055,6 +6058,12 @@ if (forceComplete) { goDay(3); }
       if (head) { var sa = document.createElement('div'); sa.className = 'see-all lux-rev-seeall'; sa.textContent = 'See all \u2192'; sa.setAttribute('role', 'link'); sa.tabIndex = 0;
         sa.addEventListener('click', function () { window.goToMyRevolution(); }); head.appendChild(sa); }
     }
+    // Home Shifts "See all": open the full My Revolution page with every Shift showing, scrolled to My Shifts
+    window.rhOpenAllShifts = function () {
+      window.goToMyRevolution();
+      var l = revEl && revEl.querySelector('[data-role="shifts-list"]');
+      if (l) { l.classList.add('lux-all'); setTimeout(function () { var h = l.parentNode.querySelector('.subsection-head'); (h || l).scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80); }
+    };
     if (location.hash === '#my-revolution') window.goToMyRevolution(true); else { short(true); if (revEl) revEl.style.display = ''; }
   })();
   wrap('showPage', 'page');
@@ -6254,6 +6263,10 @@ if (forceComplete) { goDay(3); }
   function cuEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
   function cuFindByKey(key) { for (var i = 0; i < CU_CARDS.length; i++) if (CU_CARDS[i].f === key) return CU_CARDS[i]; return null; }
   // My Revolution: a Code Upgrade Shift row leads with its code card graphic
+  window.rhCuCodeName = function (sh) {
+    var key = String(sh.focusArea || '').replace(/^code-upgrade:/, ''), c = cuFindByKey(key);
+    return cuEsc(c ? c.n : key.replace(/-\d+$/, '').replace(/-/g, ' ').replace(/\b\w/g, function (m) { return m.toUpperCase(); }));
+  };
   window.rhCuRowLead = function (sh) {
     if (!sh || !(sh.method === 'Code Upgrade' || /^code-upgrade:/.test(String(sh.focusArea || '')))) return '';
     var c = cuFindByKey(String(sh.focusArea || '').replace(/^code-upgrade:/, ''));
@@ -6602,5 +6615,22 @@ if (forceComplete) { goDay(3); }
     document.addEventListener('DOMContentLoaded', hookGap); hookGap();
   })();
   </script>
+<script id="lux-title-fit-js">
+/* Two-across grids: wrap titles only between words; if one word is too wide, shrink the title slightly instead of breaking it. */
+(function () {
+  function fit() {
+    document.querySelectorAll('#activations-page .media-body h3, #favorites-page .media-body h3').forEach(function (h) {
+      h.style.fontSize = '';
+      if (!h.offsetParent || window.innerWidth > 640) return;
+      var fs = parseFloat(getComputedStyle(h).fontSize), n = 0;
+      while (h.scrollWidth > h.clientWidth + 0.5 && fs > 11.5 && n++ < 12) { fs -= 0.5; h.style.fontSize = fs + 'px'; }
+    });
+  }
+  var t; function later() { clearTimeout(t); t = setTimeout(fit, 60); }
+  var sp = window.showPage; if (typeof sp === 'function') window.showPage = function () { var r = sp.apply(this, arguments); later(); return r; };
+  window.addEventListener('resize', later); document.addEventListener('DOMContentLoaded', later); later();
+  window.rhFitTitles = fit;
+})();
+</script>
 </body>
 </html>
