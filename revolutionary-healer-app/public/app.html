@@ -1886,7 +1886,7 @@
       <p id="activation-detail-whentouse-intro" style="display:none;color:#F6F2E9;opacity:0.85;line-height:1.6;margin:0 0 8px;"></p>
       <ul style="color:#F6F2E9;opacity:0.85;line-height:1.7;padding-left:20px;margin:0;" id="activation-detail-whentouse-list"></ul>
     </div>
-    <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(169,153,127,0.25);">
+    <div id="activation-detail-experience" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(169,153,127,0.25);">
       <h3 style="color:#CFA646;font-size:15px;letter-spacing:0.02em;margin-bottom:8px;">Tell Me What You Experienced</h3>
       <p style="color:#F6F2E9;opacity:0.85;line-height:1.6;margin-bottom:12px;">Share what shifted for you, and your guide will reflect it back with you.</p>
       <button class="btn-secondary" onclick="rhOpenExperienceChat()">Tell Me What You Experienced →</button>
@@ -5974,16 +5974,26 @@ if (forceComplete) { goDay(3); }
   @media (max-width: 640px) { body.lux-home #my-revolution .shift-row.cu-shift-row .shift-row-main { flex: 1 1 calc(100% - 64px); min-width: 0; } }
   /* ---------- Activation page v2: premium near-black, gold frame, branded video ---------- */
   #activation-detail-page.page-view { background: radial-gradient(120% 60% at 50% -10%, rgba(1,103,108,0.22), transparent 60%), radial-gradient(90% 50% at 100% 100%, rgba(226,190,104,0.08), transparent 60%), linear-gradient(180deg, #050807 0%, #070707 100%) !important; }
-  #activation-detail-page > .wrap { position: relative; border: 1px solid rgba(226,190,104,0.35); border-radius: 20px; padding: 26px 22px 30px !important; margin: 18px auto 30px; background: linear-gradient(180deg, rgba(1,103,108,0.08), rgba(0,0,0,0.35)); box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 50px rgba(226,190,104,0.08), 0 0 90px rgba(1,103,108,0.18), inset 0 0 80px rgba(0,0,0,0.5); }
-  #activation-detail-page > .wrap::before { content: ""; position: absolute; inset: 8px; border-radius: 14px; pointer-events: none; border: 1px solid rgba(226,190,104,0.12); background: url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3Cpath%20d%3D%22M2%202%20L14%2014%22%20stroke-width%3D%220.5%22/%3E%3C/g%3E%3C/svg%3E") top left / 54px no-repeat, url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%2860%200%29%20scale%28-1%201%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3Cpath%20d%3D%22M2%202%20L14%2014%22%20stroke-width%3D%220.5%22/%3E%3C/g%3E%3C/svg%3E") top right / 54px no-repeat, url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%280%2060%29%20scale%281%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3Cpath%20d%3D%22M2%202%20L14%2014%22%20stroke-width%3D%220.5%22/%3E%3C/g%3E%3C/svg%3E") bottom left / 54px no-repeat, url("data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2060%2060%22%20fill%3D%22none%22%20stroke%3D%22%23E2BE68%22%20stroke-width%3D%221.2%22%3E%3Cg%20transform%3D%22translate%2860%2060%29%20scale%28-1%20-1%29%22%3E%3Cpath%20d%3D%22M2%2040%20V2%20H40%22/%3E%3Cpath%20d%3D%22M8%2028%20V8%20H28%22%20stroke-width%3D%220.6%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%228%22%20r%3D%222.2%22%20fill%3D%22%23E2BE68%22%20stroke%3D%22none%22/%3E%3Cpath%20d%3D%22M2%202%20L14%2014%22%20stroke-width%3D%220.5%22/%3E%3C/g%3E%3C/svg%3E") bottom right / 54px no-repeat; }
-  #activation-detail-page > .wrap > * { position: relative; z-index: 1; }
-  @media (max-width: 640px) { #activation-detail-page > .wrap { margin: 12px 10px 24px; padding: 24px 18px 26px !important; } }
   #activation-detail-page #activation-detail-title { color: #F1D58A; }
   #activation-detail-page #activation-detail-description { color: rgba(246,242,233,0.78); }
-  #activation-detail-whatfor, #activation-detail-whentouse { border-top: 1px solid transparent; border-image: linear-gradient(90deg, transparent, rgba(226,190,104,0.55), transparent) 1; padding-top: 22px; }
-  #activation-detail-whatfor > h3, #activation-detail-whentouse > h3 { font-family: Inter, system-ui, sans-serif !important; font-size: 11.5px !important; font-weight: 600 !important; letter-spacing: 0.22em !important; text-transform: uppercase; color: #E2BE68 !important; margin: 0 0 12px !important; display: flex; align-items: center; gap: 10px; }
-  #activation-detail-whatfor > h3::before, #activation-detail-whentouse > h3::before { content: ""; width: 6px; height: 6px; transform: rotate(45deg); background: #E2BE68; box-shadow: 0 0 8px rgba(226,190,104,0.6); flex: 0 0 auto; }
+  #activation-detail-whatfor, #activation-detail-whentouse, #activation-detail-experience { border: 0 !important; background: linear-gradient(90deg, transparent, rgba(226,190,104,0.55), transparent) top center / 100% 1px no-repeat; padding-top: 22px; }
+  #activation-detail-whatfor > h3, #activation-detail-whentouse > h3, #activation-detail-experience > h3 { font-family: Inter, system-ui, sans-serif !important; font-size: 11.5px !important; font-weight: 600 !important; letter-spacing: 0.22em !important; text-transform: uppercase; color: #E2BE68 !important; margin: 0 0 12px !important; display: flex; align-items: center; gap: 10px; }
+  #activation-detail-whatfor > h3::before, #activation-detail-whentouse > h3::before, #activation-detail-experience > h3::before { content: ""; width: 6px; height: 6px; transform: rotate(45deg); background: #E2BE68; box-shadow: 0 0 8px rgba(226,190,104,0.6); flex: 0 0 auto; }
   #activation-detail-whentouse-list li::marker { color: #E2BE68; }
+  /* Activation page v3: open, spacious flow (no page frame, no boxes in boxes) */
+  #activation-detail-page > .wrap { padding-top: 8px; padding-bottom: 48px; }
+  #activation-detail-page .section-head { margin-bottom: 26px; }
+  #activation-detail-page #activation-detail-title { line-height: 1.2; margin-bottom: 10px; }
+  #activation-detail-page #activation-detail-description { line-height: 1.6; }
+  #activation-detail-page .activation-player { margin: 30px 0 40px; }
+  #activation-detail-whatfor, #activation-detail-whentouse, #activation-detail-experience { position: static; margin-top: 0 !important; margin-bottom: 40px; padding-top: 30px !important; }
+  #activation-detail-experience > p { line-height: 1.7 !important; margin-bottom: 18px !important; }
+  #activation-detail-whatfor-text { line-height: 1.75 !important; margin: 0; }
+  #activation-detail-whentouse-intro { line-height: 1.75 !important; margin: 0 0 14px !important; }
+  #activation-detail-whentouse-list { line-height: 1.65 !important; padding-left: 22px !important; }
+  #activation-detail-whentouse-list li { margin: 0 0 12px; padding-left: 4px; }
+  #activation-detail-whentouse-list li:last-child { margin-bottom: 0; }
+  #activation-detail-page .activation-detail-actions { margin-top: 36px; }
   .rh-wplay { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at 50% 50%, rgba(0,0,0,0.15), rgba(0,0,0,0.45)); border: 0; padding: 0; cursor: pointer; width: 100%; }
   .rh-wplay span { width: 72px; height: 72px; border-radius: 50%; background: rgba(8,8,8,0.88); border: 1.5px solid #E2BE68; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 26px rgba(0,0,0,0.6), 0 0 22px rgba(226,190,104,0.4); transition: transform .2s, box-shadow .2s; }
   .rh-wplay:hover span, .rh-wplay:focus-visible span { transform: scale(1.06); box-shadow: 0 8px 26px rgba(0,0,0,0.6), 0 0 34px rgba(226,190,104,0.6); }
