@@ -3216,9 +3216,13 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     var d = document.getElementById('rh-drawer');
     var o = document.getElementById('rh-drawer-overlay');
     if (!d || !o) return;
-    d.classList.add('rh-open');
-    o.classList.add('rh-open');
+    // Render the cached list first, then slide in once, so the drawer opens in a single settled render.
+    if (window.__rhChatList) rhRenderDrawerList();
     d.setAttribute('aria-hidden', 'false');
+    requestAnimationFrame(function () {
+      d.classList.add('rh-open');
+      o.classList.add('rh-open');
+    });
     rhLoadDrawerList();
   }
 
@@ -3267,6 +3271,10 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     var list = document.getElementById('rh-drawer-list');
     if (!list) return;
     var chats = (window.__rhChatList || []).filter(function (c) { return !c.archived; });
+    // Skip re-rendering identical content (avoids a visible double render when fresh data matches the cache).
+    var rhKey = JSON.stringify([window.__rhActiveChatId || null, chats.map(function (c) { return [c.id, c.title, c.lastMessageAt || c.updatedAt || c.createdAt]; })]);
+    if (list.__rhKey === rhKey && list.children.length) return;
+    list.__rhKey = rhKey;
     if (!chats.length) {
       list.innerHTML = '<div class="rh-drawer-empty">No conversations yet.</div>';
       return;
@@ -5472,6 +5480,7 @@ if (forceComplete) { goDay(3); }
   #lux-chat-pop .rh-drawer-overlay { position: absolute; border-radius: inherit; z-index: 40; background: rgba(0,0,0,0.55); }
   #lux-chat-pop .rh-drawer { position: absolute; z-index: 41; width: 320px; background: linear-gradient(180deg, rgba(4,26,28,0.98), rgba(2,8,9,0.98)); border-right: 1px solid rgba(226,190,104,0.35); box-shadow: 20px 0 60px rgba(0,0,0,0.5); border-radius: 22px 0 0 22px; }
   #lux-chat-pop .rh-drawer-head { border-bottom-color: rgba(226,190,104,0.18); }
+  #lux-chat-pop .rh-drawer { will-change: transform; contain: layout paint; backface-visibility: hidden; }
   #lux-chat-pop .rh-drawer-head .serif { font-family: "Cormorant Garamond", Georgia, serif; letter-spacing: .14em; text-transform: uppercase; color: #F8E7B0; }
   #lux-chat-pop .rh-drawer-newchat { border-color: rgba(226,190,104,0.6); color: #F1D58A; border-radius: 999px; text-align: center; letter-spacing: .08em; }
   #lux-chat-pop .rh-drawer-item:hover, #lux-chat-pop .rh-drawer-item.rh-active { background: rgba(1,103,108,0.28); }
@@ -5671,6 +5680,7 @@ if (forceComplete) { goDay(3); }
   .cu-revealed[hidden] { display: none; }
   .cu-name { margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-size: 26px; letter-spacing: .14em; text-transform: uppercase; color: #F8E7B0; }
   .cu-btn { font: inherit; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; padding: 13px 24px; border-radius: 999px; cursor: pointer; max-width: 100%; transition: transform .2s ease, box-shadow .2s ease; }
+  .cu-lbl { display: inline-block; transition: opacity .14s ease; }
   .cu-gold { border: 0; color: #1A1208; font-weight: 600; background: linear-gradient(180deg, #F8E7B0 0%, #E2BE68 50%, #B98A2E 100%); box-shadow: 0 0 0 1px rgba(255,240,200,.4) inset, 0 0 22px rgba(207,166,70,.4); }
   .cu-line { background: rgba(0,0,0,0.35); color: #F8E7B0; border: 1px solid rgba(226,190,104,0.65); }
   @media (hover: hover) { .cu-btn:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(207,166,70,.5); } }
@@ -6212,7 +6222,7 @@ if (forceComplete) { goDay(3); }
         { n: 'Channel', c: '4301', f: 'channel-4301', a: 'Activating Your Channel To Spirit Activation', s: 'activating-your-channel-to-spirit', r: 'Your channel is clearing. The old code said guidance had to be complicated or reserved for someone else. This card opens the line between you and Spirit so messages come through clean. Ask, then listen for the quiet answer.' },
         { n: 'High Vibe', c: '4407', f: 'high-vibe-4407', a: 'Yes Factor Vibe Booster', s: 'yes-factor-vibe-booster', r: 'This card is a reminder that your vibe is yours to set. The old code let the day decide how you felt. High Vibe upgrades it into starting from joy and clarity on purpose. Begin there, and the rest of the day follows.' },
         { n: 'Gifts', c: '1112', f: 'gifts-1112', a: 'Activating Your Gifts Activation', s: 'activating-your-gifts', r: 'Your gifts aren\u2019t asleep, babe. They\u2019ve been waiting for you to use them on purpose. The old code said they were too much or not enough. This card says they\u2019re exactly right, and they get stronger every time you trust them.' },
-        { n: 'Intuition', c: '08912', f: 'intuition-08912', a: 'Intuition Activation', s: 'intuition-activation', r: 'Your inner knowing has been whispering, and you\u2019ve been asking everyone else first. The old code said other people\u2019s opinions mattered more than your own nudge. Intuition turns the volume back up on you. The first quiet answer is usually the right one.' },
+        { n: 'Intuition', c: '08912', f: 'intuition-08912', a: 'Intuition Activation', s: 'intuition-activation', r: 'Your intuition has always known the way. This code clears the noise and doubt that taught you to second-guess yourself, so you can hear your inner guidance clearly and trust it enough to act.' },
         { n: 'Impact', c: '9909', f: 'impact-9909', a: 'Impact Vibe Booster', s: 'impact-vibe-booster', r: 'You came here to change lives, and this card wants you to remember it. The old code made your work feel small, like it didn\u2019t really matter. Impact reconnects you to the ripple you\u2019re already creating. Someone is waiting for exactly what you share.' },
         { n: 'Freedom', c: '80112', f: 'freedom-80112', a: 'Freedom Timeline Activation', s: 'gap-method-creator', r: 'You\u2019ve been carrying rules that were never yours. The old code of limitation told you what\u2019s possible and what\u2019s not. Freedom opens your wings. You get to build a life and business that feels spacious, on your own terms.' },
         { n: 'Soul-Led Business', c: '6710', f: 'soul-led-business-6710', a: 'Emerging Your Soul Into Your Business Activation', s: 'emerging-your-soul-into-your-business', r: 'Your business wants more of your soul in it. The old code said strategy had to come first and your heart second. This card flips that. When your soul leads, the right people feel it, and the work feels like you again.' },
@@ -6451,11 +6461,21 @@ if (forceComplete) { goDay(3); }
       q('.cu-deck').addEventListener('click', draw);
       cp.addEventListener('click', function (e) { if (e.target.closest('.cu-pick')) draw(); });
       var saving = false;
+      // Clean label swap: fade the old words out, swap, fade in (never two labels on screen at once).
+      function cuLabel(btn, text) {
+        var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var sp = btn.querySelector(':scope > .cu-lbl');
+        if (!sp) { sp = document.createElement('span'); sp.className = 'cu-lbl'; sp.textContent = btn.textContent; btn.textContent = ''; btn.appendChild(sp); }
+        clearTimeout(btn.__lblT);
+        if (reduce) { sp.textContent = text; sp.style.opacity = ''; return; }
+        sp.style.opacity = '0';
+        btn.__lblT = setTimeout(function () { sp.textContent = text; sp.style.opacity = '1'; }, 140);
+      }
       async function saveShift(btn) {
         var out = q('.cu-out');
         var email = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) ? RH_EMAIL : null;
         if (!email) { out.innerHTML = '<p class="cu-note">Please log in to save this Shift.</p>'; return; }
-        if (saving) return; saving = true; btn.disabled = true; btn.textContent = 'Saving\u2026';
+        if (saving) return; saving = true; btn.disabled = true; cuLabel(btn, 'Saving\u2026');
         try {
           var res = await fetch('/api/gap-shift', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
             source: 'code-upgrade', email: email,
@@ -6471,9 +6491,9 @@ if (forceComplete) { goDay(3); }
           out.innerHTML = '<div class="cu-shift"><span class="cu-tag">Code Upgrade</span><p class="cu-shift-k">Shifting card saved</p>' +
             '<h3>' + cuEsc(cur.n) + '</h3><p class="cu-shift-a">Paired activation: ' + cuEsc(cur.a) + '</p>' +
             '<button type="button" class="cu-btn cu-line cu-view-shift" data-shift-id="' + cuEsc(data.shiftId) + '">Open it in My Revolution</button></div>';
-          btn.textContent = 'Saved to your Shifts';
+          cuLabel(btn, 'Saved to your Shifts');
         } catch (err) {
-          btn.disabled = false; btn.textContent = 'Create a Shifting card';
+          btn.disabled = false; cuLabel(btn, 'Create a Shifting card');
           out.innerHTML = '<p class="cu-note">Something went wrong saving this Shift. Please try again.</p>';
         } finally { saving = false; }
       }
@@ -6489,7 +6509,7 @@ if (forceComplete) { goDay(3); }
             q('.cu-act').textContent = cur.a;
             q('.cu-csub').textContent = 'Your ' + cur.n + ' code goes with this activation. Save it as a Shifting card to work with, or begin the upgrade right now.';
             q('.cu-out').innerHTML = '';
-            var sb = q('[data-cu-act="shift"]'); sb.disabled = false; sb.textContent = 'Create a Shifting card';
+            var sb = q('[data-cu-act="shift"]'); sb.disabled = false; clearTimeout(sb.__lblT); sb.textContent = 'Create a Shifting card';
           }
           show(v); return;
         }
