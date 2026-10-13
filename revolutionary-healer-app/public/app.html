@@ -1050,24 +1050,6 @@
       </button><p class="lux-door-help">Pull today&rsquo;s code</p></div>
     </div>
 
-    <!-- Home v2 shortcuts: Daily Focus strip + Shifts / Favorites tiles -->
-    <div class="lux-shortcuts" id="lux-shortcuts">
-      <button type="button" class="lux-focus-strip" id="lux-focus-strip" aria-label="Play today's focus activation">
-        <span class="lux-fs-text"><span class="lux-fs-eyebrow">Daily Focus</span><span class="lux-fs-name" id="lux-fs-name">Your recommended activation</span></span>
-        <span class="lux-fs-play" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="#1A1208"><polygon points="7,4 20,12 7,20"/></svg></span>
-      </button>
-      <div class="lux-tiles">
-        <button type="button" class="lux-tile" id="lux-tile-shifts" aria-label="My Shifts">
-          <span class="lux-tile-icon" aria-hidden="true"><svg viewBox="0 0 48 48" width="26" height="26" fill="none" stroke="url(#lux-gold-stroke)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M24 16v20"/><path d="M24 20c-3-8-14-11-16-6s4 10 16 8"/><path d="M24 20c3-8 14-11 16-6s-4 10-16 8"/><path d="M24 24c-4 2-11 6-9 10s7 1 9-6"/><path d="M24 24c4 2 11 6 9 10s-7 1-9-6"/></svg><span class="lux-tile-badge" id="lux-tile-shifts-badge" hidden></span></span>
-          <span class="lux-tile-label">Shifts</span><span class="lux-tile-sub" id="lux-tile-shifts-sub"></span>
-        </button>
-        <button type="button" class="lux-tile" id="lux-tile-favs" aria-label="Favorites">
-          <span class="lux-tile-icon" aria-hidden="true"><svg viewBox="0 0 48 48" width="24" height="24" fill="none" stroke="url(#lux-gold-stroke)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M24 39S9 30 9 19a8 8 0 0 1 15-4 8 8 0 0 1 15 4c0 11-15 20-15 20z"/></svg></span>
-          <span class="lux-tile-label">Favorites</span>
-        </button>
-      </div>
-    </div>
-
     <a class="lux-cue" href="#my-revolution" aria-label="Open My Revolution">
       <span class="lux-cue-text">My Revolution</span>
       <svg class="lux-cue-chev" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#E2BE68" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
@@ -5908,6 +5890,24 @@ if (forceComplete) { goDay(3); }
   #shift-modal .cu-panel-act .cu-code-name, #shift-modal #shift-modal-gapswipe .cu-panel-act strong { display: block; padding: 0; border: none; border-radius: 0; font-size: 24px; line-height: 1.2; font-weight: 500; }
   #shift-modal .cu-panel-act .cu-code-play { display: none; }
   #shift-modal .cu-chat-btn { order: 11; width: 100%; border-radius: 999px !important; padding: 12px 16px !important; background: none !important; border: 1px solid rgba(226,190,104,0.6) !important; color: #F1D58A !important; font-size: 13px; letter-spacing: .06em; }
+  /* ---------- Home v3: short My Revolution under the doors (old style); full page via See all ---------- */
+  body.lux-home.lux-rev-short > #hero-section { min-height: 0 !important; }
+  body.lux-home.lux-rev-short > #hero-section > .lux-wrap { padding-bottom: 8px; }
+  #my-revolution .lux-rev-seeall { display: none; }
+  body.lux-rev-short #my-revolution .lux-rev-seeall { display: block; align-self: center; cursor: pointer; }
+  body.lux-rev-short #my-revolution .section-head { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  body.lux-rev-short #my-revolution .shifts-list > .shift-row:nth-child(n+3) { display: none !important; }
+  body.lux-rev-short #my-revolution .lux-see-all { display: none !important; }
+  body.lux-rev-short #my-revolution .favorites-row > .fav-card:nth-child(n+4) { display: none !important; }
+  /* Favorites page: two across on phones, same grid as the Activations page */
+  @media (max-width: 640px) {
+    #favorites-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+    #favorites-page .media-thumb { height: 128px; }
+    #favorites-page .media-body { padding: 12px 12px 14px; }
+    #favorites-page .media-body h3 { font-size: 15px; line-height: 1.25; overflow-wrap: anywhere; hyphens: auto; }
+    #favorites-page .media-meta, #favorites-page .media-description { font-size: 12.5px; line-height: 1.4; }
+    #favorites-page .media-actions { flex-wrap: wrap; gap: 6px; }
+  }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
@@ -5979,10 +5979,11 @@ if (forceComplete) { goDay(3); }
     var revEl = document.getElementById('my-revolution'), heroEl = document.getElementById('hero-section');
     var origMain = window.showMain, origPage = window.showPage;
     function leaveRev() { body.classList.remove('lux-rev-page'); }
+    function short(on) { body.classList.toggle('lux-rev-short', !!on); }
     window.goToMyRevolution = function (fromHistory) {
       closePop(true);
       if (typeof hideAllPages === 'function') hideAllPages();
-      setMode('home'); body.classList.add('lux-rev-page');
+      setMode('home'); body.classList.add('lux-rev-page'); short(false);
       if (heroEl) heroEl.style.display = 'none';
       if (revEl) revEl.style.display = '';
       if (fromHistory !== true && !(history.state && history.state.rhRev)) { try { history.pushState({ rhRev: 1 }, '', '#my-revolution'); } catch (e) {} }
@@ -5990,21 +5991,26 @@ if (forceComplete) { goDay(3); }
     };
     window.showMain = function () {
       leaveRev(); var r = origMain.apply(this, arguments);
-      if (revEl) revEl.style.display = 'none';
+      body.classList.add('lux-rev-short'); if (revEl) revEl.style.display = '';
       if (history.state && history.state.rhRev) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} }
       return r;
     };
-    window.showPage = function () { leaveRev(); return origPage.apply(this, arguments); };
+    window.showPage = function () { leaveRev(); short(false); return origPage.apply(this, arguments); };
     window.addEventListener('popstate', function (e) {
       if (e.state && e.state.rhRev) window.goToMyRevolution(true);
-      else if (body.classList.contains('lux-rev-page')) { leaveRev(); origMain(); if (revEl) revEl.style.display = 'none'; }
+      else if (body.classList.contains('lux-rev-page')) { leaveRev(); origMain(); short(true); if (revEl) revEl.style.display = ''; }
     });
     if (revEl) {
       var back = document.createElement('a'); back.className = 'page-back lux-rev-back'; back.href = '#'; back.textContent = '\u2190 Back';
       back.addEventListener('click', function (e) { e.preventDefault(); if (history.state && history.state.rhRev) history.back(); else window.showMain(); });
       revEl.insertBefore(back, revEl.firstChild);
     }
-    if (location.hash === '#my-revolution') window.goToMyRevolution(true); else if (revEl) revEl.style.display = 'none';
+    if (revEl) {
+      var head = revEl.querySelector('.section-head');
+      if (head) { var sa = document.createElement('div'); sa.className = 'see-all lux-rev-seeall'; sa.textContent = 'See all \u2192'; sa.setAttribute('role', 'link'); sa.tabIndex = 0;
+        sa.addEventListener('click', function () { window.goToMyRevolution(); }); head.appendChild(sa); }
+    }
+    if (location.hash === '#my-revolution') window.goToMyRevolution(true); else { short(true); if (revEl) revEl.style.display = ''; }
   })();
   wrap('showPage', 'page');
   setMode('home');
@@ -6530,35 +6536,6 @@ if (forceComplete) { goDay(3); }
     }
     new MutationObserver(hookGap).observe(document.documentElement, { childList: true, subtree: true });
     document.addEventListener('DOMContentLoaded', hookGap); hookGap();
-  })();
-  </script>
-  <script id="lux-home-v2-js">
-  (function () {
-    function q(id) { return document.getElementById(id); }
-    function focusTitle() { var e = document.querySelector('[data-role="focus-activation"]'); return e ? e.textContent.trim() : ''; }
-    function refresh() {
-      var t = focusTitle(), n = q('lux-fs-name'); if (n && t) n.textContent = t;
-      var list = (typeof SHIFTS !== 'undefined' && SHIFTS) ? SHIFTS : [];
-      var k = list.filter(function (x) { return x && x.statusClass !== 'embodied'; }).length;
-      var b = q('lux-tile-shifts-badge'), sub = q('lux-tile-shifts-sub');
-      if (b) { b.hidden = !k; b.textContent = k; }
-      if (sub) sub.textContent = k ? k + ' in progress' : '';
-    }
-    var fa = document.querySelector('[data-role="focus-activation"]');
-    if (fa) new MutationObserver(refresh).observe(fa, { childList: true, characterData: true, subtree: true });
-    var sl = document.querySelector('[data-role="shifts-list"]');
-    if (sl) new MutationObserver(refresh).observe(sl, { childList: true });
-    refresh(); setTimeout(refresh, 1500);
-    q('lux-focus-strip').addEventListener('click', function () {
-      var slug = typeof rhSlugForActivationTitle === 'function' ? rhSlugForActivationTitle(focusTitle()) : null;
-      if (slug) handleActivationCardClick(slug); else { var g = q('gap-method-starter-btn'); if (g) g.click(); }
-    });
-    q('lux-tile-shifts').addEventListener('click', function () {
-      goToMyRevolution();
-      var h = document.querySelector('#my-revolution [data-role="shifts-list"]');
-      if (h) setTimeout(function () { var sec = h.closest('.revolution-subsection') || h; sec.scrollIntoView({ block: 'start' }); }, 60);
-    });
-    q('lux-tile-favs').addEventListener('click', function () { showPage('favorites-page'); });
   })();
   </script>
 </body>
