@@ -5904,6 +5904,10 @@ if (forceComplete) { goDay(3); }
   #shift-modal .cu-listen-proxy::after { content: " \2192"; }
   #shift-modal .cu-panel-act .cu-code-play { background: none !important; border: 1px solid rgba(226,190,104,0.6) !important; color: #F1D58A !important; border-radius: 999px !important; font-size: 13px; }
   #shift-modal .rh-swipe-arrow { right: 6px; }
+  /* Slide 3 cleanup: plain serif activation title; two buttons only */
+  #shift-modal .cu-panel-act .cu-code-name, #shift-modal #shift-modal-gapswipe .cu-panel-act strong { display: block; padding: 0; border: none; border-radius: 0; font-size: 24px; line-height: 1.2; font-weight: 500; }
+  #shift-modal .cu-panel-act .cu-code-play { display: none; }
+  #shift-modal .cu-chat-btn { order: 11; width: 100%; border-radius: 999px !important; padding: 12px 16px !important; background: none !important; border: 1px solid rgba(226,190,104,0.6) !important; color: #F1D58A !important; font-size: 13px; letter-spacing: .06em; }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
@@ -6222,12 +6226,8 @@ if (forceComplete) { goDay(3); }
     P(1).appendChild(gs);
     [sec(mt), document.getElementById('shift-modal-highest-leverage-section'), document.getElementById('shift-modal-deeper-section')].forEach(function (x) { if (x) P(2).appendChild(x); });
     P(3).appendChild(sec(act));
-    var play = document.createElement('button'); play.type = 'button'; play.className = 'btn-primary cu-code-play cu-gap-play';
-    P(3).appendChild(play);
     var lp = document.createElement('button'); lp.type = 'button'; lp.className = 'btn-primary cu-listen-proxy'; lp.textContent = 'Listen Now'; P(3).appendChild(lp);
-    play.addEventListener('click', function (e) { e.stopPropagation(); var l = document.getElementById('shift-modal-listen-btn'); if (l) l.click(); });
-    var setPlay = function () { play.textContent = 'Play ' + (act.textContent || 'the activation'); };
-    new MutationObserver(setPlay).observe(act, { childList: true, characterData: true, subtree: true }); setPlay();
+    var gc = document.createElement('button'); gc.type = 'button'; gc.className = 'btn-secondary cu-chat-btn'; gc.setAttribute('data-cu-chat', 'shift'); gc.textContent = 'Chat about this Shift'; P(3).appendChild(gc);
     var sw = wrap.querySelector('.cu-swipe'), dots = wrap.querySelectorAll('.cu-swipe-dots i');
     var setDot = function () { var k = Math.round(sw.scrollLeft / Math.max(1, sw.clientWidth)); dots.forEach(function (d, i) { d.classList.toggle('on', i === k); }); };
     sw.addEventListener('scroll', setDot, { passive: true }); setDot();
@@ -6265,8 +6265,8 @@ if (forceComplete) { goDay(3); }
         '<div class="cu-panel cu-panel-code">' + (card ? '<img class="cu-code-thumb" src="' + CU_DIR + card.f + '.webp" alt="' + nm + ' code card">' : '<p class="cu-code-name">' + nm + '</p>') + '</div>' +
         '<div class="cu-panel cu-panel-reading"><span class="cu-tag">Your reading</span><p class="cu-code-reading">' + cuEsc(shift.gap) + '</p></div>' +
         '<div class="cu-panel cu-panel-act"><span class="cu-tag">Your activation</span><p class="cu-code-name">' + cuEsc(shift.activation || '') + '</p>' +
-        '<button type="button" class="btn-primary cu-code-play" data-cu-slug="' + cuEsc(card ? card.s : '') + '">Play ' + cuEsc(shift.activation || 'the activation') + '</button>' +
-        '<button type="button" class="btn-primary cu-listen-proxy">Listen Now</button></div>' +
+        '<button type="button" class="btn-primary cu-listen-proxy" data-cu-slug="' + cuEsc(card ? card.s : '') + '">Listen Now</button>' +
+        '<button type="button" class="btn-secondary cu-chat-btn" data-cu-chat="code" data-cu-code="' + nm + '">Chat about this code</button></div>' +
         '</div><div class="cu-swipe-dots" aria-hidden="true"><i></i><i></i><i></i></div>';
       var sw = box.querySelector('.cu-swipe'), dots = box.querySelectorAll('.cu-swipe-dots i');
       var setDot = function () { var k = Math.round(sw.scrollLeft / Math.max(1, sw.clientWidth)); dots.forEach(function (d, i) { d.classList.toggle('on', i === k); }); };
@@ -6275,7 +6275,18 @@ if (forceComplete) { goDay(3); }
       return r;
     };
     document.addEventListener('click', function (e) {
-      if (e.target.closest('.cu-listen-proxy')) { e.stopPropagation(); var l = document.getElementById('shift-modal-listen-btn'); if (l) l.click(); return; }
+      var lpx = e.target.closest('.cu-listen-proxy');
+      if (lpx) { e.stopPropagation(); var sh0 = window.__rhCurrentShift; var sg = lpx.getAttribute('data-cu-slug'); if (sg || (sh0 && sh0.method === 'Code Upgrade')) { cuPlay(sg, sh0 && sh0.activation); return; } var l = document.getElementById('shift-modal-listen-btn'); if (l) l.click(); return; }
+      var cb = e.target.closest('.cu-chat-btn');
+      if (cb) {
+        e.stopPropagation(); var sh1 = window.__rhCurrentShift || {};
+        var actName = sh1.activation || 'your activation';
+        var msg = cb.getAttribute('data-cu-chat') === 'code'
+          ? 'Let\u2019s talk about your ' + (cb.getAttribute('data-cu-code') || 'Code Upgrade') + ' code and the ' + actName + '. What\u2019s coming up for you?'
+          : 'Let\u2019s talk about your ' + (sh1.identity || 'Shift') + ' Shift and the ' + actName + '. What\u2019s coming up for you?';
+        if (typeof rhOpenChatWithMessage === 'function') rhOpenChatWithMessage(msg, { shiftId: sh1.id });
+        return;
+      }
       var b = e.target.closest('.cu-code-play'); if (!b || b.classList.contains('cu-gap-play')) return;
       var sh = window.__rhCurrentShift;
       cuPlay(b.getAttribute('data-cu-slug'), sh && sh.activation);
