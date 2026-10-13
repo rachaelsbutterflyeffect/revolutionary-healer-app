@@ -2297,7 +2297,10 @@
       var slugs = data.slugs || [];
       var local = [];
       try { local = JSON.parse(localStorage.getItem('rh_favorites_' + RH_EMAIL) || '[]'); } catch (e) {}
-      local.forEach(function(s) { if (slugs.indexOf(s) === -1) { slugs.push(s); } });
+      // Server list is newest-first; local-only slugs are unsynced recent
+      // hearts, so they go in front.
+      var localOnly = local.filter(function(s) { return slugs.indexOf(s) === -1; });
+      slugs = localOnly.concat(slugs);
       FAVORITE_ACTIVATION_SLUGS = slugs;
       favoritesLoaded = true;
       try { localStorage.setItem('rh_favorites_' + RH_EMAIL, JSON.stringify(slugs)); } catch (e) {}
@@ -2350,7 +2353,7 @@
     var idx = favs.indexOf(slug);
     var nowFav;
     if (idx === -1) {
-      favs.push(slug);
+      favs.unshift(slug); // newest first
       nowFav = true;
     } else {
       favs.splice(idx, 1);
@@ -2815,7 +2818,10 @@
       var slugs = data.slugs || [];
       var local = [];
       try { local = JSON.parse(localStorage.getItem('rh_completed_activations_' + RH_EMAIL) || '[]'); } catch (e) {}
-      local.forEach(function(s) { if (slugs.indexOf(s) === -1) { slugs.push(s); } });
+      // Server list is newest-first; local-only slugs are unsynced recent
+      // hearts, so they go in front.
+      var localOnly = local.filter(function(s) { return slugs.indexOf(s) === -1; });
+      slugs = localOnly.concat(slugs);
       COMPLETED_ACTIVATION_SLUGS = slugs;
       completedActivationsLoaded = true;
       try { localStorage.setItem('rh_completed_activations_' + RH_EMAIL, JSON.stringify(slugs)); } catch (e) {}
