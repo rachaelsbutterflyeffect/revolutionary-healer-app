@@ -2580,7 +2580,7 @@
         '</div>';
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=b8913f" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
     } else {
       playerEl.innerHTML =
         '<div style="padding:40px 20px;text-align:center;color:#c9b8a8;">Video coming soon.</div>';
@@ -2595,11 +2595,11 @@
       playerEl.innerHTML =
         '<div class="audio-cover-player" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
         '<div class="audio-cover-overlay"><div class="audio-playing-badge" style="color:#F6F2E9;font-size:14px;letter-spacing:0.04em;">&#9654; Now Playing</div></div>' +
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
+        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=b8913f&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
         '</div>';
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=b8913f&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
     } else if (a.audioSrc) {
       playerEl.innerHTML =
         '<div class="audio-native-wrap" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
@@ -2791,7 +2791,8 @@
 
     var listHtml = '';
     shifts.forEach(function(s) {
-      listHtml += '<button class="shift-row" onclick="openShiftModal(\'' + s.id + '\')">' +
+      var cuLead = window.rhCuRowLead ? window.rhCuRowLead(s) : '';
+      listHtml += '<button class="shift-row' + (cuLead ? ' cu-shift-row' : '') + '" onclick="openShiftModal(\'' + s.id + '\')">' + cuLead +
         '<div class="shift-row-main">' +
           '<div class="shift-method">' + s.method + '</div>' +
           '<div class="shift-identity serif">' + s.identity + '</div>' +
@@ -5935,6 +5936,23 @@ if (forceComplete) { goDay(3); }
     body.lux-home .lux-portal-enter::before, body.lux-home .lux-portal-enter::after { display: none; }
   }
   @media (max-width: 370px) { body.lux-home .lux-portal-enter { letter-spacing: .05em !important; padding-left: .05em; font-size: 8.5px; } }
+  /* ---------- Branded thumbnail frame: art untouched, frame only (no recolour) ---------- */
+  .media-thumb, .fav-thumb, .activation-player { position: relative; border-radius: 14px; overflow: hidden; border: 1px solid rgba(226,190,104,0.7) !important; box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 0 18px rgba(1,103,108,0.35), 0 10px 26px rgba(0,0,0,0.45); isolation: isolate; }
+  .media-thumb::after, .fav-thumb::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1; box-shadow: inset 0 0 34px rgba(0,0,0,0.55), inset 0 0 0 1px rgba(248,231,176,0.18); }
+  .activation-player::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 2; box-shadow: inset 0 0 40px rgba(0,0,0,0.45), inset 0 0 0 1px rgba(248,231,176,0.2); }
+  .media-thumb > *, .fav-thumb > * { position: relative; z-index: 2; }
+  .media-thumb > .media-tag, .media-thumb > .new-badge, .media-thumb > .activation-lock-badge { position: absolute; }
+  .media-card, .fav-card { overflow: hidden; }
+  .play-dot { background: rgba(0,0,0,0.72); border: 1px solid #E2BE68; box-shadow: 0 0 14px rgba(226,190,104,0.35); }
+  .play-dot svg { fill: #E2BE68; }
+  .audio-cover-play, .audio-custom-playbtn { background: #0A0A0A !important; border: 1.5px solid #E2BE68 !important; box-shadow: 0 6px 20px rgba(0,0,0,0.6), 0 0 18px rgba(226,190,104,0.35) !important; }
+  .audio-cover-play:hover, .audio-custom-playbtn:hover { background: #17140F !important; }
+  .audio-cover-play svg, .audio-custom-playbtn svg { fill: #E2BE68 !important; stroke: #E2BE68; }
+  .audio-cover-play svg *, .audio-custom-playbtn svg * { fill: #E2BE68 !important; }
+  /* Code pairing: the code card leads */
+  .cu-choice-code { display: block; width: 120px; aspect-ratio: 2 / 3; object-fit: cover; margin: 0 auto 14px; border-radius: 10px; border: 1px solid rgba(226,190,104,0.7); box-shadow: 0 10px 26px rgba(0,0,0,0.5), 0 0 22px rgba(226,190,104,0.2); }
+  .shift-row .cu-row-code { flex: 0 0 auto; width: 46px; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 6px; border: 1px solid rgba(226,190,104,0.7); box-shadow: 0 4px 12px rgba(0,0,0,0.5); position: relative; z-index: 1; }
+  @media (max-width: 640px) { body.lux-home #my-revolution .shift-row.cu-shift-row .shift-row-main { flex: 1 1 calc(100% - 64px); min-width: 0; } }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
@@ -6235,6 +6253,12 @@ if (forceComplete) { goDay(3); }
   var CU_DIR = '/code-cards/';
   function cuEsc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (ch) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]; }); }
   function cuFindByKey(key) { for (var i = 0; i < CU_CARDS.length; i++) if (CU_CARDS[i].f === key) return CU_CARDS[i]; return null; }
+  // My Revolution: a Code Upgrade Shift row leads with its code card graphic
+  window.rhCuRowLead = function (sh) {
+    if (!sh || !(sh.method === 'Code Upgrade' || /^code-upgrade:/.test(String(sh.focusArea || '')))) return '';
+    var c = cuFindByKey(String(sh.focusArea || '').replace(/^code-upgrade:/, ''));
+    return c ? '<img class="cu-row-code" src="' + CU_DIR + c.f + '.webp" alt="' + c.n + ' code card">' : '';
+  };
   function cuPlay(slug, title) {
     var sl = slug || (typeof rhSlugForActivationTitle === 'function' ? rhSlugForActivationTitle(title) : null);
     if (!sl) return false;
@@ -6352,6 +6376,7 @@ if (forceComplete) { goDay(3); }
             '<button type="button" class="cu-btn cu-gold" data-cu-go="choice">What does this card open?</button></div></div>' +
           '</section>' +
           '<section class="cu-view cu-choice" data-cu="choice" hidden>' +
+            '<img class="cu-choice-code" alt="">' +
             '<p class="cu-eyebrow">Your card pairs with an activation</p><h2 class="cu-h cu-act"></h2>' +
             '<p class="cu-sub cu-csub"></p>' +
             '<div class="cu-btns"><button type="button" class="cu-btn cu-gold" data-cu-act="shift">Create a Shifting card</button><button type="button" class="cu-btn cu-line" data-cu-act="start">Start this activation now</button></div>' +
@@ -6506,6 +6531,7 @@ if (forceComplete) { goDay(3); }
             q('.cu-rname').textContent = cur.n;
             q('.cu-rtext').textContent = cur.r;
           } else if (v === 'choice') {
+            q('.cu-choice-code').src = CU_DIR + cur.f + '.webp'; q('.cu-choice-code').alt = cur.n + ' code card';
             q('.cu-act').textContent = cur.a;
             q('.cu-csub').textContent = 'Your ' + cur.n + ' code goes with this activation. Save it as a Shifting card to work with, or begin the upgrade right now.';
             q('.cu-out').innerHTML = '';
