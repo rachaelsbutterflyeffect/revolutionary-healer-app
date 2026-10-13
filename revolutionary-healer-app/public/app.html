@@ -1188,7 +1188,7 @@
 
       </div>
       <!-- GAP reading restructure (Oct 8 2026): shown while the one deep reading runs. -->
-      <div class="gap-analyzing" id="gap-analyzing" hidden aria-live="polite">
+      <div class="gap-analyzing" id="gap-analyzing" hidden role="status" aria-live="polite">
         <div class="eyebrow">Step 3: Evolve your reality</div>
         <div class="gap-an-orb" aria-hidden="true">
           <span class="gap-an-ring"></span><span class="gap-an-ring gap-an-ring2"></span><span class="gap-an-core"></span>
@@ -5045,10 +5045,14 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
     b.className = 'bubble bot';
     b.id = 'typing-bubble';
     b.textContent = '···';
+    // Thinking state that screen readers and automated checks can see (the dots alone read as an empty dialog).
+    b.setAttribute('role', 'status'); b.setAttribute('aria-label', 'Thinking…');
+    var dlg = document.getElementById('hero-gap-embed'); if (dlg) dlg.setAttribute('aria-busy', 'true');
     log.appendChild(b);
     log.scrollTop = log.scrollHeight;
   }
   function removeTypingBubble() {
+    var dlgB = document.getElementById('hero-gap-embed'); if (dlgB && !(document.getElementById('view-day3') || {classList:{contains:function(){return false;}}}).classList.contains('gap-analyzing-on')) dlgB.removeAttribute('aria-busy');
     var el = document.getElementById('typing-bubble');
     if (el && el.__gapThinkingTimer) clearInterval(el.__gapThinkingTimer);
     if (el) el.remove();
@@ -5464,6 +5468,7 @@ if (forceComplete) { goDay(3); }
     if (gapAnTimer) { clearInterval(gapAnTimer); gapAnTimer = null; }
     e.view.classList.toggle('gap-analyzing-on', !!on);
     e.panel.hidden = !on;
+    var dlgA = document.getElementById('hero-gap-embed'); if (dlgA) { if (on) dlgA.setAttribute('aria-busy', 'true'); else dlgA.removeAttribute('aria-busy'); }
     if (e.err) e.err.hidden = true;
     if (on) { gapAnStart = Date.now(); gapAnShown = 0; gapAnPaint(0); gapAnTick(); gapAnTimer = setInterval(gapAnTick, 120); }
   }
@@ -6474,7 +6479,11 @@ if (forceComplete) { goDay(3); }
     }
     new MutationObserver(function () { var s = shown(); if (s && !isOpen) onOpen(); else if (!s && isOpen) onClose(); }).observe(el, { attributes: true, attributeFilter: ['style'] });
     if (shown()) onOpen();
-    bd.addEventListener('click', function () { if (typeof closeHeroGapEmbed === 'function') closeHeroGapEmbed(); });
+    // A stray tap on the backdrop must not close the dialog while a reply or the reading is being generated.
+    bd.addEventListener('click', function () {
+      if (el.getAttribute('aria-busy') === 'true') return;
+      if (typeof closeHeroGapEmbed === 'function') closeHeroGapEmbed();
+    });
     // Keep keyboard focus inside the dialog while it is open.
     document.addEventListener('keydown', function (e) {
       if (!isOpen || e.key !== 'Tab') return;
