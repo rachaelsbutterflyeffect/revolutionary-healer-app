@@ -1027,7 +1027,7 @@
         <span class="lux-portal-rule" aria-hidden="true"></span>
         <span class="lux-portal-desc">Bring whatever feels off</span>
         <span class="lux-portal-enter" aria-hidden="true">Enter</span>
-      </button><p class="lux-door-help">Talk it through</p></div>
+      </button></div>
       <div class="lux-door"><button type="button" class="lux-portal" id="gap-method-starter-btn" style="--i:1" aria-haspopup="dialog" aria-label="Revolutionary Healer GAP Method™">
         <span class="lux-portal-frame" aria-hidden="true"></span>
         <span class="lux-portal-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="url(#lux-gold-stroke)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><circle cx="24" cy="24" r="12" opacity=".4"/><path d="M8.5 24h31" opacity=".55"/><path d="M13.5 24l3-3 3 3-3 3z"/><path d="M21 24l3-3 3 3-3 3z" fill="url(#lux-gold-stroke)"/><path d="M28.5 24l3-3 3 3-3 3z"/></svg></span>
@@ -1036,7 +1036,7 @@
         <span class="lux-portal-rule" aria-hidden="true"></span>
         <span class="lux-portal-desc">Find what isn&rsquo;t adding up</span>
         <span class="lux-portal-enter" aria-hidden="true">Enter</span>
-      </button><p class="lux-door-help">Find what&rsquo;s in your way</p></div>
+      </button></div>
       <!-- Code Upgrade doorway (formerly Code Pull): shown ONLY when CODE_PULL_ENABLED is true (non-production hosts).
            Hidden by default, so production never shows it even if scripts fail. -->
       <div class="lux-door"><button type="button" class="lux-portal lux-portal-codepull" id="lux-portal-codepull" style="--i:2" hidden aria-haspopup="dialog" aria-controls="lux-codepull-pop" aria-label="Code Upgrade">
@@ -1047,7 +1047,7 @@
         <span class="lux-portal-rule" aria-hidden="true"></span>
         <span class="lux-portal-desc">Activate today&rsquo;s code</span>
         <span class="lux-portal-enter" aria-hidden="true">Enter</span>
-      </button><p class="lux-door-help">Pull today&rsquo;s code</p></div>
+      </button></div>
     </div>
 
     <a class="lux-cue" href="#my-revolution" aria-label="Open My Revolution">
@@ -5908,6 +5908,13 @@ if (forceComplete) { goDay(3); }
     #favorites-page .media-meta, #favorites-page .media-description { font-size: 12.5px; line-height: 1.4; }
     #favorites-page .media-actions { flex-wrap: wrap; gap: 6px; }
   }
+  /* Doors v4: one consistent title size that fits inside each arch (wraps to two lines rather than shrinking) */
+  @media (max-width: 600px) {
+    body.lux-home .lux-portal { height: clamp(218px, 31vh, 262px); }
+    body.lux-home .lux-portal-icon { transform: scale(.74); margin-bottom: -8px; }
+    body.lux-home .lux-portal-name { font-size: 19px !important; line-height: 1.1; white-space: normal; text-wrap: balance; max-width: 100%; padding: 0 10px; box-sizing: border-box; overflow-wrap: normal; }
+  }
+  @media (max-width: 370px) { body.lux-home .lux-portal-name { font-size: 17px !important; padding: 0 9px; } }
   /* ---------- Activations: two across on phones ---------- */
   @media (max-width: 640px) {
     #activations-page .card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
