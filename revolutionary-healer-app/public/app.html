@@ -201,6 +201,11 @@
   .section-head h2 { font-size: 26px; font-weight: 400; margin: 0; color: var(--white); }
   .section-head p { color: var(--taupe); font-size: 14px; margin: 6px 0 0; }
   .see-all { color: var(--gold); font-size: 13px; letter-spacing: 0.04em; }
+  .rh-skeleton { pointer-events: none; }
+  .rh-skeleton .fav-thumb, .rh-skeleton .media-thumb { background: linear-gradient(90deg, #14110c 0%, #221c12 50%, #14110c 100%); background-size: 200% 100%; animation: rhSkel 1.6s ease-in-out infinite; }
+  .rh-skel-line { height: 10px; width: 70%; border-radius: 5px; background: rgba(201,168,92,0.14); margin: 6px 0; }
+  @keyframes rhSkel { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+  @media (prefers-reduced-motion: reduce) { .rh-skeleton .fav-thumb, .rh-skeleton .media-thumb { animation: none; } }
 
   .card-grid {
     display: grid;
@@ -1218,24 +1223,24 @@
       </div>
     </div>
 
-    <div class="focus-card" data-role="focus-card">
+    <div class="focus-card" data-role="focus-card" style="display:none;">
       <div class="focus-card-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
       <div class="focus-card-body">
         <div class="focus-card-identity">
           <div class="focus-card-kicker">Your Divine Identity</div>
-          <h3 class="serif" data-role="focus-identity">The Leader</h3>
+          <h3 class="serif" data-role="focus-identity"></h3>
         </div>
         <div>
           <div class="focus-card-kicker">What's Asking For Attention</div>
-          <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
+          <div class="focus-card-freq-value" data-role="focus-freq"></div>
         </div>
-        <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
+        <div class="status-pill shifting" data-role="focus-status"></div>
       </div>
       <div class="focus-card-activity" data-role="focus-activity">
-        <div data-role="focus-activity-line">Started August 4, 2026</div>
+        <div data-role="focus-activity-line"></div>
       </div>
       <div class="focus-card-footer">
-        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation">Expansion Activation</strong></div>
+        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation"></strong></div>
         <button class="btn-primary" onclick="openShiftModal()">Continue Your Revolution</button>
       </div>
     </div>
@@ -1251,32 +1256,14 @@
       <div class="shifts-list" data-role="shifts-list"></div>
     </div>
 
-    <div class="revolution-subsection" data-role="demo-activity">
+    <div class="revolution-subsection" data-role="demo-activity" style="display:none;">
       <div class="subsection-head">
         <h3 onclick="showPage('favorites-page')"><span class="heart-glow-emoji">♥</span> Favorites</h3>
         <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
       </div>
-      <div class="favorites-row">
-        <div class="fav-card">
-          <div class="fav-thumb glyph-roots"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-          <div class="fav-body">
-            <div class="fav-title">Nervous System Recalibration</div>
-            <div class="fav-actions">
-              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
-              <button class="listen-btn">Listen Now</button>
-            </div>
-          </div>
-        </div>
-        <div class="fav-card">
-          <div class="fav-thumb glyph-wave"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-          <div class="fav-body">
-            <div class="fav-title">Removing the Frequency of Doubt</div>
-            <div class="fav-actions">
-              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
-              <button class="listen-btn">Listen Now</button>
-            </div>
-          </div>
-        </div>
+      <div class="favorites-row" aria-busy="true">
+        <div class="fav-card rh-skeleton" aria-hidden="true"><div class="fav-thumb"></div><div class="fav-body"><div class="rh-skel-line"></div></div></div>
+        <div class="fav-card rh-skeleton" aria-hidden="true"><div class="fav-thumb"></div><div class="fav-body"><div class="rh-skel-line"></div></div></div>
       </div>
     </div>
 
@@ -1292,31 +1279,9 @@
         <p>These are the activations you've chosen to keep close.</p>
       </div>
     </div>
-    <div class="card-grid">
-      <div class="media-card">
-        <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
-        <div class="media-thumb glyph-roots"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-        <div class="media-body">
-          <h3>Nervous System Recalibration</h3>
-          <div class="media-meta">Guided activation</div>
-          <div class="media-actions">
-            <button class="listen-btn">Listen Now</button>
-            <button class="remove-favorite-btn">Remove Favorite</button>
-          </div>
-        </div>
-      </div>
-      <div class="media-card">
-        <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
-        <div class="media-thumb glyph-wave"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-        <div class="media-body">
-          <h3>Removing the Frequency of Doubt</h3>
-          <div class="media-meta">Guided activation</div>
-          <div class="media-actions">
-            <button class="listen-btn">Listen Now</button>
-            <button class="remove-favorite-btn">Remove Favorite</button>
-          </div>
-        </div>
-      </div>
+    <div class="card-grid" aria-busy="true">
+      <div class="media-card rh-skeleton" aria-hidden="true"><div class="media-thumb"></div><div class="media-body"><div class="rh-skel-line"></div></div></div>
+      <div class="media-card rh-skeleton" aria-hidden="true"><div class="media-thumb"></div><div class="media-body"><div class="rh-skel-line"></div></div></div>
     </div>
   </div>
 </section>
@@ -1534,7 +1499,7 @@
           </div>
         </div>
         <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration" data-category="Money + Receiving">
-          <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           </div>
@@ -1545,7 +1510,7 @@
           </div>
         </div>
         <div class="media-card" onclick="handleActivationCardClick('activating-your-gifts')" style="cursor: pointer;" data-activation-slug="activating-your-gifts" data-category="Gifts + Spirit">
-          <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           </div>
@@ -1931,7 +1896,7 @@
     <div class="section-head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px;">
       <div>
         <h2 class="serif"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Profile</h2>
-        <p id="profile-welcome-line">Welcome back. Member since August 2026.</p>
+        <p id="profile-welcome-line">Welcome back.</p>
       </div>
       <a href="#" onclick="signOutMember(); return false;" style="color: var(--taupe); font-size: 13px; text-decoration: none; white-space: nowrap; padding-top: 4px;">Sign Out</a>
     </div>
@@ -1982,7 +1947,7 @@
       <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Membership</h3></div>
       <div class="info-row"><div class="info-label">Current Plan</div><div class="info-value">Revolutionary Healer Full Access</div></div>
       <div class="info-row"><div class="info-label">Membership Status</div><div class="info-value"><span class="status-pill embodied">Active</span></div></div>
-      <div class="info-row"><div class="info-label">Member Since</div><div class="info-value" id="member-since-value">August 3, 2026</div></div>
+      <div class="info-row"><div class="info-label">Member Since</div><div class="info-value" id="member-since-value">&nbsp;</div></div>
       <div class="btn-row">
         <button class="btn-primary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/account','_blank')">Manage Membership</button>
       </div>
@@ -2412,6 +2377,7 @@
 
     var pageGrid = document.querySelector('#favorites-page .card-grid');
     if (pageGrid) {
+      pageGrid.removeAttribute('aria-busy');
       if (!favCards.length) {
         pageGrid.innerHTML = '<p style="color: var(--taupe); grid-column: 1 / -1;">You haven\'t favorited any activations yet. Tap the heart on any activation to add it here.</p>';
       } else {
@@ -2424,6 +2390,7 @@
 
     var homeRow = document.querySelector('.favorites-row');
     if (homeRow) {
+      homeRow.removeAttribute('aria-busy');
       if (!favCards.length) {
         homeRow.innerHTML = '<p style="color: var(--taupe); font-size: 13px;">No favorites yet -- tap the heart on any activation to add it here.</p>';
       } else {
