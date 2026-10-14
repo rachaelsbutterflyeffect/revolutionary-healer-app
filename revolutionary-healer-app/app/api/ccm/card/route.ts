@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     if (body.action) {
       if (!ACTIONS.includes(body.action)) return NextResponse.json({ error: "bad action" }, { status: 400 });
       const activityDayCount = await countActivityDays(email);
-      await recordCardOutcome(email, body.action, { impressionId: body.impressionId || undefined, activityDayCount });
+      await (recordCardOutcome as any)(email, body.action, { impressionId: body.impressionId || undefined, activityDayCount });
       return NextResponse.json({ ok: true });
     }
     // Server-side mid-Shift signal is the client's (GAP Method™ dialog open);
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     const activityDayCount = await countActivityDays(email);
     const verdict = canShowCard(rec?.fields, { activityDayCount, midShift });
     if (!verdict.allowed) return NextResponse.json({ show: false, reason: verdict.reason, activityDayCount });
-    const imp: any = await recordCardShown(email, { activityDayCount, isTest: isTester(email) });
+    const imp: any = await (recordCardShown as any)(email, { activityDayCount, isTest: isTester(email) });
     return NextResponse.json({ show: true, impressionId: imp?.id ?? null, activityDayCount, reason: "ok" });
   } catch (err: any) {
     console.error("ccm card failed", err?.message);
