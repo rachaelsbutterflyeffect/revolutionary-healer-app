@@ -3206,7 +3206,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     if (emailInput) emailInput.value = RH_EMAIL;
     if (welcomeLine) welcomeLine.textContent = 'Welcome back, ' + displayName + '.';
     var lw = document.getElementById('lux-welcome-name');
-    if (lw) { var fn = (displayName.match(/[A-Za-z]+/) || [''])[0]; lw.textContent = fn ? 'Welcome back, ' + fn.charAt(0).toUpperCase() + fn.slice(1).toLowerCase() : 'Welcome back'; }
+    if (lw) { var w0 = (displayName.split(/[^A-Za-z0-9]+/).filter(Boolean)[0] || ''); var GENERIC = /^(test|tester|testing|info|admin|hello|hi|contact|support|team|office|mail|email|me|user|demo|rachaelsbutterflyeffect|noreply|no|sales|billing|accounts?|help|preview|example|owner|staff)$/i; var fn = (/\d/.test(w0) || !/^[A-Za-z]{2,}$/.test(w0) || GENERIC.test(w0)) ? '' : w0; lw.textContent = fn ? 'Welcome back, ' + fn.charAt(0).toUpperCase() + fn.slice(1).toLowerCase() : 'Welcome back'; }
   }
 
   async function sendHeroChat() {
@@ -6270,14 +6270,14 @@ if (forceComplete) { goDay(3); }
   /* Arrival welcome header */
   body.lux-home .lux-head .lux-sub, body.lux-home .lux-head .lux-crest { display: none !important; }
   body.lux-home .lux-head { padding-top: 22px; margin-bottom: 26px !important; }
-  body.lux-home .lux-welcome .lux-greet-1 { font-size: 36px; line-height: 1.1; white-space: normal; text-align: center; }
-  @media (max-width: 760px) { body.lux-home .lux-head { padding-top: 2px; margin-bottom: 14px !important; } body.lux-home .lux-welcome .lux-greet-1 { font-size: 33px; white-space: nowrap; } body.lux-home .lux-prompt { margin-top: 10px; } }
+  body.lux-home .lux-welcome .lux-greet-1 { font-size: 54px; line-height: 1.1; white-space: normal; text-align: center; }
+  @media (max-width: 760px) { body.lux-home .lux-head { padding-top: 2px; margin-bottom: 14px !important; } body.lux-home .lux-welcome .lux-greet-1 { font-size: 44px; line-height: 1.05; white-space: normal; } body.lux-home .lux-prompt { margin-top: 10px; } }
   /* Home = welcome, prompt, doors, tab bar. My Revolution (resume / Shifts / Favorites) and footer stay on their own page */
   body.lux-home:not(.lux-rev-page) #my-revolution, body.lux-home:not(.lux-rev-page) > footer, body.lux-home:not(.lux-rev-page) .lux-cue { display: none !important; }
   body.lux-home .lux-prompt { margin: 16px 0 0; text-align: center; font-size: 18px; line-height: 1.4; color: rgba(255,248,232,0.86); font-style: normal; letter-spacing: .01em; }
   body.lux-home .lux-prompt-b { display: block; color: #E2BE68; font-weight: 600; margin-top: 2px; }
   body #lux-portals .lux-portal:not(#lux-portal-chat-arch) .lux-portal-desc, body #lux-portals #lux-portal-chat .lux-portal-desc { white-space: normal !important; }
-  @media (max-width: 760px) and (max-height: 700px) { body.lux-home .lux-head { padding-top: 8px; margin-bottom: 14px !important; } body.lux-home .lux-welcome .lux-greet-1 { font-size: 31px; } body.lux-home .lux-prompt { margin-top: 8px; font-size: 15.5px; } }
+  @media (max-width: 760px) and (max-height: 700px) { body.lux-home .lux-head { padding-top: 8px; margin-bottom: 14px !important; } body.lux-home .lux-welcome .lux-greet-1 { font-size: 40px; } body.lux-home .lux-prompt { margin-top: 8px; font-size: 15.5px; } }
   /* Doors: benefit line is the title (names stay in aria-labels) */
   body #lux-portals .lux-portal .lux-portal-name, body #lux-portals .lux-portal .lux-portal-rule { display: none !important; }
   body #lux-portals .lux-portal .lux-portal-desc { grid-column: 2 !important; grid-row: 1 / span 3 !important; align-self: center; margin: 0 !important; font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-weight: 600; font-style: normal; font-size: 23px !important; line-height: 1.18 !important; color: #F1D58A !important; white-space: normal !important; letter-spacing: .005em; }
