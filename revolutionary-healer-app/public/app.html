@@ -1059,7 +1059,8 @@
     <header class="lux-head">
       <div class="lux-crest" aria-hidden="true"><span class="lux-crest-line"></span><img class="lux-rh" src="/images/icons/rh-icon.jpg" alt=""><span class="lux-crest-line lux-flip"></span></div>
       <div class="lux-eyebrow">The Revolutionary Healer</div>
-      <h1 class="lux-title lux-greet"><span class="lux-greet-1">Hello there</span><span class="lux-greet-2">What are we doing today?</span></h1>
+      <h1 class="lux-title lux-greet lux-welcome"><span class="lux-greet-1" id="lux-welcome-name">Welcome back</span></h1>
+      <p class="lux-prompt">What are we doing today? <span class="lux-prompt-b">Pick your focus.</span></p>
       <p class="lux-sub">Your Divine Identity is already within you.</p>
     </header>
 
@@ -1070,7 +1071,7 @@
         <span class="lux-portal-kicker">Revolutionary Healer</span>
         <span class="lux-portal-name"><span class="lux-portal-name-in">Chatbot</span></span>
         <span class="lux-portal-rule" aria-hidden="true"></span>
-        <span class="lux-portal-desc">Bring whatever feels off</span>
+        <span class="lux-portal-desc">Dive deep with Rachael in your back pocket</span>
         <span class="lux-portal-enter" aria-hidden="true">Click to enter</span>
       </button></div>
       <div class="lux-door"><button type="button" class="lux-portal" id="gap-method-starter-btn" style="--i:1" aria-haspopup="dialog" aria-label="Revolutionary Healer GAP Method™">
@@ -1079,7 +1080,7 @@
         <span class="lux-portal-kicker">Revolutionary Healer</span>
         <span class="lux-portal-name"><span class="lux-portal-name-in">GAP Method<span class="lux-tm">&trade;</span></span></span>
         <span class="lux-portal-rule" aria-hidden="true"></span>
-        <span class="lux-portal-desc">Find what isn&rsquo;t adding up</span>
+        <span class="lux-portal-desc">Find the resistance that&rsquo;s keeping you stuck</span>
         <span class="lux-portal-enter" aria-hidden="true">Click to enter</span>
       </button></div>
       <!-- Code Upgrade doorway (formerly Code Pull): shown ONLY when CODE_PULL_ENABLED is true (non-production hosts).
@@ -1090,7 +1091,7 @@
         <span class="lux-portal-kicker">Revolutionary Healer</span>
         <span class="lux-portal-name"><span class="lux-portal-name-in">Code Upgrade</span></span>
         <span class="lux-portal-rule" aria-hidden="true"></span>
-        <span class="lux-portal-desc">Activate today&rsquo;s code</span>
+        <span class="lux-portal-desc">Find your daily focus today</span>
         <span class="lux-portal-enter" aria-hidden="true">Click to enter</span>
       </button></div>
     </div>
@@ -3193,6 +3194,8 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
     if (nameInput) nameInput.value = displayName;
     if (emailInput) emailInput.value = RH_EMAIL;
     if (welcomeLine) welcomeLine.textContent = 'Welcome back, ' + displayName + '.';
+    var lw = document.getElementById('lux-welcome-name');
+    if (lw) { var fn = (displayName.match(/[A-Za-z]+/) || [''])[0]; lw.textContent = fn ? 'Welcome back, ' + fn.charAt(0).toUpperCase() + fn.slice(1).toLowerCase() : 'Welcome back'; }
   }
 
   async function sendHeroChat() {
@@ -6253,6 +6256,14 @@ if (forceComplete) { goDay(3); }
   @media (prefers-reduced-motion: reduce) { body #lux-portals .lux-door > .lux-portal { animation: none !important; } }
   /* Chatbot: same rectangular card as GAP Method(TM) / Code Upgrade; teal-black/navy with gold border */
   body #lux-portals #lux-portal-chat { background: radial-gradient(80% 110% at 100% 0%, rgba(226,190,104,0.14), transparent 60%), radial-gradient(70% 100% at 0% 100%, rgba(43,179,173,0.22), transparent 70%), linear-gradient(115deg, #03080b 0%, #071a22 40%, #0b2430 58%, #06141b 78%, #020507 100%); box-shadow: 0 10px 28px rgba(0,0,0,0.6), 0 0 26px rgba(43,179,173,0.22), inset 0 1px 0 rgba(241,213,138,0.22); }
+  /* Arrival welcome header */
+  body.lux-home .lux-head .lux-sub, body.lux-home .lux-head .lux-crest { display: none !important; }
+  body.lux-home .lux-head { padding-top: 22px; margin-bottom: 26px !important; }
+  body.lux-home .lux-welcome .lux-greet-1 { font-size: 40px; line-height: 1.1; white-space: normal; text-align: center; }
+  body.lux-home .lux-prompt { margin: 16px 0 0; text-align: center; font-size: 18px; line-height: 1.4; color: rgba(255,248,232,0.86); font-style: normal; letter-spacing: .01em; }
+  body.lux-home .lux-prompt-b { display: block; color: #E2BE68; font-weight: 600; margin-top: 2px; }
+  body #lux-portals .lux-portal:not(#lux-portal-chat-arch) .lux-portal-desc, body #lux-portals #lux-portal-chat .lux-portal-desc { white-space: normal !important; }
+  @media (max-width: 760px) and (max-height: 700px) { body.lux-home .lux-head { padding-top: 8px; margin-bottom: 14px !important; } body.lux-home .lux-welcome .lux-greet-1 { font-size: 31px; } body.lux-home .lux-prompt { margin-top: 8px; font-size: 15.5px; } }
 </style>
 
 <script id="lux-home-js">
