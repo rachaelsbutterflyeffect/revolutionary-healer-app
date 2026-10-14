@@ -16,7 +16,8 @@
     "test:gap-reading": "node scripts/test-gap-reading.mjs",
     "test:remove-relationships": "node scripts/test-remove-relationships.mjs",
     "test:gap-shift-once": "node scripts/test-gap-shift-once.mjs",
-    "test:testers": "node scripts/test-testers.mjs"
+    "test:testers": "node scripts/test-testers.mjs",
+    "test:chat-ccm": "node scripts/test-chat-ccm.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
