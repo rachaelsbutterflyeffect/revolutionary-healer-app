@@ -281,7 +281,7 @@ const $=s=>document.querySelector(s);
 function buzz(){navigator.vibrate&&navigator.vibrate(8)}
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===id));
- const s=$('#'+id);s.scrollTop=0;if(id==='gap'){gq=0;gans=[];gdom=null;['#ck1','#ck2','#ck3'].forEach(x=>$(x).textContent='');}if(id==='code'){dv=[];}if(id==='chat'&&!$('#msgs').children.length)welcome();buzz();history.replaceState(0,'','#'+id);guide(id);if(id==='gap')gDay(1);if(id==='code')dStep(0);$('#guide').style.display=id==='home'?'none':''}
+ const s=$('#'+id);s.scrollTop=0;if(id==='gap'){gq=0;gans=[];gdom=null;['#ck1','#ck2','#ck3'].forEach(x=>$(x).textContent='');}if(id==='code'){dv=[];}if(id==='chat'&&!$('#msgs').children.length)welcome();buzz();history.replaceState(0,'','#'+id);guide(id);if(id==='gap')gDay(1);$('#guide').style.display=id==='home'?'none':'';if(id==='code')dStep(0)}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(t)go(t.dataset.go);const l=e.target.closest('[data-lane]');if(l){go('chat');startLane(l.dataset.lane)}});
 
 const GUIDE={home:["Tap me to find today's focus","code"],code:["Tap a number from 1 to 10",null],chat:["Pick a starter, or type your own",null],gap:["Choose what feels true. One tap at a time.",null],player:["Press play. Let it land.",null],lib:["Tap any activation to preview",null],rev:["See your next Gap","gap"],profile:["Back to your doors","home"]};
@@ -344,7 +344,7 @@ function dStep(i){const o=$('#dorb');const avg=dv.length?dv.reduce((a,b)=>a+b,0)
   else{slug='grounding';why='Grounded came in lowest ('+g+'/10), so today is about anchoring back into your body.'}
   const a=ACTS.find(x=>x.s===slug)||ACTS.find(x=>x.c.includes({light:'energy'}.light))||ACTS[0];
   const CW=['Radiant','Magnetic','Anchored','Open','Clear','Overflow','Sovereign','Luminous'];const code=CW[(e*7+c*3+g)%CW.length];o.classList.add('reveal-orb');d.innerHTML='<div style="text-align:center"><div class="q-label">TODAY\'S CODE</div><div class="code shine codepop" style="font-size:54px">'+code+'</div><div class="divider"></div><p class="sub" style="font-size:18px">Let <b style="color:var(--gold2)">'+code+'</b> be your focus today. Say it when you wake, and come back to it whenever the noise gets loud.</p></div><div class="sec"><h3>Your activation for today</h3></div><div class="qn" style="font-size:22px">Your activation for today, based on your energy</div><div class="acard"><div class="cv" style="'+thumb(a)+'"></div><div class="bd"><h2>'+a.t+'</h2><p>'+a.d+'</p><p class="why">✦ '+why+'</p><button class="btn-g" data-go="player" id="d-play">▶ Listen now</button></div></div><div style="text-align:center;margin-top:14px"><button class="btn-t" id="d-again">↺ Retake</button></div>';
-  $('#d-again').onclick=()=>{dv=[];o.classList.remove('reveal-orb');dStep(0)};guide('code','Press listen. Let it land.','player')}}
+  $('#d-again').onclick=()=>{dv=[];o.classList.remove('reveal-orb');dStep(0)};guide('code','Press listen. Let it land.','player');$('#guide').style.display='none'}}
 function thumb(a){if(a.img)return "background-image:url('"+a.img+"')";const G=['#e8c873,#6b4a1f','#3fd6c8,#0c3b3a','#fff1c4,#b8913f','#8a6a45,#1d1a16','#3fd6c8,#e8c873','#5b5f66,#e8c873'];let h=0;for(const ch of a.s)h=(h*31+ch.charCodeAt(0))>>>0;return 'background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.5),transparent 55%),linear-gradient(135deg,'+G[h%G.length]+')'}
 
 // ===== Library =====
