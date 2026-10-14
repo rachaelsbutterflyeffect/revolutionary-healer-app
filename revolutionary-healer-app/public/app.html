@@ -931,6 +931,39 @@
   </div>
 </nav>
 
+<!-- MOCKUP (feat/luxury-home): bottom tab bar, modelled on Sarah Ashley Energy Club layout; replaces the top nav row -->
+<div class="rh-tabbar" id="rh-tabbar" role="navigation" aria-label="Main">
+  <button type="button" class="rh-tab" data-tab="focus" onclick="rhTabSet('focus'); rhTabFocus()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.4 5.2 5.6.6-4.2 3.8 1.2 5.6L12 15.9l-5 2.8 1.2-5.6L4 9.3l5.6-.6z"/></svg><span class="rh-tab-label">Today's Focus</span></button>
+  <button type="button" class="rh-tab" data-tab="shifts" onclick="rhTabSet('shifts'); if (window.rhOpenAllShifts) rhOpenAllShifts(); else goToMyRevolution();"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h12l-3-3M20 16H8l3 3"/></svg><span class="rh-tab-label">Shifts</span></button>
+  <button type="button" class="rh-tab rh-tab-home" data-tab="home" onclick="rhTabSet('home'); showMain()"><span class="rh-tab-orb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10.5L12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1z"/></svg></span><span class="rh-tab-label">Home</span></button>
+  <button type="button" class="rh-tab" data-tab="me" onclick="rhTabSet('me'); showPage('profile-page')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5"/></svg><span class="rh-tab-label">My Profile</span></button>
+  <button type="button" class="rh-tab" data-tab="acts" onclick="rhTabSet('acts'); showPage('activations-page')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 6.8l1.4 3.8 3.8 1.4-3.8 1.4L12 17.2l-1.4-3.8L6.8 12l3.8-1.4z"/></svg><span class="rh-tab-label">Activations</span></button>
+</div>
+<style id="rh-tabbar-css">
+  body > nav { display: none !important; }
+  body { padding-bottom: calc(96px + env(safe-area-inset-bottom)); }
+  .rh-tabbar { position: fixed; z-index: 900; left: 50%; transform: translateX(-50%); bottom: calc(10px + env(safe-area-inset-bottom)); width: min(calc(100% - 20px), 520px); height: 66px; display: grid; grid-template-columns: repeat(5, 1fr); align-items: center; padding: 0 6px; border-radius: 34px; background: linear-gradient(180deg, rgba(10,22,30,0.92), rgba(4,9,14,0.95)); border: 1px solid rgba(241,213,138,0.38); box-shadow: 0 10px 30px rgba(0,0,0,0.6), 0 0 22px rgba(43,179,173,0.16), inset 0 1px 0 rgba(255,246,218,0.10); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+  .rh-tab { appearance: none; background: none; border: 0; padding: 6px 0 4px; display: flex; flex-direction: column; align-items: center; gap: 3px; color: rgba(241,213,138,0.62); font: 500 11px/1.1 inherit; letter-spacing: .02em; cursor: pointer; }
+  .rh-tab svg { width: 23px; height: 23px; }
+  .rh-tab.is-active { color: #F8E7B0; }
+  .rh-tab.is-active span { font-weight: 700; }
+  .rh-tab.is-active svg { filter: drop-shadow(0 0 6px rgba(226,190,104,0.55)); }
+  .rh-tab:focus-visible, .rh-tab-orb:focus-visible { outline: 2px solid #F1D58A; outline-offset: 2px; border-radius: 12px; }
+  .rh-tab-label { white-space: nowrap; font-size: 10.5px; }
+  .rh-tab-home { margin-top: -24px; color: #F8E7B0; }
+  .rh-tab-orb { width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #0a1418; background: radial-gradient(circle at 34% 28%, #FFF6DA 0%, #E2BE68 35%, #B98A2E 80%); border: 2px solid rgba(248,231,176,0.9); box-shadow: 0 0 0 5px rgba(4,9,14,0.92), 0 0 20px rgba(226,190,104,0.45), 0 0 30px rgba(43,179,173,0.22); }
+  .rh-tab-home svg { width: 26px; height: 26px; }
+  .rh-tab-home.is-active svg { filter: none; }
+  .rh-tab-home .rh-tab-label { font-weight: 700; margin-top: 2px; }
+  /* Fold with the top nav gone and the bar at the bottom */
+  body.lux-home > #hero-section { min-height: calc(100vh - var(--lux-top, 0px) - 86px) !important; min-height: calc(100dvh - var(--lux-top, 0px) - 86px) !important; }
+</style>
+<script id="rh-tabbar-js">
+  function rhTabSet(k) { document.querySelectorAll('#rh-tabbar .rh-tab').forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-tab') === k); if (b.getAttribute('data-tab') === k) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }); }
+  function rhTabFocus() { if (typeof goToMyRevolution === 'function') goToMyRevolution(); setTimeout(function () { var f = document.querySelector('#my-revolution [data-role="focus-card"]'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
+  rhTabSet('home');
+</script>
+
 <div class="trial-banner" id="trial-banner" style="display:none;">
   <div class="wrap trial-banner-inner">
     <span class="trial-banner-text">⏳ <span id="trial-days-remaining">2</span> days left in your Full Access trial</span>
@@ -6103,7 +6136,7 @@ if (forceComplete) { goDay(3); }
   body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-icon::before { inset: -5px; border: 1px solid rgba(241,213,138,0.18); }
   body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-icon svg { width: 28px; height: 28px; stroke: #F1D58A; filter: drop-shadow(0 0 4px rgba(226,190,104,0.5)); }
   body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-icon svg * { stroke-width: 1.5px; }
-  body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-kicker { display: block !important; grid-column: 2; grid-row: 1; font-size: 10.5px; letter-spacing: .24em; padding-left: 0; margin: 0 0 3px; color: #F1D58A; line-height: 1.3; }
+  body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-kicker { display: none !important; grid-column: 2; grid-row: 1; font-size: 10.5px; letter-spacing: .24em; padding-left: 0; margin: 0 0 3px; color: #F1D58A; line-height: 1.3; }
   body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-name { grid-column: 2; grid-row: 2; display: block !important; min-height: 0 !important; padding: 0 !important; font-size: 23px !important; line-height: 1.12; text-align: left; white-space: normal; background: none; -webkit-background-clip: border-box; background-clip: border-box; color: #FFF8E8; -webkit-text-fill-color: #FFF8E8; text-shadow: 0 1px 10px rgba(0,0,0,0.45); animation: none; }
   body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-name-in { background: none !important; color: inherit !important; -webkit-text-fill-color: inherit !important; }
   body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-desc { grid-column: 2; grid-row: 3; font-size: 15.5px; line-height: 1.3; color: rgba(255,248,232,0.92); margin-top: 3px; letter-spacing: .01em; }
@@ -6170,6 +6203,30 @@ if (forceComplete) { goDay(3); }
   /* No "Revolutionary Healer" eyebrow on any door */
   body #lux-portals .lux-portal .lux-portal-kicker { display: none !important; }
   body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) { align-content: center; row-gap: 0; }
+  /* Roomier door text (Oct 14 pm) */
+  body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-name { line-height: 1.2; }
+  body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-desc { line-height: 1.4; margin-top: 10px !important; }
+  body #lux-portals #lux-portal-chat .lux-portal-name { line-height: 1.15; }
+  body #lux-portals #lux-portal-chat .lux-portal-rule { margin: 12px 0 11px !important; }
+  body #lux-portals #lux-portal-chat .lux-portal-desc { line-height: 1.4; }
+  @media (max-width: 760px) and (min-height: 701px) {
+    body #lux-portals #lux-portal-chat { height: clamp(180px, 23vh, 214px) !important; }
+    body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) { min-height: clamp(136px, 17vh, 160px); padding: 24px 22px !important; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-name { font-size: 27px !important; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-desc { font-size: 17px; }
+    body #lux-portals #lux-portal-chat .lux-portal-desc { font-size: 17px; }
+  }
+  @media (max-width: 760px) and (max-height: 700px) {
+    body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) { padding: 16px 18px !important; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-desc { margin-top: 7px !important; }
+    body #lux-portals #lux-portal-chat .lux-portal-rule { margin: 8px 0 7px !important; }
+  }
+  @media (max-width: 760px) and (min-height: 701px) { body #lux-portals.lux-portals { gap: 14px; } body #lux-portals #lux-portal-chat { height: clamp(174px, 21vh, 210px) !important; } }
+  @media (max-width: 760px) and (max-height: 700px) { body.lux-home .lux-title { font-size: 21px !important; white-space: nowrap; } body #lux-portals.lux-portals { gap: 9px; } body #lux-portals #lux-portal-chat { height: 122px !important; } body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) { min-height: 100px; padding: 13px 18px !important; } }
+  @media (max-width: 760px) and (min-height: 701px) { body #lux-portals.lux-portals { gap: 12px; } body #lux-portals #lux-portal-chat { height: clamp(168px, 20vh, 206px) !important; } }
+  body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) .lux-portal-kicker, body #lux-portals #lux-portal-chat .lux-portal-kicker { display: none !important; }
+  body #lux-portals #lux-portal-chat .lux-portal-desc { white-space: nowrap; font-size: 16px !important; }
+  @media (max-width: 370px) { body #lux-portals #lux-portal-chat .lux-portal-desc { font-size: 14.5px !important; } }
   @media (prefers-reduced-motion: reduce) { body #lux-portals .lux-door > .lux-portal { animation: none !important; } }
 </style>
 
