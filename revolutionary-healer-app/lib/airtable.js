@@ -568,14 +568,14 @@ export async function createWebhookEvent({
     if (outcome === "failed") {
         fields.next_retry_at = new Date(Date.now() + 5 * 60 * 1000).toISOString();
     }
-    return base(Tables.WebhookEvents).create(fields);
+    return base(Tables.WebhookEvents).create(fields, { typecast: true }); // typecast: lets the new ignored_offer / ccm_purchased outcomes save
 }
 
 export async function updateWebhookEvent(recordId, fields) {
     return base(Tables.WebhookEvents).update(recordId, {
         ...fields,
         last_attempt_at: new Date().toISOString(),
-    });
+    }, { typecast: true });
 }
 
 export async function listWebhookEventsDueForRetry() {
