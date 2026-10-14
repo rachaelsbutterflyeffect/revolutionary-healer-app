@@ -40,6 +40,7 @@ import {
 import { placeholderChatTitle, titleActionForMessage } from "@/lib/chatTitles";
 import { toCachedSystemBlocks } from "@/lib/promptCache";
 import { withCcmInstructions } from "@/lib/ccm-chatbot-instructions";
+import { ccmTrackingEnabled, getCcmStatus, recordOutcome, isChatCcmDecline, countActivityDays, CCM_CARD_OPENER, ccmStatusPromptNote } from "@/lib/ccm-tracking";
 import {
   chatStreamingAllowed,
   createSseChannel,
@@ -147,6 +148,10 @@ export async function POST(req: NextRequest) {
     // a reply as it arrives. Ignored unless the CHAT_STREAMING switch allows
     // it for this member (see lib/chatStreaming.js).
     stream: streamRequested = false,
+    // CCM card (Oct 14 2026): true on the first message after "Tell me more",
+    // so the opener the member saw is part of the conversation. Ignored unless
+    // CCM_TRACKING is on.
+    ccmCardOpener = false,
   } = await req.json();
 
   if (!email || !focusAreaSlug || !message) {
@@ -245,6 +250,24 @@ export async function POST(req: NextRequest) {
     role: m.fields.role === "assistant" ? "assistant" : "user",
     content: m.fields.message_text || "",
   }));
+
+  // Clear Channel Method tracking (CCM_TRACKING only; off = no change at all).
+  if (ccmTrackingEnabled()) {
+    try {
+      if (ccmCardOpener === true && !historyForClaude.length) {
+        historyForClaude.push({ role: "assistant", content: CCM_CARD_OPENER });
+        await createMessage({ chatId, email, role: "assistant", text: CCM_CARD_OPENER });
+      }
+      const prevAssistant = [...historyForClaude].reverse().find((m: any) => m.role === "assistant")?.content || "";
+      let ccmRec: any = await getCcmStatus(email);
+      if (!ccmRec?.fields?.purchased && isChatCcmDecline(message, { previousAssistant: prevAssistant, fromCard: ccmCardOpener === true })) {
+        ccmRec = await recordOutcome(email, "declined", { activityDayCount: await countActivityDays(email) });
+      }
+      systemPrompt += ccmStatusPromptNote(ccmRec?.fields);
+    } catch (err: any) {
+      console.error("ccm chat tracking failed", err?.message);
+    }
+  }
 
   // Persist the member's message before calling Claude so it's never lost
   // even if the model call itself fails.

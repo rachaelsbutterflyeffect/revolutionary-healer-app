@@ -5,7 +5,8 @@ import Airtable from "airtable";
 import crypto from "crypto";
 import { sendGapMethodMagicLink } from "./email";
 import { DIVINE_IDENTITIES } from "./divineIdentities";
-import { testerRecordFields, isUnknownAirtableField } from "./testers.js";
+import { testerRecordFields, isUnknownAirtableField, isTester } from "./testers.js";
+import { ccmTrackingEnabled, isCcmOffer, markCcmPurchased } from "./ccm-tracking.js";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -567,14 +568,14 @@ export async function createWebhookEvent({
     if (outcome === "failed") {
         fields.next_retry_at = new Date(Date.now() + 5 * 60 * 1000).toISOString();
     }
-    return base(Tables.WebhookEvents).create(fields);
+    return base(Tables.WebhookEvents).create(fields, { typecast: true }); // typecast: lets the new ignored_offer / ccm_purchased outcomes save
 }
 
 export async function updateWebhookEvent(recordId, fields) {
     return base(Tables.WebhookEvents).update(recordId, {
         ...fields,
         last_attempt_at: new Date().toISOString(),
-    });
+    }, { typecast: true });
 }
 
 export async function listWebhookEventsDueForRetry() {
@@ -591,6 +592,26 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
     const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
     const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;
     const isCancellation = eventType === "cancellation" || eventType === "refund";
+
+    // Unknown-offer guard (CCM card release, Oct 14 2026). Clear Channel
+    // Method offers are a separate program: they must never create or touch a
+    // Revolutionary Healer Members row. When CCM_TRACKING is on they mark the
+    // buyer CCM-purchased (so the card/bot stop selling to them). Every other
+    // offer ID keeps its existing behaviour: the live webhook already receives
+    // several non-CCM offer IDs (Oct 2026 WebhookEvents) whose list membership
+    // could not be verified, so they are deliberately not filtered here.
+    if (offerId && isCcmOffer(offerId) && !isMemberOffer && !isTierOffer && !isGapMethodOffer) {
+        if (!isCancellation && ccmTrackingEnabled()) {
+            try {
+                await markCcmPurchased(normalizedEmail, { offerId, isTest: isTester(normalizedEmail) });
+                return { memberRecordId: "", outcome: "ccm_purchased" };
+            } catch (err) {
+                console.error("markCcmPurchased failed", err?.message);
+                throw err; // retried by the webhook cron; still never a Members row
+            }
+        }
+        return { memberRecordId: "", outcome: "ignored_offer" };
+    }
 
     const existing = await getMemberByEmail(normalizedEmail);
     const fields = {};
