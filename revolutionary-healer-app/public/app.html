@@ -200,7 +200,13 @@
   .section-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 34px; }
   .section-head h2 { font-size: 26px; font-weight: 400; margin: 0; color: var(--white); }
   .section-head p { color: var(--taupe); font-size: 14px; margin: 6px 0 0; }
-  .see-all { color: var(--gold); font-size: 13px; letter-spacing: 0.04em; }
+  .see-all { color: var(--gold); font-size: 13px; letter-spacing: 0.04em; text-decoration: none; cursor: pointer; }
+  .see-all:focus-visible { outline: 1px solid var(--gold); outline-offset: 3px; border-radius: 3px; }
+  .rh-skeleton { pointer-events: none; }
+  .rh-skeleton .fav-thumb, .rh-skeleton .media-thumb { background: linear-gradient(90deg, #14110c 0%, #221c12 50%, #14110c 100%); background-size: 200% 100%; animation: rhSkel 1.6s ease-in-out infinite; }
+  .rh-skel-line { height: 10px; width: 70%; border-radius: 5px; background: rgba(201,168,92,0.14); margin: 6px 0; }
+  @keyframes rhSkel { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+  @media (prefers-reduced-motion: reduce) { .rh-skeleton .fav-thumb, .rh-skeleton .media-thumb { animation: none; } }
 
   .card-grid {
     display: grid;
@@ -510,6 +516,12 @@
   .page-back { display: inline-block; color: var(--gold); font-size: 13px; text-decoration: none; letter-spacing: 0.02em; cursor: pointer; margin-bottom: 28px; }
   .page-back:hover { text-decoration: underline; }
   .subsection-head .see-all, .subsection-head .explore-link { cursor: pointer; }
+  .rh-collapse-btn { background: none; border: none; font: inherit; color: var(--gold); padding: 4px 0; }
+  .rh-lib-tools { display: flex; align-items: center; gap: 12px; margin: 0 0 18px; }
+  .rh-lib-search { flex: 1; max-width: 360px; background: rgba(255,255,255,0.04); border: 1px solid rgba(201,168,92,0.35); border-radius: 999px; padding: 10px 16px; color: var(--white); font: inherit; font-size: 14px; }
+  .rh-lib-search:focus { outline: none; border-color: var(--gold); }
+  .rh-lib-count { color: var(--taupe); font-size: 13px; }
+  #rh-lib-more { margin-top: 22px; }
   .subsection-head h3 { cursor: pointer; }
 
   /* Go Deeper offer cards */
@@ -1132,6 +1144,7 @@
         </div>
         <div class="center" id="ready-btn-wrap" style="margin-top:14px; display:none;">
           <button class="btn-outline" id="ready-btn" onclick="skipToReveal()">I'm ready to see what's underneath →</button>
+          <p class="gap-ready-hint">You can keep sharing, or tap this whenever you're ready.</p>
         </div>
         <div class="center" id="d2-continue" style="margin-top:22px; display:none;">
           <button class="btn-gold" onclick="skipToReveal()">Continue to step 3 →</button>
@@ -1194,6 +1207,7 @@
         <div class="gap-an-pct"><span id="gap-an-pct">0</span>%</div>
         <div class="gap-an-bar" id="gap-an-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="gap-an-fill"></span></div>
         <p class="gap-an-note" id="gap-an-note">Reading everything you shared…</p>
+        <p class="gap-an-elapsed" id="gap-an-elapsed" aria-live="off"></p>
         <div class="gap-an-error" id="gap-an-error" hidden>
           <p>Something interrupted your reading. Nothing has been saved yet, and your conversation is still here.</p>
           <button type="button" class="btn-gold" id="gap-an-retry">Try again</button>
@@ -1218,24 +1232,24 @@
       </div>
     </div>
 
-    <div class="focus-card" data-role="focus-card">
+    <div class="focus-card" data-role="focus-card" style="display:none;">
       <div class="focus-card-label"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Today's Focus</div>
       <div class="focus-card-body">
         <div class="focus-card-identity">
           <div class="focus-card-kicker">Your Divine Identity</div>
-          <h3 class="serif" data-role="focus-identity">The Leader</h3>
+          <h3 class="serif" data-role="focus-identity"></h3>
         </div>
         <div>
           <div class="focus-card-kicker">What's Asking For Attention</div>
-          <div class="focus-card-freq-value" data-role="focus-freq">Hiddenness</div>
+          <div class="focus-card-freq-value" data-role="focus-freq"></div>
         </div>
-        <div class="status-pill shifting" data-role="focus-status">● Shifting</div>
+        <div class="status-pill shifting" data-role="focus-status"></div>
       </div>
       <div class="focus-card-activity" data-role="focus-activity">
-        <div data-role="focus-activity-line">Started August 4, 2026</div>
+        <div data-role="focus-activity-line"></div>
       </div>
       <div class="focus-card-footer">
-        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation">Expansion Activation</strong></div>
+        <div class="focus-card-activation">Recommended: <strong data-role="focus-activation"></strong></div>
         <button class="btn-primary" onclick="openShiftModal()">Continue Your Revolution</button>
       </div>
     </div>
@@ -1251,32 +1265,14 @@
       <div class="shifts-list" data-role="shifts-list"></div>
     </div>
 
-    <div class="revolution-subsection" data-role="demo-activity">
+    <div class="revolution-subsection" data-role="demo-activity" style="display:none;">
       <div class="subsection-head">
-        <h3 onclick="showPage('favorites-page')"><span class="heart-glow-emoji">♥</span> Favorites</h3>
-        <div class="see-all" onclick="showPage('favorites-page')">See all →</div>
+        <h3 onclick="rhOpenFavorites()"><span class="heart-glow-emoji">♥</span> Favorites</h3>
+        <a class="see-all" href="#favorites-page" role="link" tabindex="0" onclick="rhOpenFavorites(); return false;" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();rhOpenFavorites();}">See all →</a>
       </div>
-      <div class="favorites-row">
-        <div class="fav-card">
-          <div class="fav-thumb glyph-roots"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-          <div class="fav-body">
-            <div class="fav-title">Nervous System Recalibration</div>
-            <div class="fav-actions">
-              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
-              <button class="listen-btn">Listen Now</button>
-            </div>
-          </div>
-        </div>
-        <div class="fav-card">
-          <div class="fav-thumb glyph-wave"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-          <div class="fav-body">
-            <div class="fav-title">Removing the Frequency of Doubt</div>
-            <div class="fav-actions">
-              <button class="heart-btn filled" onclick="toggleHeart(this)">♥</button>
-              <button class="listen-btn">Listen Now</button>
-            </div>
-          </div>
-        </div>
+      <div class="favorites-row" aria-busy="true">
+        <div class="fav-card rh-skeleton" aria-hidden="true"><div class="fav-thumb"></div><div class="fav-body"><div class="rh-skel-line"></div></div></div>
+        <div class="fav-card rh-skeleton" aria-hidden="true"><div class="fav-thumb"></div><div class="fav-body"><div class="rh-skel-line"></div></div></div>
       </div>
     </div>
 
@@ -1292,31 +1288,9 @@
         <p>These are the activations you've chosen to keep close.</p>
       </div>
     </div>
-    <div class="card-grid">
-      <div class="media-card">
-        <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
-        <div class="media-thumb glyph-roots"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-        <div class="media-body">
-          <h3>Nervous System Recalibration</h3>
-          <div class="media-meta">Guided activation</div>
-          <div class="media-actions">
-            <button class="listen-btn">Listen Now</button>
-            <button class="remove-favorite-btn">Remove Favorite</button>
-          </div>
-        </div>
-      </div>
-      <div class="media-card">
-        <button class="heart-btn filled media-heart" onclick="toggleHeart(this)">♥</button>
-        <div class="media-thumb glyph-wave"><div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>
-        <div class="media-body">
-          <h3>Removing the Frequency of Doubt</h3>
-          <div class="media-meta">Guided activation</div>
-          <div class="media-actions">
-            <button class="listen-btn">Listen Now</button>
-            <button class="remove-favorite-btn">Remove Favorite</button>
-          </div>
-        </div>
-      </div>
+    <div class="card-grid" aria-busy="true">
+      <div class="media-card rh-skeleton" aria-hidden="true"><div class="media-thumb"></div><div class="media-body"><div class="rh-skel-line"></div></div></div>
+      <div class="media-card rh-skeleton" aria-hidden="true"><div class="media-thumb"></div><div class="media-body"><div class="rh-skel-line"></div></div></div>
     </div>
   </div>
 </section>
@@ -1332,7 +1306,7 @@
     </div>
 
 <div class="revolution-subsection" id="gap-method-activations-subsection">
-      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> GAP Method Activations</h3></div>
+      <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> GAP Method™ Activations</h3><button type="button" class="see-all rh-collapse-btn" aria-expanded="true" aria-controls="gap-method-activations-subsection" onclick="rhToggleSection(this, 'gap-method-activations-subsection')">Hide</button></div>
       <p class="subsection-copy">Unlocked with your GAP Method access.</p>
       <div class="card-grid">
         <div class="media-card" onclick="handleActivationCardClick('gap-method-guardian')" style="cursor: pointer;" data-activation-slug="gap-method-guardian">
@@ -1400,6 +1374,7 @@
         <button class="filter-chip" data-category="Gifts + Spirit" onclick="selectCategoryChip(this)">Gifts + Spirit</button>
         <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy + Frequency</button>
       </div>
+      <div class="rh-lib-tools"><input type="search" id="rh-lib-search" class="rh-lib-search" placeholder="Search activations" aria-label="Search activations" oninput="rhLibApply()"><span class="rh-lib-count" id="rh-lib-count" aria-live="polite"></span></div>
       <div class="card-grid" id="activation-library-grid">
         <div class="media-card spookbound-card" onclick="handleActivationCardClick('spookbound-2026')" style="cursor: pointer;" data-activation-slug="spookbound-2026" data-category="Energy + Frequency">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
@@ -1534,7 +1509,7 @@
           </div>
         </div>
         <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration" data-category="Money + Receiving">
-          <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           </div>
@@ -1545,7 +1520,7 @@
           </div>
         </div>
         <div class="media-card" onclick="handleActivationCardClick('activating-your-gifts')" style="cursor: pointer;" data-activation-slug="activating-your-gifts" data-category="Gifts + Spirit">
-          <button class="heart-btn filled media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♥</button>
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <div class="media-thumb glyph-wave"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
           </div>
@@ -1931,7 +1906,7 @@
     <div class="section-head" style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px;">
       <div>
         <h2 class="serif"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Profile</h2>
-        <p id="profile-welcome-line">Welcome back. Member since August 2026.</p>
+        <p id="profile-welcome-line">Welcome back.</p>
       </div>
       <a href="#" onclick="signOutMember(); return false;" style="color: var(--taupe); font-size: 13px; text-decoration: none; white-space: nowrap; padding-top: 4px;">Sign Out</a>
     </div>
@@ -1982,7 +1957,7 @@
       <div class="profile-card-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> Membership</h3></div>
       <div class="info-row"><div class="info-label">Current Plan</div><div class="info-value">Revolutionary Healer Full Access</div></div>
       <div class="info-row"><div class="info-label">Membership Status</div><div class="info-value"><span class="status-pill embodied">Active</span></div></div>
-      <div class="info-row"><div class="info-label">Member Since</div><div class="info-value" id="member-since-value">August 3, 2026</div></div>
+      <div class="info-row"><div class="info-label">Member Since</div><div class="info-value" id="member-since-value">&nbsp;</div></div>
       <div class="btn-row">
         <button class="btn-primary" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/account','_blank')">Manage Membership</button>
       </div>
@@ -2331,7 +2306,10 @@
       var slugs = data.slugs || [];
       var local = [];
       try { local = JSON.parse(localStorage.getItem('rh_favorites_' + RH_EMAIL) || '[]'); } catch (e) {}
-      local.forEach(function(s) { if (slugs.indexOf(s) === -1) { slugs.push(s); } });
+      // Server list is newest-first; local-only slugs are unsynced recent
+      // hearts, so they go in front.
+      var localOnly = local.filter(function(s) { return slugs.indexOf(s) === -1; });
+      slugs = localOnly.concat(slugs);
       FAVORITE_ACTIVATION_SLUGS = slugs;
       favoritesLoaded = true;
       try { localStorage.setItem('rh_favorites_' + RH_EMAIL, JSON.stringify(slugs)); } catch (e) {}
@@ -2384,7 +2362,7 @@
     var idx = favs.indexOf(slug);
     var nowFav;
     if (idx === -1) {
-      favs.push(slug);
+      favs.unshift(slug); // newest first
       nowFav = true;
     } else {
       favs.splice(idx, 1);
@@ -2412,6 +2390,7 @@
 
     var pageGrid = document.querySelector('#favorites-page .card-grid');
     if (pageGrid) {
+      pageGrid.removeAttribute('aria-busy');
       if (!favCards.length) {
         pageGrid.innerHTML = '<p style="color: var(--taupe); grid-column: 1 / -1;">You haven\'t favorited any activations yet. Tap the heart on any activation to add it here.</p>';
       } else {
@@ -2424,6 +2403,7 @@
 
     var homeRow = document.querySelector('.favorites-row');
     if (homeRow) {
+      homeRow.removeAttribute('aria-busy');
       if (!favCards.length) {
         homeRow.innerHTML = '<p style="color: var(--taupe); font-size: 13px;">No favorites yet -- tap the heart on any activation to add it here.</p>';
       } else {
@@ -2469,15 +2449,50 @@
     var siblings = btn.parentElement.querySelectorAll('.filter-chip');
     siblings.forEach(function(chip) { chip.classList.remove('selected'); });
     btn.classList.add('selected');
-    var category = btn.getAttribute('data-category');
+    window.__rhLibExpanded = false;
+    rhLibApply();
+  }
+  // QA Oct 14 (library was one long scroll): category chips + search + the
+  // first 12 matches, then "Show all". Cards stay in the DOM (Favorites and
+  // the activation player clone them), only their display changes.
+  var RH_LIB_PAGE = 12;
+  function rhLibApply() {
     var grid = document.getElementById('activation-library-grid');
     if (!grid) return;
-    var cards = grid.querySelectorAll('.media-card');
-    cards.forEach(function(card) {
-      var cardCategories = (card.getAttribute('data-category') || '').split(',').map(function(c) { return c.trim(); });
-      card.style.display = (category === 'All' || cardCategories.indexOf(category) !== -1) ? '' : 'none';
+    var chip = document.querySelector('.category-chips .filter-chip.selected');
+    var category = chip ? chip.getAttribute('data-category') : 'All';
+    var qEl = document.getElementById('rh-lib-search');
+    var q = qEl ? qEl.value.trim().toLowerCase() : '';
+    var matches = 0, shown = 0;
+    grid.querySelectorAll('.media-card').forEach(function(card) {
+      var cats = (card.getAttribute('data-category') || '').split(',').map(function(c) { return c.trim(); });
+      var ok = (category === 'All' || cats.indexOf(category) !== -1) && (!q || card.textContent.toLowerCase().indexOf(q) !== -1);
+      if (ok) matches++;
+      var show = ok && (window.__rhLibExpanded || q || matches <= RH_LIB_PAGE);
+      if (show) shown++;
+      card.style.display = show ? '' : 'none';
     });
+    var more = document.getElementById('rh-lib-more');
+    if (!more) {
+      more = document.createElement('div'); more.id = 'rh-lib-more'; more.className = 'center';
+      more.innerHTML = '<button type="button" class="btn-outline" onclick="window.__rhLibExpanded=true;rhLibApply();">Show all</button>';
+      grid.parentNode.insertBefore(more, grid.nextSibling);
+    }
+    more.style.display = shown < matches ? '' : 'none';
+    var b = more.querySelector('button'); if (b) b.textContent = 'Show all ' + matches + ' activations';
+    var cnt = document.getElementById('rh-lib-count');
+    if (cnt) cnt.textContent = q ? (matches + (matches === 1 ? ' match' : ' matches')) : '';
   }
+  function rhToggleSection(btn, id) {
+    var sec = document.getElementById(id); if (!sec) return;
+    var grid = sec.querySelector('.card-grid'), copy = sec.querySelector('.subsection-copy');
+    var open = btn.getAttribute('aria-expanded') !== 'false';
+    if (grid) grid.style.display = open ? 'none' : '';
+    if (copy) copy.style.display = open ? 'none' : '';
+    btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    btn.textContent = open ? 'Show' : 'Hide';
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { rhLibApply(); }); else setTimeout(rhLibApply, 0);
 
   // --- Dedicated pages: Favorites, My Activations, Go Deeper ---
   // Clicking "My Revolution" in the nav, or the Favorites/Activations section
@@ -2726,6 +2741,12 @@
     }
   }
 
+  // QA Oct 14: 'See all' re-renders the full list first, so it never opens onto
+  // stale or empty cards.
+  function rhOpenFavorites() {
+    try { if (typeof renderFavoritesSections === 'function') renderFavoritesSections(); } catch (e) {}
+    showPage('favorites-page');
+  }
   function showPage(pageId) {
     document.getElementById('hero-section').style.display = 'none';
     document.getElementById('my-revolution').style.display = 'none';
@@ -2847,7 +2868,10 @@
       var slugs = data.slugs || [];
       var local = [];
       try { local = JSON.parse(localStorage.getItem('rh_completed_activations_' + RH_EMAIL) || '[]'); } catch (e) {}
-      local.forEach(function(s) { if (slugs.indexOf(s) === -1) { slugs.push(s); } });
+      // Server list is newest-first; local-only slugs are unsynced recent
+      // hearts, so they go in front.
+      var localOnly = local.filter(function(s) { return slugs.indexOf(s) === -1; });
+      slugs = localOnly.concat(slugs);
       COMPLETED_ACTIVATION_SLUGS = slugs;
       completedActivationsLoaded = true;
       try { localStorage.setItem('rh_completed_activations_' + RH_EMAIL, JSON.stringify(slugs)); } catch (e) {}
@@ -3338,7 +3362,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
   // streamedEl (streaming only): the bubble the words were already drawn
   // into -- it gets the final saved text instead of adding a new bubble.
   function rhShowChatReply(data, streamedEl) {
-    if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); }
+    if (data.chatId) { window.__rhActiveChatId = data.chatId; if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, data.chatId); localStorage.setItem('rh_active_chat_at_' + RH_EMAIL, String(Date.now())); } catch (e) {} } rhMaybeRefreshDrawerAfterSend(); }
     var follow = rhFollowReply; var assistantEl;
     if (streamedEl) { assistantEl = streamedEl; rhSetTextWithLinks(assistantEl, data.reply || "I didn't quite catch that — try again?"); if (assistantEl.classList) assistantEl.classList.remove('rh-msg-streaming'); if (follow) rhScrollToBottom(false); }
     else { assistantEl = addRhMessage('assistant', data.reply || "I didn't quite catch that — try again?", { follow: follow }); }
@@ -3736,6 +3760,19 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
         '<button type="button" class="rh-drawer-item-menu" data-menu="' + c.id + '">⋯</button>' +
         '</div>';
     });
+    // QA Oct 14 (flickering / un-openable entry): a refresh used to rebuild the
+    // list even when nothing changed, and could do it between a tap's touchstart
+    // and click, so the tapped row was replaced and the tap was lost. Skip
+    // identical rebuilds, and defer a rebuild while a finger/mouse is down.
+    if (list.__rhHtml === html) return;
+    if (list.__rhPointerDown) { list.__rhPendingRender = true; return; }
+    list.__rhHtml = html;
+    if (!list.__rhPointerWired) {
+      list.__rhPointerWired = true;
+      list.addEventListener('pointerdown', function () { list.__rhPointerDown = true; });
+      var up = function () { if (!list.__rhPointerDown) return; list.__rhPointerDown = false; if (list.__rhPendingRender) { list.__rhPendingRender = false; setTimeout(rhRenderDrawerList, 350); } };
+      list.addEventListener('pointerup', up); list.addEventListener('pointercancel', up); list.addEventListener('pointerleave', up);
+    }
     list.innerHTML = html;
     list.querySelectorAll('[data-open]').forEach(function (elx) {
       elx.addEventListener('click', function () { rhSelectChat(elx.getAttribute('data-open')); });
@@ -3820,12 +3857,15 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     t.querySelectorAll('.rh-msg, .rh-thinking').forEach(function (n) { n.remove(); });
     var w = document.getElementById('rh-chat-welcome');
     if (w) w.style.display = 'none';
+    var rhSelectToken = (window.__rhSelectToken = (window.__rhSelectToken || 0) + 1);
     try {
       var res = await fetch('/api/chats/' + encodeURIComponent(chatId));
-      if (!res.ok) throw new Error('not found');
+      if (rhSelectToken !== window.__rhSelectToken) return; // a newer tap won
+      if (res.status === 404) throw new Error('not found');
+      if (!res.ok) throw new Error('load failed');
       var data = await res.json();
       window.__rhActiveChatId = chatId;
-      if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, chatId); } catch (e) {} }
+      if (RH_EMAIL) { try { localStorage.setItem('rh_active_chat_' + RH_EMAIL, chatId); localStorage.setItem('rh_active_chat_at_' + RH_EMAIL, String(Date.now())); } catch (e) {} }
       var msgs = data.messages || [];
       if (!msgs.length && w) { w.style.display = ''; }
       msgs.forEach(function (m) {
@@ -3836,10 +3876,21 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
       });
       rhScrollToBottom(false);
     } catch (e) {
-      rhStartNewChat();
+      if (rhSelectToken !== window.__rhSelectToken) return;
+      // QA Oct 14: used to silently start a new chat on ANY error, so a slow
+      // or failed load looked like "the conversation can't be opened".
+      if (e && e.message === 'not found') { rhStartNewChat(); rhLoadDrawerList(); return; }
+      var errEl = document.createElement('div');
+      errEl.className = 'rh-msg rh-msg-assistant';
+      errEl.textContent = "I couldn't open that conversation just now. ";
+      var retry = document.createElement('button'); retry.type = 'button'; retry.textContent = 'Try again';
+      retry.style.cssText = 'background:none;border:none;color:var(--gold);text-decoration:underline;cursor:pointer;padding:0;font:inherit;';
+      retry.addEventListener('click', function () { rhSelectChat(chatId); });
+      errEl.appendChild(retry); t.appendChild(errEl);
     }
   }
 
+  var RH_RESUME_CHAT_MS = 30 * 60 * 1000;
   function rhInitChatUI() {
     var input = document.getElementById('chat-input');
     if (input) {
@@ -3868,10 +3919,14 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
       }
     });
 
+    // QA Oct 14 (calmer home): only reopen the last conversation if it was
+    // active in the last 30 minutes (e.g. a refresh mid-chat). Otherwise the
+    // home chat starts fresh and older chats stay one tap away in the drawer.
     if (RH_EMAIL) {
-      var saved = null;
-      try { saved = localStorage.getItem('rh_active_chat_' + RH_EMAIL); } catch (e) {}
-      if (saved) rhSelectChat(saved);
+      var saved = null, savedAt = 0;
+      try { saved = localStorage.getItem('rh_active_chat_' + RH_EMAIL); savedAt = Number(localStorage.getItem('rh_active_chat_at_' + RH_EMAIL) || 0); } catch (e) {}
+      if (saved && savedAt && (Date.now() - savedAt) < RH_RESUME_CHAT_MS) rhSelectChat(saved);
+      else if (saved) { window.__rhActiveChatId = null; }
     }
   }
 
@@ -5296,7 +5351,7 @@ if (forceComplete) { goDay(3); }
         } else {
           input.disabled = false;
           input.focus();
-          document.getElementById('ready-btn-wrap').style.display = (day2TurnCount >= 2) ? 'block' : 'none';
+          document.getElementById('ready-btn-wrap').style.display = (day2TurnCount >= 1) ? 'block' : 'none'; // QA Oct 14: reachable after the first exchange (was 2)
         }
       })
             .catch(function() { gapChatRequestPending = false; removeTypingBubble(); addBotBubble("Sorry -- I had trouble connecting just then. Mind sending that again?"); input.disabled = false; if (forceComplete) { document.getElementById('ready-btn-wrap').style.display = 'block'; } });
@@ -5470,7 +5525,7 @@ if (forceComplete) { goDay(3); }
 
   // --- the analyzing screen ---------------------------------------------------
   var gapAnTimer = null, gapAnShown = 0, gapAnStart = 0;
-  var GAP_AN_NOTES = [[0, 'Reading everything you shared…'], [9, 'Weaving your words into your reading…'], [24, 'Finding the frequency underneath it all…'], [40, 'Still with you -- a deep reading can take a minute or two.'], [75, 'Almost there -- finishing your reading…']];
+  var GAP_AN_NOTES = [[0, 'Reading everything you shared…'], [8, 'Weaving your words into your reading…'], [18, 'Finding the frequency underneath it all…'], [30, 'Still with you. A deep reading usually takes 30 to 60 seconds.'], [50, 'Naming your gap and the activation that fits it…'], [75, 'Almost there, finishing your reading…'], [110, 'Still working. Please keep this screen open; nothing is lost.']];
   function gapAnEls() { return { view: document.getElementById('view-day3'), panel: document.getElementById('gap-analyzing'), pct: document.getElementById('gap-an-pct'), fill: document.getElementById('gap-an-fill'), note: document.getElementById('gap-an-note'), err: document.getElementById('gap-an-error'), bar: document.getElementById('gap-an-bar') }; }
   function gapAnPaint(p) {
     var e = gapAnEls(); gapAnShown = p;
@@ -5480,11 +5535,13 @@ if (forceComplete) { goDay(3); }
   }
   function gapAnTick() {
     var t = (Date.now() - gapAnStart) / 1000;
-    var target = 95 * (1 - Math.exp(-t / 13)); // eases toward ~95% while waiting
+    var target = 97 * (1 - Math.exp(-t / 32)); // QA Oct 14: slower curve (was t/13, sat at ~90% by 30s and looked stalled); keeps visibly moving for ~2 min
     gapAnPaint(Math.max(gapAnShown, target));
     var e = gapAnEls(), note = GAP_AN_NOTES[0][1];
     GAP_AN_NOTES.forEach(function (n) { if (t >= n[0]) note = n[1]; });
     if (e.note && e.note.textContent !== note) e.note.textContent = note;
+    var el = document.getElementById('gap-an-elapsed');
+    if (el) { var sec = Math.floor(t); el.textContent = sec >= 10 ? ('Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')) : ''; }
   }
   function gapShowAnalyzing(on) {
     var e = gapAnEls(); if (!e.panel || !e.view) return;
@@ -6384,6 +6441,8 @@ if (forceComplete) { goDay(3); }
   .gap-an-bar { height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); overflow: hidden; margin: 0 auto 14px; max-width: 340px; }
   .gap-an-bar span { display: block; height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, #01676C, #3FA8A3 35%, #E4C77A 75%, #F6E3A8); box-shadow: 0 0 12px rgba(228,190,100,0.6); transition: width .12s linear; }
   .gap-an-note { color: rgba(255,255,255,0.72); font-size: clamp(13px, 1.9vh, 15px); margin: 0; min-height: 1.5em; }
+  .gap-an-elapsed { color: rgba(255,255,255,0.45); font-size: 12px; letter-spacing: .06em; margin: 6px 0 0; min-height: 1.3em; font-variant-numeric: tabular-nums; }
+  .gap-ready-hint { color: rgba(255,255,255,0.55); font-size: 12.5px; margin: 8px 0 0; }
   .gap-an-error { margin-top: 18px; }
   .gap-an-error[hidden] { display: none; }
   .gap-an-error p { color: #F8E7B0; font-size: 14px; margin: 0 0 12px; }
