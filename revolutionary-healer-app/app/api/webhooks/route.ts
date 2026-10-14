@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
 
     if (
       existingEvent &&
-      (existingEvent.fields?.outcome === "created" || existingEvent.fields?.outcome === "already_existed")
+      ["created", "already_existed", "ignored_offer", "ccm_purchased"].includes(existingEvent.fields?.outcome)
     ) {
       return NextResponse.json({ ok: true, idempotent: true });
     }

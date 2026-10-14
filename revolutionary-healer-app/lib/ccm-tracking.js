@@ -26,7 +26,7 @@ export const CCM_PLAN_OFFER_ID = "2151448276";
 export const DAY_MS = 24 * 60 * 60 * 1000;
 export const RULES = {
     minDaysBetweenSuggestions: 15,
-    declineCooldownDays: 182, // ~6 months
+    declineCooldownDays: 182, // ~6 months: chat "not interested" (card + pitch). Change here only.
     ignoredMinDays: 7,
     ignoredMinActivityDays: 3,
     twoIgnoredActivityDays: 15,
@@ -101,16 +101,100 @@ export function canSuggestCCM(record, ctx = {}) {
     return { allowed: true, reason: "ok", followup: false };
 }
 
-// Purchase is checked first. The six-activity-day unlock and dismiss rules
-// live with the card; pass them in ctx.
+// ---------------------------------------------------------------- CCM card
+// Return clocks locked by Rachael (Oct 14 2026, table at the top of
+// "Clear Channel Method Pop-up Rules" in launch-conversion-plan.md). One
+// constant per clock so a change is a one-line edit.
+export const CARD_RULES = {
+    firstShowActivityDay: 7,          // 7th activity day (after 6 completed); existing members at 7+ see it on first open
+    chatDeclineCooldownDays: RULES.declineCooldownDays,     // "I'm not interested" in chat: ~6 months, no card and no pitch
+    notNowActivityDays: 15,           // "Not now" on the card
+    tellMeMoreActivityDays: 3,        // "Tell me more" (+ chat, no buy): counts as a close
+    closeXActivityDays: 3,            // X / Escape / backdrop
+    closedTwiceActivityDays: 15,      // second close in total (X or Tell me more without buying)
+    closesBeforeLongWait: 2,
+    minActivityDaysSinceShown: 3,     // never within 3 activity days of the last showing
+};
+export function ccmCardEnabled(env = process.env) {
+    // Card follows CCM_CARD if set, else CCM_TRACKING. Tracking must be on either way.
+    if (!ccmTrackingEnabled(env)) return false;
+    const c = env.CCM_CARD;
+    if (c == null || String(c).trim() === "") return true;
+    return ["on", "1", "true"].includes(String(c).toLowerCase());
+}
+
+// record: CCM Member Status fields; ctx: { activityDayCount, midShift, now }.
+// Order: purchase first, then chat decline, threshold, spacing, return clock, mid-Shift.
 export function canShowCard(record, ctx = {}) {
     const r = record || {};
-    if (r.purchased || r.ccm_status === "purchased") return { allowed: false, reason: "purchased" };
+    const no = (reason) => ({ allowed: false, reason });
+    if (r.purchased || r.ccm_status === "purchased") return no("purchased");
+    const now = ctx.now != null ? ts(ctx.now) : Date.now();
+    if (r.declined_at && (now - ts(r.declined_at)) / DAY_MS < CARD_RULES.chatDeclineCooldownDays) return no("declined_in_chat");
     const ad = num(ctx.activityDayCount);
-    if (ctx.minActivityDays != null && (ad == null || ad < ctx.minActivityDays)) return { allowed: false, reason: "not_enough_activity_days" };
+    const min = ctx.minActivityDays != null ? ctx.minActivityDays : CARD_RULES.firstShowActivityDay;
+    if (ad == null || ad < min) return no("not_enough_activity_days");
     const last = num(r.last_card_shown_activity_day_count);
-    if (last != null && ad != null && ad - last < RULES.cardCooldownActivityDays) return { allowed: false, reason: "card_recent" };
+    if (last != null && ad - last < CARD_RULES.minActivityDaysSinceShown) return no("card_recent");
+    const back = num(r.card_return_after_activity_day);
+    if (back != null && ad < back) return no("return_clock");
+    if (ctx.midShift !== false) return no("mid_shift"); // unknown = mid-Shift (never interrupt)
     return { allowed: true, reason: "ok" };
+}
+
+// Pure: status changes after a card outcome. action: x | not_now | tell_me_more
+export function cardStatusUpdate(record, action, ctx = {}) {
+    const r = record || {};
+    const shownAt = num(r.last_card_shown_activity_day_count);
+    const base = shownAt != null ? shownAt : (num(ctx.activityDayCount) || 0);
+    const f = { card_last_outcome: action };
+    if (action === "not_now") {
+        f.card_return_after_activity_day = base + CARD_RULES.notNowActivityDays;
+    } else if (action === "x" || action === "tell_me_more") {
+        const closes = (num(r.card_close_count) || 0) + 1;
+        if (closes >= CARD_RULES.closesBeforeLongWait) {
+            f.card_return_after_activity_day = base + CARD_RULES.closedTwiceActivityDays;
+            f.card_close_count = 0;
+        } else {
+            f.card_return_after_activity_day = base + (action === "x" ? CARD_RULES.closeXActivityDays : CARD_RULES.tellMeMoreActivityDays);
+            f.card_close_count = closes;
+        }
+        if (action === "tell_me_more" && r.ccm_status !== "interested" && r.ccm_status !== "purchased") f.ccm_status = "interested";
+    } else {
+        throw new Error("unknown card action " + action);
+    }
+    return f;
+}
+
+const CARD_ACTION_TO_IMPRESSION = { x: "ignored", not_now: "declined", tell_me_more: "engaged" };
+export async function recordCardOutcome(email, action, { impressionId, activityDayCount } = {}) {
+    if (!ccmTrackingEnabled()) return null;
+    const rec = await getCcmStatus(email);
+    if (impressionId) { try { await setImpressionOutcome(impressionId, CARD_ACTION_TO_IMPRESSION[action]); } catch (e) { console.warn("card impression outcome", e?.message); } }
+    return upsertCcmStatus(email, cardStatusUpdate(rec?.fields, action, { activityDayCount }));
+}
+
+// Chat "I'm not interested" in Clear Channel Method -> declined_at (6-month clock
+// for both the card and the bot's pitch). Heuristic, conservative: the member's
+// message must read as a decline AND the topic must be CCM (named in the
+// message, in the previous assistant message, or the chat began from the card).
+export const CCM_CARD_OPENER = "Hey, I see you're interested in Clear Channel Method. Do you want the link?";
+
+// Dynamic (uncached) note appended to the main chat system prompt when
+// tracking is on, so the bot follows the recorded status.
+export function ccmStatusPromptNote(r, now = Date.now()) {
+    if (!r) return "";
+    if (r.purchased || r.ccm_status === "purchased") return "\n\n=== CLEAR CHANNEL METHOD STATUS ===\nThis member has already bought Clear Channel Method. Never pitch it or mention buying it again. Answer questions about their program normally.";
+    if (r.declined_at && (now - ts(r.declined_at)) / DAY_MS < RULES.declineCooldownDays) return "\n\n=== CLEAR CHANNEL METHOD STATUS ===\nThis member said they are not interested in Clear Channel Method (" + String(r.declined_at).slice(0, 10) + "). Do not pitch or suggest it for six months from then. If they ask about it directly, answer.";
+    return "";
+}
+
+const DECLINE_RE = /\b(not interested|no interest|i(?:'|’)?m not (?:really )?(?:into|ready for|going to|gonna)|don(?:'|’)?t want (?:this|it|that|the |to buy|to join|to enroll)|no,? thank(?:s| you)|not for me|i(?:'|’)?ll pass|pass on (?:this|it|that)|stop (?:offering|pitching|mentioning)|not buying)\b/i;
+const CCM_RE = /clear channel|\bccm\b/i;
+export function isChatCcmDecline(message, { previousAssistant = "", fromCard = false } = {}) {
+    const m = String(message || "");
+    if (!DECLINE_RE.test(m)) return false;
+    return CCM_RE.test(m) || CCM_RE.test(String(previousAssistant || "")) || fromCard === true;
 }
 
 // Pure: status-record changes after a proactive mention gets an outcome.
@@ -133,6 +217,7 @@ export function statusUpdateForOutcome(record, outcome, ctx = {}) {
     } else if (outcome === "declined") {
         f.ccm_status = "declined";
         f.declined_at = now;
+        f.card_last_outcome = "chat_declined";
     }
     return f;
 }
@@ -222,13 +307,13 @@ export async function recordSuggestion(email, { conversationId, activityDayCount
     return logImpression({ email, source: "chat_recommendation", conversationId, now: at });
 }
 
-export async function recordCardShown(email, { activityDayCount, now } = {}) {
+export async function recordCardShown(email, { activityDayCount, now, isTest = false } = {}) {
     if (!ccmTrackingEnabled()) return null;
     const at = new Date(now || Date.now()).toISOString();
     const f = { last_card_shown_at: at };
     if (num(activityDayCount) != null) f.last_card_shown_activity_day_count = activityDayCount;
     await upsertCcmStatus(email, f);
-    return logImpression({ email, source: "card", now: at });
+    return logImpression({ email, source: "card", now: at, isTest });
 }
 
 // After each mention: outcome engaged | ignored | declined | purchased.

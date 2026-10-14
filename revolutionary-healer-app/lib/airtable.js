@@ -593,6 +593,29 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
     const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;
     const isCancellation = eventType === "cancellation" || eventType === "refund";
 
+    // Unknown-offer guard (CCM card release, Oct 14 2026). Clear Channel
+    // Method offers are a separate program: they must never create or touch a
+    // Revolutionary Healer Members row. When CCM_TRACKING is on they mark the
+    // buyer CCM-purchased (so the card/bot stop selling to them). Other offer
+    // IDs that are in none of the configured lists are ignored too, but only
+    // when MEMBER_OFFER_IDS is configured -- with it empty every offer has
+    // always counted as a membership, and that is left unchanged.
+    if (offerId && isCcmOffer(offerId) && !isMemberOffer && !isTierOffer && !isGapMethodOffer) {
+        if (!isCancellation && ccmTrackingEnabled()) {
+            try {
+                await markCcmPurchased(normalizedEmail, { offerId, isTest: isTester(normalizedEmail) });
+                return { memberRecordId: "", outcome: "ccm_purchased" };
+            } catch (err) {
+                console.error("markCcmPurchased failed", err?.message);
+                throw err; // retried by the webhook cron; still never a Members row
+            }
+        }
+        return { memberRecordId: "", outcome: "ignored_offer" };
+    }
+    if (offerId && MEMBER_OFFER_IDS.length && !isMemberOffer && !isTierOffer && !isGapMethodOffer) {
+        return { memberRecordId: "", outcome: "ignored_offer" };
+    }
+
     const existing = await getMemberByEmail(normalizedEmail);
     const fields = {};
     if (isMemberOffer) fields.member_active = !isCancellation;
@@ -619,18 +642,6 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
 
     if ((isMemberOffer || isTierOffer) && !isCancellation) {
         await linkGapMethodResultToMember(normalizedEmail, memberRecordId);
-    }
-
-    // CCM purchase tracking (behind CCM_TRACKING, default off). Does not touch
-    // the entitlement logic above. Plan buyers count on the first payment;
-    // later payments are a no-op because purchased is already set. A failure
-    // here is logged, never thrown, so it cannot fail the Members upsert.
-    if (!isCancellation && ccmTrackingEnabled() && isCcmOffer(offerId)) {
-        try {
-            await markCcmPurchased(normalizedEmail, { offerId, isTest: isTester(normalizedEmail) });
-        } catch (err) {
-            console.error("markCcmPurchased failed", err?.message);
-        }
     }
 
     return { memberRecordId, outcome };

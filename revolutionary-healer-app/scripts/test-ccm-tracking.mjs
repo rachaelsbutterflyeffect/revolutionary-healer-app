@@ -59,9 +59,9 @@ test("i. follow-up still subject to 15-day rule", () =>
 test("i. only one follow-up", () =>
     assert.equal(s({ ccm_status: "interested", last_suggestion_at: ago(20), followup_due_after_activity_day: 10, followup_used: true }).reason, "followup_used"));
 test("canShowCard: purchase checked first", () => assert.equal(canShowCard({ purchased: true }, { activityDayCount: 0, minActivityDays: 6 }).reason, "purchased"));
-test("canShowCard: needs activity days when given", () => assert.equal(canShowCard({}, { activityDayCount: 5, minActivityDays: 6 }).reason, "not_enough_activity_days"));
-test("canShowCard: cooldown", () => assert.equal(canShowCard({ last_card_shown_activity_day_count: 9 }, { activityDayCount: 10 }).reason, "card_recent"));
-test("canShowCard: ok", () => assert.equal(canShowCard({}, { activityDayCount: 6, minActivityDays: 6 }).allowed, true));
+test("canShowCard: needs activity days", () => assert.equal(canShowCard({}, { activityDayCount: 6, midShift: false }).reason, "not_enough_activity_days"));
+test("canShowCard: cooldown", () => assert.equal(canShowCard({ last_card_shown_activity_day_count: 9 }, { activityDayCount: 10, midShift: false }).reason, "card_recent"));
+test("canShowCard: ok on 7th", () => assert.equal(canShowCard({}, { activityDayCount: 7, midShift: false }).allowed, true));
 test("outcome engaged -> interested, reset counter, follow-up due +3", () =>
     assert.deepEqual(statusUpdateForOutcome({ consecutive_non_engagements: 1 }, "engaged", { now: NOW, activityDayCount: 10 }),
         { last_engagement_at: new Date(NOW).toISOString(), consecutive_non_engagements: 0, ccm_status: "interested", followup_used: false, followup_due_after_activity_day: 13 }));
