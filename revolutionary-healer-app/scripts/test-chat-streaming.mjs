@@ -257,6 +257,18 @@ process.env.ANTHROPIC_API_KEY = "test-not-a-real-key";
 // ---------------------------------------------------------------------------
 // Load the NEW route and the route as it was before streaming (git d98b36f)
 // ---------------------------------------------------------------------------
+
+// Oct 14 2026: the main chat now adds the approved Clear Channel Method
+// education block (lib/ccm-chatbot-instructions.js) before UPSELL. The
+// old-vs-new comparisons below remove exactly that block, so they still prove
+// nothing ELSE in the request changed. test:chat-ccm checks the block itself.
+const { CCM_CHATBOT_INSTRUCTIONS } = await import(pathToFileURL(path.join(appRoot, "lib", "ccm-chatbot-instructions.js")).href);
+function stripCcm(body) {
+  if (!body || !body.system) return body;
+  const cut = (t) => (typeof t === "string" ? t.replace("\n" + CCM_CHATBOT_INSTRUCTIONS + "\n", "") : t);
+  const system = Array.isArray(body.system) ? body.system.map((b) => ({ ...b, text: cut(b.text) })) : cut(body.system);
+  return { ...body, system };
+}
 function transpileRoute(src, name) {
   const out = ts.transpileModule(src, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2020 } }).outputText;
   const f = path.join(tmp, name);
@@ -313,7 +325,7 @@ async function runJson(mod, { body, env, fx, api }) {
     await settle(fx);
     return { status: res.status, ctype: res.headers.get("content-type"), text };
   });
-  return { ...out, writes: fx.writes, apiBodies: apiRequests.map((r) => r.body) };
+  return { ...out, writes: fx.writes, apiBodies: apiRequests.map((r) => stripCcm(r.body)) };
 }
 function parseSse(text) {
   return text.split("\n\n").filter((b) => b.trim()).map((b) => {
@@ -348,7 +360,7 @@ async function runStream(mod, { body, env, fx, api, onEvent, cancelWhen }) {
       if (cancelWhen && cancelWhen(events)) { cancelled = true; await reader.cancel(); break; }
     }
     await settle(fx);
-    return { status: res.status, ctype, events, cancelled, writes: fx.writes, apiBodies: apiRequests.map((r) => r.body), pendingErrors: fx.pendingErrors };
+    return { status: res.status, ctype, events, cancelled, writes: fx.writes, apiBodies: apiRequests.map((r) => stripCcm(r.body)), pendingErrors: fx.pendingErrors };
   });
 }
 const writesNamed = (w, n) => w.filter(([name]) => name === n);
