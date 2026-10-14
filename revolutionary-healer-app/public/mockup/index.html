@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07090c"><title>Revolutionary Healer · Mock-up</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:wght@400;500;600&family=Cormorant+SC:wght@500;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#06080b;--gold:#e8c873;--gold2:#fff1c4;--goldd:#b8913f;--teal:#3fd6c8;--white:#fdfbf5;--glass:rgba(255,255,255,.06);--line:rgba(232,200,115,.35)}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -18,7 +18,7 @@ h1,h2,h3{font-family:Cinzel,serif;font-weight:600;letter-spacing:.08em;text-tran
 .shine{background:linear-gradient(100deg,var(--goldd) 0%,var(--gold) 30%,#fffbe8 48%,var(--gold) 62%,var(--goldd) 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:sh 6s linear infinite;filter:drop-shadow(0 0 18px rgba(255,214,130,.45))}
 @keyframes sh{from{background-position:150% 0}to{background-position:-100% 0}}
 .top{display:flex;justify-content:space-between;align-items:center}
-.mark{font-family:Cinzel;font-size:11px;letter-spacing:.32em;color:var(--gold)}
+.mark{font-family:'Cormorant SC',serif;font-weight:600;font-size:18px;letter-spacing:.24em;line-height:1.1}
 .avatar{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;background:var(--glass);backdrop-filter:blur(10px);color:var(--gold)}
 .hero{position:relative;height:300px;display:grid;place-items:center;margin-top:6px}
 #fly{position:absolute;inset:0;width:100%;height:100%}
@@ -103,7 +103,7 @@ background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold
 <div class="app">
 
 <section class="screen on" id="home">
- <div class="top"><div class="mark">REVOLUTIONARY HEALER</div><div class="avatar" data-go="profile">✦</div></div>
+ <div class="top"><div class="mark shine">REVOLUTIONARY HEALER</div><div class="avatar" data-go="profile">✦</div></div>
  <div class="hero" id="hero" role="button" aria-label="Begin with today's focus"><div class="halo"></div><canvas id="fly"></canvas><div class="say" id="say"></div></div>
  <div class="welcome"><h1 class="shine">Welcome<br>Back</h1><div class="divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
  <div class="sec reveal"><h3>Your Doors</h3>
@@ -242,13 +242,19 @@ function rf(){const d=Math.min(devicePixelRatio,2);FW=fly.clientWidth;FH=fly.cli
   const r=(Math.exp(Math.sin(t))-2*Math.cos(4*t)+Math.pow(Math.sin((2*t-Math.PI)/24),5))*Math.random()**.35;
   return{bx:Math.sin(t)*r*side*Math.abs(Math.sin(t))/ (Math.abs(Math.sin(t))||1),by:-Math.cos(t)*r,s:side,j:Math.random()*6,c:Math.random()<.18}})}
 rf();addEventListener('resize',rf);
+const vort=Array.from({length:140},()=>({a:Math.random()*7,r:0,w:.004+Math.random()*.01,in:Math.random()<.4?.08+Math.random()*.15:0,s:Math.random()*1.6+.4,j:Math.random()*6,c:Math.random()<.4}));setTimeout(()=>{const k=Math.min(FW,FH)/7.2;vort.forEach(v=>v.r=k*(.9+Math.random()*2.4))},0);
 let T=0;function frame(){T+=.016;
  sx.clearRect(0,0,W,H);for(const s of stars){const a=.45+.55*Math.sin(T*1.5+s.p);sx.fillStyle=s.g?`rgba(255,226,150,${a})`:`rgba(220,255,250,${a*.8})`;sx.beginPath();sx.arc(s.x+px*s.z,s.y+py*s.z,s.r,0,7);sx.fill()}
  if($('#home').classList.contains('on')){fx.clearRect(0,0,FW,FH);const cx=FW/2+px*.6,cy=FH/2-6+py*.6,k=Math.min(FW,FH)/7.2,flap=.55+.45*Math.cos(T*2.4);
   fx.globalCompositeOperation='lighter';
-  for(const p of pts){const x=cx+Math.abs(p.bx)*p.s*k*flap+Math.sin(T+p.j)*1.5,y=cy+p.by*k*.9+Math.cos(T*1.3+p.j)*1.5;
+  for(const p of pts){const x=cx+Math.abs(p.bx)*p.s*k*.92+Math.sin(T*.6+p.j)*.8,y=cy+p.by*k*.9+Math.cos(T*.5+p.j)*.8;
    fx.fillStyle=p.c?'rgba(110,240,228,.75)':'rgba(255,224,150,.8)';fx.fillRect(x,y,1.6,1.6)}
-  fx.fillStyle='rgba(255,246,214,.9)';fx.fillRect(cx-1,cy-k*.9,2,k*1.6);fx.globalCompositeOperation='source-over'}
+  fx.fillStyle='rgba(255,246,214,.9)';fx.fillRect(cx-1,cy-k*.9,2,k*1.6);
+  for(const v of vort){v.a+=v.w*(RM?0:1);v.r-=v.in*(RM?0:1);if(v.r<k*.4){v.r=k*(2+Math.random()*1.4);v.a=Math.random()*7}
+   const tw=.35+.65*Math.abs(Math.sin(T*2+v.j)),x=cx+Math.cos(v.a)*v.r,y=cy+Math.sin(v.a)*v.r*.62;
+   fx.fillStyle=v.c?`rgba(110,240,228,${tw})`:`rgba(255,226,150,${tw})`;fx.beginPath();fx.arc(x,y,v.s,0,7);fx.fill();
+   if(v.s>1.3){fx.fillRect(x-v.s*2.5,y-.3,v.s*5,.6);fx.fillRect(x-.3,y-v.s*2.5,.6,v.s*5)}}
+  fx.globalCompositeOperation='source-over'}
  if($('#player').classList.contains('on'))drawViz();
  if(!RM)requestAnimationFrame(frame)}
 frame();if(RM){setTimeout(frame,300)}
