@@ -6278,6 +6278,10 @@ if (forceComplete) { goDay(3); }
   body.lux-home .lux-prompt-b { display: block; color: #E2BE68; font-weight: 600; margin-top: 2px; }
   body #lux-portals .lux-portal:not(#lux-portal-chat-arch) .lux-portal-desc, body #lux-portals #lux-portal-chat .lux-portal-desc { white-space: normal !important; }
   @media (max-width: 760px) and (max-height: 700px) { body.lux-home .lux-head { padding-top: 8px; margin-bottom: 14px !important; } body.lux-home .lux-welcome .lux-greet-1 { font-size: 31px; } body.lux-home .lux-prompt { margin-top: 8px; font-size: 15.5px; } }
+  /* Doors: benefit line is the title (names stay in aria-labels) */
+  body #lux-portals .lux-portal .lux-portal-name, body #lux-portals .lux-portal .lux-portal-rule { display: none !important; }
+  body #lux-portals .lux-portal .lux-portal-desc { grid-column: 2 !important; grid-row: 1 / span 3 !important; align-self: center; margin: 0 !important; font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-weight: 600; font-style: normal; font-size: 23px !important; line-height: 1.18 !important; color: #F1D58A !important; white-space: normal !important; letter-spacing: .005em; }
+  @media (max-width: 760px) and (max-height: 700px) { body #lux-portals .lux-portal .lux-portal-desc { font-size: 20.5px !important; } }
   /* Ask Rachael anything + Go deeper */
   body.lux-home #hero-section { height: auto !important; min-height: 0 !important; overflow: visible !important; }
   .lux-ask, .lux-deeper { width: 100%; max-width: 760px; margin: 34px auto 0; padding: 0 16px; position: relative; z-index: 2; text-align: left; }
