@@ -180,6 +180,15 @@ background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold
 .sheet .bd{padding:20px 20px 30px}.sheet h2{font-size:18px;color:var(--gold);margin-bottom:8px;line-height:1.3}.sheet p{line-height:1.6;color:#fffe}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}.tags span{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid rgba(63,214,200,.5);color:var(--teal)}
 .hint{font-family:'Cormorant Garamond';font-size:17px;color:var(--gold2);text-align:center;margin-top:-2px}
+.lsec{position:relative;display:block;cursor:pointer;margin-top:16px;border-radius:24px;overflow:hidden;min-height:150px;border:1px solid rgba(255,236,190,.3);box-shadow:0 10px 40px rgba(0,0,0,.35),0 0 30px rgba(255,214,130,.15);transition:transform .2s}
+.lsec:active{transform:scale(.98)}
+.lsec .bgc{position:absolute;inset:0;background-size:cover;background-position:center;filter:saturate(.9)}
+.lsec:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,8,11,.1),rgba(6,8,11,.85))}
+.lsec .in{position:relative;z-index:1;padding:70px 18px 16px}
+.lsec h2{font-size:20px;color:var(--gold2);text-shadow:0 0 18px rgba(255,214,130,.6)}
+.lsec small{font-size:12px;color:#fffc;letter-spacing:.1em}
+.lsec .arr{position:absolute;right:16px;bottom:16px;z-index:1;color:var(--gold);font-size:20px}
+.lfeat h2{font-size:16px}
 .demo{position:fixed;top:2px;left:50%;transform:translateX(-50%);z-index:9;font-size:9px;letter-spacing:.2em;color:#ffffff70}
 @media (prefers-reduced-motion:reduce){*,*:before{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
 </style></head><body>
@@ -244,9 +253,7 @@ background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold
 <section class="screen" id="lib">
  <button class="back" data-go="home">← HOME</button>
  <h2 class="ttl shine">Activations</h2><p class="sub">Press play and let the frequency land.</p>
- <div class="fchips" id="fchips"></div>
- <div class="lcount" id="lcount"></div>
- <div class="mgrid" id="mgrid"></div>
+ <div class="divider"></div><div id="libview"></div>
 </section>
 
 <section class="screen" id="rev">
@@ -281,7 +288,7 @@ const $=s=>document.querySelector(s);
 function buzz(){navigator.vibrate&&navigator.vibrate(8)}
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===id));
- const s=$('#'+id);s.scrollTop=0;if(id==='gap'){gq=0;gans=[];gdom=null;['#ck1','#ck2','#ck3'].forEach(x=>$(x).textContent='');}if(id==='code'){dv=[];}if(id==='chat'&&!$('#msgs').children.length)welcome();buzz();history.replaceState(0,'','#'+id);guide(id);if(id==='gap')gDay(1);;if(id==='code')dStep(0)}
+ const s=$('#'+id);s.scrollTop=0;if(id==='gap'){gq=0;gans=[];gdom=null;['#ck1','#ck2','#ck3'].forEach(x=>$(x).textContent='');}if(id==='code'){dv=[];}if(id==='lib')lib();if(id==='chat'&&!$('#msgs').children.length)welcome();buzz();history.replaceState(0,'','#'+id);guide(id);if(id==='gap')gDay(1);;if(id==='code')dStep(0)}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(t)go(t.dataset.go);const l=e.target.closest('[data-lane]');if(l){go('chat');startLane(l.dataset.lane)}});
 
 const GUIDE={home:["Tap me to find today's focus","code"],code:["Tap a number from 1 to 10",null],chat:["Pick a starter, or type your own",null],gap:["Choose what feels true. One tap at a time.",null],player:["Press play. Let it land.",null],lib:["Tap any activation to preview",null],rev:["See your next Gap","gap"],profile:["Back to your doors","home"]};
@@ -347,13 +354,17 @@ function dStep(i){const o=$('#dorb');const avg=dv.length?dv.reduce((a,b)=>a+b,0)
   $('#d-again').onclick=()=>{dv=[];o.classList.remove('reveal-orb');dStep(0)};guide('code','Press listen. Let it land.','player');}}
 function thumb(a){if(a.img)return "background-image:url('"+a.img+"')";const G=['#e8c873,#6b4a1f','#3fd6c8,#0c3b3a','#fff1c4,#b8913f','#8a6a45,#1d1a16','#3fd6c8,#e8c873','#5b5f66,#e8c873'];let h=0;for(const ch of a.s)h=(h*31+ch.charCodeAt(0))>>>0;return 'background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.5),transparent 55%),linear-gradient(135deg,'+G[h%G.length]+')'}
 
-// ===== Library =====
-const FL=[['all','All'],['gifts','Spiritual Gifts'],['money','Money & Prosperity'],['energy','Energy & Frequency'],['vis','Visibility & Impact']];let flt='all';
+// ===== Library: big category sections -> category view =====
+const SECS=[['gifts','Spiritual Gifts'],['money','Money & Prosperity'],['energy','Energy & Frequency'],['vis','Visibility & Impact']];
+const SECIMG={gifts:'/images/covers/activating-your-channel-to-spirit.jpg',money:'/images/covers/million-dollar-blueprint-activation.jpg',energy:'/images/covers/spookbound-2026.jpg',vis:'/images/covers/visibility-activation.jpg'};
 const GLY='✦✧❋✺☀◈❖';
-function lib(){$('#fchips').innerHTML=FL.map(f=>'<button class="fchip'+(f[0]===flt?' on':'')+'" data-f="'+f[0]+'">'+f[1]+'</button>').join('');
- $('#fchips').querySelectorAll('.fchip').forEach(b=>b.onclick=()=>{flt=b.dataset.f;buzz();lib()});
- const L=ACTS.filter(a=>flt==='all'||a.c.includes(flt));$('#lcount').textContent=L.length+' activations';
- $('#mgrid').innerHTML=L.map((a,i)=>'<div class="media-card" data-s="'+a.s+'"><div class="media-thumb" style="'+thumb(a)+'">'+(a.img?'':'<div class="gl">'+GLY[i%GLY.length]+'</div>')+(a.s==='spookbound-2026'?'<span class="new-badge">NEW</span>':'')+'<div class="play-dot">▶</div></div><div class="media-body"><h3></h3><p></p><div class="ls">Not started</div></div></div>').join('');
+function lib(cat){const v=$('#libview');$('#lib').scrollTop=0;
+ if(!cat){v.innerHTML=SECS.map(([k,n])=>'<div class="lsec" data-cat="'+k+'"><div class="bgc" style="background-image:url(\''+SECIMG[k]+'\')"></div><div class="in"><h2>'+n+'</h2><small>'+ACTS.filter(a=>a.c.includes(k)).length+' ACTIVATIONS</small></div><div class="arr">→</div></div>').join('');
+  v.querySelectorAll('.lsec').forEach(e=>e.onclick=()=>{buzz();lib(e.dataset.cat)});return}
+ const L=ACTS.filter(a=>a.c.includes(cat));const n=SECS.find(x=>x[0]===cat)[1];
+ v.innerHTML='<button class="back" id="lback" style="margin:6px 0 10px">← ALL SECTIONS</button><div class="sec" style="margin-top:4px"><h3>'+n+'</h3></div><div class="lcount">'+L.length+' activations</div><div class="mgrid" id="mgrid"></div>';
+ $('#lback').onclick=()=>lib();
+ $('#mgrid').innerHTML=L.map((a,i)=>'<div class="media-card"><div class="media-thumb" style="'+thumb(a)+'">'+(a.img?'':'<div class="gl">'+GLY[i%GLY.length]+'</div>')+(a.s==='spookbound-2026'?'<span class="new-badge">NEW</span>':'')+'<div class="play-dot">▶</div></div><div class="media-body"><h3></h3><p></p><div class="ls">Not started</div></div></div>').join('');
  $('#mgrid').querySelectorAll('.media-card').forEach((el,i)=>{el.querySelector('h3').textContent=L[i].t;el.querySelector('p').textContent=L[i].d;el.onclick=()=>pop(L[i])})}
 function pop(a){buzz();const N={gifts:'Spiritual Gifts',money:'Money & Prosperity',energy:'Energy & Frequency',vis:'Visibility & Impact'};
  $('#sheetin').innerHTML='<div class="cv" style="'+thumb(a)+'"><button class="x" id="sx" aria-label="Close">✕</button></div><div class="bd"><h2></h2><p></p><div class="tags">'+a.c.map(c=>'<span>'+N[c]+'</span>').join('')+'</div><button class="btn-g" id="slisten">▶ Listen</button></div>';
