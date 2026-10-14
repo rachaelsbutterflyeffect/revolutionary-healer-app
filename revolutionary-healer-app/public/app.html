@@ -1067,7 +1067,9 @@
     <header class="lux-head">
       <div class="lux-crest" aria-hidden="true"><span class="lux-crest-line"></span><img class="lux-rh" src="/images/icons/rh-icon.jpg" alt=""><span class="lux-crest-line lux-flip"></span></div>
       <div class="lux-eyebrow">The Revolutionary Healer</div>
+      <div class="lux-arrive-glow" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
       <h1 class="lux-title lux-greet lux-welcome"><span class="lux-greet-1" id="lux-welcome-name">Welcome back</span></h1>
+      <span class="lux-arrive-rule" aria-hidden="true"></span>
       <p class="lux-prompt">What are we doing today? <span class="lux-prompt-b">Pick your focus.</span></p>
       <p class="lux-sub">Your Divine Identity is already within you.</p>
     </header>
@@ -6282,6 +6284,18 @@ if (forceComplete) { goDay(3); }
   body #lux-portals .lux-portal .lux-portal-name, body #lux-portals .lux-portal .lux-portal-rule { display: none !important; }
   body #lux-portals .lux-portal .lux-portal-desc { grid-column: 2 !important; grid-row: 1 / span 3 !important; align-self: center; margin: 0 !important; font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-weight: 600; font-style: normal; font-size: 23px !important; line-height: 1.18 !important; color: #F1D58A !important; white-space: normal !important; letter-spacing: .005em; }
   @media (max-width: 760px) and (max-height: 700px) { body #lux-portals .lux-portal .lux-portal-desc { font-size: 20.5px !important; } }
+  /* Arrival moment */
+  body.lux-home .lux-head { position: relative; padding-top: clamp(40px, 8vh, 80px) !important; margin-bottom: clamp(32px, 5vh, 52px) !important; min-height: 30vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  body.lux-home .lux-welcome .lux-greet-1 { font-size: 54px !important; line-height: 1.04 !important; }
+  @media (max-width: 760px) { body.lux-home .lux-welcome .lux-greet-1 { font-size: 52px !important; } }
+  @media (max-width: 380px) { body.lux-home .lux-welcome .lux-greet-1 { font-size: 46px !important; } }
+  .lux-arrive-glow { position: absolute; left: 50%; top: 46%; width: 340px; height: 240px; transform: translate(-50%, -50%); background: radial-gradient(closest-side, rgba(226,190,104,0.26), rgba(226,190,104,0.08) 55%, transparent 100%); pointer-events: none; z-index: -1; }
+  .lux-arrive-glow i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #FFF6DA; box-shadow: 0 0 8px 2px rgba(241,213,138,0.75); animation: lux-twinkle 3.6s ease-in-out infinite; }
+  .lux-arrive-glow i:nth-child(1) { left: 12%; top: 22%; } .lux-arrive-glow i:nth-child(2) { left: 84%; top: 16%; animation-delay: .9s; } .lux-arrive-glow i:nth-child(3) { left: 92%; top: 66%; animation-delay: 1.7s; width: 3px; height: 3px; } .lux-arrive-glow i:nth-child(4) { left: 6%; top: 72%; animation-delay: 2.4s; width: 3px; height: 3px; } .lux-arrive-glow i:nth-child(5) { left: 50%; top: 4%; animation-delay: 1.2s; width: 3px; height: 3px; }
+  @keyframes lux-twinkle { 0%,100% { opacity: .15; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.15); } }
+  .lux-arrive-rule { display: block; width: 120px; height: 1px; margin: 22px auto 0; background: linear-gradient(90deg, transparent, #E2BE68, transparent); }
+  body.lux-home .lux-prompt { margin-top: 18px !important; }
+  @media (prefers-reduced-motion: reduce) { .lux-arrive-glow i { animation: none; opacity: .7; } }
   /* Door order: Code Upgrade, GAP Method(TM), Chatbot */
   #lux-portals > .lux-door:has(#lux-portal-codepull) { order: 1; }
   #lux-portals > .lux-door:has(#gap-method-starter-btn) { order: 2; }
