@@ -5,7 +5,8 @@ import Airtable from "airtable";
 import crypto from "crypto";
 import { sendGapMethodMagicLink } from "./email";
 import { DIVINE_IDENTITIES } from "./divineIdentities";
-import { testerRecordFields, isUnknownAirtableField } from "./testers.js";
+import { testerRecordFields, isUnknownAirtableField, isTester } from "./testers.js";
+import { ccmTrackingEnabled, isCcmOffer, markCcmPurchased } from "./ccm-tracking.js";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -618,6 +619,18 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
 
     if ((isMemberOffer || isTierOffer) && !isCancellation) {
         await linkGapMethodResultToMember(normalizedEmail, memberRecordId);
+    }
+
+    // CCM purchase tracking (behind CCM_TRACKING, default off). Does not touch
+    // the entitlement logic above. Plan buyers count on the first payment;
+    // later payments are a no-op because purchased is already set. A failure
+    // here is logged, never thrown, so it cannot fail the Members upsert.
+    if (!isCancellation && ccmTrackingEnabled() && isCcmOffer(offerId)) {
+        try {
+            await markCcmPurchased(normalizedEmail, { offerId, isTest: isTester(normalizedEmail) });
+        } catch (err) {
+            console.error("markCcmPurchased failed", err?.message);
+        }
     }
 
     return { memberRecordId, outcome };
