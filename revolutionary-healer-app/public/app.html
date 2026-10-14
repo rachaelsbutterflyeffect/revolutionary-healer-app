@@ -6160,6 +6160,13 @@ if (forceComplete) { goDay(3); }
   }
   body.lux-home #my-revolution::after { display: none !important; }
   @media (max-width: 760px) and (min-height: 701px) { body #lux-portals #lux-portal-chat { height: clamp(172px, 22vh, 210px) !important; } body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) { min-height: clamp(128px, 16vh, 156px); } }
+  /* Chatbot: no "Click to enter" text, same mini gold arrow as the other doors */
+  body #lux-portals #lux-portal-chat { grid-template-columns: 96px 1fr 18px !important; padding-right: 16px !important; }
+  body #lux-portals #lux-portal-chat .lux-portal-enter { grid-column: 3 !important; grid-row: 1 / -1 !important; margin: 0; padding: 0 !important; font-size: 0 !important; letter-spacing: 0 !important; opacity: .95; }
+  body #lux-portals #lux-portal-chat .lux-portal-enter::before { display: none !important; }
+  body #lux-portals #lux-portal-chat .lux-portal-enter::after { display: block !important; content: ""; width: 9px !important; height: 9px; background: none; border-top: 1.5px solid #F1D58A; border-right: 1.5px solid #F1D58A; transform: rotate(45deg); }
+  @media (max-width: 760px) and (min-height: 701px) { body #lux-portals #lux-portal-chat { grid-template-columns: 104px 1fr 18px !important; } }
+  @media (max-width: 760px) and (max-height: 700px) { body #lux-portals #lux-portal-chat { grid-template-columns: 82px 1fr 18px !important; } }
   @media (prefers-reduced-motion: reduce) { body #lux-portals .lux-door > .lux-portal { animation: none !important; } }
 </style>
 
