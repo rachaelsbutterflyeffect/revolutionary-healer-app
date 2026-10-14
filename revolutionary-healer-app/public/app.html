@@ -6086,6 +6086,10 @@ if (forceComplete) { goDay(3); }
     #activations-page .media-body h3 { font-size: 15px; line-height: 1.25; overflow-wrap: normal; word-break: normal; hyphens: none; -webkit-hyphens: none; }
     #activations-page .media-meta, #activations-page .media-description { font-size: 12.5px; line-height: 1.4; }
   }
+  /* Doors stacked: one per row, full width, all breakpoints */
+  #lux-portals.lux-portals { flex-direction: column; align-items: stretch; justify-content: flex-start; gap: clamp(12px, 2vh, 22px); }
+  #lux-portals > .lux-door { flex: none; width: 100%; max-width: none; }
+  #lux-portals > .lux-door > .lux-portal { width: 100%; }
 </style>
 
 <script id="lux-home-js">
