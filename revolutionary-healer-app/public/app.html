@@ -972,7 +972,15 @@
 </style>
 <script id="rh-tabbar-js">
   function rhTabSet(k) { document.querySelectorAll('#rh-tabbar .rh-tab').forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-tab') === k); if (b.getAttribute('data-tab') === k) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); }); }
-  function rhTabFocus() { if (typeof goToMyRevolution === 'function') goToMyRevolution(); setTimeout(function () { var f = document.querySelector('#my-revolution [data-role="focus-card"]'); if (f) f.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 120); }
+  function rhTabFocus() {
+    var cu = document.getElementById('lux-portal-codepull');
+    var enabled = cu && !cu.hidden && (typeof CODE_PULL_ENABLED === 'undefined' || CODE_PULL_ENABLED);
+    if (typeof showMain === 'function') showMain();
+    setTimeout(function () {
+      if (enabled) { cu.click(); return; }
+      var d = document.getElementById('lux-portals'); if (d) d.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 160);
+  }
   rhTabSet('home');
 </script>
 
