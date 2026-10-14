@@ -103,7 +103,9 @@ background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold
 .scale-l{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;color:#fffa}
 .qn{font-family:'Cormorant Garamond';font-size:30px;text-align:center;line-height:1.15;margin-top:6px}
 .prog3{display:flex;justify-content:center;gap:8px;margin:6px 0 4px}.prog3 i{width:34px;height:3px;border-radius:3px;background:#ffffff30}.prog3 i.on{background:var(--gold);box-shadow:0 0 10px var(--gold)}
-.small-orb{width:130px;height:130px;margin:22px auto 6px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold) 45%,rgba(63,214,200,.6) 75%,transparent 76%);transition:box-shadow .6s,filter .6s;animation:breathe 5s ease-in-out infinite}
+.reveal-orb{transform:scale(1.25);box-shadow:0 0 120px rgba(255,214,130,.9),0 0 200px rgba(63,214,200,.45)!important;filter:brightness(1.25)!important}
+.codepop{animation:codepop 1.2s cubic-bezier(.2,.9,.3,1.2) both,sh 6s linear infinite}@keyframes codepop{from{opacity:0;transform:scale(.6);letter-spacing:.5em}}
+.small-orb{transition:transform .9s cubic-bezier(.2,.9,.3,1.2),box-shadow .6s,filter .6s;width:130px;height:130px;margin:22px auto 6px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold) 45%,rgba(63,214,200,.6) 75%,transparent 76%);transition:box-shadow .6s,filter .6s;animation:breathe 5s ease-in-out infinite}
 .acard{border-radius:22px;overflow:hidden;margin-top:18px;border:1px solid var(--line);background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.03));box-shadow:0 0 50px rgba(255,214,130,.3)}
 .acard .cv{height:170px;background-size:cover;background-position:center}
 .acard .bd{padding:18px}.acard h2{font-size:15px;color:var(--gold);margin-bottom:8px}.acard p{line-height:1.55;color:#fffe;font-size:14.5px}
@@ -226,7 +228,7 @@ background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold
 
 <section class="screen" id="code">
  <button class="back" data-go="home">← HOME</button>
- <h2 class="ttl shine">Daily Focus</h2><p class="sub">Three quick taps. Then your activation.</p>
+ <h2 class="ttl shine">Daily Focus</h2><p class="sub">Three quick taps. Then your code and your activation.</p>
  <div class="small-orb" id="dorb"></div>
  <div id="diag"></div>
 </section>
@@ -341,8 +343,8 @@ function dStep(i){const o=$('#dorb');const avg=dv.length?dv.reduce((a,b)=>a+b,0)
   else if(c===m){slug='activating-your-channel-to-spirit';why='Connection came in lowest ('+c+'/10), so today is about reopening your channel.'}
   else{slug='grounding';why='Grounded came in lowest ('+g+'/10), so today is about anchoring back into your body.'}
   const a=ACTS.find(x=>x.s===slug)||ACTS.find(x=>x.c.includes({light:'energy'}.light))||ACTS[0];
-  d.innerHTML='<div class="sec" style="margin-top:6px"><h3>Your Daily Focus</h3></div><div class="qn" style="font-size:26px">Here\'s the activation that would be best for you today, based on your energy</div><div class="acard"><div class="cv" style="'+thumb(a)+'"></div><div class="bd"><h2>'+a.t+'</h2><p>'+a.d+'</p><p class="why">✦ '+why+'</p><button class="btn-g" data-go="player" id="d-play">▶ Listen now</button></div></div><div style="text-align:center;margin-top:14px"><button class="btn-t" id="d-again">↺ Retake</button></div>';
-  $('#d-again').onclick=()=>{dv=[];dStep(0)};guide('code','Press listen. Let it land.','player')}}
+  const CW=['Radiant','Magnetic','Anchored','Open','Clear','Overflow','Sovereign','Luminous'];const code=CW[(e*7+c*3+g)%CW.length];o.classList.add('reveal-orb');d.innerHTML='<div style="text-align:center"><div class="q-label">TODAY\'S CODE</div><div class="code shine codepop" style="font-size:54px">'+code+'</div><div class="divider"></div><p class="sub" style="font-size:18px">Let <b style="color:var(--gold2)">'+code+'</b> be your focus today. Say it when you wake, and come back to it whenever the noise gets loud.</p></div><div class="sec"><h3>Your activation for today</h3></div><div class="qn" style="font-size:22px">Your activation for today, based on your energy</div><div class="acard"><div class="cv" style="'+thumb(a)+'"></div><div class="bd"><h2>'+a.t+'</h2><p>'+a.d+'</p><p class="why">✦ '+why+'</p><button class="btn-g" data-go="player" id="d-play">▶ Listen now</button></div></div><div style="text-align:center;margin-top:14px"><button class="btn-t" id="d-again">↺ Retake</button></div>';
+  $('#d-again').onclick=()=>{dv=[];o.classList.remove('reveal-orb');dStep(0)};guide('code','Press listen. Let it land.','player')}}
 function thumb(a){if(a.img)return "background-image:url('"+a.img+"')";const G=['#e8c873,#6b4a1f','#3fd6c8,#0c3b3a','#fff1c4,#b8913f','#8a6a45,#1d1a16','#3fd6c8,#e8c873','#5b5f66,#e8c873'];let h=0;for(const ch of a.s)h=(h*31+ch.charCodeAt(0))>>>0;return 'background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.5),transparent 55%),linear-gradient(135deg,'+G[h%G.length]+')'}
 
 // ===== Library =====
