@@ -6267,7 +6267,10 @@ if (forceComplete) { goDay(3); }
   /* Arrival welcome header */
   body.lux-home .lux-head .lux-sub, body.lux-home .lux-head .lux-crest { display: none !important; }
   body.lux-home .lux-head { padding-top: 22px; margin-bottom: 26px !important; }
-  body.lux-home .lux-welcome .lux-greet-1 { font-size: 40px; line-height: 1.1; white-space: normal; text-align: center; }
+  body.lux-home .lux-welcome .lux-greet-1 { font-size: 36px; line-height: 1.1; white-space: normal; text-align: center; }
+  @media (max-width: 760px) { body.lux-home .lux-head { padding-top: 10px; margin-bottom: 20px !important; } body.lux-home .lux-welcome .lux-greet-1 { font-size: 33px; white-space: nowrap; } }
+  /* Home = welcome, prompt, doors, tab bar. My Revolution (resume / Shifts / Favorites) and footer stay on their own page */
+  body.lux-home:not(.lux-rev-page) #my-revolution, body.lux-home:not(.lux-rev-page) > footer, body.lux-home:not(.lux-rev-page) .lux-cue { display: none !important; }
   body.lux-home .lux-prompt { margin: 16px 0 0; text-align: center; font-size: 18px; line-height: 1.4; color: rgba(255,248,232,0.86); font-style: normal; letter-spacing: .01em; }
   body.lux-home .lux-prompt-b { display: block; color: #E2BE68; font-weight: 600; margin-top: 2px; }
   body #lux-portals .lux-portal:not(#lux-portal-chat-arch) .lux-portal-desc, body #lux-portals #lux-portal-chat .lux-portal-desc { white-space: normal !important; }
