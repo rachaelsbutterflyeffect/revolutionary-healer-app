@@ -6158,6 +6158,8 @@ if (forceComplete) { goDay(3); }
     body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-kicker { margin-bottom: 4px; }
     body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-desc { font-size: 15.5px; margin-top: 4px; }
   }
+  body.lux-home #my-revolution::after { display: none !important; }
+  @media (max-width: 760px) and (min-height: 701px) { body #lux-portals #lux-portal-chat { height: clamp(172px, 22vh, 210px) !important; } body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) { min-height: clamp(128px, 16vh, 156px); } }
   @media (prefers-reduced-motion: reduce) { body #lux-portals .lux-door > .lux-portal { animation: none !important; } }
 </style>
 
