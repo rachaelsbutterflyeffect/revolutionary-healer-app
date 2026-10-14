@@ -6129,6 +6129,35 @@ if (forceComplete) { goDay(3); }
   body #lux-portals #lux-portal-chat .lux-portal-enter { grid-column: 2; grid-row: 5; margin: 0; padding-top: 9px !important; font-size: 10px; letter-spacing: .28em !important; padding-left: .28em; }
   body #lux-portals #lux-portal-chat .lux-portal-enter::before, body #lux-portals #lux-portal-chat .lux-portal-enter::after { display: block !important; width: 14px; }
   @media (max-height: 700px) and (max-width: 760px) { body #lux-portals #lux-portal-chat { height: 120px !important; grid-template-columns: 74px 1fr; } body #lux-portals #lux-portal-chat .lux-portal-icon { width: 56px !important; height: 56px !important; } body #lux-portals #lux-portal-chat .lux-portal-name { font-size: 25px !important; } body #lux-portals #lux-portal-chat .lux-portal-enter { padding-top: 5px !important; } }
+  /* ===== Doors v3 sizing (Oct 14): bigger cards, more air; still all three above the fold ===== */
+  body #lux-portals #lux-portal-chat .lux-portal-frame::before { display: none !important; }
+  @media (max-width: 760px) and (min-height: 701px) {
+    body #lux-portals.lux-portals { gap: 16px; }
+    body #lux-portals #lux-portal-chat { height: 172px !important; grid-template-columns: 104px 1fr; padding: 0 22px 0 30px !important; }
+    body #lux-portals #lux-portal-chat .lux-portal-icon { width: 80px !important; height: 80px !important; }
+    body #lux-portals #lux-portal-chat .lux-portal-name { font-size: 33px !important; }
+    body #lux-portals #lux-portal-chat .lux-portal-rule { margin: 10px 0 9px; }
+    body #lux-portals #lux-portal-chat .lux-portal-desc { font-size: 16.5px; }
+    body #lux-portals #lux-portal-chat .lux-portal-enter { padding-top: 12px !important; font-size: 10.5px; }
+    body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) { min-height: 128px; padding: 20px 20px !important; column-gap: 18px; grid-template-columns: 60px 1fr 18px; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-icon { width: 60px !important; height: 60px !important; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-icon svg { width: 32px; height: 32px; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-kicker { font-size: 11px; margin-bottom: 6px; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-name { font-size: 26px !important; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-desc { font-size: 16.5px; margin-top: 6px; }
+  }
+  @media (max-width: 760px) and (max-height: 700px) {
+    body.lux-home .lux-eyebrow { display: none; }
+    body #lux-portals.lux-portals { gap: 11px; }
+    body #lux-portals #lux-portal-chat { height: 128px !important; grid-template-columns: 82px 1fr; }
+    body #lux-portals #lux-portal-chat .lux-portal-icon { width: 62px !important; height: 62px !important; }
+    body #lux-portals #lux-portal-chat .lux-portal-name { font-size: 27px !important; }
+    body #lux-portals #lux-portal-chat .lux-portal-desc { font-size: 15.5px; }
+    body #lux-portals .lux-door > .lux-portal:not(#lux-portal-chat) { min-height: 104px; padding: 14px 18px !important; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-name { font-size: 23px !important; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-kicker { margin-bottom: 4px; }
+    body #lux-portals .lux-portal:not(#lux-portal-chat) .lux-portal-desc { font-size: 15.5px; margin-top: 4px; }
+  }
   @media (prefers-reduced-motion: reduce) { body #lux-portals .lux-door > .lux-portal { animation: none !important; } }
 </style>
 
