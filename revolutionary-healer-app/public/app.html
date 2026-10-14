@@ -6282,6 +6282,10 @@ if (forceComplete) { goDay(3); }
   body #lux-portals .lux-portal .lux-portal-name, body #lux-portals .lux-portal .lux-portal-rule { display: none !important; }
   body #lux-portals .lux-portal .lux-portal-desc { grid-column: 2 !important; grid-row: 1 / span 3 !important; align-self: center; margin: 0 !important; font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif; font-weight: 600; font-style: normal; font-size: 23px !important; line-height: 1.18 !important; color: #F1D58A !important; white-space: normal !important; letter-spacing: .005em; }
   @media (max-width: 760px) and (max-height: 700px) { body #lux-portals .lux-portal .lux-portal-desc { font-size: 20.5px !important; } }
+  /* Door order: Code Upgrade, GAP Method(TM), Chatbot */
+  #lux-portals > .lux-door:has(#lux-portal-codepull) { order: 1; }
+  #lux-portals > .lux-door:has(#gap-method-starter-btn) { order: 2; }
+  #lux-portals > .lux-door:has(#lux-portal-chat) { order: 3; }
   /* Ask Rachael anything + Go deeper */
   body.lux-home #hero-section { height: auto !important; min-height: 0 !important; overflow: visible !important; }
   .lux-ask, .lux-deeper { width: 100%; max-width: 760px; margin: 34px auto 0; padding: 0 16px; position: relative; z-index: 2; text-align: left; }
