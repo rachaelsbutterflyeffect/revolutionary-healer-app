@@ -60,10 +60,13 @@ function verifyKajabiSignature(req: NextRequest, rawBody: string): boolean {
   // Set KAJABI_WEBHOOK_SECRET in Vercel and use that exact value as the
   // ?secret= query param when pasting the Purchase Webhook URL into Kajabi
   // (Sales -> Offers -> offer -> "..." -> Webhooks -> Purchase Webhook URL).
-  const expected = process.env.KAJABI_WEBHOOK_SECRET;
-  if (!expected) return false;
+  // KAJABI_CCM_WEBHOOK_SECRET (Oct 14 2026): a second accepted secret for the
+  // two Clear Channel Method offers, so the existing secret (already used by
+  // other Kajabi webhooks) never has to be rotated or revealed.
   const provided = req.nextUrl.searchParams.get("secret");
-  return provided === expected;
+  if (!provided) return false;
+  const accepted = [process.env.KAJABI_WEBHOOK_SECRET, process.env.KAJABI_CCM_WEBHOOK_SECRET].filter(Boolean);
+  return accepted.includes(provided);
 }
 
 export async function POST(req: NextRequest) {

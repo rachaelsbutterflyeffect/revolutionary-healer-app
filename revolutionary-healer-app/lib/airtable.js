@@ -596,10 +596,10 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
     // Unknown-offer guard (CCM card release, Oct 14 2026). Clear Channel
     // Method offers are a separate program: they must never create or touch a
     // Revolutionary Healer Members row. When CCM_TRACKING is on they mark the
-    // buyer CCM-purchased (so the card/bot stop selling to them). Other offer
-    // IDs that are in none of the configured lists are ignored too, but only
-    // when MEMBER_OFFER_IDS is configured -- with it empty every offer has
-    // always counted as a membership, and that is left unchanged.
+    // buyer CCM-purchased (so the card/bot stop selling to them). Every other
+    // offer ID keeps its existing behaviour: the live webhook already receives
+    // several non-CCM offer IDs (Oct 2026 WebhookEvents) whose list membership
+    // could not be verified, so they are deliberately not filtered here.
     if (offerId && isCcmOffer(offerId) && !isMemberOffer && !isTierOffer && !isGapMethodOffer) {
         if (!isCancellation && ccmTrackingEnabled()) {
             try {
@@ -610,9 +610,6 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
                 throw err; // retried by the webhook cron; still never a Members row
             }
         }
-        return { memberRecordId: "", outcome: "ignored_offer" };
-    }
-    if (offerId && MEMBER_OFFER_IDS.length && !isMemberOffer && !isTierOffer && !isGapMethodOffer) {
         return { memberRecordId: "", outcome: "ignored_offer" };
     }
 
