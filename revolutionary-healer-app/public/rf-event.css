@@ -1,0 +1,48 @@
+/* Featured Activation event on Home (refresh only; loaded only with featuredEvent). An "event marquee": no glass card,
+   a charcoal stage with full-width gold rules, the event art as a poster, rising embers and a slow light sweep.
+   Motion is transform/opacity only, runs only while on screen, and rests while scrolling. No blur filters. */
+.rf-event { position:relative; margin:40px -20px 6px; padding:22px 0 26px; text-align:center; color:#fdfbf5;
+  background:radial-gradient(90% 55% at 50% 100%,rgba(232,150,60,.20),transparent 70%),radial-gradient(70% 40% at 50% 0%,rgba(232,200,115,.10),transparent 70%),linear-gradient(180deg,#0b0907 0%,#07060a 55%,#0a0705 100%);
+  contain:layout paint; }
+.rf-ev-rule { height:1px; margin:0 0 18px; background:linear-gradient(90deg,transparent,rgba(232,200,115,.85) 18%,#fff1c4 50%,rgba(232,200,115,.85) 82%,transparent); box-shadow:0 0 12px rgba(232,200,115,.45); }
+.rf-ev-rule-b { margin:26px 0 0; }
+.rf-ev-eyebrow { display:inline-flex; align-items:center; gap:12px; font-family:Cinzel,serif; font-weight:600; font-size:11px; letter-spacing:.32em; text-transform:uppercase; color:#e8c873; margin:0 0 16px; }
+.rf-ev-dot { width:6px; height:6px; border-radius:50%; background:#fff1c4; box-shadow:0 0 10px 2px rgba(232,200,115,.85); }
+.rf-ev-x { all:unset; cursor:pointer; position:absolute; top:24px; right:12px; width:36px; height:36px; border-radius:50%; display:grid; place-items:center; font-size:20px; line-height:1; color:rgba(255,241,196,.8); border:1px solid rgba(232,200,115,.35); background:rgba(6,8,11,.6); z-index:3; -webkit-tap-highlight-color:transparent; }
+.rf-ev-poster { all:unset; cursor:pointer; position:relative; display:block; width:100%; overflow:hidden; aspect-ratio:900/506; border-top:1px solid rgba(232,200,115,.55); border-bottom:1px solid rgba(232,200,115,.55); box-shadow:0 0 40px rgba(232,170,80,.28),0 24px 60px rgba(0,0,0,.6); -webkit-tap-highlight-color:transparent; }
+.rf-ev-poster img { display:block; width:100%; height:100%; object-fit:cover; }
+.rf-ev-poster:active { transform:scale(.99); }
+.rf-ev-sweep { position:absolute; inset:0 auto 0 0; width:45%; pointer-events:none; background:linear-gradient(100deg,transparent,rgba(255,244,214,.20) 50%,transparent); transform:translateX(-120%) skewX(-12deg); will-change:transform; }
+.rf-ev-embers { position:absolute; inset:0; pointer-events:none; }
+.rf-ev-embers i { position:absolute; bottom:-8px; width:4px; height:4px; border-radius:50%; background:#ffd27a; box-shadow:0 0 8px 2px rgba(255,180,70,.7); opacity:0; will-change:transform,opacity; }
+.rf-ev-embers i:nth-child(1){left:8%} .rf-ev-embers i:nth-child(2){left:19%;width:3px;height:3px} .rf-ev-embers i:nth-child(3){left:31%}
+.rf-ev-embers i:nth-child(4){left:44%;width:3px;height:3px} .rf-ev-embers i:nth-child(5){left:56%} .rf-ev-embers i:nth-child(6){left:67%;width:3px;height:3px}
+.rf-ev-embers i:nth-child(7){left:78%} .rf-ev-embers i:nth-child(8){left:88%;width:3px;height:3px} .rf-ev-embers i:nth-child(9){left:95%}
+.rf-ev-title { margin:22px 20px 0; font-family:Cinzel,serif !important; font-weight:600; font-size:clamp(26px,7.4vw,34px); letter-spacing:.12em; line-height:1.1; text-transform:uppercase;
+  background:linear-gradient(180deg,#fffbe8 0%,#fff1c4 40%,#e8c873 75%,#b8913f 100%); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.rf-ev-tag { margin:10px 24px 0; font-family:"Cormorant Garamond",Georgia,serif; font-size:19px; line-height:1.35; color:rgba(253,251,245,.9); }
+.rf-ev-cta { all:unset; box-sizing:border-box; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:12px; margin:20px auto 0; padding:15px 28px; min-width:min(320px,calc(100% - 40px)); border-radius:999px;
+  font-family:Cinzel,serif; font-size:13px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:#1a1305; background:linear-gradient(135deg,#fff1c4,#e8c873 55%,#c9a24e); box-shadow:0 0 30px rgba(255,200,110,.55),inset 0 1px 0 rgba(255,255,255,.6); -webkit-tap-highlight-color:transparent; }
+.rf-ev-cta:active { transform:scale(.97); }
+.rf-ev-play { width:22px; height:22px; border-radius:50%; display:grid; place-items:center; background:#1a1305; color:#fff1c4; }
+/* motion: only while on screen; rests while scrolling / switching pages */
+.rf-event.rf-ev-live .rf-ev-sweep { animation:rf-ev-sweep 7.5s ease-in-out 1.2s infinite; }
+.rf-event.rf-ev-live .rf-ev-embers i { animation:rf-ev-ember 8s linear infinite; }
+.rf-event.rf-ev-live .rf-ev-dot { animation:rf-ev-pulse 2.4s ease-in-out infinite; }
+.rf-ev-embers i:nth-child(2){animation-delay:1.6s!important} .rf-ev-embers i:nth-child(3){animation-delay:3.1s!important} .rf-ev-embers i:nth-child(4){animation-delay:.7s!important}
+.rf-ev-embers i:nth-child(5){animation-delay:4.4s!important} .rf-ev-embers i:nth-child(6){animation-delay:2.3s!important} .rf-ev-embers i:nth-child(7){animation-delay:5.6s!important}
+.rf-ev-embers i:nth-child(8){animation-delay:3.8s!important} .rf-ev-embers i:nth-child(9){animation-delay:6.5s!important}
+body.rf.rf-busy .rf-event * { animation-play-state:paused !important; }
+@keyframes rf-ev-sweep { 0%,55% { transform:translateX(-120%) skewX(-12deg); } 85%,100% { transform:translateX(330%) skewX(-12deg); } }
+@keyframes rf-ev-ember { 0% { transform:translate3d(0,0,0); opacity:0; } 12% { opacity:.95; } 100% { transform:translate3d(22px,-210px,0); opacity:0; } }
+@keyframes rf-ev-pulse { 0%,100% { opacity:.55; transform:scale(.85); } 50% { opacity:1; transform:scale(1.2); } }
+@media (prefers-reduced-motion: reduce) { .rf-event * { animation:none !important; } .rf-ev-embers { display:none; } }
+/* desktop + iPad: the event sits in the content column, edge to edge, as its own framed stage */
+@media (min-width:820px) {
+  .rf-event { margin:48px 0 8px; padding:26px 28px 30px; border-radius:30px; border:1px solid rgba(232,200,115,.32); box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 60px rgba(232,170,80,.12); }
+  .rf-ev-rule { margin:0 -28px 20px; } .rf-ev-rule-b { margin:28px -28px 0; }
+  .rf-ev-poster { border:1px solid rgba(232,200,115,.55); border-radius:18px; }
+  .rf-ev-x { top:26px; right:22px; }
+  .rf-ev-title { font-size:36px; } .rf-ev-tag { font-size:21px; }
+  .rf-ev-cta { min-width:300px; }
+}

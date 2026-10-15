@@ -13,6 +13,7 @@ export const FEATURES = {
   saveSections: "SAVE_SECTIONS", // My Revolution: GAP / Shifting Cards / Codes sections + every code pull saved
   methodTracking: "METHOD_TRACKING", // My Revolution stat row: GAP SCANS / SHIFTS / CODES
   codeShifts: "CODE_SHIFTS", // Shift the codes: save a pulled code as a Code Upgrade Shift
+  featuredEvent: "FEATURED_EVENT", // Home: this month's Featured Activation event (public/rf-event.js config)
 };
 
 export function featureAllowed(key, email, env = process.env) {
