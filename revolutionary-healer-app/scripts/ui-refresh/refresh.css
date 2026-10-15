@@ -454,6 +454,9 @@ body.rf.rf-busy .page-view .section-head h2, body.rf.rf-busy #my-revolution .sec
 body.rf #hero-gap-embed.gm-modal { transition:transform .22s cubic-bezier(.2,.9,.3,1), opacity .16s ease !important; }
 body.rf #hero-gap-embed.gm-modal .card, body.rf #hero-gap-embed.gm-modal .view.active { animation-duration:.2s !important; }
 body.rf #gm-backdrop { transition-duration:.16s !important; }
+/* GAP Method™ on phones: the full-screen sheet's pulsing glow (an animated 110px box-shadow) made the first frame
+   after the tap the slowest one by far; on phones the glow stays, it just doesn't pulse. */
+@media (max-width:600px) { html body.rf #hero-gap-embed.gm-modal.gm-in { animation:none !important; } }
 
 /* ---------- activation page: player, then Tell Me What You Experienced + favourite, then what it is for ---------- */
 body.rf #activation-detail-page .rf-xpblock { margin-top:22px !important; }
