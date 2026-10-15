@@ -63,8 +63,8 @@
         if (p.s > 1.5 && al > .75) { x.strokeStyle = 'rgba(255,241,196,' + (al * .55) + ')'; x.lineWidth = .7; x.beginPath(); x.moveTo(px - 4, py); x.lineTo(px + 4, py); x.moveTo(px, py - 4); x.lineTo(px, py + 4); x.stroke(); } }); x.shadowBlur = 0; }
     size(); addEventListener('resize', function () { size(); if (RM) draw(0); });
     if (window.IntersectionObserver) new IntersectionObserver(function (es) { vis = es[0].isIntersecting; }).observe(c);
-    if (RM) { draw(0); return; }
-    var T = 0; (function loop() { requestAnimationFrame(loop); if (!vis || document.body.getAttribute('data-rf') !== 'fit') return; var g = dProg(); T += .022 * (1 + g * .6); P.forEach(function (p) { p.a += p.sp * (1 + g * .8); }); draw(T); })();
+    if (RM) { document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-rf-go="fit"]')) setTimeout(function () { size(); draw(0); }, 50); }); draw(0); return; }
+    var T = 0; (function loop() { requestAnimationFrame(loop); if (!vis || document.body.getAttribute('data-rf') !== 'fit') return; if (c.clientWidth && c.clientWidth !== S) size(); var g = dProg(); T += .022 * (1 + g * .6); P.forEach(function (p) { p.a += p.sp * (1 + g * .8); }); draw(T); })();
   }
   function mount() {
     var home = document.getElementById('rf-home'); if (!home || document.getElementById('rf-fit')) return;
