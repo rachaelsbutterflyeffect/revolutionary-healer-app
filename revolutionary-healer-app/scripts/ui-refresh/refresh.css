@@ -250,7 +250,15 @@ body.rf .rh-msg-user { align-self:flex-end; background:linear-gradient(135deg,va
 body.rf .rh-msg-assistant { align-self:flex-start; background:none !important; border:0 !important; border-left:2px solid rgba(63,214,200,.6) !important; border-radius:0 !important; padding:0 0 0 14px !important; color:#fdfbf5 !important; }
 body.rf .rh-msg-link { color:var(--rf-gold2) !important; }
 body.rf .rh-activation-btn { border-radius:999px !important; background:linear-gradient(135deg,var(--rf-gold2),var(--rf-gold)) !important; color:#1a1305 !important; }
-body.rf .rh-thinking-dots span, body.rf .rh-thinking span { background:var(--rf-gold) !important; }
+/* thinking state (Oct 15 fix): only the three dots are gold; the line is open, readable text; no progress bar.
+   (The old rule painted EVERY span inside .rh-thinking gold, so the text sat in a solid gold block and the
+   dots' wrapper showed as a stray gold dash.) */
+body.rf .rh-thinking { align-self:flex-start; display:flex !important; flex-direction:column; align-items:flex-start; gap:6px; padding:2px 0 2px 14px !important; border-left:2px solid rgba(63,214,200,.35); font-style:normal !important; background:none !important; }
+body.rf .rh-thinking-row { display:flex; align-items:center; gap:10px; }
+body.rf .rh-thinking-dots { display:flex; gap:4px; background:none !important; }
+body.rf .rh-thinking-dots span { width:6px; height:6px; border-radius:50%; background:var(--rf-gold) !important; box-shadow:0 0 8px rgba(255,214,130,.55); }
+body.rf .rh-thinking-text { background:none !important; color:rgba(253,251,245,.86) !important; font-size:14.5px; line-height:1.5; font-style:normal !important; }
+body.rf .rh-thinking-bar { display:none !important; }
 body.rf .rh-scroll-down-wrap { position:relative; height:0; }
 body.rf .rh-scroll-down-btn { background:rgba(20,18,15,.9) !important; color:var(--rf-gold2) !important; border:1px solid var(--rf-gold) !important; box-shadow:0 0 14px rgba(207,166,70,.55) !important; }
 body.rf .rh-chat-inputrow { display:flex; gap:10px; align-items:flex-end; padding:10px 2px 6px !important; background:none !important; border:0 !important; }
@@ -295,3 +303,60 @@ body.rf.gm-lock > *:not(#hero-gap-embed):not(#gm-backdrop):not(#rf-sky):not(.rf-
 /* locked-Activation toast sits above the nav */
 body.rf .locked-activation-toast{bottom:calc(env(safe-area-inset-bottom,0px) + 104px);width:max-content;max-width:calc(100vw - 32px);font-family:inherit;font-style:normal}
 body.rf .locked-activation-toast:not(.active){visibility:hidden}
+
+/* ===== Oct 15 round 2 ===== */
+/* chat: the thread is the only scroller; nothing behind it bounces */
+body.rf[data-rf="chat"] { overflow:hidden; overscroll-behavior:none; }
+html.rf-html:has(body.rf[data-rf="chat"]) { overflow:hidden; overscroll-behavior:none; }
+body.rf .rh-chat-thread { overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+/* keyboard open: give the thread the room (the back row steps aside, header tightens) */
+body.rf.rf-kb[data-rf="chat"] #rf-chat-head { display:none !important; }
+body.rf.rf-kb #hero-section .rh-chat-header { padding-top:4px !important; padding-bottom:4px !important; }
+/* chat topic bubbles (mock-up chat screen) */
+body.rf .rf-topics { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:2px 0 0; }
+body.rf .rf-topics[hidden] { display:none !important; }
+body.rf .rf-topic { all:unset; cursor:pointer; padding:10px 14px; border-radius:999px; font-size:14px; color:#fdfbf5; border:1px solid rgba(160,255,245,.5); background:rgba(63,214,200,.14); box-shadow:0 0 16px rgba(63,214,200,.25); transition:transform .2s; -webkit-tap-highlight-color:transparent; }
+body.rf .rf-topic:active { transform:scale(.96); }
+/* Shifting cards: tap opens the card in place with its activation (mock-up) */
+body.rf .rf-sbub { -webkit-tap-highlight-color:transparent; transition:transform .45s cubic-bezier(.2,.8,.2,1), border-radius .45s, box-shadow .45s; }
+body.rf .rf-sbub .rf-cue { font-size:10.5px; color:var(--rf-gold2); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+body.rf .rf-sbub.open { border-color:rgba(255,236,190,.45); box-shadow:0 14px 44px rgba(0,0,0,.45),0 0 34px rgba(255,214,130,.28),inset 0 1px 0 rgba(255,255,255,.2); }
+body.rf .rf-xp { flex-basis:100%; display:flex; align-items:center; gap:12px; margin-top:4px; padding-top:12px; border-top:1px solid rgba(255,236,190,.16); }
+body.rf .rf-xth { flex:none; width:46px; height:46px; border-radius:12px; background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.5),transparent 55%),linear-gradient(135deg,#e8c873,#6b4a1f); background-size:cover; background-position:center; box-shadow:0 0 14px rgba(255,214,130,.35); display:flex; align-items:center; justify-content:center; color:#1a1305; }
+body.rf .rf-xb { flex:1; min-width:0; } body.rf .rf-xt { font-family:"Cormorant Garamond",Georgia,serif; font-size:17px; font-weight:600; color:#fff; line-height:1.2; } body.rf .rf-xl { font-size:12px; color:#fffb; line-height:1.35; margin-top:2px; }
+body.rf .rf-xlisten { all:unset; flex:none; cursor:pointer; padding:10px 14px; border-radius:999px; font-family:Cinzel,serif; font-size:11px; letter-spacing:.12em; color:#1a1305; background:linear-gradient(135deg,var(--rf-gold2),var(--rf-gold)); box-shadow:0 0 18px rgba(255,214,130,.5); }
+body.rf .rf-xfoot { flex-basis:100%; display:flex; justify-content:flex-end; }
+body.rf .rf-del { all:unset; cursor:pointer; font-size:11.5px; letter-spacing:.06em; color:rgba(253,251,245,.55); padding:6px 4px; border-bottom:1px solid rgba(253,251,245,.25); }
+body.rf .rf-del:active { color:#fdfbf5; }
+body.rf #shift-modal.rf-silent { visibility:hidden !important; }
+/* Today's Focus: doors + reading + change focus */
+body.rf [data-role="focus-card"] { cursor:pointer; -webkit-tap-highlight-color:transparent; }
+body.rf .rf-fx { margin-top:16px; }
+body.rf .rf-fdoors { display:flex; flex-direction:column; gap:10px; }
+body.rf .rf-fdoor { all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:18px; color:#fdfbf5; font-family:"Cormorant Garamond",Georgia,serif; font-size:18px; font-weight:600; background:linear-gradient(135deg,rgba(255,255,255,.09),rgba(255,255,255,.02)); border:1px solid rgba(255,236,190,.24); }
+body.rf .rf-fdoor span { color:var(--rf-gold2); font-size:14px; width:18px; text-align:center; }
+body.rf .rf-freading { margin-top:12px; padding:14px 16px; border-radius:16px; background:rgba(0,0,0,.25); border:1px solid rgba(255,236,190,.14); }
+body.rf .rf-freading p { color:rgba(253,251,245,.86); font-size:14px; line-height:1.6; margin:0 0 10px; } body.rf .rf-freading p:last-child { margin:0; }
+body.rf .rf-fchange { all:unset; cursor:pointer; display:block; margin:16px auto 0; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--rf-gold2); border-bottom:1px solid rgba(255,214,130,.4); padding:4px 2px; }
+body.rf .rf-fchange[hidden] { display:none !important; }
+body.rf .rf-pick { max-height:70vh; display:flex; flex-direction:column; }
+body.rf .rf-pick-list { overflow-y:auto; display:flex; flex-direction:column; gap:8px; margin:6px 0 12px; }
+body.rf .rf-pick-item { all:unset; cursor:pointer; display:flex; flex-direction:column; gap:2px; padding:12px 14px; border-radius:14px; border:1px solid rgba(255,236,190,.2); background:rgba(255,255,255,.04); color:#fdfbf5; }
+body.rf .rf-pick-item b { font-family:"Cormorant Garamond",Georgia,serif; font-size:18px; color:#F8E7B0; } body.rf .rf-pick-item small { font-size:12px; color:#fffa; }
+body.rf .rf-pick-item.on { border-color:var(--rf-gold); box-shadow:0 0 14px rgba(255,214,130,.3); }
+/* Activations: sections (mock-up) -> a section's activations */
+body.rf .rf-lsecs { display:none; }
+body.rf[data-rf-lib="sections"] #activations-page .rf-lsecs { display:block; }
+body.rf[data-rf-lib="sections"] #activations-page #rf-lib-sub { display:none !important; }
+body.rf[data-rf-lib="cat"] #activations-page #gap-method-activations-subsection, body.rf[data-rf-lib="cat"] #activations-page .section-head { display:none !important; }
+body.rf .rf-lsec { all:unset; box-sizing:border-box; position:relative; display:block; width:100%; cursor:pointer; margin-top:16px; border-radius:24px; overflow:hidden; min-height:150px; border:1px solid rgba(255,236,190,.3); box-shadow:0 10px 40px rgba(0,0,0,.35),0 0 30px rgba(255,214,130,.15); transition:transform .2s; -webkit-tap-highlight-color:transparent; }
+body.rf .rf-lsec:active { transform:scale(.98); }
+body.rf .rf-lsec .bgc { position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(.9); }
+body.rf .rf-lsec:after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(6,8,11,.1),rgba(6,8,11,.85)); pointer-events:none; }
+body.rf .rf-lsec .in { position:relative; z-index:1; display:block; padding:70px 18px 16px; }
+body.rf .rf-lsec b { display:block; font-family:Cinzel,serif; font-weight:600; font-size:20px; color:var(--rf-gold2); text-shadow:0 0 18px rgba(255,214,130,.6); }
+body.rf .rf-lsec small { font-size:12px; color:#fffc; letter-spacing:.1em; }
+body.rf .rf-lsec .arr { position:absolute; right:16px; bottom:16px; z-index:1; color:var(--rf-gold); font-size:20px; }
+body.rf .rf-allsecs { display:none; } body.rf[data-rf-lib="cat"] .rf-allsecs { display:inline-flex; margin:6px 0 10px; }
+body.rf .rf-sec-ttl { display:none; } body.rf[data-rf-lib="cat"] .rf-sec-ttl { display:block; font-family:Cinzel,serif; letter-spacing:.2em; text-transform:uppercase; font-size:13px; color:var(--rf-gold); margin:4px 0 12px; }
+body.rf[data-rf-lib="cat"] #rf-lib-sub .filter-chip[data-category="All"] { display:none !important; }

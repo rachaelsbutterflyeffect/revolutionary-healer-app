@@ -12,6 +12,12 @@ import { getMemberByEmail, normalizeEmail } from "@/lib/airtable";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
+// Oct 15 2026: the Members table + profile_photo field ids differ per Airtable base (the TEST base is a
+// copy with new ids). Env overrides let a preview point at its own base; the defaults are production's
+// ids, so production behaviour is byte-for-byte unchanged when these are not set.
+const MEMBERS_TABLE_ID = () => process.env.AIRTABLE_MEMBERS_TABLE_ID || "tblst1afWTBfy5OQC";
+const PHOTO_FIELD_ID = () => process.env.AIRTABLE_PHOTO_FIELD_ID || "flda1tG8E0chadCwk";
+
 function airtableCreds() {
   const apiKey = process.env.AIRTABLE_API_KEY;
   const baseId = process.env.AIRTABLE_BASE_ID;
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     const { apiKey, baseId } = airtableCreds();
     const res = await fetch(
-      `https://content.airtable.com/v0/${baseId}/${member.id}/flda1tG8E0chadCwk/uploadAttachment`,
+      `https://content.airtable.com/v0/${baseId}/${member.id}/${PHOTO_FIELD_ID()}/uploadAttachment`,
       {
         method: "POST",
         headers: {
@@ -80,7 +86,7 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    const photo = data?.fields?.flda1tG8E0chadCwk;
+    const photo = data?.fields?.[PHOTO_FIELD_ID()] ?? data?.fields?.profile_photo;
     const url = Array.isArray(photo) && photo[0]?.url ? photo[0].url : null;
     return NextResponse.json({ ok: true, url });
   } catch (err) {
@@ -99,7 +105,7 @@ export async function DELETE(req: NextRequest) {
     if (!member) return NextResponse.json({ error: "Member not found." }, { status: 404 });
 
     const { apiKey, baseId } = airtableCreds();
-    const res = await fetch(`https://api.airtable.com/v0/${baseId}/tblst1afWTBfy5OQC/${member.id}`, {
+    const res = await fetch(`https://api.airtable.com/v0/${baseId}/${MEMBERS_TABLE_ID()}/${member.id}`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${apiKey}`,

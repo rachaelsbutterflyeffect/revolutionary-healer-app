@@ -6,7 +6,7 @@
 (function () {
   if (typeof RH_EMAIL === 'undefined' || !RH_EMAIL) return;
   var B = document.body, RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var SUPPORT = 'contactrachaelsbutterflyeffect@gmail.com';
+  var SUPPORT = 'Rachaelsbutterflyeffect@gmail.com';
   var MANAGE = 'https://www.rachaelsbutterflyeffect.com/settings/account';
   function $(s) { return document.querySelector(s); }
   function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
@@ -36,8 +36,37 @@
   var _showPage = window.showPage;
   showPage = window.showPage = function (id) {
     if (id === 'membership-management-page') { window.open(MANAGE, '_blank', 'noopener'); return; }
-    var r = _showPage.apply(this, arguments); curPage = id; rfGo('page'); return r;
+    var from = curPage, r = _showPage.apply(this, arguments); curPage = id; rfGo('page');
+    // back from an activation returns to the section it was opened from; any other way in starts at the sections
+    if (id === 'activations-page') { if (from === 'activation-detail-page' && B.getAttribute('data-rf-lib') === 'cat') {} else libSections(); }
+    return r;
   };
+  // ---------- Activations: four big sections (mock-up) -> that section's activations ----------
+  function libSections() {
+    B.setAttribute('data-rf-lib', 'sections');
+    document.querySelectorAll('#rf-lsecs .rf-lsec').forEach(function (b) {
+      var cat = b.getAttribute('data-rf-sec'), n = 0;
+      document.querySelectorAll('#activation-library-grid .media-card').forEach(function (c) { if ((c.getAttribute('data-category') || '').split(',').map(function (x) { return x.trim(); }).indexOf(cat) !== -1) n++; });
+      var el = b.querySelector('[data-rf-count]'); if (el) el.textContent = n;
+    });
+  }
+  function libSection(cat) {
+    var chip = document.querySelector('.category-chips .filter-chip[data-category="' + cat + '"]');
+    window.__rhLibExpanded = false;
+    var se = document.getElementById('rh-lib-search'); if (se) se.value = '';
+    if (chip) { try { selectCategoryChip(chip); } catch (e) { chip.click(); } }
+    var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + cat + '"] b'), tt = document.getElementById('rf-sec-ttl');
+    if (tt) tt.textContent = sec ? sec.textContent : cat;
+    B.setAttribute('data-rf-lib', 'cat');
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-rf-sec]'); if (b) { e.preventDefault(); libSection(b.getAttribute('data-rf-sec')); return; }
+    var a = e.target.closest && e.target.closest('[data-rf-allsecs]'); if (a) { e.preventDefault(); libSections(); try { window.scrollTo(0, 0); } catch (x) {} return; }
+    // the section tabs inside a section switch the title with them
+    var c = e.target.closest && e.target.closest('#rf-lib-sub .category-chips .filter-chip');
+    if (c && B.getAttribute('data-rf-lib') === 'cat') { var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + c.getAttribute('data-category') + '"] b'), tt = document.getElementById('rf-sec-ttl'); if (tt && sec) tt.textContent = sec.textContent; }
+  });
   var _goRev = window.goToMyRevolution;
   goToMyRevolution = window.goToMyRevolution = function () { var r = _goRev.apply(this, arguments); curPage = null; rfGo('rev'); return r; };
   var _openChat = window.rhOpenChatWithMessage;
@@ -90,12 +119,65 @@
     var tries = 0;
     (function go() {
       if (window.__rhSending && tries++ < 240) { setTimeout(go, 250); return; }
-      try { if (typeof rhStartNewChat === 'function') rhStartNewChat(); } catch (err) {}
-      var input = document.getElementById('chat-input');
-      if (input) { input.value = text; try { sendHeroChat(); } catch (err) {} }
-      toBottom();
+      newChatNoKeyboard();
+      sendNoKeyboard(text);
     })();
   });
+
+  // ---------- chat: no keyboard unless the member taps the message box ----------
+  // Live rhStartNewChat() ends with input.focus(): on iPhone that pops the keyboard (squashing the thread)
+  // and scrolls the page to the box. In the refresh a lane, a topic bubble or the + button never focus it.
+  function noFocus(fn) {
+    var i = document.getElementById('chat-input'), y = window.scrollY;
+    if (i) i.focus = function () {};
+    try { return fn(); } finally { if (i) delete i.focus; if (window.scrollY !== y) window.scrollTo(0, y); }
+  }
+  function newChatNoKeyboard() { noFocus(function () { try { if (typeof rhStartNewChat === 'function') rhStartNewChat(); } catch (err) {} }); syncTopics(); }
+  function sendNoKeyboard(text) {
+    var input = document.getElementById('chat-input'); if (!input) return;
+    var a = document.activeElement; if (a === input) input.blur();
+    input.value = text; removeTopics();
+    noFocus(function () { try { sendHeroChat(); } catch (err) {} });
+    toBottom();
+  }
+  // the header + and the drawer's New chat: same new chat, the page does not move, no keyboard
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('#rh-new-chat-top-btn, #rh-new-chat-btn'); if (!b) return;
+    e.preventDefault(); e.stopImmediatePropagation();
+    var th = document.getElementById('rh-chat-thread');
+    newChatNoKeyboard(); if (th) th.scrollTop = 0;
+  }, true);
+
+  // ---------- chat topic bubbles (mock-up chat screen): shown with the welcome on an empty chat ----------
+  var TOPICS = ['Continue a shift', 'Something feels off', 'I want clarity', 'Help me with a decision'];
+  function topicsEl() {
+    var w = document.getElementById('rh-chat-welcome'); if (!w) return null;
+    var c = document.getElementById('rf-topics');
+    if (!c) {
+      c = document.createElement('div'); c.id = 'rf-topics'; c.className = 'rf-topics';
+      TOPICS.forEach(function (t) { var b = document.createElement('button'); b.type = 'button'; b.className = 'rf-topic'; b.textContent = t; b.onclick = function () { if (window.__rhSending) return; sendNoKeyboard(t); }; c.appendChild(b); });
+      w.parentNode.insertBefore(c, w.nextSibling);
+    }
+    return c;
+  }
+  function removeTopics() { var c = document.getElementById('rf-topics'); if (c) c.hidden = true; }
+  function syncTopics() {
+    var w = document.getElementById('rh-chat-welcome'), th = document.getElementById('rh-chat-thread'); if (!w || !th) return;
+    var empty = !th.querySelector('.rh-msg, .rh-thinking') && w.style.display !== 'none';
+    var c = topicsEl(); if (!c) return;
+    if (c.previousSibling !== w) w.parentNode.insertBefore(c, w.nextSibling);
+    c.hidden = !empty;
+  }
+  (function () {
+    var th = document.getElementById('rh-chat-thread'), w = document.getElementById('rh-chat-welcome');
+    if (!th) return;
+    var mo = new MutationObserver(function () { syncTopics(); });
+    mo.observe(th, { childList: true }); if (w) mo.observe(w, { attributes: true, attributeFilter: ['style'] });
+    syncTopics();
+  })();
+  // typing your own message also clears them (same as the mock-up)
+  var sendBtn0 = document.getElementById('hero-speak-btn');
+  if (sendBtn0) sendBtn0.addEventListener('click', function () { var i = document.getElementById('chat-input'); if (i && i.value.trim()) removeTopics(); }, true);
 
   // ---------- chat sizing: never under the nav, keyboard-aware ----------
   function isField(el) { return el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !/^(button|checkbox|radio|submit|reset|range|color|file|image)$/i.test(el.type || ''))); }
@@ -112,12 +194,16 @@
   function sizeChat() {
     var shell = document.getElementById('rh-chat-shell'); if (!shell || B.getAttribute('data-rf') !== 'chat') return;
     noteFull(); var kb = kbOpen(); B.classList.toggle('rf-kb', kb);
-    var vv = window.visualViewport, vh = vv ? vv.height : window.innerHeight;
-    var top = shell.getBoundingClientRect().top + (vv ? 0 : 0);
+    var vv = window.visualViewport, vh = vv ? vv.height : window.innerHeight, off = vv ? vv.offsetTop : 0;
+    // iOS: the keyboard shrinks the visual viewport and may scroll it (offsetTop); the layout viewport stays.
+    // Keep the page itself at the top so the chat header never slides away, and size the shell to what's visible.
+    if (kb && window.scrollY) { try { window.scrollTo(0, 0); } catch (e) {} }
+    var top = shell.getBoundingClientRect().top - off;
     if (top < 0 || top > vh) top = 70;
     var room = kb ? 8 : 104; // nav height + gap
-    shell.style.setProperty('--rf-chat-h', Math.max(220, Math.round(vh - top - room)) + 'px');
-    B.style.setProperty('--rf-chat-h', Math.max(220, Math.round(vh - top - room)) + 'px');
+    var hh = Math.max(kb ? 160 : 220, Math.round(vh - top - room));
+    shell.style.setProperty('--rf-chat-h', hh + 'px');
+    B.style.setProperty('--rf-chat-h', hh + 'px');
   }
   window.rfSizeChat = sizeChat;
   function toBottom() { var th = document.getElementById('rh-chat-thread'); if (th) setTimeout(function () { th.scrollTop = th.scrollHeight; }, 30); }
@@ -175,37 +261,143 @@
   });
 
   // ---------- Shifting cards + Embodied pill ----------
+  // Oct 15 2026 (Rachael, matches the mock-up): tapping a Shift does NOT open the enlarged Shift view. The card
+  // opens in place to show that Shift's own recommended activation (by the Shift's id) with a Listen button
+  // that goes straight to the activation. Each card keeps the one-tap Embodied pill and a small Delete.
+  // iOS: every card gets its own onclick (Safari only sends taps on plain <div>s to elements it sees as
+  // clickable), and the list is never rebuilt while a finger is down, so a tap can't land on a replaced node.
+  function actFor(s) {
+    var t = String((s && s.activation) || '').trim(); if (!t) return null;
+    var slug = null;
+    try { slug = rhSlugForActivationTitle(t); } catch (e) {}
+    var D = window.ACTIVATION_DETAILS || (typeof ACTIVATION_DETAILS !== 'undefined' ? ACTIVATION_DETAILS : {});
+    if (!slug) { var base = t.split(':')[0].trim().toLowerCase(); for (var k in D) { var dt = String(D[k].title || '').trim().toLowerCase(); if (dt === t.toLowerCase() || dt.split(':')[0].trim() === base) { slug = k; break; } } }
+    var d = slug && D[slug];
+    return { slug: d ? slug : null, title: (d && d.title ? d.title : t).split(':')[0], desc: d && d.description ? d.description : '', cover: d && d.cover ? d.cover : '' };
+  }
+  function shortText(d) { var w = String(d || '').replace(/\s+/g, ' ').trim().split(' '); if (w.length <= 12) return w.join(' '); return w.slice(0, 12).join(' ').replace(/[,;:.]+$/, '') + '…'; }
+  function openAct(s) {
+    var a = actFor(s);
+    if (a && a.slug) { try { closeShiftModal(); } catch (e) {} handleActivationCardClick(a.slug); }
+    else showPage('activations-page'); // no matching activation: the library, never a dead end
+  }
+  window.rfOpenShiftActivation = function (id) { var s = shiftById(id); if (s) openAct(s); };
+  function shiftById(id) { return (window.SHIFTS || []).filter(function (x) { return String(x.id) === String(id); })[0] || null; }
   function pillHtml(s) {
     return s.statusClass === 'embodied' ? '<span class="rf-pill emb">Embodied</span>'
       : '<button type="button" class="rf-pill" data-rf-emb="' + esc(s.id) + '">Mark Embodied</button>';
   }
+  var openId = null, fingerDown = false, pending = null;
+  function cardHtml(s) {
+    var a = actFor(s), open = String(openId) === String(s.id);
+    var xp = '';
+    if (open) {
+      xp = '<div class="rf-xp"><div class="rf-xth"' + (a && a.cover ? ' style="background-image:url(&quot;' + esc(a.cover) + '&quot;)"' : '') + ' aria-hidden="true">' + (a && a.cover ? '' : '✦') + '</div>' +
+        '<div class="rf-xb"><div class="rf-xt">' + esc(a ? a.title : 'Activation Library') + '</div><div class="rf-xl">' + esc(a && a.desc ? shortText(a.desc) : 'Open the library to choose your activation.') + '</div></div>' +
+        '<button type="button" class="rf-xlisten" data-rf-listen="' + esc(s.id) + '">▶ Listen</button></div>' +
+        '<div class="rf-xfoot"><button type="button" class="rf-del" data-rf-del="' + esc(s.id) + '">Delete Shift</button></div>';
+    }
+    return '<div class="rf-orb" aria-hidden="true">✦</div><div class="bt"><div class="src">' + esc(s.method || 'GAP Method') + '</div><div class="nm">' + esc(s.identity) + '</div><div class="fr">Current Frequency: ' + esc(s.frequency) + '</div><div class="dt">' + esc(s.date) + '</div>' +
+      (open ? '' : '<div class="rf-cue">▶ Tap to open your activation</div>') + '</div>' + pillHtml(s) + xp;
+  }
+  function wireCard(d, s) {
+    d.onclick = function (e) {
+      var t = e.target;
+      if (t.closest('[data-rf-emb]')) { e.stopPropagation(); embody(s.id, t.closest('[data-rf-emb]')); return; }
+      if (t.closest('[data-rf-listen]')) { e.stopPropagation(); openAct(s); return; }
+      if (t.closest('[data-rf-del]')) { e.stopPropagation(); cardDelete(s.id); return; }
+      if (t.closest('.rf-pill')) return;
+      openId = String(openId) === String(s.id) ? null : String(s.id); bubbles(window.SHIFTS || []);
+    };
+    d.onkeydown = function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target === d) { e.preventDefault(); d.onclick({ target: d, stopPropagation: function () {} }); } };
+  }
+  // Delete from a card: the same exact-id Delete flow (it checks the Shift loaded in the Shift view), with
+  // that view loaded for this Shift but kept out of sight; the in-app confirm sheet is what the member sees.
+  function cardDelete(id) {
+    var m = document.getElementById('shift-modal'); if (!m) return;
+    m.classList.add('rf-silent');
+    try { openShiftModal(String(id)); } catch (e) {}
+    var done = function () { if (m.classList.contains('active')) { try { closeShiftModal(); } catch (e) {} } m.classList.remove('rf-silent'); var l = (window.SHIFTS || []).some(function (x) { return String(x.id) === String(openId); }); if (!l) openId = null; renderFocusAndShifts(window.SHIFTS || []); };
+    Promise.resolve(rhDeleteShift(String(id))).then(done, done);
+  }
   function bubbles(shifts) {
+    if (fingerDown) { pending = shifts; return; }
     document.querySelectorAll('[data-role="shifts-list"]').forEach(function (list) {
+      if (!list.__rfWired) {
+        list.__rfWired = true;
+        list.addEventListener('pointerdown', function () { fingerDown = true; });
+        var up = function () { if (!fingerDown) return; fingerDown = false; if (pending) { var p = pending; pending = null; setTimeout(function () { bubbles(p); }, 350); } };
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { list.addEventListener(ev, up); });
+      }
       list.querySelectorAll('.rf-sbub').forEach(function (n) { n.remove(); });
       shifts.forEach(function (s) {
         var d = document.createElement('div');
-        d.className = 'rf-sbub'; d.setAttribute('role', 'button'); d.tabIndex = 0; d.setAttribute('data-shift-id', String(s.id));
-        d.innerHTML = '<div class="rf-orb" aria-hidden="true">✦</div><div class="bt"><div class="src">' + esc(s.method || 'GAP Method') + '</div><div class="nm">' + esc(s.identity) + '</div><div class="fr">Current Frequency: ' + esc(s.frequency) + '</div><div class="dt">' + esc(s.date) + '</div></div>' + pillHtml(s);
+        d.className = 'rf-sbub' + (String(openId) === String(s.id) ? ' open' : ''); d.setAttribute('role', 'button'); d.tabIndex = 0;
+        d.setAttribute('aria-expanded', String(String(openId) === String(s.id))); d.setAttribute('data-shift-id', String(s.id));
+        d.innerHTML = cardHtml(s); wireCard(d, s);
         list.appendChild(d);
       });
     });
-    // focus card: the same pill, for the Shift it shows
-    var fb = document.querySelector('[data-role="focus-open"]'), ff = document.querySelector('.focus-card-footer');
-    if (fb && ff) {
-      var old = ff.querySelector('.rf-pill'); if (old) old.remove();
-      var id = fb.getAttribute('data-shift-id'), s = (window.SHIFTS || shifts).filter(function (x) { return String(x.id) === String(id); })[0];
-      if (s && s.statusClass !== 'embodied') { var w = document.createElement('div'); w.innerHTML = pillHtml(s); var p = w.firstChild; p.style.alignSelf = 'flex-start'; ff.insertBefore(p, fb); }
-    }
+    focusExtras(shifts);
   }
+  // ---------- Today's Focus: tap = that Shift's activation; Reading / Activation / new Shifting card; Change focus ----------
+  var FK = 'rf_focus_' + RH_EMAIL;
+  function focusShift() { var fb = document.querySelector('[data-role="focus-open"]'); return fb ? shiftById(fb.getAttribute('data-shift-id')) : null; }
+  function focusExtras(shifts) {
+    var card = document.querySelector('#my-revolution [data-role="focus-card"]'), fb = document.querySelector('[data-role="focus-open"]'), ff = card && card.querySelector('.focus-card-footer');
+    if (!card || !fb || !ff) return;
+    var s = focusShift();
+    var old = ff.querySelector('.rf-pill'); if (old) old.remove();
+    if (s && s.statusClass !== 'embodied') { var w = document.createElement('div'); w.innerHTML = pillHtml(s); var p = w.firstChild; p.style.alignSelf = 'flex-start'; ff.insertBefore(p, fb); }
+    var x = card.querySelector('.rf-fx');
+    if (!x) {
+      x = document.createElement('div'); x.className = 'rf-fx';
+      x.innerHTML = '<div class="rf-fdoors"><button type="button" class="rf-fdoor" data-rf-f="reading" aria-expanded="false"><span aria-hidden="true">✧</span>Your reading</button>' +
+        '<button type="button" class="rf-fdoor" data-rf-f="act"><span aria-hidden="true">▶</span>Your activation</button>' +
+        '<button type="button" class="rf-fdoor" data-rf-f="new"><span aria-hidden="true">✦</span>Create a new Shifting card</button></div>' +
+        '<div class="rf-freading" hidden></div><button type="button" class="rf-fchange" data-rf-f="change">Change focus</button>';
+      ff.parentNode.insertBefore(x, ff.nextSibling);
+    }
+    var rd = x.querySelector('.rf-freading');
+    if (s) rd.innerHTML = (s.gap ? '<p>' + esc(s.gap) + '</p>' : '') + (s.maintaining ? '<p>' + esc(s.maintaining).replace(/\n/g, '<br>') + '</p>' : '') || '<p>Your reading for this Shift is in its card.</p>';
+    x.querySelector('.rf-fchange').hidden = (window.SHIFTS || shifts || []).length < 2;
+  }
+  document.addEventListener('click', function (e) {
+    var card = e.target.closest && e.target.closest('#my-revolution [data-role="focus-card"]'); if (!card) return;
+    var s = focusShift(); var f = e.target.closest('[data-rf-f]');
+    if (e.target.closest('[data-rf-emb]')) return; // the pill handler below
+    e.preventDefault(); e.stopPropagation();
+    if (f) {
+      var k = f.getAttribute('data-rf-f');
+      if (k === 'reading') { var rd = card.querySelector('.rf-freading'), open = rd.hidden; rd.hidden = !open; f.setAttribute('aria-expanded', String(open)); return; }
+      if (k === 'new') { startGap(); return; }
+      if (k === 'change') { pickFocus(); return; }
+    }
+    if (s) openAct(s); // the card itself, its Continue button and "Your activation"
+  }, true);
+  function pickFocus() {
+    var list = window.SHIFTS || []; if (list.length < 2) return;
+    var cur = focusShift();
+    var bd = document.createElement('div'); bd.className = 'rh-sheet-backdrop rf-pick-backdrop';
+    bd.innerHTML = '<div class="rh-sheet rf-pick" role="dialog" aria-label="Choose today\'s focus"><p class="rh-sheet-msg">Choose today\'s focus</p><div class="rf-pick-list"></div><div class="rh-sheet-actions"><button type="button" class="rh-sheet-cancel">Cancel</button></div></div>';
+    var pl = bd.querySelector('.rf-pick-list');
+    list.forEach(function (s) { var b = document.createElement('button'); b.type = 'button'; b.className = 'rf-pick-item' + (cur && String(cur.id) === String(s.id) ? ' on' : ''); b.innerHTML = '<b>' + esc(s.identity) + '</b><small>' + esc(s.frequency) + ' · ' + esc(s.date) + '</small>'; b.onclick = function () { setFocus(s.id); bd.remove(); }; pl.appendChild(b); });
+    bd.querySelector('.rh-sheet-cancel').onclick = function () { bd.remove(); };
+    bd.addEventListener('click', function (e) { if (e.target === bd) bd.remove(); });
+    document.body.appendChild(bd);
+  }
+  function setFocus(id) {
+    try { localStorage.setItem(FK, String(id)); sessionStorage.setItem('rhFocusShiftId', String(id)); } catch (e) {}
+    renderFocusAndShifts(window.SHIFTS || []);
+  }
+  // a focus the member chose survives reloads (per member, this browser); a newer GAP Shift still wins this session
+  try { var pin = localStorage.getItem(FK); if (pin && !sessionStorage.getItem('rhFocusShiftId')) sessionStorage.setItem('rhFocusShiftId', pin); } catch (e) {}
   var _rfs = window.renderFocusAndShifts;
   renderFocusAndShifts = window.renderFocusAndShifts = function (shifts) { var r = _rfs.apply(this, arguments); try { bubbles(shifts || []); } catch (e) {} return r; };
   document.addEventListener('click', function (e) {
     var p = e.target.closest && e.target.closest('[data-rf-emb]');
-    if (p) { e.stopPropagation(); e.preventDefault(); embody(p.getAttribute('data-rf-emb'), p); return; }
-    var c = e.target.closest && e.target.closest('.rf-sbub');
-    if (c) openShiftModal(c.getAttribute('data-shift-id'));
+    if (p && !p.closest('.rf-sbub')) { e.stopPropagation(); e.preventDefault(); embody(p.getAttribute('data-rf-emb'), p); }
   });
-  document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('rf-sbub')) { e.preventDefault(); openShiftModal(e.target.getAttribute('data-shift-id')); } });
   function embody(id, btn) {
     if (!id || btn.getAttribute('aria-busy') === 'true') return;
     btn.setAttribute('aria-busy', 'true'); btn.disabled = true; btn.textContent = 'Saving…';
@@ -221,7 +413,7 @@
         rhSheet({ message: "We couldn't mark that Shift as Embodied. Please try again.", alert: true, okLabel: 'OK' });
       });
   }
-  // the enlarged Shift bubble: a visible Delete (the fixed, exact-id flow)
+  // the enlarged Shift bubble (still reachable from older links): a visible Delete (the fixed, exact-id flow)
   var del = document.getElementById('rf-shift-delete');
   if (del) del.addEventListener('click', function () {
     var m = document.getElementById('shift-modal'), id = m && m.getAttribute('data-shift-id');

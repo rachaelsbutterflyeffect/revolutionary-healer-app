@@ -34,6 +34,25 @@ function Mockup({ label, children }: { label: string; children: React.ReactNode 
   );
 }
 
+// Oct 15 2026 (old-look flash fix): decide which look a member gets here, before leaving the landing
+// page, and go straight there -- allowed members never load the classic shell first. The decision is
+// remembered (localStorage rh_ui_refresh) so app.html can also decide synchronously. Fails open to
+// /app.html (which re-checks) after 2.5 s or on any error. ?t= / hash are not used on this page.
+async function memberAppPath(email: string): Promise<string> {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 2500);
+    const r = await fetch("/api/ui-refresh?email=" + encodeURIComponent(email), { cache: "no-store", signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) return "/app.html";
+    const d = await r.json();
+    try { localStorage.setItem("rh_ui_refresh", (d && d.refresh ? "1:" : "0:") + email); } catch {}
+    return d && d.refresh ? "/app-refresh.html" : "/app.html";
+  } catch {
+    return "/app.html";
+  }
+}
+
 export default function Home() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
@@ -48,7 +67,7 @@ export default function Home() {
     const loginAt = typeof window !== "undefined" ? Number(localStorage.getItem("rh_member_login_at") || 0) : 0;
     const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
     if (stored && loginAt && Date.now() - loginAt < fiveDaysMs) {
-      router.replace("/app.html");
+      memberAppPath(stored).then((path) => router.replace(path));
     } else {
       if (stored) {
         localStorage.removeItem("rh_member_email");
@@ -77,7 +96,7 @@ export default function Home() {
       }
       localStorage.setItem("rh_member_email", data.email || trimmedEmail);
       localStorage.setItem("rh_member_login_at", String(Date.now()));
-      router.replace("/app.html");
+      router.replace(await memberAppPath(data.email || trimmedEmail));
     } catch {
       setSignInError("Something went wrong. Please try again.");
     } finally {

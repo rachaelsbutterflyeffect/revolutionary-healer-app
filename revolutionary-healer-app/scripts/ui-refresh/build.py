@@ -22,7 +22,7 @@ FAQS = [
  ("What is a Shifting card?", "A card that saves a shift you're working on, with where it came from, the date, and its activation. You'll find them in My Revolution, and you can mark each one Embodied when it feels anchored."),
  ("How do I manage my membership?", "Go to Profile, then Account, then Manage membership. For anything else, tap Contact Support and we'll get back to you."),
 ]
-SUPPORT = 'contactrachaelsbutterflyeffect@gmail.com'
+SUPPORT = 'Rachaelsbutterflyeffect@gmail.com'
 MANAGE_ONCLICK = "window.open('https://www.rachaelsbutterflyeffect.com/settings/account','_blank')"
 
 # ---- the classic page's own switch must never run here (it would send this page to itself) ----
@@ -31,23 +31,33 @@ if 'rf-switch' in s: sys.exit('rf-switch still present')
 
 # ---- <html>, <head> ----
 once('<html lang="en">', '<html lang="en" class="rf-html">', 'html')
-GUARD = """<script id="rf-guard">
+GUARD = """<style id="rf-critical">html.rf-html{background:#06080b}html.rf-html body{background:transparent;color:#fdfbf5}</style>
+<script id="rf-guard">
 // UI refresh switch: this page is only for members the server allows (UI_REFRESH = off / allowlist / on).
-// Anyone else goes back to the classic app.html with the same query + hash. app.html sends allowed members here.
+// Anyone else goes back to the classic app.html with the same query + hash. The decision is remembered per
+// member (localStorage rh_ui_refresh, also written by the landing page and app.html). A member with no
+// remembered "yes" gets a dark screen, never this page, until the server answers (2.5 s cap -> classic).
 (function () {
   try {
     var e = localStorage.getItem('rh_member_email');
     if (!e) return; // the page's own sign-in check sends them to '/'
+    var K = 'rh_ui_refresh', de = document.documentElement, yes = (localStorage.getItem(K) || sessionStorage.getItem(K)) === '1:' + e;
+    var st = null;
+    if (!yes) { st = document.createElement('style'); st.id = 'rf-guard-hold'; st.textContent = 'body{visibility:hidden!important}'; de.appendChild(st); }
+    var back = function () { location.replace('/app.html' + location.search + location.hash); };
+    var t = st ? setTimeout(back, 2500) : 0;
     fetch('/api/ui-refresh?email=' + encodeURIComponent(e), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
-        if (!d) return;
-        if (!d.refresh) { try { sessionStorage.setItem('rh_ui_refresh', '0:' + e); } catch (x) {} location.replace('/app.html' + location.search + location.hash); return; }
-        try { sessionStorage.setItem('rh_ui_refresh', '1:' + e); } catch (x) {}
+        clearTimeout(t);
+        if (!d) { if (st) back(); return; }
+        try { localStorage.setItem(K, (d.refresh ? '1:' : '0:') + e); } catch (x) {}
+        if (!d.refresh) { back(); return; }
+        if (st) st.remove();
         window.__RF_FIRST = d.firstName || '';
         var fire = function () { document.dispatchEvent(new Event('rf:name')); };
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fire); else fire();
-      }).catch(function () {});
+      }).catch(function () { clearTimeout(t); if (st) back(); });
   } catch (x) {}
 })();
 </script>
@@ -64,7 +74,6 @@ HOME = """
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas><span class="rf-say" id="rf-say"></span></button>
  <div class="rf-welcome"><h1 class="rf-shine">Welcome<br>Back</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
  <div class="rf-sec rf-reveal"><h3>Your Doors</h3>
-  <button type="button" class="rf-door" data-rf-go="focus"><span class="rf-orb" aria-hidden="true">✧</span><span class="txt">Find your daily focus today</span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">Find the resistance that's keeping you stuck</span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
  </div>
@@ -124,8 +133,6 @@ PROFILE = """<section class="block page-view" id="profile-page" style="border-bo
   </div>
   <div class="rf-plist">
     <button type="button" class="rf-prow2" id="rf-manage" onclick="%(manage)s">Manage membership<span aria-hidden="true">↗</span></button>
-    <button type="button" class="rf-prow2" onclick="handleResetPasswordClick()">Reset password<span aria-hidden="true">→</span></button>
-    <p id="reset-password-status" class="rf-status"></p>
     <a href="#" class="rf-prow2" onclick="signOutMember(); return false;">Sign out<span aria-hidden="true">→</span></a>
   </div>
 </section>
@@ -157,6 +164,15 @@ s = s[:i] + s[j:].lstrip(' ').lstrip('\n')
 once('        <button class="btn-secondary" id="shift-modal-embodied-btn">Mark This Shift As Embodied →</button>\n      </div>\n    </div>\n',
      '        <button class="btn-secondary" id="shift-modal-embodied-btn">Mark This Shift As Embodied →</button>\n      </div>\n    </div>\n    <button type="button" class="rf-delete" id="rf-shift-delete">Delete this Shift</button>\n', 'delete')
 
+# ---- Activations: the mock-up's four big sections (Rachael's own section covers) -> that section's activations ----
+LSECS = """<div class="rf-lsecs" id="rf-lsecs">
+""" + ''.join('  <button type="button" class="rf-lsec" data-rf-sec="%s"><span class="bgc" style="background-image:url(\'/images/sections/sec-%s.webp\');background-position:%s" aria-hidden="true"></span><span class="in"><b>%s</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>\n' % x for x in [
+    ('Gifts + Spirit', 'gifts', '24% 22%', 'Spiritual Gifts'), ('Money + Receiving', 'money', '82% 20%', 'Money &amp; Prosperity'),
+    ('Energy + Frequency', 'energy', '72% 26%', 'Energy &amp; Frequency'), ('Business + Impact', 'vis', '62% 26%', 'Visibility &amp; Impact')]) + "</div>\n"
+once('<div class="revolution-subsection" id="gap-method-activations-subsection">', LSECS + '<div class="revolution-subsection" id="gap-method-activations-subsection">', 'lsecs')
+once('    <div class="revolution-subsection">\n      <div class="filter-chips category-chips">',
+     '    <div class="revolution-subsection" id="rf-lib-sub">\n      <button type="button" class="rf-back rf-allsecs" data-rf-allsecs>← All sections</button><h3 class="rf-sec-ttl" id="rf-sec-ttl"></h3>\n      <div class="filter-chips category-chips">', 'libsub')
+
 # ---- back-link labels (text only; onclicks unchanged) ----
 s = s.replace('>← Back to My Revolution</a>', '>← My Revolution</a>').replace('>← Back to Activations</a>', '>← Activations</a>').replace('>← Back to Home</a>', '>← Home</a>')
 
@@ -185,13 +201,15 @@ checks = {
   'script src': r'<script[^>]*src="([^"]+)"', 'api': r"(/api/[A-Za-z0-9_\-/]+)", 'localStorage': r"localStorage\.(?:get|set|remove)Item\('([^']+)'",
   'sessionStorage': r"sessionStorage\.(?:get|set|remove)Item\('([^']+)'", 'function': r'\bfunction ([A-Za-z_$][\w$]*)\s*\(',
 }
-EXPECTED_MISSING = {'onclick': {"handleActivationCardClick('spookbound-2026')", "event.stopPropagation(); toggleHeart(this)"}}
+EXPECTED_MISSING = {'onclick': {"handleActivationCardClick('spookbound-2026')", "event.stopPropagation(); toggleHeart(this)",
+                                "handleResetPasswordClick()"},   # Reset password removed from the refresh (Rachael, Oct 15)
+                    'id': {'reset-password-status'}}
 bad = 0
 for k_, pat in checks.items():
     miss = grab(pat, src) - grab(pat, s)
     miss.discard('rf-switch')
     allowed = EXPECTED_MISSING.get(k_, set())
-    if k_ == 'onclick':
+    if k_ in ('onclick', 'id'):
         # toggleHeart(this) still exists on every other card; only the SpookBound card's copy went away
         miss = {m for m in miss if m not in allowed}
     if miss: bad += 1; print('MISSING', k_, sorted(miss)[:20])

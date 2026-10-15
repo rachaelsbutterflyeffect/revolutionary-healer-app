@@ -35,8 +35,8 @@ export default function ContactSupport() {
         <div style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 16, padding: 26 }}>
           <p style={{ color: TEXT, fontSize: 14, lineHeight: 1.6 }}>
             Locked out? Email me at{" "}
-            <a href="mailto:rachaelsbutterflyeffect@gmail.com" style={{ color: TEAL_SOFT }}>
-              rachaelsbutterflyeffect@gmail.com
+            <a href="mailto:Rachaelsbutterflyeffect@gmail.com" style={{ color: TEAL_SOFT }}>
+              Rachaelsbutterflyeffect@gmail.com
             </a>{" "}
             and I'll get you back in.
           </p>
