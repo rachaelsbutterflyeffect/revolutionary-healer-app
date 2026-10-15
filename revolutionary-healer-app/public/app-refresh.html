@@ -1069,6 +1069,7 @@ body.rf .shifts-list .shift-row { display:none !important; }
 .rf-sbub .nm { font-family:"Cormorant Garamond",Georgia,serif; font-size:21px; font-weight:600; line-height:1.15; color:#F8E7B0; }
 .rf-sbub .fr { font-size:12.5px; color:#fffb; }
 .rf-sbub .dt { font-size:11px; color:#fff8; margin-top:2px; }
+.rf-sbub .ac { font-size:11.5px; color:#F8E7B0cc; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .rf-pill { all:unset; flex:none; cursor:pointer; font-size:10px; letter-spacing:.14em; text-transform:uppercase; padding:9px 13px; border-radius:999px; border:1px solid rgba(43,179,173,.85); background:rgba(1,103,108,.28); color:#9FEBE5; transition:.3s; }
 .rf-pill.emb { cursor:default; border-color:rgba(226,190,104,.85); background:rgba(226,190,104,.16); color:#F8E7B0; box-shadow:0 0 18px rgba(255,214,130,.55); }
 .rf-pill[aria-busy="true"] { opacity:.6; }
@@ -1333,6 +1334,15 @@ body.rf .rf-scripted { animation:rfpop .45s; }
   body.rf.rf-kb #rf-nav { display:flex; }
   body.rf .locked-activation-toast { bottom:36px; }
 }
+/* QA Oct 15 (Ray: side nav labels wrap, "My / Revolution"): every label stays on one line ("My " and
+   "Revolution" are separate flex items, so they could break apart); a touch wider panel and slimmer
+   insets so "Ask Rachael anything" fits too. */
+@media (min-width:820px) {
+  #rf-nav button { white-space:nowrap; padding-left:14px; padding-right:12px; }
+  #rf-nav button span { margin-right:12px; }
+  #rf-nav { width:252px; padding-left:18px; padding-right:18px; }
+  body.rf { padding-left:324px; }
+}
 @media (min-width:820px) and (max-height:720px) { #rf-nav { padding-top:28px; } #rf-nav .rf-nav-div { margin:18px 18px 20px; } #rf-nav button { margin-bottom:8px; } }
 
 </style>
@@ -1490,10 +1500,10 @@ body.rf .rf-scripted { animation:rfpop .45s; }
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
  </div>
  <div class="rf-sec rf-reveal"><h3>Ask Rachael Anything</h3><div class="rf-lanes">
-  <button type="button" class="rf-tile" data-rf-lane="gifts"><span class="ic" aria-hidden="true">👁</span><span><b>Spiritual Gifts</b><br><small>What's calling you?</small></span></button>
-  <button type="button" class="rf-tile" data-rf-lane="money"><span class="ic" aria-hidden="true">✺</span><span><b>Money &amp; Prosperity</b><br><small>Feel the shift</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="gifts"><span class="ic" aria-hidden="true">👁</span><span><b>Gifts &amp; Spirit</b><br><small>What's calling you?</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="money"><span class="ic" aria-hidden="true">✺</span><span><b>Money &amp; Receiving</b><br><small>Feel the shift</small></span></button>
   <button type="button" class="rf-tile" data-rf-lane="energy"><span class="ic" aria-hidden="true">⚡</span><span><b>Energy &amp; Frequency</b><br><small>Tune your field</small></span></button>
-  <button type="button" class="rf-tile" data-rf-lane="vis"><span class="ic" aria-hidden="true">☀</span><span><b>Visibility &amp; Impact</b><br><small>Be seen</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="vis"><span class="ic" aria-hidden="true">☀</span><span><b>Business &amp; Impact</b><br><small>Be seen</small></span></button>
  </div></div>
  <div class="rf-sec rf-reveal"><h3>Go Deeper</h3><div class="rf-deeps">
   <button type="button" class="rf-deep" data-rf-go="lib"><span aria-hidden="true">♫</span>Activation Library</button>
@@ -1789,10 +1799,10 @@ body.rf .rf-scripted { animation:rfpop .45s; }
     </div>
 
 <div class="rf-lsecs" id="rf-lsecs">
-  <button type="button" class="rf-lsec" data-rf-sec="Gifts + Spirit"><span class="bgc" style="background-image:url('/images/sections/sec-gifts.webp');background-position:24% 22%" aria-hidden="true"></span><span class="in"><b>Spiritual Gifts</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
-  <button type="button" class="rf-lsec" data-rf-sec="Money + Receiving"><span class="bgc" style="background-image:url('/images/sections/sec-money.webp');background-position:82% 20%" aria-hidden="true"></span><span class="in"><b>Money &amp; Prosperity</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
+  <button type="button" class="rf-lsec" data-rf-sec="Gifts + Spirit"><span class="bgc" style="background-image:url('/images/sections/sec-gifts.webp');background-position:24% 22%" aria-hidden="true"></span><span class="in"><b>Gifts &amp; Spirit</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
+  <button type="button" class="rf-lsec" data-rf-sec="Money + Receiving"><span class="bgc" style="background-image:url('/images/sections/sec-money.webp');background-position:82% 20%" aria-hidden="true"></span><span class="in"><b>Money &amp; Receiving</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Energy + Frequency"><span class="bgc" style="background-image:url('/images/sections/sec-energy.webp');background-position:72% 26%" aria-hidden="true"></span><span class="in"><b>Energy &amp; Frequency</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
-  <button type="button" class="rf-lsec" data-rf-sec="Business + Impact"><span class="bgc" style="background-image:url('/images/sections/sec-vis.webp');background-position:62% 26%" aria-hidden="true"></span><span class="in"><b>Visibility &amp; Impact</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
+  <button type="button" class="rf-lsec" data-rf-sec="Business + Impact"><span class="bgc" style="background-image:url('/images/sections/sec-vis.webp');background-position:62% 26%" aria-hidden="true"></span><span class="in"><b>Business &amp; Impact</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
 </div>
 <div class="revolution-subsection" id="gap-method-activations-subsection">
       <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> GAP Method™ Activations</h3><button type="button" class="see-all rh-collapse-btn" aria-expanded="true" aria-controls="gap-method-activations-subsection" onclick="rhToggleSection(this, 'gap-method-activations-subsection')">Hide</button></div>
@@ -1859,10 +1869,10 @@ body.rf .rf-scripted { animation:rfpop .45s; }
       <button type="button" class="rf-back rf-allsecs" data-rf-allsecs>← All sections</button><h3 class="rf-sec-ttl" id="rf-sec-ttl"></h3>
       <div class="filter-chips category-chips">
         <button class="filter-chip selected" data-category="All" onclick="selectCategoryChip(this)">All</button>
-        <button class="filter-chip" data-category="Business + Impact" onclick="selectCategoryChip(this)">Business + Impact</button>
-        <button class="filter-chip" data-category="Money + Receiving" onclick="selectCategoryChip(this)">Money + Receiving</button>
-        <button class="filter-chip" data-category="Gifts + Spirit" onclick="selectCategoryChip(this)">Gifts + Spirit</button>
-        <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy + Frequency</button>
+        <button class="filter-chip" data-category="Business + Impact" onclick="selectCategoryChip(this)">Business &amp; Impact</button>
+        <button class="filter-chip" data-category="Money + Receiving" onclick="selectCategoryChip(this)">Money &amp; Receiving</button>
+        <button class="filter-chip" data-category="Gifts + Spirit" onclick="selectCategoryChip(this)">Gifts &amp; Spirit</button>
+        <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy &amp; Frequency</button>
       </div>
       <div class="rh-lib-tools"><input type="search" id="rh-lib-search" class="rh-lib-search" placeholder="Search activations" aria-label="Search activations" oninput="rhLibApply()"><span class="rh-lib-count" id="rh-lib-count" aria-live="polite"></span></div>
       <div class="card-grid" id="activation-library-grid">
@@ -2467,12 +2477,7 @@ body.rf .rf-scripted { animation:rfpop .45s; }
   </div>
 </section>
 
-<footer>
-  <div class="wrap">
-    <div class="logo serif">The Revolutionary<span> Healer</span></div>
-    <p>therevolutionaryhealer.com</p>
-  </div>
-</footer>
+<!-- QA Oct 15: classic's footer (logo + domain, no links) is not part of the refresh; removed so no empty footer exists. -->
 
 <script>
   // --- GAP Method scoped-trial demo (Aug 10) --------------------------------
@@ -2891,7 +2896,12 @@ body.rf .rf-scripted { animation:rfpop .45s; }
       } else {
         pageGrid.innerHTML = '';
         favCards.forEach(function(entry) {
-          pageGrid.appendChild(entry.card.cloneNode(true));
+          // QA Oct 15: the library hides cards outside its current section/search/first 12 with an inline
+          // display:none, and a clone kept it, so See all showed only the favorites the library happened to
+          // be showing. A favorite's card is always shown here.
+          var c = entry.card.cloneNode(true);
+          c.style.removeProperty('display');
+          pageGrid.appendChild(c);
         });
       }
     }
@@ -3261,6 +3271,10 @@ body.rf .rf-scripted { animation:rfpop .45s; }
   // with real data for the signed-in member (RH_EMAIL, set at top of body).
   // =====================================================================
 
+  function formatShiftTime(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; }
+  }
   function formatShiftDate(iso) {
     if (!iso) return '';
     try {
@@ -3548,8 +3562,24 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
       var data = await res.json();
       var records = data.shifts || [];
       SHIFTS.length = 0;
+      // QA Oct 15 (Ray: "the same Shift appears twice"): a card is shown once per Shift id, and a reading
+      // saved twice (same identity, frequency, Gap text, what we noticed and activation) shows once (newest
+      // kept; records arrive newest first). Separate runs with different readings stay separate cards; the
+      // card's time and activation line tell same-day look-alikes apart. Display only: no record is changed.
+      var seenIds = {}, seenReadings = {};
+      records = records.filter(function(r) {
+        if (!r || seenIds[r.id]) return false;
+        seenIds[r.id] = true;
+        var gapText = String(r.gapExplanation || '').trim();
+        if (!gapText) return true;
+        var k = [r.divineIdentityName, r.currentFrequency, gapText, String(r.whatWeNoticed || '').trim(), r.recommendedActivation].join('\u0001').toLowerCase();
+        if (seenReadings[k]) return false;
+        seenReadings[k] = true;
+        return true;
+      });
       records.forEach(function(r) {
         SHIFTS.push({
+          time: formatShiftTime(r.createdAt),
           id: r.id,
           method: r.methodName || 'GAP Method',
           identity: r.divineIdentityName,
@@ -6037,13 +6067,16 @@ if (forceComplete) { goDay(3); }
   }
   function gapAnTick() {
     var t = (Date.now() - gapAnStart) / 1000;
-    var target = 97 * (1 - Math.exp(-t / 32)); // QA Oct 14: slower curve (was t/13, sat at ~90% by 30s and looked stalled); keeps visibly moving for ~2 min
+    // QA Oct 15 (Ray): the fast reading lands in ~8-17s (prod logs), but the t/32 curve was only ~20% by then and
+    // jumped to 100. Now it eases toward ~90% over the real wait (about 60% at 8s, 80% at 15s, 89% at 30s), then
+    // keeps creeping toward 97% so a slow reading never looks stalled; gapAnComplete() finishes it on the result.
+    var target = Math.min(97, 90 * (1 - Math.exp(-t / 7)) + 7 * (1 - Math.exp(-t / 90)));
     gapAnPaint(Math.max(gapAnShown, target));
     var e = gapAnEls(), note = GAP_AN_NOTES[0][1];
     GAP_AN_NOTES.forEach(function (n) { if (t >= n[0]) note = n[1]; });
     if (e.note && e.note.textContent !== note) e.note.textContent = note;
     var el = document.getElementById('gap-an-elapsed');
-    if (el) { var sec = Math.floor(t); el.textContent = sec >= 10 ? ('Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')) : ''; }
+    if (el) { var sec = Math.floor(t); el.textContent = 'Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); } // QA Oct 15: timer shows from the start
   }
   function gapShowAnalyzing(on) {
     var e = gapAnEls(); if (!e.panel || !e.view) return;
@@ -7549,10 +7582,10 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
   // Tapping a chip removes the chips, the chip becomes the member's message, and the real chat API answers (streamed).
   // Spiritual Gifts opener + "I feel disconnected today": Rachael's own wording (Oct 15); the rest is the mock-up's.
   var LANES = {
-    gifts: ['Spiritual Gifts', "Let's explore your spiritual gifts. What are you looking at?", ['I feel disconnected today', 'Trusting my intuition', 'Seeing signs', 'Opening my channel', 'Not sure yet']],
-    money: ['Money & Prosperity', "Let's look at your money energy. Where do you want to feel the shift?", ['Receiving more', 'Charging my worth', 'Calm around money', 'Clearing old stories']],
+    gifts: ['Gifts & Spirit', "Let's explore your spiritual gifts. What are you looking at?", ['I feel disconnected today', 'Trusting my intuition', 'Seeing signs', 'Opening my channel', 'Not sure yet']],
+    money: ['Money & Receiving', "Let's look at your money energy. Where do you want to feel the shift?", ['Receiving more', 'Charging my worth', 'Calm around money', 'Clearing old stories']],
     energy: ['Energy & Frequency', "Let's talk about your energy. What kind of energy shift are you looking for today?", ['More energy', 'Calm my nervous system', 'Focus', 'Confidence', 'Clear the static']],
-    vis: ['Visibility & Impact', "Let's talk about being seen. What feels most true right now?", ["I'm ready to show up", 'Fear of judgment', 'Sharing my message', 'Growing my impact']]
+    vis: ['Business & Impact', "Let's talk about being seen. What feels most true right now?", ["I'm ready to show up", 'Fear of judgment', 'Sharing my message', 'Growing my impact']]
   };
   window.RF_LANES = LANES;
   document.addEventListener('click', function (e) {
@@ -7781,7 +7814,8 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
         '<button type="button" class="rf-xlisten" data-rf-listen="' + esc(s.id) + '">▶ Listen</button></div>' +
         '<div class="rf-xfoot"><button type="button" class="rf-del" data-rf-del="' + esc(s.id) + '">Delete Shift</button></div>';
     }
-    return '<div class="rf-orb" aria-hidden="true">✦</div><div class="bt"><div class="src">' + esc(s.method || 'GAP Method') + '</div><div class="nm">' + esc(s.identity) + '</div><div class="fr">Current Frequency: ' + esc(s.frequency) + '</div><div class="dt">' + esc(s.date) + '</div>' +
+    return '<div class="rf-orb" aria-hidden="true">✦</div><div class="bt"><div class="src">' + esc(s.method || 'GAP Method') + '</div><div class="nm">' + esc(s.identity) + '</div><div class="fr">Current Frequency: ' + esc(s.frequency) + '</div><div class="dt">' + esc(s.date) + (s.time ? ' · ' + esc(s.time) : '') + '</div>' +
+      (!open && (a ? a.title : s.activation) ? '<div class="ac">' + esc(a ? a.title : s.activation) + '</div>' : '') +
       (open ? '' : '<div class="rf-cue">▶ Tap to open your activation</div>') + '</div>' + pillHtml(s) + xp;
   }
   function wireCard(d, s) {
@@ -7869,7 +7903,7 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
     var bd = document.createElement('div'); bd.className = 'rh-sheet-backdrop rf-pick-backdrop';
     bd.innerHTML = '<div class="rh-sheet rf-pick" role="dialog" aria-label="Choose today\'s focus"><p class="rh-sheet-msg">Choose today\'s focus</p><div class="rf-pick-list"></div><div class="rh-sheet-actions"><button type="button" class="rh-sheet-cancel">Cancel</button></div></div>';
     var pl = bd.querySelector('.rf-pick-list');
-    list.forEach(function (s) { var b = document.createElement('button'); b.type = 'button'; b.className = 'rf-pick-item' + (cur && String(cur.id) === String(s.id) ? ' on' : ''); b.innerHTML = '<b>' + esc(s.identity) + '</b><small>' + esc(s.frequency) + ' · ' + esc(s.date) + '</small>'; b.onclick = function () { setFocus(s.id); bd.remove(); }; pl.appendChild(b); });
+    list.forEach(function (s) { var b = document.createElement('button'); b.type = 'button'; b.className = 'rf-pick-item' + (cur && String(cur.id) === String(s.id) ? ' on' : ''); b.innerHTML = '<b>' + esc(s.identity) + '</b><small>' + esc(s.frequency) + ' · ' + esc(s.date) + (s.time ? ' · ' + esc(s.time) : '') + '</small>'; b.onclick = function () { setFocus(s.id); bd.remove(); }; pl.appendChild(b); });
     bd.querySelector('.rh-sheet-cancel').onclick = function () { bd.remove(); };
     bd.addEventListener('click', function (e) { if (e.target === bd) bd.remove(); });
     document.body.appendChild(bd);
