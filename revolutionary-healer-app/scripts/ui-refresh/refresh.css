@@ -369,3 +369,17 @@ body.rf[data-rf-lib="cat"] #rf-lib-sub .filter-chip[data-category="All"] { displ
 
 /* Sign out sits on the main profile page (round 2, item 14) */
 .rf-psignout { margin-top:22px; }
+
+/* Home headline = the time greeting (Rachael, Oct 14: no "Welcome back"), same gold serif look */
+.rf-welcome { margin-top:-6px; }
+.rf-welcome h1.rf-greet { text-transform:none; font-size:clamp(32px,9.4vw,44px); line-height:1.08; min-height:2.16em; padding:0 6px; letter-spacing:.01em; }
+/* profile photo: always centred and filling its circle (portrait, landscape or square) */
+body.rf #profile-avatar-circle { position:relative; padding:0 !important; flex:0 0 auto; aspect-ratio:1/1; }
+body.rf #profile-avatar-circle img { position:absolute; inset:0; display:block; width:100% !important; height:100% !important; margin:0 !important; object-fit:cover; object-position:center center; border-radius:50%; }
+
+/* lane option chips: mock-up r17 .chips/.chip (6ffc46b), plus its message entrance (pop) and tap scale */
+body.rf .rf-chips { display:flex; flex-wrap:wrap; gap:8px; margin:4px 0 0; align-self:flex-start; max-width:100%; animation:rfpop .45s; }
+body.rf .rf-chip { all:unset; box-sizing:border-box; cursor:pointer; padding:10px 14px; border-radius:999px; font-size:14px; line-height:1.3; color:#fdfbf5; border:1px solid rgba(160,255,245,.5); background:rgba(63,214,200,.14); box-shadow:0 0 16px rgba(63,214,200,.25); transition:transform .2s; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+body.rf .rf-chip:active { transform:scale(.97); }
+body.rf .rf-scripted { animation:rfpop .45s; }
+@keyframes rfpop { from { opacity:0; transform:translateY(10px) scale(.95); } }

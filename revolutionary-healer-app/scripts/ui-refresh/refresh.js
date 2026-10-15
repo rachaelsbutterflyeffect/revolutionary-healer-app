@@ -103,26 +103,69 @@
     var b = document.getElementById('gap-method-starter-btn');
     if (b) b.click(); else startGapMethodInChat();
   }
-  // Ask Rachael Anything: a fresh chat that opens on the member's own first message.
+  // Ask Rachael Anything (round 2): a lane opens a fresh chat with Rachael's scripted opener (instant, no API call,
+  // typed like a reply) and the mock-up r17 option chips (feat/wow-mockup 6ffc46b: LANES / chips() / startLane()).
+  // Tapping a chip removes the chips, the chip becomes the member's message, and the real chat API answers (streamed).
+  // Spiritual Gifts opener + "I feel disconnected today": Rachael's own wording (Oct 15); the rest is the mock-up's.
   var LANES = {
-    gifts: 'I want to explore my spiritual gifts.',
-    money: 'I want to shift my money energy.',
-    energy: 'I want to tune my energy and frequency.',
-    vis: 'I want to be seen more in my business.'
+    gifts: ['Spiritual Gifts', "Let's explore your spiritual gifts. What are you looking at?", ['I feel disconnected today', 'Trusting my intuition', 'Seeing signs', 'Opening my channel', 'Not sure yet']],
+    money: ['Money & Prosperity', "Let's look at your money energy. Where do you want to feel the shift?", ['Receiving more', 'Charging my worth', 'Calm around money', 'Clearing old stories']],
+    energy: ['Energy & Frequency', "Let's talk about your energy. What kind of energy shift are you looking for today?", ['More energy', 'Calm my nervous system', 'Focus', 'Confidence', 'Clear the static']],
+    vis: ['Visibility & Impact', "Let's talk about being seen. What feels most true right now?", ["I'm ready to show up", 'Fear of judgment', 'Sharing my message', 'Growing my impact']]
   };
+  window.RF_LANES = LANES;
   document.addEventListener('click', function (e) {
     var t = e.target.closest && e.target.closest('[data-rf-lane]'); if (!t) return;
-    var text = LANES[t.getAttribute('data-rf-lane')]; if (!text) return;
+    var lane = LANES[t.getAttribute('data-rf-lane')]; if (!lane) return;
+    e.preventDefault();
+    var a = document.activeElement; if (a && a.blur) a.blur();
     showMain(); rfGo('chat');
-    // a reply may still be streaming (live sendHeroChat ignores sends while __rhSending):
-    // wait for it to finish, then open the new chat and send, so a lane tap is never lost
     var tries = 0;
     (function go() {
-      if (window.__rhSending && tries++ < 240) { setTimeout(go, 250); return; }
-      newChatNoKeyboard();
-      sendNoKeyboard(text);
+      if (window.__rhSending && tries++ < 240) { setTimeout(go, 250); return; } // a reply still streaming: open after it
+      newChatNoKeyboard(); startLane(lane);
     })();
   });
+  function laneThread() { return document.getElementById('rh-chat-thread'); }
+  function clearLaneChips() { document.querySelectorAll('#rh-chat-thread .rf-chips').forEach(function (c) { c.remove(); }); }
+  function startLane(lane) {
+    var th = laneThread(); if (!th) return;
+    removeTopics(); clearLaneChips();
+    var w = document.getElementById('rh-chat-welcome'); if (w) w.style.display = 'none';
+    var b = document.createElement('div'); b.className = 'rh-msg rh-msg-assistant rf-scripted rh-msg-streaming'; th.appendChild(b);
+    var words = lane[1].match(/\S+\s*|\s+/g) || [], i = 0, txt = '';
+    (function tick() {
+      if (!b.isConnected) return; // she started another chat meanwhile
+      var n = 1 + (Math.random() * 3 | 0); txt += words.slice(i, i + n).join(''); i += n; b.textContent = txt; toBottom();
+      if (i < words.length) setTimeout(tick, RM ? 0 : 35 + Math.random() * 45);
+      else { b.classList.remove('rh-msg-streaming'); laneChips(lane); }
+    })();
+  }
+  function laneChips(lane) {
+    var th = laneThread(); if (!th) return;
+    var c = document.createElement('div'); c.className = 'rf-chips';
+    lane[2].forEach(function (x) {
+      var k = document.createElement('button'); k.type = 'button'; k.className = 'rf-chip'; k.textContent = x;
+      k.onclick = function () { if (window.__rhSending) return; c.remove(); window.__rfLaneTopic = { topic: lane[0], opener: lane[1], text: x }; sendNoKeyboard(x); };
+      c.appendChild(k);
+    });
+    th.appendChild(c); toBottom();
+  }
+  // the chip's message reaches the chat API with its topic (the scripted opener is not in the saved history)
+  (function () {
+    var f = window.fetch; if (!f) return;
+    window.fetch = function (u, o) {
+      try {
+        var L = window.__rfLaneTopic;
+        if (L && String(u).indexOf('/api/chat') === 0 && String(u).indexOf('/api/chats') !== 0 && o && o.method === 'POST' && typeof o.body === 'string') {
+          var p = JSON.parse(o.body);
+          if (p.message === L.text) { p.message = L.topic + ' (Rachael asked: "' + L.opener + '") ' + L.text; o = Object.assign({}, o, { body: JSON.stringify(p) }); }
+          window.__rfLaneTopic = null;
+        }
+      } catch (x) {}
+      return f.apply(this, [u, o]);
+    };
+  })();
 
   // ---------- chat: no keyboard unless the member taps the message box ----------
   // Live rhStartNewChat() ends with input.focus(): on iPhone that pops the keyboard (squashing the thread)
@@ -177,7 +220,7 @@
   })();
   // typing your own message also clears them (same as the mock-up)
   var sendBtn0 = document.getElementById('hero-speak-btn');
-  if (sendBtn0) sendBtn0.addEventListener('click', function () { var i = document.getElementById('chat-input'); if (i && i.value.trim()) removeTopics(); }, true);
+  if (sendBtn0) sendBtn0.addEventListener('click', function () { var i = document.getElementById('chat-input'); if (i && i.value.trim()) { removeTopics(); clearLaneChips(); window.__rfLaneTopic = null; } }, true);
 
   // ---------- chat sizing: never under the nav, keyboard-aware ----------
   function isField(el) { return el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !/^(button|checkbox|radio|submit|reset|range|color|file|image)$/i.test(el.type || ''))); }
@@ -229,7 +272,7 @@
   }
   setInterval(function () { var g = greetFor(new Date().getHours()); if (g !== greet) { greet = g; var say = document.getElementById('rf-say'); if (say) say.textContent = g; } }, 60000);
   document.addEventListener('rf:name', function () { typeGreet(); fillAccount(); fixWelcome(); });
-  function fixWelcome() { var w = document.getElementById('profile-welcome-line'); if (w) w.textContent = firstName() ? 'Welcome back, ' + firstName() + '.' : 'Welcome back.'; }
+  function fixWelcome() { var w = document.getElementById('profile-welcome-line'); if (w) w.textContent = greetFor(new Date().getHours()); } // Rachael, Oct 14: the time greeting, never "welcome back"
   var _ipf = window.initProfileFields;
   if (typeof _ipf === 'function') { initProfileFields = window.initProfileFields = function () { var r = _ipf.apply(this, arguments); fixWelcome(); return r; }; }
   fixWelcome();

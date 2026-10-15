@@ -71,8 +71,8 @@ once('</head>\n<body>', '<style id="rf-css">\n' + rd('refresh.css') + '\n</style
 HOME = """
 <section class="rf-screen" id="rf-home" aria-label="Home">
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
- <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas><span class="rf-say" id="rf-say"></span></button>
- <div class="rf-welcome"><h1 class="rf-shine">Welcome<br>Back</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
+ <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
+ <div class="rf-welcome"><h1 class="rf-shine rf-greet" id="rf-say" aria-live="polite">Good day, Revolutionary Healer.</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
  <div class="rf-sec rf-reveal"><h3>Your Doors</h3>
   <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">Find the resistance that's keeping you stuck</span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
@@ -106,7 +106,7 @@ faq_html = ''.join('<div class="rf-faq"><button type="button" class="rf-fq" aria
 PROFILE = """<section class="block page-view" id="profile-page" style="border-bottom: none;">
   <div class="wrap">
     <a class="page-back" onclick="showMain(); return false;">← Home</a>
-    <div class="section-head"><div><h2 class="serif">My Profile</h2><p id="profile-welcome-line">Welcome back.</p></div></div>
+    <div class="section-head"><div><h2 class="serif">My Profile</h2><p id="profile-welcome-line"></p></div></div>
     <div class="rf-avrow">
       <div class="avatar-circle" id="profile-avatar-circle">R</div>
       <div class="rf-avbtns">

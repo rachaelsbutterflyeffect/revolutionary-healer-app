@@ -77,6 +77,22 @@ export default function Home() {
     }
   }, [router]);
 
+  // Every sign-in problem must be seen: on iPhone the keyboard covers the message under the button, so close
+  // the keyboard and bring the message into view. A member the app sent back here (no active access) gets
+  // the reason instead of a silent return to this form.
+  useEffect(() => {
+    if (!signInError) return;
+    try { (document.activeElement as HTMLElement | null)?.blur(); } catch {}
+    const t = setTimeout(() => { try { document.getElementById("signin-error")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch {} }, 60);
+    return () => clearTimeout(t);
+  }, [signInError]);
+  useEffect(() => {
+    try {
+      const n = sessionStorage.getItem("rh_signin_notice");
+      if (n) { sessionStorage.removeItem("rh_signin_notice"); setSignInError(n); }
+    } catch {}
+  }, [checking]);
+
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setSignInError("");
@@ -182,7 +198,7 @@ export default function Home() {
               }}
             />
             {signInError && (
-              <div style={{ color: "#E8A33D", fontSize: 13, lineHeight: 1.5 }}>{signInError}</div>
+              <div id="signin-error" role="alert" style={{ color: "#E8A33D", fontSize: 13, lineHeight: 1.5 }}>{signInError}</div>
             )}
             <button
               type="submit"

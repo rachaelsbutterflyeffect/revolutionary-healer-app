@@ -969,6 +969,8 @@
       if (!stillEntitled) {
         localStorage.removeItem('rh_member_email');
         localStorage.removeItem('rh_member_login_at');
+        // the sign-in page shows why (never a silent bounce back to the form)
+        try { sessionStorage.setItem('rh_signin_notice', "This email doesn't have active access yet. If you just purchased, please try again in a few minutes, or reach out for help."); } catch (e) {}
         window.location.href = '/';
         return;
       }
