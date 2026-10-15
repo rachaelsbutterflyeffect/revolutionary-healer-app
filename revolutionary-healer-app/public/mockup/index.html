@@ -177,6 +177,13 @@ background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold
 .hist-i{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;margin-top:8px;padding:12px 16px;border-radius:999px;background:radial-gradient(120% 140% at 0% 50%,rgba(63,214,200,.10),transparent 60%);box-shadow:0 0 20px rgba(255,214,130,.08)}
 .hist-i b{display:block;font-family:'Cormorant Garamond';font-size:19px;font-weight:600;color:#F8E7B0}.hist-i small{font-size:11px;color:#fff9}
 .hist-i.on{box-shadow:0 0 0 1px rgba(255,236,190,.4),0 0 24px rgba(255,214,130,.25)}
+.prow{position:relative;cursor:pointer;padding-right:44px}.prow .parr{position:absolute;right:18px;top:50%;transform:translateY(-50%);color:var(--gold);font-size:20px}.prow:active{transform:scale(.98)}
+.pinfo{margin-top:18px}.pi{padding:12px 4px;border-bottom:1px solid rgba(255,236,190,.12)}.pi small{display:block;font-size:10.5px;letter-spacing:.26em;color:var(--teal)}.pi b{font-family:'Cormorant Garamond';font-size:21px;font-weight:600;color:#F8E7B0}
+.plist{margin-top:22px}.prow2{all:unset;box-sizing:border-box;cursor:pointer;display:flex;justify-content:space-between;align-items:center;width:100%;margin-top:10px;padding:16px 20px;border-radius:999px;font-size:15px;color:#fff;background:radial-gradient(120% 160% at 0% 50%,rgba(255,214,130,.12),transparent 65%);box-shadow:0 0 0 1px rgba(226,190,104,.25),0 0 20px rgba(255,214,130,.08)}
+.prow2 span{color:var(--gold)}.prow2:active{transform:scale(.98)}
+.psub{padding:8px 20px 4px}.psub[hidden]{display:none}.ptog{display:flex;gap:10px;align-items:center;padding:8px 0;font-size:14px;color:#fffc}.ptog input{accent-color:#CFA646}
+.toast{position:fixed;left:50%;bottom:110px;transform:translate(-50%,20px);z-index:40;max-width:calc(100% - 48px);padding:12px 18px;border-radius:999px;font-size:14px;text-align:center;color:#1a1305;background:linear-gradient(135deg,var(--gold2),var(--gold));box-shadow:0 0 26px rgba(255,214,130,.55);opacity:0;pointer-events:none;transition:opacity .3s,transform .3s}
+.toast.on{opacity:1;transform:translate(-50%,0)}
 .rh-new{all:unset;cursor:pointer;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--gold2)}
 .rh-chat-thread{overflow-y:auto;padding:22px 2px;display:flex;flex-direction:column;gap:16px;height:52vh;min-height:250px}
 .rh-chat-welcome{margin:auto;text-align:center;padding:10px}.rh-chat-welcome h3{font-family:'Cormorant Garamond';text-transform:none;letter-spacing:0;font-size:25px;margin-bottom:8px}.rh-chat-welcome p{font-size:14px;color:#fffb;line-height:1.6}
@@ -282,7 +289,7 @@ border-bottom:1px solid rgba(226,190,104,.55);box-shadow:0 14px 18px -16px rgba(
 <div class="app">
 
 <section class="screen on" id="home">
- <div class="top"><div class="mark shine">REVOLUTIONARY HEALER</div><div class="avatar" data-go="profile">✦</div></div>
+ <div class="top"><div class="mark shine">REVOLUTIONARY HEALER</div><div class="avatar" data-go="profile" role="button" tabindex="0" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></div></div>
  <div class="hero" id="hero" role="button" aria-label="Begin with today's focus"><div class="halo"></div><canvas id="fly"></canvas><div class="say" id="say"></div></div>
  <div class="welcome"><h1 class="shine">Welcome<br>Back</h1><div class="divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
  <div class="sec reveal"><h3>Your Doors</h3>
@@ -363,9 +370,34 @@ border-bottom:1px solid rgba(226,190,104,.55);box-shadow:0 14px 18px -16px rgba(
 <section class="screen" id="profile">
  <button class="back" data-go="home">← HOME</button>
  <h2 class="ttl shine">My Profile</h2><div class="divider"></div>
- <div class="card"><h2>Account</h2><p>Membership, email and notifications live here. (Sample view.)</p></div>
- <div class="card"><h2>Support</h2><p>Questions? Reach the team any time.</p></div>
+ <div class="card prow" data-go="account" role="button" tabindex="0"><h2>Account</h2><p>Membership, email and notifications live here. (Sample view.)</p><span class="parr" aria-hidden="true">→</span></div>
+ <div class="card prow" data-go="support" role="button" tabindex="0"><h2>Support</h2><p>Questions? Reach the team any time.</p><span class="parr" aria-hidden="true">→</span></div>
 </section>
+
+<section class="screen" id="account">
+ <button class="back" data-go="profile">← PROFILE</button>
+ <h2 class="ttl shine">Account</h2><div class="divider"></div>
+ <div class="pinfo"><div class="pi"><small>NAME</small><b id="acname"></b></div><div class="pi"><small>EMAIL</small><b>sample@example.com</b></div><div class="pi"><small>MEMBERSHIP</small><b>Revolutionary Healer</b></div></div>
+ <div class="plist">
+  <button class="prow2" data-toast="Membership settings open here in the real app.">Manage membership<span>→</span></button>
+  <button class="prow2" id="notifrow" aria-expanded="false">Notifications<span>→</span></button>
+  <div class="psub" id="notifsub" hidden><label class="ptog"><input type="checkbox" checked> Daily focus reminder</label><label class="ptog"><input type="checkbox"> New activation alerts</label><p class="mock-note" style="text-align:left">Sample settings, nothing is saved.</p></div>
+  <button class="prow2" data-toast="Sign out happens here in the real app. Nothing changed in this mock-up.">Sign out<span>→</span></button>
+ </div>
+ <p class="mock-note">Sample view, no member data.</p>
+</section>
+
+<section class="screen" id="support">
+ <button class="back" data-go="profile">← PROFILE</button>
+ <h2 class="ttl shine">Support</h2><div class="divider"></div>
+ <p class="sub" style="font-size:18px">Need help? If you have questions about your membership or need assistance with Revolutionary Healer, we're here to help.</p>
+ <div class="plist">
+  <button class="prow2" data-toast="Coming soon in the real app">Contact Support<span>→</span></button>
+  <button class="prow2" data-toast="Coming soon in the real app">Frequently Asked Questions<span>→</span></button>
+ </div>
+ <p class="mock-note">Sample view.</p>
+</section>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 
 <div class="hist-bg" id="histbg"><aside class="hist" id="hist" role="dialog" aria-label="Chat history"><div class="hist-h"><span>YOUR CHATS</span><button class="hist-x" id="histx" aria-label="Close chat history">✕</button></div><button class="hist-new" id="histnew">+ New chat</button><div id="histlist"></div><p class="mock-note" style="text-align:left">Sample chats, no member data.</p></aside></div>
@@ -386,6 +418,11 @@ function buzz(){navigator.vibrate&&navigator.vibrate(8)}
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('on',s.id===id));
  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.go===id));
  const s=$('#'+id);s.scrollTop=0;if(id==='gap'){gq=0;gans=[];gdom=null;['#ck1','#ck2','#ck3'].forEach(x=>$(x).textContent='');}if(id==='fit'){dv=[];dp={};}if(id==='lib')lib();if(id==='chat'&&!$('#msgs').children.length)welcome();buzz();history.replaceState(0,'','#'+id);guide(id);if(id==='gap')gDay(1);;if(id==='fit')dStep(0);if(id==='code'){$('#cudeck').innerHTML=deckHTML();setupDeck()}}
+let toastT;function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+document.addEventListener('click',e=>{const tt=e.target.closest('[data-toast]');if(tt){buzz();toast(tt.dataset.toast)}});
+document.addEventListener('keydown',e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches&&e.target.matches('[role=button][data-go]')){e.preventDefault();go(e.target.dataset.go)}});
+$('#notifrow').onclick=()=>{const s=$('#notifsub');s.hidden=!s.hidden;$('#notifrow').setAttribute('aria-expanded',!s.hidden);buzz()};
+setTimeout(()=>{$('#acname').textContent=usableName(PROFILE.firstName)||'Revolutionary Healer'},0);
 document.addEventListener('click',e=>{const t=e.target.closest('[data-go]');if(t)go(t.dataset.go);const l=e.target.closest('[data-lane]');if(l){go('chat');startLane(l.dataset.lane)}});
 
 const GUIDE={home:["Tap me to find today's focus","code"],code:["Tap a number from 1 to 10",null],chat:["Pick a starter, or type your own",null],gap:["Choose what feels true. One tap at a time.",null],player:["Press play. Let it land.",null],lib:["Tap any activation to preview",null],rev:["See your next Gap","gap"],profile:["Back to your doors","home"]};
