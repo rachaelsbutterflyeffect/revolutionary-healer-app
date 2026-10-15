@@ -37,7 +37,7 @@
       if (el.querySelector('.rf-cu-thumb')) return;
       var s = SHIFTS.find(function (x) { return String(x.id) === el.getAttribute('data-shift-id'); }); if (!s || s.method !== 'Code Upgrade') return;
       var c = list.find(function (x) { return x.n === s.identity; }); if (!c) return;
-      var im = document.createElement('img'); im.className = 'rf-cu-thumb'; im.src = dir + c.f + '.webp'; im.alt = c.n + ' code card'; el.insertBefore(im, el.firstChild);
+      var im = document.createElement('img'); im.className = 'rf-cu-thumb'; im.src = dir + c.f + '.webp'; im.alt = c.n + ' code card'; el.insertBefore(im, el.firstChild); el.classList.add('rf-has-cu');
     });
   }
   var queued = false; // one pass per frame at most, so chat typing never pays for this
