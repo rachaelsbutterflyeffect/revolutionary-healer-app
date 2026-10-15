@@ -10,6 +10,7 @@ const list = (s) => String(s || "").split(",").map(norm).filter(Boolean);
 export const FEATURES = {
   codePull: "CODE_PULL",
   homeCheckin: "HOME_CHECKIN",
+  codeShifts: "CODE_SHIFTS", // Shift the codes: save a pulled code as a Code Upgrade Shift
 };
 
 export function featureAllowed(key, email, env = process.env) {
