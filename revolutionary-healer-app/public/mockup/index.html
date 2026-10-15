@@ -280,6 +280,8 @@ transform:translateX(var(--x)) translateY(var(--y)) scale(1) rotate(var(--r)) ro
 .cudrop[hidden]{display:none}
 .cudrop p.rd{text-align:left;font-size:18px;margin:10px 0 0}
 #gapfr{position:fixed;inset:0;width:100%;height:100%;border:0;z-index:300;display:none;background:transparent;color-scheme:dark}#gapfr.on{display:block}
+/* r16: while the GAP Method pop-up is open, the screen behind is cleared so only the shared starry background (body + #sky + .aurora, the same one Today's Focus and Chat sit on) shows; nothing from Home shows through */
+body:has(#gapfr.on) .app>.screen,body:has(#gapfr.on) nav{visibility:hidden!important}
 .codeinfo{text-align:center;animation:pop .8s}
 .codeinfo .num{font-family:Cinzel;letter-spacing:.3em;color:var(--teal);font-size:13px}
 .codeinfo p.rd{font-family:'Cormorant Garamond';font-size:19px;line-height:1.5;color:#fff;margin:12px 4px 0}

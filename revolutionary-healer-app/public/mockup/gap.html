@@ -1473,6 +1473,14 @@ html body #hero-gap-embed .mk-chip:active { transform: scale(.96); }
 html body #hero-gap-embed .mk-chip:focus-visible { outline: 1px solid var(--mk-gold2); outline-offset: 3px; }
 /* iframe canvas must match the <iframe> color-scheme or Chrome paints an opaque canvas (the grey sheet) */
 html { color-scheme: dark; background: transparent !important; }
+/* ===== r16: page = the mock-up's own starry background (look only) =====
+   The parent mock-up clears the screen behind while the pop-up is open, so its shared sky
+   (same as Today's Focus / Chat) shows through. No dim, no extra geometry/embers, no frosted sheet;
+   the glass bubbles, cards and chips inside stay exactly as r15. */
+html body #gm-backdrop { background: transparent !important; }
+html body #gm-backdrop::before, html body #gm-backdrop::after { display: none !important; }
+html body #hero-gap-embed.gm-modal { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border-color: rgba(255,236,190,.12) !important; box-shadow: none !important; }
+html body #hero-gap-embed.gm-modal .card .row-between { background: linear-gradient(180deg, rgba(6,8,11,0), rgba(6,8,11,.5) 45%, rgba(6,8,11,.62)) !important; }
 
 </style>
 </head><body>
