@@ -655,6 +655,17 @@
   .rh-drawer-popover button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--white);font-size:13px;padding:9px 12px;cursor:pointer;}
   .rh-drawer-popover button:hover{background:var(--taupe-line);}
   .rh-drawer-popover button.rh-danger{color:#D98B77;}
+  /* In-app confirm / rename sheet (Oct 15): replaces window.confirm / prompt / alert, which in-app
+     browsers, embedded views and some home-screen apps silently suppress (the tap then did nothing). */
+  .rh-sheet-backdrop{position:fixed;inset:0;z-index:9000;background:rgba(6,6,5,.62);display:flex;align-items:flex-end;justify-content:center;padding:16px;}
+  .rh-sheet{width:100%;max-width:440px;background:var(--panel-2);border:1px solid var(--taupe-line);border-radius:18px;padding:20px 18px 16px;box-shadow:0 18px 50px rgba(0,0,0,.55);color:var(--white);margin-bottom:max(8px,env(safe-area-inset-bottom));}
+  .rh-sheet-msg{margin:0 0 14px;font-size:15px;line-height:1.5;}
+  .rh-sheet-input{width:100%;box-sizing:border-box;margin:0 0 14px;padding:11px 12px;border-radius:10px;border:1px solid var(--taupe-line);background:rgba(255,255,255,.04);color:var(--white);font:inherit;font-size:16px;}
+  .rh-sheet-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
+  .rh-sheet-actions button{min-height:44px;padding:0 18px;border-radius:999px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--taupe-line);background:none;color:var(--white);}
+  .rh-sheet-actions button.rh-sheet-ok{background:var(--gold);border-color:var(--gold);color:#241C0A;}
+  .rh-sheet-actions button.rh-sheet-ok.rh-danger{background:#B4553F;border-color:#B4553F;color:#fff;}
+  .shift-modal-error{margin:0 0 12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(217,139,119,.6);color:#F1C3B6;font-size:13.5px;}
   @media (max-width:640px){
     .rh-chat-shell{border-radius:0;border-left:none;border-right:none;}
     .rh-chat-thread{max-height:60vh;}
@@ -977,6 +988,7 @@
       <button type="button" class="rh-drawer-item-menu" id="shift-modal-menu-btn" aria-label="Shift options" title="Shift options">⋯</button>
       <button class="modal-close" onclick="closeShiftModal()">×</button>
     </div>
+    <p class="shift-modal-error" id="shift-modal-error" role="alert" hidden></p>
     <div class="eyebrow" style="margin-bottom: 4px;">Your Divine Identity</div>
     <h2 class="serif" id="shift-modal-identity" style="margin-bottom: 2px;">The Leader</h2>
     <p style="margin: 0; color: var(--taupe); font-size: 13.5px;">Currently experiencing: <span id="shift-modal-frequency">Hiddenness</span></p>
@@ -1250,7 +1262,7 @@
       </div>
       <div class="focus-card-footer">
         <div class="focus-card-activation">Recommended: <strong data-role="focus-activation"></strong></div>
-        <button class="btn-primary" onclick="openShiftModal()">Continue Your Revolution</button>
+        <button class="btn-primary" data-role="focus-open" onclick="openShiftModal(this.getAttribute('data-shift-id'))">Continue Your Revolution</button>
       </div>
     </div>
     <div class="card center" data-role="focus-empty" style="display:none;">
@@ -2176,11 +2188,56 @@
     if (typeof gapV2ShiftModal === 'function') gapV2ShiftModal(shift); // switch on only: unified labels
   }
 
+  // In-app sheet (Oct 15 Delete Shift fix). rhSheet({ message, okLabel, cancelLabel, danger, input, value })
+  // resolves true/false (confirm), the typed text or null (input), or true (alert, no cancel button).
+  function rhSheet(o) {
+    o = o || {};
+    return new Promise(function (resolve) {
+      var prevFocus = document.activeElement;
+      var bd = document.createElement('div'); bd.className = 'rh-sheet-backdrop';
+      var sh = document.createElement('div'); sh.className = 'rh-sheet'; sh.setAttribute('role', 'dialog'); sh.setAttribute('aria-modal', 'true');
+      var msg = document.createElement('p'); msg.className = 'rh-sheet-msg'; msg.textContent = o.message || ''; sh.appendChild(msg);
+      var inp = null;
+      if (o.input) { inp = document.createElement('input'); inp.type = 'text'; inp.className = 'rh-sheet-input'; inp.value = o.value || ''; inp.setAttribute('aria-label', o.message || ''); sh.appendChild(inp); }
+      var row = document.createElement('div'); row.className = 'rh-sheet-actions';
+      var cancel = null;
+      if (!o.alert) { cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'rh-sheet-cancel'; cancel.textContent = o.cancelLabel || 'Cancel'; row.appendChild(cancel); }
+      var ok = document.createElement('button'); ok.type = 'button'; ok.className = 'rh-sheet-ok' + (o.danger ? ' rh-danger' : ''); ok.textContent = o.okLabel || 'OK'; row.appendChild(ok);
+      sh.appendChild(row); bd.appendChild(sh); document.body.appendChild(bd);
+      function done(v) { document.removeEventListener('keydown', onKey, true); bd.remove(); try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {} resolve(v); }
+      function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); done(o.alert ? true : (o.input ? null : false)); } else if (e.key === 'Enter' && inp && document.activeElement === inp) { e.preventDefault(); done(inp.value); } }
+      document.addEventListener('keydown', onKey, true);
+      ok.addEventListener('click', function (e) { e.stopPropagation(); done(o.alert ? true : (inp ? inp.value : true)); });
+      if (cancel) cancel.addEventListener('click', function (e) { e.stopPropagation(); done(o.input ? null : false); });
+      bd.addEventListener('click', function (e) { if (e.target === bd) done(o.alert ? true : (o.input ? null : false)); });
+      setTimeout(function () { (inp || ok).focus(); if (inp) inp.select(); }, 30);
+    });
+  }
+  window.rhSheet = rhSheet;
+
+  // Oct 15 (Delete Shift fix): the modal only ever shows -- and Delete only ever acts on -- the exact
+  // Shift id that was tapped. The old fallback to SHIFTS[0] meant "Continue Your Revolution" (which
+  // passed no id while Today's Focus showed the pinned Shift) could open, and delete, a different Shift.
   function openShiftModal(id) {
-    if (!SHIFTS.length) return;
-    var shift = SHIFTS.find(function(s) { return s.id === id; }) || SHIFTS[0];
+    var modal = document.getElementById('shift-modal');
+    var shift = (id !== undefined && id !== null && id !== '') ? SHIFTS.find(function(s) { return String(s.id) === String(id); }) : null;
+    var err = document.getElementById('shift-modal-error');
+    var menuBtn = document.getElementById('shift-modal-menu-btn');
+    var old = document.querySelector('.shift-modal-popover'); if (old) old.remove();
+    if (!shift) {
+      window.__rhCurrentShift = null;
+      modal.removeAttribute('data-shift-id');
+      if (err) { err.textContent = "We couldn't open that Shift. Please close this and tap it again."; err.hidden = false; }
+      if (menuBtn) { menuBtn.disabled = true; menuBtn.setAttribute('aria-disabled', 'true'); }
+      modal.classList.add('active', 'shift-modal-missing');
+      return;
+    }
+    if (err) { err.hidden = true; err.textContent = ''; }
+    if (menuBtn) { menuBtn.disabled = false; menuBtn.removeAttribute('aria-disabled'); }
+    modal.classList.remove('shift-modal-missing');
     renderShiftModal(shift);
-    document.getElementById('shift-modal').classList.add('active');
+    modal.setAttribute('data-shift-id', String(shift.id));
+    modal.classList.add('active');
   }
   function closeShiftModal() { document.getElementById('shift-modal').classList.remove('active'); }
   function toggleShiftModalMenu() {
@@ -2192,24 +2249,30 @@
     pop.className = 'rh-drawer-popover shift-modal-popover';
     pop.innerHTML = '<button type="button" data-act="delete" class="rh-danger">Delete Shift</button>';
     bar.appendChild(pop);
+    var openId = document.getElementById('shift-modal').getAttribute('data-shift-id');
     pop.querySelector('[data-act="delete"]').addEventListener('click', function (ev) {
       ev.stopPropagation();
       pop.remove();
-      rhDeleteShift();
+      rhDeleteShift(openId);
     });
   }
-  async function rhDeleteShift() {
+  async function rhDeleteShift(expectedId) {
     var shift = window.__rhCurrentShift;
-    if (!shift || !RH_EMAIL) {
-      alert('Something went wrong -- please close and reopen this Shift, then try again.');
+    var modal = document.getElementById('shift-modal');
+    var openId = modal ? modal.getAttribute('data-shift-id') : null;
+    // Exact-id guard: the Shift on screen, the id the menu was opened for, and the record we send must all match.
+    if (!shift || !RH_EMAIL || !openId || String(shift.id) !== String(openId) || (expectedId && String(expectedId) !== String(openId))) {
+      await rhSheet({ alert: true, message: 'Something went wrong -- please close and reopen this Shift, then try again.', okLabel: 'OK' });
       return;
     }
-    if (!window.confirm('Delete this Shift? This cannot be undone.')) return;
+    var ok = await rhSheet({ message: 'Delete this Shift? This cannot be undone.', okLabel: 'Delete Shift', cancelLabel: 'Cancel', danger: true });
+    if (!ok) return;
+    var targetId = String(shift.id);
     try {
       var res = await fetch('/api/shifts', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: shift.id, email: RH_EMAIL })
+        body: JSON.stringify({ id: targetId, email: RH_EMAIL })
       });
       if (!res.ok) {
         var errMsg = 'Something went wrong deleting this Shift. Please try again.';
@@ -2217,15 +2280,18 @@
           var errBody = await res.json();
           if (errBody && errBody.error) errMsg = errBody.error;
         } catch (parseErr) {}
-        alert(errMsg);
+        await rhSheet({ alert: true, message: errMsg, okLabel: 'OK' });
         return;
       }
-      var idx = SHIFTS.findIndex(function(s) { return s.id === shift.id; });
+      var idx = SHIFTS.findIndex(function(s) { return String(s.id) === targetId; });
       if (idx !== -1) SHIFTS.splice(idx, 1);
+      try { if (sessionStorage.getItem('rhFocusShiftId') === targetId) sessionStorage.removeItem('rhFocusShiftId'); } catch (e) {}
+      window.__rhCurrentShift = null;
       closeShiftModal();
+      renderFocusAndShifts(SHIFTS);
       if (typeof loadMemberRevolutionData === 'function') loadMemberRevolutionData();
     } catch (e) {
-      alert('Something went wrong deleting this Shift. Please check your connection and try again.');
+      await rhSheet({ alert: true, message: 'Something went wrong deleting this Shift. Please check your connection and try again.', okLabel: 'OK' });
     }
   }
   function rhSlugForActivationTitle(title) {
@@ -2794,6 +2860,7 @@
       });
       document.querySelectorAll('[data-role="focus-activation"]').forEach(function(el) { el.textContent = top.activation || ''; });
       document.querySelectorAll('[data-role="focus-activity-line"]').forEach(function(el) { el.textContent = 'Started ' + top.date; });
+      document.querySelectorAll('[data-role="focus-open"]').forEach(function(el) { el.setAttribute('data-shift-id', String(top.id)); });
       if (typeof gapV2FocusCard === 'function') gapV2FocusCard(top); // switch on only: unified labels
     }
 
@@ -3803,7 +3870,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
 
   async function rhRenameChat(chatId) {
     var current = (window.__rhChatList || []).find(function (c) { return c.id === chatId; });
-    var next = window.prompt('Rename this chat', current ? current.title : '');
+    var next = await rhSheet({ input: true, message: 'Rename this chat', value: current ? current.title : '', okLabel: 'Save', cancelLabel: 'Cancel' });
     if (next === null) return;
     next = next.trim();
     if (!next) return;
@@ -3816,7 +3883,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
   }
 
   async function rhArchiveChat(chatId) {
-    if (!window.confirm('Archive this chat? You can find it again later if needed.')) return;
+    if (!(await rhSheet({ message: 'Archive this chat? You can find it again later if needed.', okLabel: 'Archive', cancelLabel: 'Cancel' }))) return;
     try {
       await fetch('/api/chats/' + encodeURIComponent(chatId), {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ archived: true })
@@ -3827,7 +3894,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
   }
 
   async function rhDeleteChat(chatId) {
-    if (!window.confirm('Delete this chat? This cannot be undone.')) return;
+    if (!(await rhSheet({ message: 'Delete this chat? This cannot be undone.', okLabel: 'Delete', cancelLabel: 'Cancel', danger: true }))) return;
     try {
       await fetch('/api/chats/' + encodeURIComponent(chatId), { method: 'DELETE' });
       if (window.__rhActiveChatId === chatId) rhStartNewChat();
@@ -4879,7 +4946,13 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
   function gapStartOver() {
     var reachedStep3 = gapCurrentStep === 3;
     var started = !reachedStep3 && (gapCurrentStep === 2 || identityAnswers.some(function (x) { return !!x; }) || !!selectedDomain);
-    if (started && !window.confirm('Start a new GAP Method run? Your answers from this run will be cleared. Your saved Shifts stay in My Revolution.')) return;
+    if (started && typeof window.rhSheet === 'function') {
+      window.rhSheet({ message: 'Start a new GAP Method run? Your answers from this run will be cleared. Your saved Shifts stay in My Revolution.', okLabel: 'Start over', cancelLabel: 'Cancel' }).then(function (ok) { if (ok) gapDoStartOver(); });
+      return;
+    }
+    gapDoStartOver();
+  }
+  function gapDoStartOver() {
     resetGapMethodState();
     goDay(1);
     var stage = document.querySelector('#hero-gap-embed .stage'); var wrapEl = document.getElementById('hero-gap-embed');
