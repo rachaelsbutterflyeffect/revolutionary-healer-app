@@ -120,3 +120,5 @@ html body.rf #hero-gap-embed.gm-modal .topbar::before { display: none !important
 html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { display: none !important; }
 html body.rf #hero-gap-embed:not(.gm-modal) #rf-gap-home { display: none !important; }
 html body.rf #hero-gap-embed.gm-modal #rf-gap-home { position: absolute !important; left: 20px; top: 22px; margin: 0 !important; z-index: 22; }
+html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } /* the title sits under the Home row, as on Today's Focus */
+@media (max-width: 819px) { html body.rf #hero-gap-embed.gm-modal #rf-gap-home { left: 7px; top: 21px; } } /* same spot as the other screens' Home (8, 22) */
