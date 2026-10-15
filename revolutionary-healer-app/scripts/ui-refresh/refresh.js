@@ -19,8 +19,16 @@
     if (s === 'page') { if (curPage === 'activations-page' || curPage === 'activation-detail-page') return 'lib'; if (curPage === 'favorites-page') return 'rev'; }
     return '';
   }
+  // ---------- smooth scrolling (Oct 15 round 3): decorative motion rests while the member scrolls or switches pages ----------
+  var busyT = null;
+  function busy(ms) { if (!B.classList.contains('rf-busy')) B.classList.add('rf-busy'); clearTimeout(busyT); busyT = setTimeout(function () { B.classList.remove('rf-busy'); }, ms || 180); }
+  window.__rfBusy = function () { return B.classList.contains('rf-busy'); };
+  addEventListener('scroll', function () { busy(180); }, { passive: true, capture: true });
+  addEventListener('touchmove', function () { busy(220); }, { passive: true });
+  addEventListener('wheel', function () { busy(180); }, { passive: true });
   function rfGo(s, opts) {
     opts = opts || {};
+    busy(450);
     B.setAttribute('data-rf', s);
     var k = navKey(s);
     document.querySelectorAll('#rf-nav button').forEach(function (b) { var on = b.getAttribute('data-rf-nav') === k; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
@@ -67,7 +75,11 @@
     var c = e.target.closest && e.target.closest('#rf-lib-sub .category-chips .filter-chip');
     if (c && B.getAttribute('data-rf-lib') === 'cat') { var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + c.getAttribute('data-category') + '"] b'), tt = document.getElementById('rf-sec-ttl'); if (tt && sec) tt.textContent = sec.textContent; }
   });
-  var _goRev = window.goToMyRevolution;
+  var _goRev0 = window.goToMyRevolution;
+  var _goRev = function () {
+    var siv = Element.prototype.scrollIntoView; Element.prototype.scrollIntoView = function () {};
+    try { return _goRev0.apply(this, arguments); } finally { Element.prototype.scrollIntoView = siv; }
+  };
   goToMyRevolution = window.goToMyRevolution = function () { var r = _goRev.apply(this, arguments); curPage = null; rfGo('rev'); return r; };
   var _openChat = window.rhOpenChatWithMessage;
   rhOpenChatWithMessage = window.rhOpenChatWithMessage = function () { var r = _openChat.apply(this, arguments); rfGo('chat'); toBottom(); return r; };
@@ -263,14 +275,15 @@
   function usableName(n) { n = String(n || '').trim(); if (!n || /@/.test(n) || /^(test|tester|testing|test\s*user|member|user|demo|sample|null|undefined)\d*$/i.test(n)) return ''; return n.split(/\s+/)[0]; }
   function firstName() { return usableName(window.__RF_FIRST); }
   function greetFor(h) { var p = h >= 5 && h < 12 ? 'Good morning' : h >= 12 && h < 17 ? 'Good afternoon' : h >= 17 && h < 22 ? 'Good evening' : 'Good night'; return p + ', ' + (firstName() || 'Revolutionary Healer') + '.'; }
+  function homeHi(h) { return greetFor(h).replace(/\.$/, '') + ', welcome back'; }
   var greet = '', gi = 0, gt = null;
   function typeGreet() {
     var say = document.getElementById('rf-say'); if (!say) return;
-    greet = greetFor(new Date().getHours()); gi = 0; clearTimeout(gt);
+    greet = homeHi(new Date().getHours()); gi = 0; clearTimeout(gt);
     say.setAttribute('aria-label', greet);
     (function step() { say.textContent = greet.slice(0, ++gi); if (gi < greet.length) gt = setTimeout(step, RM ? 0 : 45); })();
   }
-  setInterval(function () { var g = greetFor(new Date().getHours()); if (g !== greet) { greet = g; var say = document.getElementById('rf-say'); if (say) say.textContent = g; } }, 60000);
+  setInterval(function () { var g = homeHi(new Date().getHours()); if (g !== greet) { greet = g; var say = document.getElementById('rf-say'); if (say) say.textContent = g; } }, 60000);
   document.addEventListener('rf:name', function () { typeGreet(); fillAccount(); fixWelcome(); });
   function fixWelcome() { var w = document.getElementById('profile-welcome-line'); if (w) w.textContent = greetFor(new Date().getHours()); } // Rachael, Oct 14: the time greeting, never "welcome back"
   var _ipf = window.initProfileFields;
@@ -504,7 +517,12 @@
   var sky = document.getElementById('rf-sky'), fly = document.getElementById('rf-fly');
   if (sky && sky.getContext) {
     var sx = sky.getContext('2d'), W, H, stars = [], px = 0, py = 0;
-    var rs = function () { var d = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; sky.width = W * d; sky.height = H * d; sky.style.width = W + 'px'; sky.style.height = H + 'px'; sx.setTransform(d, 0, 0, d, 0, 0);
+    var rs = function () { var d = Math.min(window.devicePixelRatio || 1, 2), nh = Math.max(innerHeight, (window.screen && screen.height) || 0);
+      // the iOS toolbar collapsing/expanding only changes the height: keep the canvas (sized to the tallest
+      // viewport) and the same stars, so nothing re-draws or jumps mid-scroll
+      if (W === innerWidth && H && nh <= H) return;
+      var same = W === innerWidth; W = innerWidth; H = Math.max(nh, H || 0); sky.width = W * d; sky.height = H * d; sky.style.width = W + 'px'; sky.style.height = H + 'px'; sx.setTransform(d, 0, 0, d, 0, 0);
+      if (same && stars.length) return;
       stars = Array.from({ length: 110 }, function () { return { x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + .2, z: Math.random() * .8 + .2, p: Math.random() * 6, g: Math.random() < .35 }; }); };
     rs(); addEventListener('resize', rs);
     addEventListener('pointermove', function (e) { px = (e.clientX / W - .5) * 14; py = (e.clientY / H - .5) * 14; });
@@ -513,20 +531,21 @@
       pts = Array.from({ length: 520 }, function () { var t = Math.random() * Math.PI * 2, side = Math.random() < .5 ? -1 : 1; var r = (Math.exp(Math.sin(t)) - 2 * Math.cos(4 * t) + Math.pow(Math.sin((2 * t - Math.PI) / 24), 5)) * Math.pow(Math.random(), .35); return { bx: Math.sin(t) * r * side, by: -Math.cos(t) * r, s: side, j: Math.random() * 6, c: Math.random() < .18 }; });
       var k = Math.min(FW, FH) / 7.2; vort = Array.from({ length: 140 }, function () { return { a: Math.random() * 7, r: k * (.9 + Math.random() * 2.4), w: .004 + Math.random() * .01, inw: Math.random() < .4 ? .08 + Math.random() * .15 : 0, s: Math.random() * 1.6 + .4, j: Math.random() * 6, c: Math.random() < .4 }; }); };
     addEventListener('resize', rf);
-    var T = 0;
+    var T = 0, fc = 0, hero = fly && fly.parentNode;
     var frame = function () {
-      T += .016;
-      if (!document.hidden) {
+      T += .016; fc++;
+      if (!document.hidden && !B.classList.contains('rf-busy') && (fc & 1)) {
         sx.clearRect(0, 0, W, H);
         for (var i = 0; i < stars.length; i++) { var s = stars[i], a = .45 + .55 * Math.sin(T * 1.5 + s.p); sx.fillStyle = s.g ? 'rgba(255,226,150,' + a + ')' : 'rgba(220,255,250,' + (a * .8) + ')'; sx.beginPath(); sx.arc(s.x + px * s.z, s.y + py * s.z, s.r, 0, 7); sx.fill(); }
-        if (fx && B.getAttribute('data-rf') === 'home' && !B.classList.contains('gm-lock')) {
+        var hr = hero && hero.getBoundingClientRect();
+        if (fx && B.getAttribute('data-rf') === 'home' && !B.classList.contains('gm-lock') && hr && hr.bottom > 0 && hr.top < innerHeight) {
           if (!FW || fly.clientWidth !== FW) rf();
           if (FW) {
             fx.clearRect(0, 0, FW, FH); var cx = FW / 2 + px * .6, cy = FH / 2 - 6 + py * .6, k = Math.min(FW, FH) / 7.2;
             fx.globalCompositeOperation = 'lighter';
             for (var j = 0; j < pts.length; j++) { var p = pts[j]; var x = cx + Math.abs(p.bx) * p.s * k * .92 + Math.sin(T * .6 + p.j) * .8, y = cy + p.by * k * .9 + Math.cos(T * .5 + p.j) * .8; fx.fillStyle = p.c ? 'rgba(110,240,228,.75)' : 'rgba(255,224,150,.8)'; fx.fillRect(x, y, 1.6, 1.6); }
             fx.fillStyle = 'rgba(255,246,214,.9)'; fx.fillRect(cx - 1, cy - k * .9, 2, k * 1.6);
-            for (var q = 0; q < vort.length; q++) { var v = vort[q]; v.a += v.w * (RM ? 0 : 1); v.r -= v.inw * (RM ? 0 : 1); if (v.r < k * .4) { v.r = k * (2 + Math.random() * 1.4); v.a = Math.random() * 7; }
+            for (var q = 0; q < vort.length; q++) { var v = vort[q]; v.a += v.w * (RM ? 0 : 2); v.r -= v.inw * (RM ? 0 : 2); if (v.r < k * .4) { v.r = k * (2 + Math.random() * 1.4); v.a = Math.random() * 7; }
               var tw = .35 + .65 * Math.abs(Math.sin(T * 2 + v.j)), vx = cx + Math.cos(v.a) * v.r, vy = cy + Math.sin(v.a) * v.r * .62;
               fx.fillStyle = v.c ? 'rgba(110,240,228,' + tw + ')' : 'rgba(255,226,150,' + tw + ')'; fx.beginPath(); fx.arc(vx, vy, v.s, 0, 7); fx.fill();
               if (v.s > 1.3) { fx.fillRect(vx - v.s * 2.5, vy - .3, v.s * 5, .6); fx.fillRect(vx - .3, vy - v.s * 2.5, .6, v.s * 5); } }
