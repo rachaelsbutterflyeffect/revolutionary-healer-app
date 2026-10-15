@@ -40,6 +40,7 @@
       var im = document.createElement('img'); im.className = 'rf-cu-thumb'; im.src = dir + c.f + '.webp'; im.alt = c.n + ' code card'; el.insertBefore(im, el.firstChild);
     });
   }
-  new MutationObserver(function () { decorate(); }).observe(document.body, { childList: true, subtree: true });
+  var queued = false; // one pass per frame at most, so chat typing never pays for this
+  new MutationObserver(function () { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; decorate(); }); }).observe(document.body, { childList: true, subtree: true });
   decorate();
 })();
