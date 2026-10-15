@@ -131,7 +131,9 @@ export async function POST(req: NextRequest) {
   // the ~12.7k-token instructions are not re-read from scratch on every turn of
   // a run. Text, model, messages and params are unchanged. Unset/off (the
   // production default) = the plain string, exactly as before.
-  const systemField: any = String(process.env.GAP_PROMPT_CACHE || "").toLowerCase() === "on"
+  // Step 2 chat turns only: measured Oct 15, the one deep reading (different effort setting) never
+  // reads the chat turns' cache, so caching it would only add the cache-write cost.
+  const systemField: any = String(process.env.GAP_PROMPT_CACHE || "").toLowerCase() === "on" && phase !== "reading"
     ? [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }]
     : systemPrompt;
 
