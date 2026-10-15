@@ -100,6 +100,10 @@
     var t = e.target.closest && e.target.closest('[data-rf-go],[data-rf-nav]'); if (!t) return;
     var g = t.getAttribute('data-rf-go') || t.getAttribute('data-rf-nav');
     e.preventDefault();
+    // QA Oct 15 (Ray: "scrolling Home to the very bottom snaps back to the top"): a clicked nav button kept
+    // keyboard focus, so the next Space (the page-down key) clicked it again -> showMain -> back to the top.
+    // A mouse/touch click lets go of focus; keyboard use (Enter/Space, e.detail 0) keeps it.
+    if (e.detail > 0 && t.blur) { try { t.blur(); } catch (x) {} }
     if (g === 'home') showMain();
     else if (g === 'focus') { _goRev(); curPage = null; rfGo('focus'); }
     else if (g === 'chat') { showMain(); rfGo('chat'); toBottom(); }
@@ -120,10 +124,10 @@
   // Tapping a chip removes the chips, the chip becomes the member's message, and the real chat API answers (streamed).
   // Spiritual Gifts opener + "I feel disconnected today": Rachael's own wording (Oct 15); the rest is the mock-up's.
   var LANES = {
-    gifts: ['Spiritual Gifts', "Let's explore your spiritual gifts. What are you looking at?", ['I feel disconnected today', 'Trusting my intuition', 'Seeing signs', 'Opening my channel', 'Not sure yet']],
-    money: ['Money & Prosperity', "Let's look at your money energy. Where do you want to feel the shift?", ['Receiving more', 'Charging my worth', 'Calm around money', 'Clearing old stories']],
+    gifts: ['Gifts & Spirit', "Let's explore your spiritual gifts. What are you looking at?", ['I feel disconnected today', 'Trusting my intuition', 'Seeing signs', 'Opening my channel', 'Not sure yet']],
+    money: ['Money & Receiving', "Let's look at your money energy. Where do you want to feel the shift?", ['Receiving more', 'Charging my worth', 'Calm around money', 'Clearing old stories']],
     energy: ['Energy & Frequency', "Let's talk about your energy. What kind of energy shift are you looking for today?", ['More energy', 'Calm my nervous system', 'Focus', 'Confidence', 'Clear the static']],
-    vis: ['Visibility & Impact', "Let's talk about being seen. What feels most true right now?", ["I'm ready to show up", 'Fear of judgment', 'Sharing my message', 'Growing my impact']]
+    vis: ['Business & Impact', "Let's talk about being seen. What feels most true right now?", ["I'm ready to show up", 'Fear of judgment', 'Sharing my message', 'Growing my impact']]
   };
   window.RF_LANES = LANES;
   document.addEventListener('click', function (e) {
@@ -353,7 +357,8 @@
         '<button type="button" class="rf-xlisten" data-rf-listen="' + esc(s.id) + '">▶ Listen</button></div>' +
         '<div class="rf-xfoot"><button type="button" class="rf-del" data-rf-del="' + esc(s.id) + '">Delete Shift</button></div>';
     }
-    return '<div class="rf-orb" aria-hidden="true">✦</div><div class="bt"><div class="src">' + esc(s.method || 'GAP Method') + '</div><div class="nm">' + esc(s.identity) + '</div><div class="fr">Current Frequency: ' + esc(s.frequency) + '</div><div class="dt">' + esc(s.date) + '</div>' +
+    return '<div class="rf-orb" aria-hidden="true">✦</div><div class="bt"><div class="src">' + esc(s.method || 'GAP Method') + '</div><div class="nm">' + esc(s.identity) + '</div><div class="fr">Current Frequency: ' + esc(s.frequency) + '</div><div class="dt">' + esc(s.date) + (s.time ? ' · ' + esc(s.time) : '') + '</div>' +
+      (!open && (a ? a.title : s.activation) ? '<div class="ac">' + esc(a ? a.title : s.activation) + '</div>' : '') +
       (open ? '' : '<div class="rf-cue">▶ Tap to open your activation</div>') + '</div>' + pillHtml(s) + xp;
   }
   function wireCard(d, s) {
@@ -441,7 +446,7 @@
     var bd = document.createElement('div'); bd.className = 'rh-sheet-backdrop rf-pick-backdrop';
     bd.innerHTML = '<div class="rh-sheet rf-pick" role="dialog" aria-label="Choose today\'s focus"><p class="rh-sheet-msg">Choose today\'s focus</p><div class="rf-pick-list"></div><div class="rh-sheet-actions"><button type="button" class="rh-sheet-cancel">Cancel</button></div></div>';
     var pl = bd.querySelector('.rf-pick-list');
-    list.forEach(function (s) { var b = document.createElement('button'); b.type = 'button'; b.className = 'rf-pick-item' + (cur && String(cur.id) === String(s.id) ? ' on' : ''); b.innerHTML = '<b>' + esc(s.identity) + '</b><small>' + esc(s.frequency) + ' · ' + esc(s.date) + '</small>'; b.onclick = function () { setFocus(s.id); bd.remove(); }; pl.appendChild(b); });
+    list.forEach(function (s) { var b = document.createElement('button'); b.type = 'button'; b.className = 'rf-pick-item' + (cur && String(cur.id) === String(s.id) ? ' on' : ''); b.innerHTML = '<b>' + esc(s.identity) + '</b><small>' + esc(s.frequency) + ' · ' + esc(s.date) + (s.time ? ' · ' + esc(s.time) : '') + '</small>'; b.onclick = function () { setFocus(s.id); bd.remove(); }; pl.appendChild(b); });
     bd.querySelector('.rh-sheet-cancel').onclick = function () { bd.remove(); };
     bd.addEventListener('click', function (e) { if (e.target === bd) bd.remove(); });
     document.body.appendChild(bd);

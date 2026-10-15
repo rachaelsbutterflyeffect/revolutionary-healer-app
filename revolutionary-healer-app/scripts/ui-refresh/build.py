@@ -97,10 +97,10 @@ HOME = """
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
  </div>
  <div class="rf-sec rf-reveal"><h3>Ask Rachael Anything</h3><div class="rf-lanes">
-  <button type="button" class="rf-tile" data-rf-lane="gifts"><span class="ic" aria-hidden="true">👁</span><span><b>Spiritual Gifts</b><br><small>What's calling you?</small></span></button>
-  <button type="button" class="rf-tile" data-rf-lane="money"><span class="ic" aria-hidden="true">✺</span><span><b>Money &amp; Prosperity</b><br><small>Feel the shift</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="gifts"><span class="ic" aria-hidden="true">👁</span><span><b>Gifts &amp; Spirit</b><br><small>What's calling you?</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="money"><span class="ic" aria-hidden="true">✺</span><span><b>Money &amp; Receiving</b><br><small>Feel the shift</small></span></button>
   <button type="button" class="rf-tile" data-rf-lane="energy"><span class="ic" aria-hidden="true">⚡</span><span><b>Energy &amp; Frequency</b><br><small>Tune your field</small></span></button>
-  <button type="button" class="rf-tile" data-rf-lane="vis"><span class="ic" aria-hidden="true">☀</span><span><b>Visibility &amp; Impact</b><br><small>Be seen</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="vis"><span class="ic" aria-hidden="true">☀</span><span><b>Business &amp; Impact</b><br><small>Be seen</small></span></button>
  </div></div>
  <div class="rf-sec rf-reveal"><h3>Go Deeper</h3><div class="rf-deeps">
   <button type="button" class="rf-deep" data-rf-go="lib"><span aria-hidden="true">♫</span>Activation Library</button>
@@ -186,13 +186,67 @@ once('        <button class="btn-secondary" id="shift-modal-embodied-btn">Mark T
 # ---- Activations: the mock-up's four big sections (Rachael's own section covers) -> that section's activations ----
 LSECS = """<div class="rf-lsecs" id="rf-lsecs">
 """ + ''.join('  <button type="button" class="rf-lsec" data-rf-sec="%s"><span class="bgc" style="background-image:url(\'/images/sections/sec-%s.webp\');background-position:%s" aria-hidden="true"></span><span class="in"><b>%s</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>\n' % x for x in [
-    ('Gifts + Spirit', 'gifts', '24% 22%', 'Spiritual Gifts'), ('Money + Receiving', 'money', '82% 20%', 'Money &amp; Prosperity'),
-    ('Energy + Frequency', 'energy', '72% 26%', 'Energy &amp; Frequency'), ('Business + Impact', 'vis', '62% 26%', 'Visibility &amp; Impact')]) + "</div>\n"
+    ('Gifts + Spirit', 'gifts', '24% 22%', 'Gifts &amp; Spirit'), ('Money + Receiving', 'money', '82% 20%', 'Money &amp; Receiving'),
+    ('Energy + Frequency', 'energy', '72% 26%', 'Energy &amp; Frequency'), ('Business + Impact', 'vis', '62% 26%', 'Business &amp; Impact')]) + "</div>\n"
 once('<div class="revolution-subsection" id="gap-method-activations-subsection">', LSECS + '<div class="revolution-subsection" id="gap-method-activations-subsection">', 'lsecs')
 once('    <div class="revolution-subsection">\n      <div class="filter-chips category-chips">',
      '    <div class="revolution-subsection" id="rf-lib-sub">\n      <button type="button" class="rf-back rf-allsecs" data-rf-allsecs>← All sections</button><h3 class="rf-sec-ttl" id="rf-sec-ttl"></h3>\n      <div class="filter-chips category-chips">', 'libsub')
 
 # ---- back-link labels (text only; onclicks unchanged) ----
+# ---- QA Oct 15 (Ray's findings): refresh-only patches to code carried over from app.html (classic unchanged).
+# Category chips use Rachael's names (data-category keys unchanged).
+for _k, _v in (('Business + Impact', 'Business &amp; Impact'), ('Money + Receiving', 'Money &amp; Receiving'),
+               ('Gifts + Spirit', 'Gifts &amp; Spirit'), ('Energy + Frequency', 'Energy &amp; Frequency')):
+    once('onclick="selectCategoryChip(this)">%s</button>' % _k, 'onclick="selectCategoryChip(this)">%s</button>' % _v, 'qa chips')
+# Classic's footer (logo + domain, no links) is not part of the refresh: removed so no empty footer exists.
+once('''<footer>
+  <div class="wrap">
+    <div class="logo serif">The Revolutionary<span> Healer</span></div>
+    <p>therevolutionaryhealer.com</p>
+  </div>
+</footer>''', '<!-- QA Oct 15: classic\'s footer (logo + domain, no links) is not part of the refresh; removed so no empty footer exists. -->', 'qa footer')
+# Favorites See all: a clone kept the library's inline display:none, so See all showed fewer than the preview.
+once('''          pageGrid.appendChild(entry.card.cloneNode(true));''', '''          // QA Oct 15: the library hides cards outside its current section/search/first 12 with an inline
+          // display:none, and a clone kept it, so See all showed only the favorites the library happened to
+          // be showing. A favorite's card is always shown here.
+          var c = entry.card.cloneNode(true);
+          c.style.removeProperty('display');
+          pageGrid.appendChild(c);''', 'qa favs')
+# Shifts: time on each card + display de-dupe (no record is changed).
+once('''  function formatShiftDate(iso) {''', '''  function formatShiftTime(iso) {
+    if (!iso) return '';
+    try { return new Date(iso).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }); } catch (e) { return ''; }
+  }
+  function formatShiftDate(iso) {''', 'qa shift time')
+once('''      SHIFTS.length = 0;
+      records.forEach(function(r) {
+        SHIFTS.push({
+''', '''      SHIFTS.length = 0;
+      // QA Oct 15 (Ray: "the same Shift appears twice"): a card is shown once per Shift id, and a reading
+      // saved twice (same identity, frequency, Gap text, what we noticed and activation) shows once (newest
+      // kept; records arrive newest first). Separate runs with different readings stay separate cards; the
+      // card's time and activation line tell same-day look-alikes apart. Display only: no record is changed.
+      var seenIds = {}, seenReadings = {};
+      records = records.filter(function(r) {
+        if (!r || seenIds[r.id]) return false;
+        seenIds[r.id] = true;
+        var gapText = String(r.gapExplanation || '').trim();
+        if (!gapText) return true;
+        var k = [r.divineIdentityName, r.currentFrequency, gapText, String(r.whatWeNoticed || '').trim(), r.recommendedActivation].join('\\u0001').toLowerCase();
+        if (seenReadings[k]) return false;
+        seenReadings[k] = true;
+        return true;
+      });
+      records.forEach(function(r) {
+        SHIFTS.push({
+          time: formatShiftTime(r.createdAt),
+''', 'qa shift dedupe')
+# GAP analyzing screen (refresh page code, not the GAP lib): pace to the real wait, timer from the start.
+once('''    var target = 97 * (1 - Math.exp(-t / 32)); // QA Oct 14: slower curve (was t/13, sat at ~90% by 30s and looked stalled); keeps visibly moving for ~2 min''', '''    // QA Oct 15 (Ray): the fast reading lands in ~8-17s (prod logs), but the t/32 curve was only ~20% by then and
+    // jumped to 100. Now it eases toward ~90% over the real wait (about 60% at 8s, 80% at 15s, 89% at 30s), then
+    // keeps creeping toward 97% so a slow reading never looks stalled; gapAnComplete() finishes it on the result.
+    var target = Math.min(97, 90 * (1 - Math.exp(-t / 7)) + 7 * (1 - Math.exp(-t / 90)));''', 'qa gap pace')
+once('''el.textContent = sec >= 10 ? ('Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')) : ''; }''', '''el.textContent = 'Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); } // QA Oct 15: timer shows from the start''', 'qa gap timer')
 s = s.replace('>← Back to My Revolution</a>', '>← My Revolution</a>').replace('>← Back to Activations</a>', '>← Activations</a>').replace('>← Back to Home</a>', '>← Home</a>')
 
 # ---- end of body: GAP look, nav, refresh script ----
