@@ -1428,6 +1428,52 @@ html body #hero-gap-embed, html body #hero-gap-embed * { font-style: normal !imp
    scroll it away. Here it stays pinned to the panel's top-right corner. */
 html body #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !important; float: right; top: 12px !important; right: auto !important; margin: 12px 12px -44px auto !important; z-index: 40 !important; }
 
+/* ===== r15: airy glass layer (look only) =====================================================
+   Matches the mock-up's own glass: Home doors (.door), Shifting card bubbles (.sbub), chat bubbles,
+   gold pill buttons (.btn-g). See-through panels, soft rounded shapes, faint gold edges, the
+   mock-up's starry sky showing through. No text, markup, order or behaviour changes. */
+html body #gm-backdrop { background: radial-gradient(80% 50% at 50% 0%, rgba(255,214,130,.08), transparent 70%), rgba(4,6,9,.32) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html body #gm-backdrop::before { opacity: .18 !important; }
+html body #gm-backdrop::after { opacity: .5 !important; }
+/* the pop-up itself: a clear glass sheet, not a filled box */
+html body #hero-gap-embed.gm-modal { background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.015) 40%, rgba(255,255,255,.03)) !important; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255,236,190,.24) !important; border-radius: 30px !important; box-shadow: 0 20px 70px rgba(0,0,0,.45), 0 0 40px rgba(255,214,130,.10), inset 0 1px 0 rgba(255,255,255,.18) !important; }
+html body #hero-gap-embed.gm-modal::after { display: none !important; }
+html body #hero-gap-embed.gm-modal .topbar { background: none !important; }
+html body #hero-gap-embed.gm-modal .topbar::after { opacity: .7; }
+html body #hero-gap-embed.gm-modal #hero-gap-embed-close { background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.03)) !important; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,236,190,.35) !important; box-shadow: 0 6px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.25) !important; }
+html body #hero-gap-embed.gm-modal .gm-start-over:not([hidden]) { background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.02)) !important; border-color: rgba(255,236,190,.32) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+/* answers = Home-door glass bubbles */
+html body #hero-gap-embed.gm-modal .opt, html body #hero-gap-embed.gm-modal .domain-chip { background: linear-gradient(135deg, rgba(255,255,255,.11), rgba(255,255,255,.03)) !important; border: 1px solid rgba(255,236,190,.28) !important; border-radius: 22px !important; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.22) !important; }
+html body #hero-gap-embed.gm-modal .opt.selected, html body #hero-gap-embed.gm-modal .domain-chip.selected { background: radial-gradient(120% 140% at 0% 50%, rgba(255,214,130,.26), transparent 60%), linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.04)) !important; border-color: rgba(255,236,190,.6) !important; box-shadow: 0 10px 30px rgba(0,0,0,.3), 0 0 26px rgba(255,214,130,.28), inset 0 1px 0 rgba(255,255,255,.3) !important; }
+html body #hero-gap-embed.gm-modal .quote-block { background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.015)) !important; border: 1px solid rgba(255,236,190,.2) !important; border-left: 1px solid rgba(255,236,190,.2) !important; border-radius: 20px !important; padding: 10px 14px !important; }
+/* buttons = the mock-up's gold pills (.btn-g); text links stay plain */
+html body #hero-gap-embed.gm-modal .btn-gold, html body #hero-gap-embed.gm-modal .gap-chat-input-row button { background: linear-gradient(135deg, #fff1c4, #e8c873) !important; color: #1a1305 !important; border-radius: 999px !important; box-shadow: 0 0 26px rgba(255,214,130,.45) !important; }
+html body #hero-gap-embed.gm-modal .btn-outline { background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.02)) !important; border: 1px solid rgba(255,236,190,.4) !important; box-shadow: 0 0 20px rgba(255,214,130,.12), inset 0 1px 0 rgba(255,255,255,.2) !important; }
+/* sticky footers: a soft fade, not a solid band */
+html body #hero-gap-embed.gm-modal .card .row-between { background: linear-gradient(180deg, rgba(6,8,11,0), rgba(6,8,11,.55) 45%, rgba(6,8,11,.7)) !important; }
+/* Step 2 chat = the mock-up chat */
+html body #hero-gap-embed.gm-modal .bubble { border-radius: 20px !important; }
+html body #hero-gap-embed.gm-modal .bubble.bot { background: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.025)) !important; border: 1px solid rgba(232,200,115,.3) !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 8px 26px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.16) !important; }
+html body #hero-gap-embed.gm-modal .bubble.user { background: linear-gradient(135deg, #fff1c4, #e8c873) !important; color: #241c0a !important; box-shadow: 0 0 20px rgba(255,214,130,.3) !important; }
+html body #hero-gap-embed.gm-modal .gap-chat-input-row { border-top: none !important; }
+html body #hero-gap-embed.gm-modal .gap-chat-input-row textarea { background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02)) !important; border: 1px solid rgba(255,236,190,.28) !important; border-radius: 24px !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+/* Step 3 cards + analyzing = Shifting card bubbles */
+html body #hero-gap-embed.gm-modal .activation-card, html body #hero-gap-embed.gm-modal .reveal-block, html body #hero-gap-embed.gm-modal .reading-card, html body .gap-analyzing { background: radial-gradient(120% 90% at 0% 0%, rgba(63,214,200,.06), transparent 55%), radial-gradient(120% 90% at 100% 100%, rgba(255,214,130,.06), transparent 60%), linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.02)) !important; border: 1px solid rgba(255,236,190,.24) !important; border-radius: 28px !important; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 10px 36px rgba(0,0,0,.32), 0 0 26px rgba(255,214,130,.08), inset 0 1px 0 rgba(255,255,255,.18) !important; }
+html body #hero-gap-embed.gm-modal .activation-tag { border-radius: 999px !important; }
+html body #view-day3.gap-v2 #d3-activation-card.gap-v2-flash { box-shadow: 0 0 0 1px rgba(255,236,190,.6), 0 0 30px rgba(255,214,130,.3) !important; }
+/* Step 2: open chat, no boxed panel */
+html body #hero-gap-embed.gm-modal #view-day2 .chat-log { background: none !important; border: 0 !important; gap: 16px !important; padding: 6px 4px 6px 0 !important; }
+html body #hero-gap-embed.gm-modal #view-day2 .bubble { padding: 13px 17px !important; line-height: 1.6 !important; }
+/* r15 quick-reply chips (mock-up addition) */
+html body #hero-gap-embed .mk-chips { align-self: stretch; margin: 2px 0 4px; animation: gm-panel .5s cubic-bezier(.2,.8,.2,1) both; }
+html body #hero-gap-embed .mk-see { margin: 0 0 10px 4px; font-family: "Cormorant Garamond", Georgia, serif; font-size: 16px; font-weight: 600; color: var(--mk-gold2); }
+html body #hero-gap-embed .mk-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+html body #hero-gap-embed .mk-chip { all: unset; box-sizing: border-box; cursor: pointer; padding: 9px 15px; border-radius: 999px; font-size: 13.5px; line-height: 1.3; color: #fdfbf5; background: radial-gradient(120% 160% at 0% 50%, rgba(255,214,130,.14), transparent 65%), linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.025)); box-shadow: 0 0 0 1px rgba(232,200,115,.45), 0 0 16px rgba(255,214,130,.12), inset 0 1px 0 rgba(255,255,255,.2); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); transition: transform .2s, box-shadow .2s; }
+html body #hero-gap-embed .mk-chip:active { transform: scale(.96); }
+html body #hero-gap-embed .mk-chip:focus-visible { outline: 1px solid var(--mk-gold2); outline-offset: 3px; }
+/* iframe canvas must match the <iframe> color-scheme or Chrome paints an opaque canvas (the grey sheet) */
+html { color-scheme: dark; background: transparent !important; }
+
 </style>
 </head><body>
 <!-- FROM MAIN: app.html 1075-1222 (#hero-gap-embed markup) -->
@@ -3827,6 +3873,37 @@ if (forceComplete) { goDay(3); }
     session = true; startGapMethodInChat();
   });
   mockToParent({ type: 'gapReady' });
+})();
+/* ===== r15 (mock-up addition, Rachael's request): Step 2 quick-reply chips =====
+   After live's opening bubbles: "I see that you want to look at <topic>." + 3 chips. A chip sends its text
+   exactly as if typed (sendChat). Chips go away as soon as any message is sent. Live code is untouched;
+   setupDay2 / sendToGapChat are wrapped, not edited. Money chips are Rachael's; the rest are drafts. */
+(function () {
+  var CHIPS = {
+    money:    { topic: 'money', chips: ['Receiving more?', 'Charging my worth', 'Clearing old stories'] },
+    business: { topic: 'business and visibility', chips: ['Being seen more', 'Offers that land', 'Posting with ease'] },   // draft
+    gifts:    { topic: 'your spiritual gifts', chips: ['Trusting my intuition', 'Opening my channel', 'Using my gifts daily'] }, // draft
+    energy:   { topic: 'energy and frequency', chips: ['Raising my vibration', 'Feeling grounded', 'Clearing heavy energy'] }  // draft
+  };
+  function removeChips() { var c = document.getElementById('mk-chips'); if (c) c.remove(); }
+  var liveSetup = setupDay2;
+  setupDay2 = function () {
+    liveSetup.apply(this, arguments);
+    var d = CHIPS[selectedDomain]; var log = document.getElementById('chat-log'); if (!d || !log) return;
+    var w = document.createElement('div'); w.id = 'mk-chips'; w.className = 'mk-chips';
+    var p = document.createElement('p'); p.className = 'mk-see'; p.textContent = 'I see that you want to look at ' + d.topic + '.'; w.appendChild(p);
+    var row = document.createElement('div'); row.className = 'mk-chip-row'; w.appendChild(row);
+    d.chips.forEach(function (t) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'mk-chip'; b.textContent = t;
+      b.onclick = function () { var input = document.getElementById('gap-chat-input'); if (!input || input.disabled) return; input.value = t; sendChat(); };
+      row.appendChild(b);
+    });
+    log.appendChild(w); log.scrollTop = log.scrollHeight;
+  };
+  window.setupDay2 = setupDay2;
+  var liveSend = sendToGapChat;
+  sendToGapChat = function () { removeChips(); return liveSend.apply(this, arguments); };
+  window.sendToGapChat = sendToGapChat;
 })();
 
 </script>
