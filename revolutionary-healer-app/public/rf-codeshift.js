@@ -40,7 +40,18 @@
       var im = document.createElement('img'); im.className = 'rf-cu-thumb'; im.src = dir + c.f + '.webp'; im.alt = c.n + ' code card'; el.insertBefore(im, el.firstChild); el.classList.add('rf-has-cu');
     });
   }
+  // Today's Focus: when the newest Shift is a saved code, its card speaks in code words.
+  function focusWords() {
+    var btn = document.querySelector('#my-revolution [data-role="focus-open"]'); if (!btn || typeof SHIFTS === 'undefined') return;
+    var s = SHIFTS.find(function (x) { return String(x.id) === btn.getAttribute('data-shift-id'); });
+    var card = btn.closest('[data-role="focus-card"]'); if (!card) return;
+    var k = card.querySelectorAll('.focus-card-kicker'); if (k.length < 2) return;
+    if (!k[0].hasAttribute('data-orig')) { k[0].setAttribute('data-orig', k[0].textContent); k[1].setAttribute('data-orig', k[1].textContent); }
+    var cu = !!s && s.method === 'Code Upgrade';
+    var want0 = cu ? 'Your Code' : k[0].getAttribute('data-orig'), want1 = cu ? 'Your Reading' : k[1].getAttribute('data-orig');
+    if (k[0].textContent !== want0) k[0].textContent = want0; if (k[1].textContent !== want1) k[1].textContent = want1;
+  }
   var queued = false; // one pass per frame at most, so chat typing never pays for this
-  new MutationObserver(function () { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; decorate(); }); }).observe(document.body, { childList: true, subtree: true });
-  decorate();
+  new MutationObserver(function () { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; decorate(); focusWords(); }); }).observe(document.body, { childList: true, subtree: true });
+  decorate(); focusWords();
 })();
