@@ -183,8 +183,8 @@ NAV = """<nav id="rf-nav" aria-label="Main">
  <button type="button" data-rf-nav="focus"><span aria-hidden="true">✧</span>Today's Focus</button>
  <button type="button" data-rf-nav="chat"><span aria-hidden="true">❋</span>Chat</button>
  <button type="button" data-rf-nav="lib"><span aria-hidden="true">♫</span>Activations</button>
- <button type="button" data-rf-nav="rev"><span aria-hidden="true">❖</span>Revolution</button>
- <button type="button" class="rf-nav-foot" data-rf-go="profile"><span aria-hidden="true">◌</span>My Profile</button>
+ <button type="button" data-rf-nav="rev"><span aria-hidden="true">❖</span><b class="rf-my">My </b>Revolution</button>
+ <button type="button" class="rf-nav-foot" data-rf-go="chat"><span aria-hidden="true">❋</span>Ask Rachael anything</button>
 </nav>
 """
 # live app.html calls showLockedActivationPrompt() for locked cards but has no #locked-activation-toast

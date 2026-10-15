@@ -386,6 +386,8 @@ body.rf .rf-scripted { animation:rfpop .45s; }
 
 /* ---------- desktop + iPad (>= 820px): the nav is its own floating panel on the side, then clear space, then the content ---------- */
 #rf-nav .rf-nav-title, #rf-nav .rf-nav-div, #rf-nav .rf-nav-foot { display:none; }
+#rf-nav b.rf-my { display:none; font-weight:inherit; }
+@media (min-width:820px) { #rf-nav b.rf-my { display:inline; white-space:pre; } #rf-nav .rf-nav-foot { color:var(--rf-gold2); } }
 @media (min-width:820px) {
   body.rf { padding-left:316px; padding-right:48px; padding-bottom:64px; }
   body.rf .wrap, .rf-screen, .rf-head { max-width:640px; }

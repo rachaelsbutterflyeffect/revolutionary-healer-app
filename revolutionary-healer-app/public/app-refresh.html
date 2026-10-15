@@ -1314,6 +1314,8 @@ body.rf .rf-scripted { animation:rfpop .45s; }
 
 /* ---------- desktop + iPad (>= 820px): the nav is its own floating panel on the side, then clear space, then the content ---------- */
 #rf-nav .rf-nav-title, #rf-nav .rf-nav-div, #rf-nav .rf-nav-foot { display:none; }
+#rf-nav b.rf-my { display:none; font-weight:inherit; }
+@media (min-width:820px) { #rf-nav b.rf-my { display:inline; white-space:pre; } #rf-nav .rf-nav-foot { color:var(--rf-gold2); } }
 @media (min-width:820px) {
   body.rf { padding-left:316px; padding-right:48px; padding-bottom:64px; }
   body.rf .wrap, .rf-screen, .rf-head { max-width:640px; }
@@ -7433,8 +7435,8 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
  <button type="button" data-rf-nav="focus"><span aria-hidden="true">✧</span>Today's Focus</button>
  <button type="button" data-rf-nav="chat"><span aria-hidden="true">❋</span>Chat</button>
  <button type="button" data-rf-nav="lib"><span aria-hidden="true">♫</span>Activations</button>
- <button type="button" data-rf-nav="rev"><span aria-hidden="true">❖</span>Revolution</button>
- <button type="button" class="rf-nav-foot" data-rf-go="profile"><span aria-hidden="true">◌</span>My Profile</button>
+ <button type="button" data-rf-nav="rev"><span aria-hidden="true">❖</span><b class="rf-my">My </b>Revolution</button>
+ <button type="button" class="rf-nav-foot" data-rf-go="chat"><span aria-hidden="true">❋</span>Ask Rachael anything</button>
 </nav>
 <script id="rf-js">
 /* ===== UI REFRESH: screens, Home, Shifting cards, Embodied pill, GAP Step 2 chips =====
