@@ -7399,15 +7399,19 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
 
   // ---------- chat sizing: never under the nav, keyboard-aware ----------
   function isField(el) { return el && (el.tagName === 'TEXTAREA' || (el.tagName === 'INPUT' && !/^(button|checkbox|radio|submit|reset|range|color|file|image)$/i.test(el.type || ''))); }
+  // The on-screen keyboard is open when a text field has focus AND the visible height has dropped
+  // well below this width's full height (iOS shrinks the visual viewport, Android the window).
+  var fullH = {};
+  function noteFull() { var w = window.innerWidth, h = Math.max(window.innerHeight, window.visualViewport ? visualViewport.height : 0); if (!isField(document.activeElement) || !fullH[w]) fullH[w] = Math.max(fullH[w] || 0, h); }
   function kbOpen() {
-    var vv = window.visualViewport, a = document.activeElement;
-    if (!isField(a)) return false;
-    if (a.closest && a.closest('#hero-gap-embed')) return false;
-    return true;
+    var a = document.activeElement;
+    if (!isField(a) || (a.closest && a.closest('#hero-gap-embed'))) return false;
+    var vh = window.visualViewport ? visualViewport.height : window.innerHeight, full = fullH[window.innerWidth] || window.innerHeight;
+    return vh < full - 120;
   }
   function sizeChat() {
     var shell = document.getElementById('rh-chat-shell'); if (!shell || B.getAttribute('data-rf') !== 'chat') return;
-    var kb = kbOpen(); B.classList.toggle('rf-kb', kb);
+    noteFull(); var kb = kbOpen(); B.classList.toggle('rf-kb', kb);
     var vv = window.visualViewport, vh = vv ? vv.height : window.innerHeight;
     var top = shell.getBoundingClientRect().top + (vv ? 0 : 0);
     if (top < 0 || top > vh) top = 70;
@@ -7417,10 +7421,14 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
   }
   window.rfSizeChat = sizeChat;
   function toBottom() { var th = document.getElementById('rh-chat-thread'); if (th) setTimeout(function () { th.scrollTop = th.scrollHeight; }, 30); }
-  window.addEventListener('resize', sizeChat);
+  noteFull(); window.addEventListener('resize', sizeChat);
   if (window.visualViewport) { visualViewport.addEventListener('resize', sizeChat); visualViewport.addEventListener('scroll', sizeChat); }
   document.addEventListener('focusin', function (e) { if (isField(e.target)) { B.classList.toggle('rf-kb', kbOpen()); sizeChat(); } });
   document.addEventListener('focusout', function () { setTimeout(function () { B.classList.toggle('rf-kb', kbOpen()); sizeChat(); }, 50); });
+
+  // an empty Send puts the cursor in the message box instead of doing nothing
+  var sendBtn = document.getElementById('hero-speak-btn');
+  if (sendBtn) sendBtn.addEventListener('click', function () { var i = document.getElementById('chat-input'); if (i && !i.value.trim()) { try { i.focus(); } catch (e) {} } });
 
   // ---------- greeting ----------
   function usableName(n) { n = String(n || '').trim(); if (!n || /@/.test(n) || /^(test|tester|testing|test\s*user|member|user|demo|sample|null|undefined)\d*$/i.test(n)) return ''; return n.split(/\s+/)[0]; }
