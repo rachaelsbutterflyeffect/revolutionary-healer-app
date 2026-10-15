@@ -7397,10 +7397,16 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
     var t = e.target.closest && e.target.closest('[data-rf-lane]'); if (!t) return;
     var text = LANES[t.getAttribute('data-rf-lane')]; if (!text) return;
     showMain(); rfGo('chat');
-    try { if (typeof rhStartNewChat === 'function') rhStartNewChat(); } catch (err) {}
-    var input = document.getElementById('chat-input');
-    if (input) { input.value = text; try { sendHeroChat(); } catch (err) {} }
-    toBottom();
+    // a reply may still be streaming (live sendHeroChat ignores sends while __rhSending):
+    // wait for it to finish, then open the new chat and send, so a lane tap is never lost
+    var tries = 0;
+    (function go() {
+      if (window.__rhSending && tries++ < 240) { setTimeout(go, 250); return; }
+      try { if (typeof rhStartNewChat === 'function') rhStartNewChat(); } catch (err) {}
+      var input = document.getElementById('chat-input');
+      if (input) { input.value = text; try { sendHeroChat(); } catch (err) {} }
+      toBottom();
+    })();
   });
 
   // ---------- chat sizing: never under the nav, keyboard-aware ----------
