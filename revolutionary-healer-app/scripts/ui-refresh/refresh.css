@@ -473,3 +473,11 @@ body.rf #gm-backdrop { transition-duration:.16s !important; }
 body.rf #activation-detail-page .rf-xpblock { margin-top:22px !important; }
 body.rf #activation-detail-page .rf-xpblock + .activation-detail-actions { margin-top:14px; }
 body.rf #activation-detail-page .activation-detail-actions + #activation-detail-whatfor { margin-top:30px !important; padding-top:20px; border-top:1px solid rgba(169,153,127,.25); }
+
+/* Activations: Favourites section at the top (preview, Rachael Oct 15); same card art treatment as the sections */
+body.rf .rf-favsec { display:none; }
+body.rf[data-rf-lib="sections"] #activations-page .rf-favsec:not([hidden]) { display:block; }
+body.rf .rf-favhead { cursor:default; }
+body.rf .rf-favhead:active { transform:none; }
+body.rf .rf-favgrid { margin-top:14px; }
+body.rf .rf-gone { display:none !important; }

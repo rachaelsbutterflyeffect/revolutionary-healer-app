@@ -1402,6 +1402,14 @@ body.rf #activation-detail-page .rf-xpblock { margin-top:22px !important; }
 body.rf #activation-detail-page .rf-xpblock + .activation-detail-actions { margin-top:14px; }
 body.rf #activation-detail-page .activation-detail-actions + #activation-detail-whatfor { margin-top:30px !important; padding-top:20px; border-top:1px solid rgba(169,153,127,.25); }
 
+/* Activations: Favourites section at the top (preview, Rachael Oct 15); same card art treatment as the sections */
+body.rf .rf-favsec { display:none; }
+body.rf[data-rf-lib="sections"] #activations-page .rf-favsec:not([hidden]) { display:block; }
+body.rf .rf-favhead { cursor:default; }
+body.rf .rf-favhead:active { transform:none; }
+body.rf .rf-favgrid { margin-top:14px; }
+body.rf .rf-gone { display:none !important; }
+
 </style>
 </head>
 <body class="rf" data-rf="home">
@@ -1855,6 +1863,10 @@ body.rf #activation-detail-page .activation-detail-actions + #activation-detail-
       </div>
     </div>
 
+<section class="rf-favsec" id="rf-favsec" hidden aria-label="Favourites">
+  <div class="rf-lsec rf-favhead"><span class="bgc" style="background-image:url('/images/sections/sec-favourites.webp');background-position:58% 18%" aria-hidden="true"></span><span class="in"><b>Favourites</b><small data-rf-favcount></small></span></div>
+  <div class="card-grid rf-favgrid"></div>
+</section>
 <div class="rf-lsecs" id="rf-lsecs">
   <button type="button" class="rf-lsec" data-rf-sec="Gifts + Spirit"><span class="bgc" style="background-image:url('/images/sections/sec-gifts.webp');background-position:24% 22%" aria-hidden="true"></span><span class="in"><b>Gifts &amp; Spirit</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Money + Receiving"><span class="bgc" style="background-image:url('/images/sections/sec-money.webp');background-position:82% 20%" aria-hidden="true"></span><span class="in"><b>Money &amp; Receiving</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
@@ -7865,6 +7877,35 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
       var el = b.querySelector('[data-rf-count]'); if (el) el.textContent = n;
     });
   }
+  // ---------- Activations: Favourites at the top (preview, Rachael Oct 15) ----------
+  // Same source as My Revolution's favourites (getFavoriteActivationSlugs + the library's own cards, shown even when
+  // the library is paging/filtering them: the item 2 fix). Hidden with none; updates whenever a heart is toggled
+  // (classic calls renderFavoritesSections after every change). Favourites no longer show in My Revolution.
+  function renderFavSec() {
+    var sec = document.getElementById('rf-favsec'); if (!sec) return;
+    var slugs = []; try { slugs = getFavoriteActivationSlugs() || []; } catch (e) {}
+    var lib = document.getElementById('activation-library-grid'), grid = sec.querySelector('.rf-favgrid');
+    var cards = slugs.map(function (sl) { return lib ? lib.querySelector('[data-activation-slug="' + sl + '"]') : null; }).filter(Boolean);
+    grid.innerHTML = '';
+    cards.forEach(function (c) { var k = c.cloneNode(true); k.style.removeProperty('display'); grid.appendChild(k); });
+    var n = cards.length, lbl = n + (n === 1 ? ' ACTIVATION' : ' ACTIVATIONS');
+    sec.querySelector('[data-rf-favcount]').textContent = lbl;
+    sec.setAttribute('aria-label', 'Favourites · ' + n + (n === 1 ? ' activation' : ' activations'));
+    sec.hidden = n === 0;
+  }
+  window.rfRenderFavSec = renderFavSec;
+  var _rfFavs = window.renderFavoritesSections;
+  if (typeof _rfFavs === 'function') renderFavoritesSections = window.renderFavoritesSections = function () { var r = _rfFavs.apply(this, arguments); try { renderFavSec(); } catch (e) {} return r; };
+  // My Revolution: no favourites block (preview row, Favorites heading, See all); any old way to the favourites page
+  // (a #favorites-page link) opens the Activations page with the Favourites section instead.
+  (function () { var row = document.querySelector('#my-revolution .favorites-row'), sub = row && row.closest('.revolution-subsection'); if (sub) sub.classList.add('rf-gone'); })();
+  rhOpenFavorites = window.rhOpenFavorites = function () {
+    try { renderFavSec(); } catch (e) {}
+    showPage('activations-page');
+    var sec = document.getElementById('rf-favsec');
+    if (sec && !sec.hidden) setTimeout(function () { try { sec.scrollIntoView({ block: 'start' }); } catch (e) {} }, 30);
+  };
+  try { renderFavSec(); } catch (e) {}
   function libSection(cat) {
     var chip = document.querySelector('.category-chips .filter-chip[data-category="' + cat + '"]');
     window.__rhLibExpanded = false;

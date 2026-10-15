@@ -58,6 +58,35 @@
       var el = b.querySelector('[data-rf-count]'); if (el) el.textContent = n;
     });
   }
+  // ---------- Activations: Favourites at the top (preview, Rachael Oct 15) ----------
+  // Same source as My Revolution's favourites (getFavoriteActivationSlugs + the library's own cards, shown even when
+  // the library is paging/filtering them: the item 2 fix). Hidden with none; updates whenever a heart is toggled
+  // (classic calls renderFavoritesSections after every change). Favourites no longer show in My Revolution.
+  function renderFavSec() {
+    var sec = document.getElementById('rf-favsec'); if (!sec) return;
+    var slugs = []; try { slugs = getFavoriteActivationSlugs() || []; } catch (e) {}
+    var lib = document.getElementById('activation-library-grid'), grid = sec.querySelector('.rf-favgrid');
+    var cards = slugs.map(function (sl) { return lib ? lib.querySelector('[data-activation-slug="' + sl + '"]') : null; }).filter(Boolean);
+    grid.innerHTML = '';
+    cards.forEach(function (c) { var k = c.cloneNode(true); k.style.removeProperty('display'); grid.appendChild(k); });
+    var n = cards.length, lbl = n + (n === 1 ? ' ACTIVATION' : ' ACTIVATIONS');
+    sec.querySelector('[data-rf-favcount]').textContent = lbl;
+    sec.setAttribute('aria-label', 'Favourites · ' + n + (n === 1 ? ' activation' : ' activations'));
+    sec.hidden = n === 0;
+  }
+  window.rfRenderFavSec = renderFavSec;
+  var _rfFavs = window.renderFavoritesSections;
+  if (typeof _rfFavs === 'function') renderFavoritesSections = window.renderFavoritesSections = function () { var r = _rfFavs.apply(this, arguments); try { renderFavSec(); } catch (e) {} return r; };
+  // My Revolution: no favourites block (preview row, Favorites heading, See all); any old way to the favourites page
+  // (a #favorites-page link) opens the Activations page with the Favourites section instead.
+  (function () { var row = document.querySelector('#my-revolution .favorites-row'), sub = row && row.closest('.revolution-subsection'); if (sub) sub.classList.add('rf-gone'); })();
+  rhOpenFavorites = window.rhOpenFavorites = function () {
+    try { renderFavSec(); } catch (e) {}
+    showPage('activations-page');
+    var sec = document.getElementById('rf-favsec');
+    if (sec && !sec.hidden) setTimeout(function () { try { sec.scrollIntoView({ block: 'start' }); } catch (e) {} }, 30);
+  };
+  try { renderFavSec(); } catch (e) {}
   function libSection(cat) {
     var chip = document.querySelector('.category-chips .filter-chip[data-category="' + cat + '"]');
     window.__rhLibExpanded = false;
