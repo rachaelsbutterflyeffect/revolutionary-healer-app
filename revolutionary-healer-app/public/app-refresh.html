@@ -7737,6 +7737,10 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
   function focusExtras(shifts) {
     var card = document.querySelector('#my-revolution [data-role="focus-card"]'), fb = document.querySelector('[data-role="focus-open"]'), ff = card && card.querySelector('.focus-card-footer');
     if (!card || !fb || !ff) return;
+    // iOS Safari only sends a tap's click to an element that is itself clickable: a plain div whose only
+    // listener is on document never gets one (the Today's Focus tap bug). An own onclick makes it tappable;
+    // the work is done by the capture listener below.
+    if (!card.onclick) { card.onclick = function () {}; card.setAttribute('role', 'button'); card.style.cursor = 'pointer'; }
     var s = focusShift();
     var old = ff.querySelector('.rf-pill'); if (old) old.remove();
     if (s && s.statusClass !== 'embodied') { var w = document.createElement('div'); w.innerHTML = pillHtml(s); var p = w.firstChild; p.style.alignSelf = 'flex-start'; ff.insertBefore(p, fb); }
