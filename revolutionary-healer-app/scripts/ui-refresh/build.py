@@ -169,8 +169,11 @@ NAV = """<nav id="rf-nav" aria-label="Main">
  <button type="button" data-rf-nav="rev"><span aria-hidden="true">❖</span>Revolution</button>
 </nav>
 """
+# live app.html calls showLockedActivationPrompt() for locked cards but has no #locked-activation-toast
+# element (dormant while DEMO_ENTITLEMENT_MODE is 'full'); the refresh supplies it so a locked tap is never dead.
+TOAST = '<div class="locked-activation-toast" id="locked-activation-toast" role="status"><span>This Activation opens with full membership.</span><a onclick="showPage(\'upgrade-page\'); return false;" href="#">Upgrade &rarr;</a></div>\n'
 k = s.rindex('</body>')
-s = s[:k] + '<style id="rf-gap-css">\n' + rd('gap.css') + '\n</style>\n' + NAV + '<script id="rf-js">\n' + rd('refresh.js') + '\n</script>\n' + s[k:]
+s = s[:k] + TOAST + '<style id="rf-gap-css">\n' + rd('gap.css') + '\n</style>\n' + NAV + '<script id="rf-js">\n' + rd('refresh.js') + '\n</script>\n' + s[k:]
 
 out = os.path.join(PUB, 'app-refresh.html')
 open(out, 'w', encoding='utf-8').write(s)

@@ -1210,6 +1210,8 @@ body.rf .rh-sheet-actions button:not(.rh-sheet-ok) { border-radius:999px !import
 
 /* ---------- GAP Method open: only the shared starry background behind it (r16) ---------- */
 body.rf.gm-lock > *:not(#hero-gap-embed):not(#gm-backdrop):not(#rf-sky):not(.rf-aurora):not(script):not(style):not(.rh-sheet-backdrop) { visibility:hidden !important; }
+/* locked-Activation toast sits above the nav */
+body.rf .locked-activation-toast{bottom:calc(env(safe-area-inset-bottom,0px) + 104px);width:max-content;max-width:calc(100vw - 32px);font-family:inherit;font-style:normal}
 
 </style>
 </head>
@@ -7178,6 +7180,7 @@ if (forceComplete) { goDay(3); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
+<div class="locked-activation-toast" id="locked-activation-toast" role="status"><span>This Activation opens with full membership.</span><a onclick="showPage('upgrade-page'); return false;" href="#">Upgrade &rarr;</a></div>
 <style id="rf-gap-css">
 /* ===== GAP Method pop-up: r16 look (ported from the mock-up restyle; look only) =====
    Same selectors as the mock-up, which target the live markup. Copy, order and behaviour unchanged. */
