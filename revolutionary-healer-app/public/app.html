@@ -12,6 +12,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Revolutionary Healer</title>
+<script id="rf-switch">
+// UI refresh switch (server env UI_REFRESH = off / allowlist / on; default off). Members the server
+// allows are sent to /app-refresh.html (same app, new look); everyone else stays on this page.
+// ?classic=1 always stays here. One check per browser session, cached in sessionStorage.
+(function () {
+  try {
+    if (/[?&]classic=1(&|$)/.test(location.search)) return;
+    var e = localStorage.getItem('rh_member_email'); if (!e) return;
+    var go = function () { location.replace('/app-refresh.html' + location.search + location.hash); };
+    var c = sessionStorage.getItem('rh_ui_refresh');
+    if (c === '1:' + e) { go(); return; }
+    if (c === '0:' + e) return;
+    fetch('/api/ui-refresh?email=' + encodeURIComponent(e), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) { if (!d) return; try { sessionStorage.setItem('rh_ui_refresh', (d.refresh ? '1:' : '0:') + e); } catch (x) {} if (d.refresh) go(); })
+      .catch(function () {});
+  } catch (x) {}
+})();
+</script>
 <style>
   :root {
     --black: #121110;
