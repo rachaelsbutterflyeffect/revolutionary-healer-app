@@ -395,7 +395,7 @@ $('#hero').onclick=()=>go('code');
 // PROFILE.firstName maps to the real member's first name (sample only here). ?noname=1 previews the fallback.
 const PROFILE={firstName:new URLSearchParams(location.search).get('noname')==='1'?'':'Rachael'};
 function usableName(n){n=String(n||'').trim();if(!n||/^(test|tester|testing|test\s*user|member|user|demo|sample|null|undefined)\d*$/i.test(n)||/@/.test(n))return '';return n.split(/\s+/)[0]}
-function greetFor(h){const p=h>=5&&h<12?"Good morning":h>=12&&h<17?"Good afternoon":h>=17&&h<22?"Good evening":"Good night";return p+", "+(usableName(PROFILE.firstName)||"Revolutionary Healer")+". Welcome back."}
+function greetFor(h){const p=h>=5&&h<12?"Good morning":h>=12&&h<17?"Good afternoon":h>=17&&h<22?"Good evening":"Good night";return p+", "+(usableName(PROFILE.firstName)||"Revolutionary Healer")+"."}
 let greet=greetFor(new Date().getHours()),gi=0,typing=true;(function type(){$('#say').textContent=greet.slice(0,++gi);if(gi<greet.length)setTimeout(type,RM?0:45);else typing=false})();
 setInterval(()=>{const g=greetFor(new Date().getHours());if(g!==greet){greet=g;if(!typing)$('#say').textContent=g}},60000);
 // chat (real frame, no auto-scroll)
