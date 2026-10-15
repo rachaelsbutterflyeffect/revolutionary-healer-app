@@ -565,3 +565,24 @@
   else if (START[h]) { var fake = document.createElement('span'); fake.setAttribute('data-rf-go', START[h]); B.appendChild(fake); fake.click(); fake.remove(); }
   else rfGo('home');
 })();
+
+// ---- Held-back features (Oct 15 2026): each one is its own file + its own server switch (lib/features.js).
+// Nothing is fetched or shown unless /api/features says true for THIS member.
+(function () {
+  var MAP = { codePull: 'rf-codes' };
+  var tries = 0;
+  function load(n) {
+    if (document.getElementById('rf-feat-' + n)) return;
+    var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/' + n + '.css'; l.id = 'rf-feat-' + n; document.head.appendChild(l);
+    var s = document.createElement('script'); s.src = '/' + n + '.js'; document.body.appendChild(s);
+  }
+  function go() {
+    var em = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || '';
+    if (!em) { if (++tries < 80) setTimeout(go, 250); return; }
+    fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (f) { window.__rfFeatures = f || {}; Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); }); })
+      .catch(function () {});
+  }
+  go();
+})();
