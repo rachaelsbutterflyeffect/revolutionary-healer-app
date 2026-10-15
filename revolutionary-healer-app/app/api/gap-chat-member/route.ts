@@ -126,6 +126,14 @@ export async function POST(req: NextRequest) {
   }
 
   const systemPrompt = buildGapMemberSystemPrompt(gapContext);
+  // Prompt caching (Oct 15 2026, TEST preview): GAP_PROMPT_CACHE=on sends the
+  // SAME system prompt text as one cached block (cache_control ephemeral), so
+  // the ~12.7k-token instructions are not re-read from scratch on every turn of
+  // a run. Text, model, messages and params are unchanged. Unset/off (the
+  // production default) = the plain string, exactly as before.
+  const systemField: any = String(process.env.GAP_PROMPT_CACHE || "").toLowerCase() === "on"
+    ? [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }]
+    : systemPrompt;
 
   // Long-reply fix (Oct 8 2026, see lib/gapChatReply.js): 4096 had to hold
   // hidden thinking + reply + the Shift-saving markers; now 10,000. Same
@@ -137,7 +145,7 @@ export async function POST(req: NextRequest) {
   const claudeParams: any = {
     model: MODEL,
     max_tokens: GAP_CHAT_MAX_TOKENS,
-    system: systemPrompt,
+    system: systemField,
     messages: [
       ...history,
       {
@@ -148,13 +156,19 @@ export async function POST(req: NextRequest) {
   };
   // Light Step 2 chat (restructure on): lowest-latency thinking setting.
   if (fast && !isReading) claudeParams.output_config = { effort: GAP_CHAT_TURN_EFFORT };
+  // Log-only: prompt-cache hits/writes (empty unless GAP_PROMPT_CACHE is on).
+  const cacheOf = (m: any) => {
+    const u = (m && m.usage) || {};
+    const r = u.cache_read_input_tokens || 0, w = u.cache_creation_input_tokens || 0;
+    return r || w ? { cache_read: r, cache_write: w } : {};
+  };
   const logExtra = fast ? { phase: isReading ? "reading" : "chat", effort: isReading ? "default" : GAP_CHAT_TURN_EFFORT } : undefined;
 
   const claudeStartedAt = Date.now();
   if (isReading) {
     // The ONE deep reading: never streamed (nothing shows until it's complete).
     const response = await anthropic.messages.create(claudeParams as any);
-    logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, logExtra); // log-only
+    logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, { ...(logExtra || {}), ...cacheOf(response) }); // log-only
     const replyText = replyTextOf(response);
     const parsed = parseReadingReply(replyText);
     let pick = matchLibraryTitle(parsed.activationPick, library);
@@ -167,7 +181,7 @@ export async function POST(req: NextRequest) {
         const retry = await anthropic.messages.create({
           model: MODEL,
           max_tokens: GAP_ACTIVATION_RETRY_MAX_TOKENS,
-          system: systemPrompt,
+          system: systemField,
           messages: [
             ...claudeParams.messages,
             { role: "assistant", content: replyText.trim() || "(reading)" },
@@ -220,7 +234,7 @@ export async function POST(req: NextRequest) {
           streamingAnthropic.messages.stream(claudeParams as any, { timeout: GAP_STREAM_CONNECT_TIMEOUT_MS, signal }),
         // Nothing to save here: hand back the complete reply, same text as JSON.
         finishReply: async (finalMessage: any) => {
-          logGapChatUsage(finalMessage, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, logExtra); // log-only (Vercel logs)
+          logGapChatUsage(finalMessage, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, { ...(logExtra || {}), ...cacheOf(finalMessage) }); // log-only (Vercel logs)
           return { replyText: replyTextOf(finalMessage), openActivationSlug: null };
         },
       })
@@ -230,7 +244,7 @@ export async function POST(req: NextRequest) {
 
   const response = await anthropic.messages.create(claudeParams as any);
 
-  logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, logExtra); // log-only (Vercel logs)
+  logGapChatUsage(response, Date.now() - claudeStartedAt, GAP_CHAT_MAX_TOKENS, { ...(logExtra || {}), ...cacheOf(response) }); // log-only (Vercel logs)
 
   const replyText = replyTextOf(response);
 
