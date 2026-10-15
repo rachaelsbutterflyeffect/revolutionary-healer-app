@@ -455,6 +455,65 @@ export async function listChatSessionsByEmail(email, { includeArchived = false }
     return records;
 }
 
+// Chat history speed (Oct 15 2026): the drawer and the conversation view only
+// need a handful of columns, so ask Airtable for just those (smaller pages,
+// faster responses). If a column is ever missing on a base, Airtable rejects
+// the whole request, so fall back to the full-row read rather than failing.
+const CHAT_SESSION_VIEW_FIELDS = ["title", "created_at", "updated_at", "last_message_at", "archived", "focus_area_slug"];
+const CHAT_MESSAGE_VIEW_FIELDS = ["role", "message_text", "created_at", "activation_recommended"];
+
+async function selectWithFieldsFallback(table, params, fields, mode) {
+    const run = (p) => (mode === "first" ? base(table).select(p).firstPage() : base(table).select(p).all());
+    try {
+        return await run({ ...params, fields });
+    } catch (err) {
+        if (err && (err.error === "UNKNOWN_FIELD_NAME" || /unknown field/i.test(String(err.message || "")))) {
+            console.warn(`select ${table}: a view field is missing; reading full rows instead`);
+            return run(params);
+        }
+        throw err;
+    }
+}
+
+// Same filter + order as listChatSessionsByEmail, limited to the drawer's
+// columns. With `limit`, returns at most that many (newest activity first)
+// plus whether more exist.
+export async function listChatSessionsForView(email, { includeArchived = false, limit = 0 } = {}) {
+    const normalized = normalizeEmail(email);
+    const formula = includeArchived
+        ? `{member_email} = "${normalized}"`
+        : `AND({member_email} = "${normalized}", {archived} != 1)`;
+    const params = { filterByFormula: formula, sort: [{ field: "last_message_at", direction: "desc" }] };
+    if (limit > 0) {
+        const records = await selectWithFieldsFallback(
+            Tables.ChatSessions, { ...params, pageSize: Math.min(100, limit + 1), maxRecords: limit + 1 }, CHAT_SESSION_VIEW_FIELDS, "first"
+        );
+        return { records: records.slice(0, limit), hasMore: records.length > limit };
+    }
+    const records = await selectWithFieldsFallback(Tables.ChatSessions, params, CHAT_SESSION_VIEW_FIELDS, "all");
+    return { records, hasMore: false };
+}
+
+// Messages of one chat for the conversation view, oldest first. With
+// `limit`, only the newest `limit` messages are read (newest-first query,
+// then reversed) plus whether older ones exist.
+export async function listChatMessagesForView(chatId, { limit = 0 } = {}) {
+    if (!chatId) return { records: [], hasMore: false };
+    const filterByFormula = `{chat_session_id} = "${chatId}"`;
+    if (limit > 0) {
+        const records = await selectWithFieldsFallback(
+            Tables.ChatMessages,
+            { filterByFormula, sort: [{ field: "created_at", direction: "desc" }], pageSize: Math.min(100, limit + 1), maxRecords: limit + 1 },
+            CHAT_MESSAGE_VIEW_FIELDS, "first"
+        );
+        return { records: records.slice(0, limit).reverse(), hasMore: records.length > limit };
+    }
+    const records = await selectWithFieldsFallback(
+        Tables.ChatMessages, { filterByFormula, sort: [{ field: "created_at", direction: "asc" }] }, CHAT_MESSAGE_VIEW_FIELDS, "all"
+    );
+    return { records, hasMore: false };
+}
+
 export async function updateChatSession(chatId, fields) {
     return base(Tables.ChatSessions).update(chatId, fields);
 }
