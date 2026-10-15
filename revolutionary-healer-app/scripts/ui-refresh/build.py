@@ -168,7 +168,7 @@ once('        <button class="btn-secondary" id="shift-modal-embodied-btn">Mark T
 LSECS = """<div class="rf-lsecs" id="rf-lsecs">
 """ + ''.join('  <button type="button" class="rf-lsec" data-rf-sec="%s"><span class="bgc" style="background-image:url(\'/images/sections/sec-%s.webp\');background-position:%s" aria-hidden="true"></span><span class="in"><b>%s</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>\n' % x for x in [
     ('Gifts + Spirit', 'gifts', '24% 22%', 'Spiritual Gifts'), ('Money + Receiving', 'money', '82% 20%', 'Money &amp; Prosperity'),
-    ('Energy + Frequency', 'energy', '72% 26%', 'Energy &amp; Frequency'), ('Business + Impact', 'vis', '62% 26%', 'Visibility &amp; Impact')]) + "</div>\n"
+    ('Energy + Frequency', 'energy', '72% 26%', 'Energy &amp; Frequency'), ('Business + Impact', 'vis', '62% 26%', 'Visibility &amp; Impact')]) + '  <a class="rf-sblink" href="/app.html?classic=1" data-rf-spook>SpookBound 2026 is on the classic page <span aria-hidden="true">→</span></a>\n</div>\n'
 once('<div class="revolution-subsection" id="gap-method-activations-subsection">', LSECS + '<div class="revolution-subsection" id="gap-method-activations-subsection">', 'lsecs')
 once('    <div class="revolution-subsection">\n      <div class="filter-chips category-chips">',
      '    <div class="revolution-subsection" id="rf-lib-sub">\n      <button type="button" class="rf-back rf-allsecs" data-rf-allsecs>← All sections</button><h3 class="rf-sec-ttl" id="rf-sec-ttl"></h3>\n      <div class="filter-chips category-chips">', 'libsub')

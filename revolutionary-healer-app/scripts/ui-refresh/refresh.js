@@ -73,10 +73,10 @@
   rhOpenChatWithMessage = window.rhOpenChatWithMessage = function () { var r = _openChat.apply(this, arguments); rfGo('chat'); toBottom(); return r; };
   // CCM "Tell me more" runs showMain() + addRhMessage(): land on Chat right after it.
   document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-ccm-more]')) setTimeout(function () { rfGo('chat'); toBottom(); }, 0); }, true);
-  // SpookBound is not part of the refresh: anything that would open it goes to the library instead.
+  // SpookBound is not part of the refresh: anything that would open it goes to the classic page (/app.html?classic=1), where it is unchanged.
   var _hacc = window.handleActivationCardClick;
   handleActivationCardClick = window.handleActivationCardClick = function (slug) {
-    if (slug === 'spookbound-2026') { showPage('activations-page'); return; }
+    if (slug === 'spookbound-2026') { location.href = '/app.html?classic=1'; return; } // Oct 15: SpookBound stays on the classic page, exactly as today
     return _hacc.apply(this, arguments);
   };
   function stripSpook(root) { (root || document).querySelectorAll('[data-activation-slug="spookbound-2026"]').forEach(function (n) { n.remove(); }); }

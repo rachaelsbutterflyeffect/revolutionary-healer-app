@@ -1335,6 +1335,10 @@ body.rf .rf-scripted { animation:rfpop .45s; }
 }
 @media (min-width:820px) and (max-height:720px) { #rf-nav { padding-top:28px; } #rf-nav .rf-nav-div { margin:18px 18px 20px; } #rf-nav button { margin-bottom:8px; } }
 
+/* SpookBound entry (it lives on the classic page) */
+.rf-sblink { display:block; text-align:center; margin:18px auto 6px; font-size:13px; letter-spacing:.04em; color:var(--rf-gold2); text-decoration:none; opacity:.85; }
+.rf-sblink:active { opacity:1; }
+
 </style>
 </head>
 <body class="rf" data-rf="home">
@@ -1793,6 +1797,7 @@ body.rf .rf-scripted { animation:rfpop .45s; }
   <button type="button" class="rf-lsec" data-rf-sec="Money + Receiving"><span class="bgc" style="background-image:url('/images/sections/sec-money.webp');background-position:82% 20%" aria-hidden="true"></span><span class="in"><b>Money &amp; Prosperity</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Energy + Frequency"><span class="bgc" style="background-image:url('/images/sections/sec-energy.webp');background-position:72% 26%" aria-hidden="true"></span><span class="in"><b>Energy &amp; Frequency</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Business + Impact"><span class="bgc" style="background-image:url('/images/sections/sec-vis.webp');background-position:62% 26%" aria-hidden="true"></span><span class="in"><b>Visibility &amp; Impact</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
+  <a class="rf-sblink" href="/app.html?classic=1" data-rf-spook>SpookBound 2026 is on the classic page <span aria-hidden="true">→</span></a>
 </div>
 <div class="revolution-subsection" id="gap-method-activations-subsection">
       <div class="subsection-head"><h3 style="cursor: default;"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> GAP Method™ Activations</h3><button type="button" class="see-all rh-collapse-btn" aria-expanded="true" aria-controls="gap-method-activations-subsection" onclick="rhToggleSection(this, 'gap-method-activations-subsection')">Hide</button></div>
@@ -7514,10 +7519,10 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
   rhOpenChatWithMessage = window.rhOpenChatWithMessage = function () { var r = _openChat.apply(this, arguments); rfGo('chat'); toBottom(); return r; };
   // CCM "Tell me more" runs showMain() + addRhMessage(): land on Chat right after it.
   document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-ccm-more]')) setTimeout(function () { rfGo('chat'); toBottom(); }, 0); }, true);
-  // SpookBound is not part of the refresh: anything that would open it goes to the library instead.
+  // SpookBound is not part of the refresh: anything that would open it goes to the classic page (/app.html?classic=1), where it is unchanged.
   var _hacc = window.handleActivationCardClick;
   handleActivationCardClick = window.handleActivationCardClick = function (slug) {
-    if (slug === 'spookbound-2026') { showPage('activations-page'); return; }
+    if (slug === 'spookbound-2026') { location.href = '/app.html?classic=1'; return; } // Oct 15: SpookBound stays on the classic page, exactly as today
     return _hacc.apply(this, arguments);
   };
   function stripSpook(root) { (root || document).querySelectorAll('[data-activation-slug="spookbound-2026"]').forEach(function (n) { n.remove(); }); }
