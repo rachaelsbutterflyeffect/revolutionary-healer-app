@@ -335,6 +335,10 @@ body.rf .rf-xlisten { all:unset; flex:none; cursor:pointer; padding:10px 14px; b
 body.rf .rf-xfoot { flex-basis:100%; display:flex; justify-content:flex-end; }
 body.rf .rf-del { all:unset; cursor:pointer; font-size:11.5px; letter-spacing:.06em; color:rgba(253,251,245,.55); padding:6px 4px; border-bottom:1px solid rgba(253,251,245,.25); }
 body.rf .rf-del:active { color:#fdfbf5; }
+body.rf .rf-xfoot { gap:18px; align-items:center; }
+body.rf .rf-unemb { all:unset; cursor:pointer; font-size:11.5px; letter-spacing:.06em; color:#F8E7B0; padding:6px 4px; border-bottom:1px solid rgba(248,231,176,.45); }
+body.rf .rf-unemb[aria-busy="true"] { opacity:.6; }
+body.rf .rf-unemb:active { color:#fdfbf5; }
 body.rf #shift-modal.rf-silent { visibility:hidden !important; }
 /* Today's Focus: doors + reading + change focus */
 body.rf [data-role="focus-card"] { cursor:pointer; -webkit-tap-highlight-color:transparent; }
