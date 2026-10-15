@@ -10,6 +10,17 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 src = open(os.path.join(PUB, 'app.html'), encoding='utf-8').read()
 s = src
 def rd(n): return open(os.path.join(HERE, n), encoding='utf-8').read()
+
+# ---- chat history (refresh only; PR #60 speed + PR #61 never hang): app.html's drawer/chat-history block
+# (from rhLoadDrawerList to rhInitChatUI();) is swapped for chat-history.js. Classic app.html keeps its own.
+# If app.html's block ever changes, the build stops so the two can be reconciled by hand.
+import hashlib
+_S, _E = '  async function rhLoadDrawerList() {', '    rhInitChatUI();'
+if s.count(_S) != 1: sys.exit('chat-history: start anchor found %d times' % s.count(_S))
+_a = s.index(_S); _b = s.index(_E, _a) + len(_E)
+if hashlib.sha256(s[_a:_b].encode()).hexdigest() != 'f928ab647effaeaffe02071f854ff943557475246698cc3c460b688742d3dddc':
+    sys.exit('chat-history: app.html drawer block changed; update scripts/ui-refresh/chat-history.js to match, then this hash')
+s = s[:_a] + rd('chat-history.js').rstrip('\n') + s[_b:]
 def once(old, new, label):
     global s
     n = s.count(old)
@@ -80,7 +91,7 @@ HOME = """
 <section class="rf-screen" id="rf-home" aria-label="Home">
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
- <div class="rf-welcome"><p class="rf-hi" id="rf-say" aria-live="polite">Good day, Revolutionary Healer, welcome back</p><h1 class="rf-shine rf-big">Welcome<br>Back</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
+ <div class="rf-welcome"><p class="rf-hi" id="rf-say" aria-live="polite">Good day, Revolutionary Healer</p><h1 class="rf-shine rf-big">Welcome<br>Back</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
  <div class="rf-sec rf-reveal"><h3>Your Doors</h3>
   <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">Find the resistance that's keeping you stuck</span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
