@@ -114,6 +114,17 @@
     else if (g === 'gap') startGap();
     else rfGo(g);
   });
+  // Oct 15 (Rachael): the GAP Method™ header uses the same "← Home" button as Today's Focus and the chat (no RH
+  // mark, no X; see gap.css). It closes GAP exactly as the X does (closeHeroGapEmbed: same resume-where-you-left-off
+  // session), then shows Home. The X stays in the page, hidden, so Esc/backdrop and the GAP code are unchanged.
+  (function () {
+    var tb = document.querySelector('#hero-gap-embed .topbar');
+    if (!tb || document.getElementById('rf-gap-home')) return;
+    var hb = document.createElement('button'); hb.type = 'button'; hb.id = 'rf-gap-home'; hb.className = 'rf-back rf-gap-home';
+    hb.setAttribute('aria-label', 'Close GAP Method and go Home'); hb.textContent = '← Home';
+    hb.onclick = function (e) { e.preventDefault(); e.stopPropagation(); try { closeHeroGapEmbed(); } catch (x) {} setTimeout(function () { showMain(); }, 0); };
+    tb.insertBefore(hb, tb.firstChild);
+  })();
   function startGap() {
     // Same entry as the live GAP Method button (it also resumes a pop-up closed mid-way).
     var b = document.getElementById('gap-method-starter-btn');

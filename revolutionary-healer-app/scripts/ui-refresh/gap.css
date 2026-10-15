@@ -115,3 +115,8 @@ html body.rf #hero-gap-embed.gm-modal { background: transparent !important; -web
 html body.rf #hero-gap-embed.gm-modal .card .row-between { background: linear-gradient(180deg, rgba(6,8,11,0), rgba(6,8,11,.5) 45%, rgba(6,8,11,.62)) !important; }
 
 html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !important; float: right; top: 12px !important; right: auto !important; margin: 12px 12px -44px auto !important; z-index: 40 !important; }
+/* Oct 15 (Rachael): header matches Today's Focus and the chat: "← Home" (#rf-gap-home, refresh.js), no RH mark, no X */
+html body.rf #hero-gap-embed.gm-modal .topbar::before { display: none !important; }
+html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { display: none !important; }
+html body.rf #hero-gap-embed:not(.gm-modal) #rf-gap-home { display: none !important; }
+html body.rf #hero-gap-embed.gm-modal #rf-gap-home { position: absolute !important; left: 20px; top: 22px; margin: 0 !important; z-index: 22; }
