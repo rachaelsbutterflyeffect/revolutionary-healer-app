@@ -424,7 +424,11 @@ body.rf .rf-door, body.rf .rf-tile, body.rf .rf-deep, body.rf .rf-sbub, body.rf 
 /* fixed layers stay on the compositor */
 #rf-sky, .rf-aurora, #rf-nav { will-change:transform; backface-visibility:hidden; }
 #rf-sky { transform:translateZ(0); }
-.rf-aurora { filter:blur(40px); }
+/* the aurora glow: a 140%-of-screen layer with a live 60px blur that also rotated non-stop, so the browser
+   re-blurred the whole screen on every frame (measured: removing it alone took scrolling from ~40 to 60 fps
+   with a 4x-slowed CPU). Same three glows, drawn soft in the gradients themselves; the slow drift stays. */
+.rf-aurora { filter:none !important;
+  background:radial-gradient(48% 38% at 20% 15%,rgba(63,214,200,.30),rgba(63,214,200,.12) 45%,transparent 78%),radial-gradient(52% 42% at 85% 25%,rgba(255,214,130,.32),rgba(255,214,130,.13) 45%,transparent 78%),radial-gradient(58% 48% at 50% 95%,rgba(63,214,200,.19),rgba(63,214,200,.08) 45%,transparent 78%); }
 /* pause decorative motion while scrolling / switching pages */
 body.rf.rf-busy .rf-aurora, body.rf.rf-busy .rf-shine, body.rf.rf-busy .rf-ttl, body.rf.rf-busy .rf-halo, body.rf.rf-busy .rf-door:before,
 body.rf.rf-busy .page-view .section-head h2, body.rf.rf-busy #my-revolution .section-head h2 { animation-play-state:paused !important; }
