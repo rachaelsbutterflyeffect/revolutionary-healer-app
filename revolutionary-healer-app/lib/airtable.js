@@ -115,6 +115,18 @@ export async function logEvent(type, meta, memberRecordId) {
     });
 }
 
+// Code Upgrade pulls saved by /api/code-pulls (Events type "code_pull", meta JSON carries the email). Read-only.
+export async function listCodePullEvents(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized || /["'\\]/.test(normalized)) return [];
+    return base(Tables.Events)
+    .select({
+        filterByFormula: `AND({type} = "code_pull", FIND('"email":"${normalized}"', {meta}) > 0)`,
+        sort: [{ field: "created_at", direction: "desc" }],
+    })
+    .all();
+}
+
 export async function getGapMethodResultByEmail(email) {
     return findOneByField(Tables.GapMethodResults, "email", normalizeEmail(email));
 }
