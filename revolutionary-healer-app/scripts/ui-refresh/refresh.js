@@ -188,7 +188,7 @@
     if (fb && ff) {
       var old = ff.querySelector('.rf-pill'); if (old) old.remove();
       var id = fb.getAttribute('data-shift-id'), s = (window.SHIFTS || shifts).filter(function (x) { return String(x.id) === String(id); })[0];
-      if (s) { var w = document.createElement('div'); w.innerHTML = pillHtml(s); var p = w.firstChild; p.style.alignSelf = 'flex-start'; ff.insertBefore(p, fb); }
+      if (s && s.statusClass !== 'embodied') { var w = document.createElement('div'); w.innerHTML = pillHtml(s); var p = w.firstChild; p.style.alignSelf = 'flex-start'; ff.insertBefore(p, fb); }
     }
   }
   var _rfs = window.renderFocusAndShifts;
