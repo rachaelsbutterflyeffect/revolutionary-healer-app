@@ -9,6 +9,7 @@ const list = (s) => String(s || "").split(",").map(norm).filter(Boolean);
 // feature name (as the client sees it) -> env key
 export const FEATURES = {
   codePull: "CODE_PULL",
+  codeShifts: "CODE_SHIFTS", // Shift the codes: save a pulled code as a Code Upgrade Shift
 };
 
 export function featureAllowed(key, email, env = process.env) {

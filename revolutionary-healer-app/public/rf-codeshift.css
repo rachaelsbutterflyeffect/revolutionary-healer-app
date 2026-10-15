@@ -1,0 +1,5 @@
+/* "Shift the codes" (refresh only; loaded only for members with codeShifts). Door styling comes from rf-codes.css (mock-up r17). */
+#rf-codes .cudoor.done .txt { color:var(--gold2); }
+#rf-codes .cudoor.done { cursor:default; }
+#rf-codes .rf-cu-note { text-align:center; font-size:13px; letter-spacing:.04em; color:var(--teal); min-height:1em; margin:2px 0 10px; }
+.rf-sbub .rf-cu-thumb { float:right; width:44px; aspect-ratio:2/3; object-fit:cover; border-radius:6px; margin:0 0 6px 10px; box-shadow:0 0 14px rgba(255,214,130,.35); }
