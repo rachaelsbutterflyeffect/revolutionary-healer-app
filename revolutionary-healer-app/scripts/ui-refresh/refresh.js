@@ -594,7 +594,7 @@
 // ---- Held-back features (Oct 15 2026): each one is its own file + its own server switch (lib/features.js).
 // Nothing is fetched or shown unless /api/features says true for THIS member.
 (function () {
-  var MAP = { codePull: 'rf-codes', homeCheckin: 'rf-checkin' };
+  var MAP = { codePull: 'rf-codes', homeCheckin: 'rf-checkin', codeShifts: 'rf-codeshift', saveSections: 'rf-sections', methodTracking: 'rf-tracking' };
   var tries = 0;
   function load(n) {
     if (document.getElementById('rf-feat-' + n)) return;

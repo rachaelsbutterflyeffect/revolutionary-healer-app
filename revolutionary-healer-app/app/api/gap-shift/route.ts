@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getEntitlementForEmail } from "@/lib/entitlements";
 import { createShiftFromChat } from "@/lib/airtable";
+import { featureAllowed } from "@/lib/features"; // Shift the codes (Oct 15 2026, exact-list gate)
 import { gapShiftOnce } from "@/lib/gapShiftOnce"; // one GAP run = one Shift (duplicate-save fix, Oct 8 2026)
 
 export async function POST(req: NextRequest) {
@@ -26,7 +27,41 @@ export async function POST(req: NextRequest) {
     chatId = null,
     todaysFocus = "",
     clientRunId = "",
+    source = "",
   } = await req.json();
+
+  // "Shift the codes": save a pulled Code Upgrade card as a Shift. Only for
+  // members on CODE_SHIFTS_ALLOWLIST (CODE_SHIFTS=list); everyone else gets
+  // a 404 before anything is read or written. The GAP path below is unchanged.
+  if (source === "code-upgrade") {
+    if (!email || !featureAllowed("CODE_SHIFTS", email)) {
+      return NextResponse.json({ error: "not found" }, { status: 404 });
+    }
+    const cut = (v: unknown, n: number) => (typeof v === "string" ? v.trim().slice(0, n) : "");
+    const name = cut(divineIdentityName, 200);
+    const focus = cut(focusArea, 200);
+    if (!name || !focus.startsWith("code-upgrade:")) {
+      return NextResponse.json({ error: "divineIdentityName and a code-upgrade focusArea are required" }, { status: 400 });
+    }
+    const { record, entitlement } = await getEntitlementForEmail(email);
+    if (!entitlement.canUseBase) {
+      return NextResponse.json({ error: "not entitled", entitlement }, { status: 403 });
+    }
+    const shift: any = await createShiftFromChat({
+      email,
+      memberRecordId: record?.id,
+      chatId: null,
+      methodName: "Code Upgrade",
+      divineIdentitySlug: "",
+      divineIdentityName: name,
+      currentFrequency: "Code Upgrade",
+      focusArea: focus,
+      gapExplanation: cut(gapExplanation, 5000),
+      whatWeNoticed: "",
+      recommendedActivation: cut(recommendedActivation, 500),
+    });
+    return NextResponse.json({ shiftId: shift.id });
+  }
 
   if (!email || !divineIdentitySlug) {
     return NextResponse.json(
