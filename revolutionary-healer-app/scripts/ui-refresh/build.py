@@ -10,6 +10,17 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 src = open(os.path.join(PUB, 'app.html'), encoding='utf-8').read()
 s = src
 def rd(n): return open(os.path.join(HERE, n), encoding='utf-8').read()
+
+# ---- chat history (refresh only; PR #60 speed + PR #61 never hang): app.html's drawer/chat-history block
+# (from rhLoadDrawerList to rhInitChatUI();) is swapped for chat-history.js. Classic app.html keeps its own.
+# If app.html's block ever changes, the build stops so the two can be reconciled by hand.
+import hashlib
+_S, _E = '  async function rhLoadDrawerList() {', '    rhInitChatUI();'
+if s.count(_S) != 1: sys.exit('chat-history: start anchor found %d times' % s.count(_S))
+_a = s.index(_S); _b = s.index(_E, _a) + len(_E)
+if hashlib.sha256(s[_a:_b].encode()).hexdigest() != 'f928ab647effaeaffe02071f854ff943557475246698cc3c460b688742d3dddc':
+    sys.exit('chat-history: app.html drawer block changed; update scripts/ui-refresh/chat-history.js to match, then this hash')
+s = s[:_a] + rd('chat-history.js').rstrip('\n') + s[_b:]
 def once(old, new, label):
     global s
     n = s.count(old)
