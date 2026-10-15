@@ -37,7 +37,7 @@ t("block is inside the cached (first) system piece", () => {
   assert.ok(Array.isArray(b) && b[0].cache_control && b[0].text.includes(C) && !b[1].text.includes(C));
 });
 t("required content present", () => {
-  for (const s of ["https://www.rachaelsbutterflyeffect.com/offers/R3gfeowS/checkout", "https://www.rachaelsbutterflyeffect.com/offers/HRs2J6Ja/checkout", "rachaelsbutterflyeffect@gmail.com", "https://t.me/+_fyFJp29V2E5YmZh", "$497", "3,333", "Distortion Decode", "Remembrance", "15 days", "TRACKING IS OFF", "7 days AND 3 activity days", "15 activity days", "last 3 activity days", "One gentle follow-up"]) assert.ok(C.includes(s), s);
+  for (const s of ["https://www.rachaelsbutterflyeffect.com/offers/R3gfeowS/checkout", "https://www.rachaelsbutterflyeffect.com/offers/HRs2J6Ja/checkout", "Rachaelsbutterflyeffect@gmail.com", "https://t.me/+_fyFJp29V2E5YmZh", "$497", "3,333", "Distortion Decode", "Remembrance", "15 days", "TRACKING IS OFF", "7 days AND 3 activity days", "15 activity days", "last 3 activity days", "One gentle follow-up"]) assert.ok(C.includes(s), s);
 });
 t("only the main chat route uses it; GAP routes untouched", () => {
   assert.ok(fs.readFileSync("app/api/chat/route.ts", "utf8").includes("withCcmInstructions(systemPrompt)"));

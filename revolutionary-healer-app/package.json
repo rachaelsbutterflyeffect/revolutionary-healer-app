@@ -19,7 +19,8 @@
     "test:testers": "node scripts/test-testers.mjs",
     "test:chat-ccm": "node scripts/test-chat-ccm.mjs",
     "test:ccm-tracking": "node scripts/test-ccm-tracking.mjs",
-    "test:ccm-card": "node scripts/test-ccm-card.mjs"
+    "test:ccm-card": "node scripts/test-ccm-card.mjs",
+    "test:ui-refresh": "node scripts/test-ui-refresh.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",

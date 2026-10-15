@@ -12,6 +12,39 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Revolutionary Healer</title>
+<script id="rf-switch">
+// UI refresh switch (server env UI_REFRESH = off / allowlist / on; default off). Members the server
+// allows are sent to /app-refresh.html (same app, new look); everyone else stays on this page.
+// ?classic=1 always stays here. Oct 15 2026 (old-look flash fix): the decision is remembered per member
+// in localStorage (the landing page makes it at sign-in), so this runs synchronously before anything
+// paints. Allowed: the page is hidden and replaced before first paint. Not allowed: nothing is hidden.
+// No remembered decision yet: the page is hidden (dark background) until the server answers, at most
+// 2.5 s, then fails open to this classic page. A remembered decision is re-checked in the background.
+(function () {
+  try {
+    if (/[?&]classic=1(&|$)/.test(location.search)) return;
+    var e = localStorage.getItem('rh_member_email'); if (!e) return;
+    var at = Number(localStorage.getItem('rh_member_login_at') || 0);
+    if (!at || Date.now() - at >= 5 * 24 * 60 * 60 * 1000) return; // expired: this page's own check signs them out
+    var K = 'rh_ui_refresh', de = document.documentElement;
+    var go = function () { location.replace('/app-refresh.html' + location.search + location.hash); };
+    var hide = function () { var st = document.createElement('style'); st.id = 'rf-switch-hold'; st.textContent = 'html{background:#06080b!important}body{visibility:hidden!important}'; de.appendChild(st); };
+    var show = function () { var st = document.getElementById('rf-switch-hold'); if (st) st.remove(); };
+    var c = localStorage.getItem(K) || sessionStorage.getItem(K);
+    if (c === '1:' + e) { hide(); go(); return; }
+    var held = c !== '0:' + e; if (held) hide();
+    var done = false, t = held ? setTimeout(function () { done = true; show(); }, 2500) : 0;
+    fetch('/api/ui-refresh?email=' + encodeURIComponent(e), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (!d) { if (held && !done) { clearTimeout(t); show(); } return; }
+        try { localStorage.setItem(K, (d.refresh ? '1:' : '0:') + e); } catch (x) {}
+        if (held && !done) { clearTimeout(t); if (d.refresh) go(); else show(); }
+      })
+      .catch(function () { if (held && !done) { clearTimeout(t); show(); } });
+  } catch (x) {}
+})();
+</script>
 <style>
   :root {
     --black: #121110;
@@ -936,6 +969,8 @@
       if (!stillEntitled) {
         localStorage.removeItem('rh_member_email');
         localStorage.removeItem('rh_member_login_at');
+        // the sign-in page shows why (never a silent bounce back to the form)
+        try { sessionStorage.setItem('rh_signin_notice', "This email doesn't have active access yet. If you just purchased, please try again in a few minutes, or reach out for help."); } catch (e) {}
         window.location.href = '/';
         return;
       }
@@ -1190,9 +1225,9 @@
         </div>
 
         <div class="reveal-block" id="d3-upsell-block" style="text-align:left; margin-top: 8px;">
-          <div class="eyebrow">Ready for your full transformation?</div>
-                    <p class="copy" style="margin-bottom: 20px;">This activation is what I'd recommend you work with next. Your recommended activation, Rachael's full Activation Library, and ongoing AI support all live inside The Revolutionary Healer, so this is where the real shift happens.</p>
-          <a href="javascript:void(0)" class="btn-gold" onclick="handleGapListenNowClick()">Listen now →</a>
+          <!-- Oct 15 2026 (Rachael): placeholder upsell copy removed. Listen now saves this run's Shift (once) and
+               opens the recommended activation directly, the same flow as the Primary Activation card's Listen now. -->
+          <a href="javascript:void(0)" class="btn-gold" onclick="gapListenNow(this)">Listen now →</a>
 <div id="d3-embed-confirmation" style="display:none; text-align:center; margin-top: 18px;"><p class="copy" style="color: var(--gold-soft); margin:0;">✓ Your Shift has been saved to My Revolution.</p></div>
         </div>
         <!-- GAP reading restructure, switch on only: "Your Gap" card, 2nd in the row (CSS grid places it between
@@ -2824,7 +2859,7 @@
 
   // My Profile > Support -- configurable, not hard-coded into visible copy,
   // same pattern as GO_DEEPER_OFFERS above.
-  var SUPPORT_EMAIL = "rachaelsbutterflyeffect@gmail.com"; // TODO(Rachael): confirm this is the real support inbox to route to.
+  var SUPPORT_EMAIL = "Rachaelsbutterflyeffect@gmail.com"; // Rachael confirmed Oct 15 2026: display exactly with this capitalization.
   document.getElementById('btn-contact-support').href = "mailto:" + SUPPORT_EMAIL;
 
   // =====================================================================
