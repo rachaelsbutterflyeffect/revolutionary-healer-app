@@ -45,7 +45,9 @@
       var id = el.getAttribute('data-shift-id'), s = all.find(function (x) { return String(x.id) === id; });
       var show = f === 'recent' ? top.indexOf(id) >= 0 : kind(s) === f;
       el.classList.toggle('rf-xhide', !show); if (show) n++;
-      if (lastList && list !== lastList && el.classList.contains('open')) { el.classList.remove('open'); el.setAttribute('aria-expanded', 'false'); }
+      // the same Shift in a list the member didn't tap: shown closed (its open-only parts hidden), so nothing above grows
+      var closed = !!(lastList && list !== lastList && el.classList.contains('open'));
+      if (closed) { el.classList.remove('open'); el.setAttribute('aria-expanded', 'false'); el.classList.add('rf-xclosed'); var bt = el.querySelector('.bt'); if (bt && !bt.querySelector('.ac') && s && s.activation) { var ac = document.createElement('div'); ac.className = 'ac'; ac.textContent = s.activation; bt.appendChild(ac); } if (bt && !bt.querySelector('.rf-cue')) { var cu = document.createElement('div'); cu.className = 'rf-cue'; cu.textContent = '▶ Tap to open your activation'; bt.appendChild(cu); } }
     });
     if (f !== 'recent') {
       var acc = list.closest('.rf-acc'); if (acc) { acc.querySelector('.rf-acc-n').textContent = '(' + n + ')'; var em = acc.querySelector('.rf-rempty'); if (em) em.hidden = n > 0; if (f === 'other') acc.hidden = n === 0; }
@@ -56,6 +58,12 @@
     new MutationObserver(function () { filter(list); }).observe(list, { childList: true });
     list.addEventListener('pointerdown', function () { lastList = list; }, true);
     list.addEventListener('keydown', function () { lastList = list; }, true);
+    // tapping a closed copy of the open Shift: the shared toggle closes it first, then it opens here
+    list.addEventListener('click', function (e) {
+      var c = e.target.closest && e.target.closest('.rf-sbub.rf-xclosed'); if (!c || e.target.closest('[data-rf-emb],[data-rf-unemb],[data-rf-listen],[data-rf-del],.rf-pill')) return;
+      var id = c.getAttribute('data-shift-id');
+      setTimeout(function () { var n = list.querySelector('.rf-sbub[data-shift-id="' + id + '"]'); if (n && !n.classList.contains('open')) n.click(); }, 0);
+    });
     filter(list);
   }
   var needPaint = false;

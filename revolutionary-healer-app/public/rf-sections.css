@@ -30,3 +30,4 @@ body.rf .rf-acc-panel[hidden] { display:none; }
 body.rf .rf-acc-panel .rf-rempty { padding:6px 4px; }
 @keyframes rf-acc-in { from { opacity:0; transform:translateY(-4px); } }
 @media (prefers-reduced-motion:reduce) { body.rf .rf-acc-panel { animation:none; } body.rf .rf-chev { transition:none; } }
+body.rf .rf-sbub.rf-xclosed .rf-xp, body.rf .rf-sbub.rf-xclosed .rf-xfoot { display:none !important; }
