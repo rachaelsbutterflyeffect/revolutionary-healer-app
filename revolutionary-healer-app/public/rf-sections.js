@@ -14,7 +14,7 @@
   };
 })();
 /* My Revolution in three sections (Oct 15 2026, exact-list SAVE_SECTIONS): GAP Method™ (completed runs), My Shifting
- * Cards (the existing Shift cards, unchanged), Codes (every pulled code, with its date). Every code pull is saved
+ * Cards (the existing Shift cards, unchanged). The Codes list is not shown on this page (code pulls are still logged and counted). Every code pull is saved
  * (POST /api/code-pulls). Read side: /api/revolution-sections, computed from existing rows (nothing rewritten). */
 (function () {
   if (window.__rfSections) return; window.__rfSections = 1;
@@ -83,15 +83,9 @@
       cards.querySelectorAll('[data-rf-filter]').forEach(watch);
       needPaint = true;
     }
-    var c = document.getElementById('rf-sec-codes');
-    if (!c) {
-      c = document.createElement('div'); c.className = 'revolution-subsection rf-rsec'; c.id = 'rf-sec-codes';
-      c.innerHTML = '<div class="subsection-head"><h3>' + STAR + ' Codes</h3></div><div class="rf-rlist rf-codes-list" data-rf-list="codes"></div>';
-      cards.parentNode.insertBefore(c, cards.nextSibling);
-    }
     // the new lists fill on the next render; ask for one as soon as the Shifts are loaded
     if (needPaint && shiftsArr().length && typeof window.renderFocusAndShifts === 'function') { needPaint = false; try { window.renderFocusAndShifts(shiftsArr()); } catch (e) {} }
-    return { c: c.querySelector('[data-rf-list]') };
+    return {};
   }
   // accordion: expands in place, collapsed by default, chevron turns
   document.addEventListener('click', function (e) {
@@ -100,20 +94,7 @@
     var open = panel.hidden; panel.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.parentNode.classList.toggle('open', open);
     if (open) { var l = panel.querySelector('[data-rf-filter]'); if (l) filter(l); }
   });
-  var showAll = false, CAP = 4;
-  document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('[data-rf-more]'); if (!b) return;
-    showAll = !showAll; render(window.__rfRevData);
-    if (!showAll) { var sec = document.getElementById('rf-sec-codes'); if (sec) sec.scrollIntoView({ block: 'start' }); }
-  });
-  function render(d) {
-    var el = ensure(); if (!el || !d || !d.codes) return;
-    var list = showAll ? d.codes : d.codes.slice(0, CAP);
-    el.c.innerHTML = d.codes.length ? list.map(function (x) {
-      return '<div class="rf-ritem rf-citem">' + (x.card ? '<img class="rf-cthumb" src="/code-cards/' + esc(x.card) + '.webp" alt="" loading="lazy">' : '') + '<span class="bt"><span class="nm">' + esc(x.name) + '</span>' +
-        (x.code ? '<span class="fr">' + esc(x.code) + '</span>' : '') + '<span class="dt">' + (x.from === 'saved' ? 'Saved ' : 'Pulled ') + esc(day(x.at)) + '</span></span></div>';
-    }).join('') + (d.codes.length > CAP ? '<button type="button" class="rf-rmore" data-rf-more="codes" aria-expanded="' + showAll + '">' + (showAll ? 'Show fewer' : 'Show all ' + d.codes.length) + '</button>' : '') : '<p class="rf-rempty">Every code you pull on Today\'s Focus is kept here.</p>';
-  }
+  function render() { ensure(); }
   document.addEventListener('rf:rev-data', function (ev) { render(ev.detail); });
   // re-read when the Shifts change (a GAP run completed, a card saved or deleted)
   var lastN = -1, q = false;
