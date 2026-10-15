@@ -178,11 +178,13 @@ s = s.replace('>← Back to My Revolution</a>', '>← My Revolution</a>').replac
 
 # ---- end of body: GAP look, nav, refresh script ----
 NAV = """<nav id="rf-nav" aria-label="Main">
+ <div class="rf-nav-title" aria-hidden="true">Revolutionary Healer</div><div class="rf-nav-div" aria-hidden="true"></div>
  <button type="button" data-rf-nav="home"><span aria-hidden="true">⌂</span>Home</button>
  <button type="button" data-rf-nav="focus"><span aria-hidden="true">✧</span>Today's Focus</button>
  <button type="button" data-rf-nav="chat"><span aria-hidden="true">❋</span>Chat</button>
  <button type="button" data-rf-nav="lib"><span aria-hidden="true">♫</span>Activations</button>
  <button type="button" data-rf-nav="rev"><span aria-hidden="true">❖</span>Revolution</button>
+ <button type="button" class="rf-nav-foot" data-rf-go="profile"><span aria-hidden="true">◌</span>My Profile</button>
 </nav>
 """
 # live app.html calls showLockedActivationPrompt() for locked cards but has no #locked-activation-toast

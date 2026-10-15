@@ -243,7 +243,7 @@
     if (kb && window.scrollY) { try { window.scrollTo(0, 0); } catch (e) {} }
     var top = shell.getBoundingClientRect().top - off;
     if (top < 0 || top > vh) top = 70;
-    var room = kb ? 8 : 104; // nav height + gap
+    var room = kb ? 8 : (window.matchMedia && matchMedia('(min-width:820px)').matches ? 40 : 104); // nav height + gap (desktop: the nav is at the side)
     var hh = Math.max(kb ? 160 : 220, Math.round(vh - top - room));
     shell.style.setProperty('--rf-chat-h', hh + 'px');
     B.style.setProperty('--rf-chat-h', hh + 'px');

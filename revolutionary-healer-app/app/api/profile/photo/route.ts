@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
     if (!member) return NextResponse.json({ error: "Member not found." }, { status: 404 });
 
     const photo = (member.fields as any).profile_photo;
-    const url = Array.isArray(photo) && photo[0]?.url ? photo[0].url : null;
+    const url = Array.isArray(photo) && photo.length && photo[photo.length - 1]?.url ? photo[photo.length - 1].url : null; // newest
     return NextResponse.json({ url });
   } catch (err) {
     console.error("GET /api/profile/photo failed", err);
@@ -87,7 +87,18 @@ export async function POST(req: NextRequest) {
 
     const data = await res.json();
     const photo = data?.fields?.[PHOTO_FIELD_ID()] ?? data?.fields?.profile_photo;
-    const url = Array.isArray(photo) && photo[0]?.url ? photo[0].url : null;
+    // uploadAttachment APPENDS: a new photo used to land behind the old one, which kept showing. Keep only
+    // the newest attachment (best effort) and return its URL.
+    const list = Array.isArray(photo) ? photo : [];
+    const newest = list.length ? list[list.length - 1] : null;
+    if (list.length > 1 && newest?.id) {
+      await fetch(`https://api.airtable.com/v0/${baseId}/${MEMBERS_TABLE_ID()}/${member.id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: { profile_photo: [{ id: newest.id }] } }),
+      }).catch((e) => console.error("Airtable keep-newest profile_photo failed", e));
+    }
+    const url = newest?.url || null;
     return NextResponse.json({ ok: true, url });
   } catch (err) {
     console.error("POST /api/profile/photo failed", err);
