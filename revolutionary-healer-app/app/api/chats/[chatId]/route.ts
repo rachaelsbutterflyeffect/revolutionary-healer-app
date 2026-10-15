@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { placeholderChatTitle } from "@/lib/chatTitles";
 import {
   getChatSessionById,
-  listMessagesByChatId,
+  listChatMessagesForView,
   renameChatSession,
   archiveChatSession,
   deleteChatSession,
@@ -16,12 +16,25 @@ export async function GET(
   { params }: { params: { chatId: string } }
 ) {
   const { chatId } = params;
-  const session = await getChatSessionById(chatId);
+  // Chat history speed (Oct 15 2026): the session lookup and the message read
+  // used to run one after the other; they're independent, so run them together.
+  // Optional ?limit=N (1-99) reads only the newest N messages (+ hasMore);
+  // without it every message is returned, exactly as before.
+  const limitRaw = parseInt(req.nextUrl.searchParams.get("limit") || "", 10);
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 99) : 0;
+  const t0 = Date.now();
+  const [session, page] = await Promise.all([
+    getChatSessionById(chatId),
+    listChatMessagesForView(chatId, { limit }).catch((err: any) => ({ error: err })),
+  ]);
+  const ms = Date.now() - t0;
   if (!session) {
     return NextResponse.json({ error: "chat not found" }, { status: 404 });
   }
-  const messages = await listMessagesByChatId(chatId);
-  return NextResponse.json({
+  if ((page as any).error) throw (page as any).error;
+  const messages = (page as any).records as any[];
+  const res = NextResponse.json({
+    ...(limit ? { hasMore: !!(page as any).hasMore } : {}),
     chat: {
       id: session.id,
       title: session.fields.title || placeholderChatTitle(session.fields.created_at || new Date()),
@@ -36,6 +49,9 @@ export async function GET(
       activationRecommended: m.fields.activation_recommended || null,
     })),
   });
+  res.headers.set("Server-Timing", `airtable;dur=${ms}`);
+  res.headers.set("Cache-Control", "private, no-store");
+  return res;
 }
 
 export async function PATCH(
