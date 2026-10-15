@@ -1295,6 +1295,9 @@ body.rf .rf-allsecs { display:none; } body.rf[data-rf-lib="cat"] .rf-allsecs { d
 body.rf .rf-sec-ttl { display:none; } body.rf[data-rf-lib="cat"] .rf-sec-ttl { display:block; font-family:Cinzel,serif; letter-spacing:.2em; text-transform:uppercase; font-size:13px; color:var(--rf-gold); margin:4px 0 12px; }
 body.rf[data-rf-lib="cat"] #rf-lib-sub .filter-chip[data-category="All"] { display:none !important; }
 
+/* Sign out sits on the main profile page (round 2, item 14) */
+.rf-psignout { margin-top:22px; }
+
 </style>
 </head>
 <body class="rf" data-rf="home">
@@ -2352,6 +2355,7 @@ body.rf[data-rf-lib="cat"] #rf-lib-sub .filter-chip[data-category="All"] { displ
     <div class="rf-hidden-fields" aria-hidden="true"><input type="text" class="field-input" id="profile-name-input" value="" tabindex="-1"><input type="email" class="field-input" id="profile-email-input" value="" tabindex="-1"></div>
     <button type="button" class="rf-card" data-rf-go="account"><h2>Account</h2><p>Name, email and membership live here.</p><span class="parr" aria-hidden="true">→</span></button>
     <button type="button" class="rf-card" data-rf-go="support"><h2>Support</h2><p>Questions? Reach the team any time.</p><span class="parr" aria-hidden="true">→</span></button>
+    <div class="rf-plist rf-psignout"><a href="#" class="rf-prow2" id="rf-signout-main" onclick="signOutMember(); return false;">Sign out<span aria-hidden="true">→</span></a></div>
   </div>
 </section>
 
@@ -2366,7 +2370,6 @@ body.rf[data-rf-lib="cat"] #rf-lib-sub .filter-chip[data-category="All"] { displ
   </div>
   <div class="rf-plist">
     <button type="button" class="rf-prow2" id="rf-manage" onclick="window.open('https://www.rachaelsbutterflyeffect.com/settings/account','_blank')">Manage membership<span aria-hidden="true">↗</span></button>
-    <a href="#" class="rf-prow2" onclick="signOutMember(); return false;">Sign out<span aria-hidden="true">→</span></a>
   </div>
 </section>
 

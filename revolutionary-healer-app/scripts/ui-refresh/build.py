@@ -119,6 +119,7 @@ PROFILE = """<section class="block page-view" id="profile-page" style="border-bo
     <div class="rf-hidden-fields" aria-hidden="true"><input type="text" class="field-input" id="profile-name-input" value="" tabindex="-1"><input type="email" class="field-input" id="profile-email-input" value="" tabindex="-1"></div>
     <button type="button" class="rf-card" data-rf-go="account"><h2>Account</h2><p>Name, email and membership live here.</p><span class="parr" aria-hidden="true">→</span></button>
     <button type="button" class="rf-card" data-rf-go="support"><h2>Support</h2><p>Questions? Reach the team any time.</p><span class="parr" aria-hidden="true">→</span></button>
+    <div class="rf-plist rf-psignout"><a href="#" class="rf-prow2" id="rf-signout-main" onclick="signOutMember(); return false;">Sign out<span aria-hidden="true">→</span></a></div>
   </div>
 </section>
 
@@ -133,7 +134,6 @@ PROFILE = """<section class="block page-view" id="profile-page" style="border-bo
   </div>
   <div class="rf-plist">
     <button type="button" class="rf-prow2" id="rf-manage" onclick="%(manage)s">Manage membership<span aria-hidden="true">↗</span></button>
-    <a href="#" class="rf-prow2" onclick="signOutMember(); return false;">Sign out<span aria-hidden="true">→</span></a>
   </div>
 </section>
 
