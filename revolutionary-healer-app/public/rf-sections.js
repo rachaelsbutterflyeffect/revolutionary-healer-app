@@ -14,7 +14,7 @@
   };
 })();
 /* My Revolution in three sections (Oct 15 2026, exact-list SAVE_SECTIONS): GAP Method™ (completed runs), My Shifting
- * Cards (the existing Shift cards, unchanged), Codes (every pulled code, with its date). Every code pull is saved
+ * Cards (the existing Shift cards, unchanged). The Codes list is not shown on this page (code pulls are still logged and counted). Every code pull is saved
  * (POST /api/code-pulls). Read side: /api/revolution-sections, computed from existing rows (nothing rewritten). */
 (function () {
   if (window.__rfSections) return; window.__rfSections = 1;
@@ -29,50 +29,72 @@
     fetch('/api/code-pulls', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em, name: cd.n, card: cd.f, code: cd.c }) })
       .then(function (r) { window.__rfLastPullSaved = r.ok; return r.ok && data(true); }).catch(function () { window.__rfLastPullSaved = false; });
   });
-  // 2) the sections
+  // 2) the sections (preview, Rachael Oct 15): My Most Recent Shifts (newest 3 real cards), My Shifting Cards (two
+  // in-place accordions, GAP Method™ Shifts and Code Upgrade Shifts, each listing ALL of that type, newest first),
+  // then Codes. Every list is a real [data-role="shifts-list"], so the refresh's own cards render into it with all
+  // their behaviour; each list is filtered synchronously (MutationObserver) so nothing flashes or jumps.
+  var ACC = [['gap', '◈', 'GAP Method™ Shifts', 'Your GAP Method™ Shifts will gather here.'], ['code', '✧', 'Code Upgrade Shifts', 'Codes you save as Shifting cards will gather here.']];
+  function kind(s) { return !s ? '' : s.method === 'GAP Method' ? 'gap' : s.method === 'Code Upgrade' ? 'code' : 'other'; }
+  function shiftsArr() { return window.SHIFTS || []; }
+  var lastList = null; // only the list the member tapped keeps its card open (no duplicate open cards elsewhere)
+  function filter(list) {
+    var f = list.getAttribute('data-rf-filter') || 'recent', all = shiftsArr(), top = all.slice(0, 3).map(function (x) { return String(x.id); });
+    var n = 0;
+    Array.prototype.forEach.call(list.children, function (el) {
+      if (!el.classList.contains('rf-sbub')) { if (f !== 'recent') el.classList.add('rf-xhide'); return; }
+      var id = el.getAttribute('data-shift-id'), s = all.find(function (x) { return String(x.id) === id; });
+      var show = f === 'recent' ? top.indexOf(id) >= 0 : kind(s) === f;
+      el.classList.toggle('rf-xhide', !show); if (show) n++;
+      // the same Shift in a list the member didn't tap: shown closed (its open-only parts hidden), so nothing above grows
+      var closed = !!(lastList && list !== lastList && el.classList.contains('open'));
+      if (closed) { el.classList.remove('open'); el.setAttribute('aria-expanded', 'false'); el.classList.add('rf-xclosed'); var bt = el.querySelector('.bt'); if (bt && !bt.querySelector('.ac') && s && s.activation) { var ac = document.createElement('div'); ac.className = 'ac'; ac.textContent = s.activation; bt.appendChild(ac); } if (bt && !bt.querySelector('.rf-cue')) { var cu = document.createElement('div'); cu.className = 'rf-cue'; cu.textContent = '▶ Tap to open your activation'; bt.appendChild(cu); } }
+    });
+    if (f !== 'recent') {
+      var acc = list.closest('.rf-acc'); if (acc) { acc.querySelector('.rf-acc-n').textContent = '(' + n + ')'; var em = acc.querySelector('.rf-rempty'); if (em) em.hidden = n > 0; }
+    }
+  }
+  function watch(list) {
+    if (list.__rfF) return; list.__rfF = true;
+    new MutationObserver(function () { filter(list); }).observe(list, { childList: true });
+    list.addEventListener('pointerdown', function () { lastList = list; }, true);
+    list.addEventListener('keydown', function () { lastList = list; }, true);
+    // tapping a closed copy of the open Shift: the shared toggle closes it first, then it opens here
+    list.addEventListener('click', function (e) {
+      var c = e.target.closest && e.target.closest('.rf-sbub.rf-xclosed'); if (!c || e.target.closest('[data-rf-emb],[data-rf-unemb],[data-rf-listen],[data-rf-del],.rf-pill')) return;
+      var id = c.getAttribute('data-shift-id');
+      setTimeout(function () { var n = list.querySelector('.rf-sbub[data-shift-id="' + id + '"]'); if (n && !n.classList.contains('open')) n.click(); }, 0);
+    });
+    filter(list);
+  }
+  var needPaint = false;
   function ensure() {
-    var list = document.querySelector('#my-revolution [data-role="shifts-list"]'); if (!list) return null;
+    var list = document.querySelector('#my-revolution .revolution-subsection [data-role="shifts-list"]:not([data-rf-filter])'); if (!list) return null;
     var sub = list.closest('.revolution-subsection'); if (!sub) return null;
-    var h = sub.querySelector('.subsection-head h3'); if (h && !h.hasAttribute('data-orig')) { h.setAttribute('data-orig', h.textContent); h.innerHTML = STAR + ' My Shifting Cards'; }
-    var g = document.getElementById('rf-sec-gap');
-    if (!g) {
-      g = document.createElement('div'); g.className = 'revolution-subsection rf-rsec'; g.id = 'rf-sec-gap';
-      g.innerHTML = '<div class="subsection-head"><h3>' + STAR + ' GAP Method™</h3></div><div class="rf-rlist" data-rf-list="gap"></div>';
-      sub.parentNode.insertBefore(g, sub);
+    var h = sub.querySelector('.subsection-head h3'); if (h && !h.hasAttribute('data-orig')) { h.setAttribute('data-orig', h.textContent); h.innerHTML = STAR + ' My Most Recent Shifts'; }
+    sub.classList.add('rf-recent'); watch(list);
+    var cards = document.getElementById('rf-sec-cards');
+    if (!cards) {
+      cards = document.createElement('div'); cards.className = 'revolution-subsection rf-rsec'; cards.id = 'rf-sec-cards';
+      cards.innerHTML = '<div class="subsection-head"><h3>' + STAR + ' My Shifting Cards</h3></div>' + ACC.map(function (a) {
+        return '<div class="rf-acc" data-acc="' + a[0] + '"><button type="button" class="rf-acc-btn" aria-expanded="false" aria-controls="rf-acc-' + a[0] + '"><span class="rf-orb" aria-hidden="true">' + a[1] + '</span><span class="txt">' + a[2] + ' <span class="rf-acc-n"></span></span><span class="rf-chev" aria-hidden="true"></span></button>' +
+          '<div class="rf-acc-panel" id="rf-acc-' + a[0] + '" hidden><div class="shifts-list rf-acc-list" data-role="shifts-list" data-rf-filter="' + a[0] + '"></div>' + (a[3] ? '<p class="rf-rempty" hidden>' + a[3] + '</p>' : '') + '</div></div>';
+      }).join('');
+      sub.parentNode.insertBefore(cards, sub.nextSibling);
+      cards.querySelectorAll('[data-rf-filter]').forEach(watch);
+      needPaint = true;
     }
-    var c = document.getElementById('rf-sec-codes');
-    if (!c) {
-      c = document.createElement('div'); c.className = 'revolution-subsection rf-rsec'; c.id = 'rf-sec-codes';
-      c.innerHTML = '<div class="subsection-head"><h3>' + STAR + ' Codes</h3></div><div class="rf-rlist rf-codes-list" data-rf-list="codes"></div>';
-      sub.parentNode.insertBefore(c, sub.nextSibling);
-    }
-    return { g: g.querySelector('[data-rf-list]'), c: c.querySelector('[data-rf-list]') };
+    // the new lists fill on the next render; ask for one as soon as the Shifts are loaded
+    if (needPaint && shiftsArr().length && typeof window.renderFocusAndShifts === 'function') { needPaint = false; try { window.renderFocusAndShifts(shiftsArr()); } catch (e) {} }
+    return {};
   }
-  var showAll = { gap: false, codes: false }, CAP = { gap: 3, codes: 4 };
-  function more(k, n) { return n > CAP[k] ? '<button type="button" class="rf-rmore" data-rf-more="' + k + '" aria-expanded="' + showAll[k] + '">' + (showAll[k] ? 'Show fewer' : 'Show all ' + n) + '</button>' : ''; }
-  function cap(k, arr) { return showAll[k] ? arr : arr.slice(0, CAP[k]); }
+  // accordion: expands in place, collapsed by default, chevron turns
   document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('[data-rf-more]'); if (!b) return;
-    var k = b.getAttribute('data-rf-more'); showAll[k] = !showAll[k]; render(window.__rfRevData);
-    if (!showAll[k]) { var sec = document.getElementById('rf-sec-' + k); if (sec) sec.scrollIntoView({ block: 'start' }); }
+    var b = e.target.closest && e.target.closest('.rf-acc-btn'); if (!b) return;
+    var panel = document.getElementById(b.getAttribute('aria-controls')); if (!panel) return;
+    var open = panel.hidden; panel.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.parentNode.classList.toggle('open', open);
+    if (open) { var l = panel.querySelector('[data-rf-filter]'); if (l) filter(l); }
   });
-  function render(d) {
-    var el = ensure(); if (!el || !d || !d.gap) return;
-    el.g.innerHTML = d.gap.length ? cap('gap', d.gap).map(function (x) {
-      return '<button type="button" class="rf-ritem rf-gitem"' + (x.shiftId ? ' data-rf-shift="' + esc(x.shiftId) + '"' : ' disabled') + '><span class="rf-orb" aria-hidden="true">◈</span><span class="bt"><span class="nm">' + esc(x.identity || 'GAP Method™ run') + '</span>' +
-        (x.frequency ? '<span class="fr">Current Frequency: ' + esc(x.frequency) + '</span>' : '') + '<span class="dt">Completed ' + esc(day(x.at)) + '</span></span>' + (x.shiftId ? '<span class="arr" aria-hidden="true">→</span>' : '') + '</button>';
-    }).join('') + more('gap', d.gap.length) : '<p class="rf-rempty">Each GAP Method™ run you complete gathers here.</p>';
-    el.c.innerHTML = d.codes.length ? cap('codes', d.codes).map(function (x) {
-      return '<div class="rf-ritem rf-citem">' + (x.card ? '<img class="rf-cthumb" src="/code-cards/' + esc(x.card) + '.webp" alt="" loading="lazy">' : '') + '<span class="bt"><span class="nm">' + esc(x.name) + '</span>' +
-        (x.code ? '<span class="fr">' + esc(x.code) + '</span>' : '') + '<span class="dt">' + (x.from === 'saved' ? 'Saved ' : 'Pulled ') + esc(day(x.at)) + '</span></span></div>';
-    }).join('') + more('codes', d.codes.length) : '<p class="rf-rempty">Every code you pull on Today\'s Focus is kept here.</p>';
-  }
-  // A GAP run opens its Shifting card
-  document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('[data-rf-shift]'); if (!b) return;
-    var card = document.querySelector('#my-revolution .rf-sbub[data-shift-id="' + b.getAttribute('data-rf-shift') + '"]'); if (!card) return;
-    e.preventDefault(); card.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (!card.classList.contains('open')) card.click();
-  });
+  function render() { ensure(); }
   document.addEventListener('rf:rev-data', function (ev) { render(ev.detail); });
   // re-read when the Shifts change (a GAP run completed, a card saved or deleted)
   var lastN = -1, q = false;
