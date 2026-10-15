@@ -9,6 +9,7 @@ const list = (s) => String(s || "").split(",").map(norm).filter(Boolean);
 // feature name (as the client sees it) -> env key
 export const FEATURES = {
   codePull: "CODE_PULL",
+  homeCheckin: "HOME_CHECKIN",
 };
 
 export function featureAllowed(key, email, env = process.env) {

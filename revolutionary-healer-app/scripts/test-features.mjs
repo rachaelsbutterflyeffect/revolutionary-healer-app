@@ -9,5 +9,8 @@ t("list: Rachael", () => assert.equal(featureAllowed("CODE_PULL", " RachaelsButt
 t("list: Ray", () => assert.equal(featureAllowed("CODE_PULL", "rachael.ball08@gmail.com", L), true));
 t("list: tester not on list", () => assert.equal(featureAllowed("CODE_PULL", "x@example.com", L), false));
 t("list: gapqa alias", () => assert.equal(featureAllowed("CODE_PULL", "rachaelsbutterflyeffect+gapqa1@gmail.com", L), false));
-t("featuresFor shape", () => assert.deepEqual(featuresFor("rachael.ball08@gmail.com", L), { codePull: true }));
+t("featuresFor shape", () => assert.deepEqual(featuresFor("rachael.ball08@gmail.com", L), { codePull: true, homeCheckin: false }));
+const C = { ...L, HOME_CHECKIN: "list", HOME_CHECKIN_ALLOWLIST: "rachael.ball08@gmail.com" };
+t("homeCheckin is its own switch", () => assert.deepEqual(featuresFor("rachaelsbutterflyeffect@gmail.com", C), { codePull: true, homeCheckin: false }));
+t("homeCheckin: Ray", () => assert.equal(featuresFor("rachael.ball08@gmail.com", C).homeCheckin, true));
 console.log(n, "passed");
