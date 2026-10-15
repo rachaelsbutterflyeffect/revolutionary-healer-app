@@ -6,7 +6,7 @@ const S = (id, m, at, extra = {}) => ({ id, methodName: m, divineIdentityName: "
 t("empty member", () => assert.deepEqual(classify({}).counts, { gapScans: 0, shifts: 0, codes: 0 }));
 t("history counts: 5 GAP + 1 Code Upgrade, no pulls", () => {
   const shifts = [1, 2, 3, 4, 5].map((i) => S("g" + i, "GAP Method", "2026-10-0" + i)).concat([S("c1", "Code Upgrade", "2026-10-09", { focusArea: "code-upgrade:grounding-97531" })]);
-  const c = classify({ shifts }); assert.deepEqual(c.counts, { gapScans: 5, shifts: 6, codes: 1 }); assert.equal(c.codes[0].card, "grounding-97531"); assert.equal(c.codes[0].from, "saved");
+  const c = classify({ shifts }); assert.deepEqual(c.counts, { gapScans: 5, shifts: 6, codes: 1 }); assert.equal(c.codes[0].card, "grounding-97531"); assert.equal(c.codes[0].from, "saved"); assert.equal(c.codes[0].code, "97531");
 });
 t("pulls + older saved codes, no double count", () => {
   const shifts = [S("c1", "Code Upgrade", "2026-10-01T00:00:00Z"), S("c2", "Code Upgrade", "2026-10-20T00:00:00Z")];

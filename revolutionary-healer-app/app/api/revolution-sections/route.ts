@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
     const pulls = events.map((r: any) => { let m: any = {}; try { m = JSON.parse(r.fields.meta || "{}"); } catch {} return { name: m.name, card: m.card, code: m.code, at: r.fields.created_at || "" }; });
     const g = gr?.fields;
     const gapResult = g ? { completedAt: g.diagnostic_completed_at, shiftCreated: !!g.shift_created, linkedShift: Array.isArray(g.Shifts) && g.Shifts.length > 0, identity: g.divine_identity, frequency: g.primary_frequency } : null;
-    const c = classify({ shifts, pulls, gapResult });
+    const c = classify({ shifts, pulls, gapResult } as any);
     const out: any = {};
     if (sections) { out.gap = c.gap; out.codes = c.codes; }
     if (tracking) out.counts = c.counts;

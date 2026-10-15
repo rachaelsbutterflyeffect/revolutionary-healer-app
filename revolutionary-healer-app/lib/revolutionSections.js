@@ -18,7 +18,7 @@ export function classify({ shifts = [], pulls = [], gapResult = null } = {}) {
   const firstPull = pulls.reduce((m, p) => (!m || (p.at && p.at < m) ? p.at : m), "");
   const legacy = shifts
     .filter((s) => s.methodName === "Code Upgrade" && (!firstPull || iso(s.createdAt) < firstPull))
-    .map((s) => ({ name: s.divineIdentityName || "", card: String(s.focusArea || "").replace(/^code-upgrade:/, ""), at: iso(s.createdAt), from: "saved" }));
+    .map((s) => { const card = String(s.focusArea || "").replace(/^code-upgrade:/, ""); const m = card.match(/-(\d+)$/); return { name: s.divineIdentityName || "", card, code: m ? m[1] : "", at: iso(s.createdAt), from: "saved" }; });
   const codes = pulls.map((p) => ({ name: p.name || "", card: p.card || "", code: p.code || "", at: iso(p.at), from: "pull" })).concat(legacy);
   const byNewest = (a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0);
   gap.sort(byNewest); codes.sort(byNewest);

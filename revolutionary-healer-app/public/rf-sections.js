@@ -48,16 +48,24 @@
     }
     return { g: g.querySelector('[data-rf-list]'), c: c.querySelector('[data-rf-list]') };
   }
+  var showAll = { gap: false, codes: false }, CAP = { gap: 3, codes: 4 };
+  function more(k, n) { return n > CAP[k] ? '<button type="button" class="rf-rmore" data-rf-more="' + k + '" aria-expanded="' + showAll[k] + '">' + (showAll[k] ? 'Show fewer' : 'Show all ' + n) + '</button>' : ''; }
+  function cap(k, arr) { return showAll[k] ? arr : arr.slice(0, CAP[k]); }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-rf-more]'); if (!b) return;
+    var k = b.getAttribute('data-rf-more'); showAll[k] = !showAll[k]; render(window.__rfRevData);
+    if (!showAll[k]) { var sec = document.getElementById('rf-sec-' + k); if (sec) sec.scrollIntoView({ block: 'start' }); }
+  });
   function render(d) {
     var el = ensure(); if (!el || !d || !d.gap) return;
-    el.g.innerHTML = d.gap.length ? d.gap.map(function (x) {
+    el.g.innerHTML = d.gap.length ? cap('gap', d.gap).map(function (x) {
       return '<button type="button" class="rf-ritem rf-gitem"' + (x.shiftId ? ' data-rf-shift="' + esc(x.shiftId) + '"' : ' disabled') + '><span class="rf-orb" aria-hidden="true">◈</span><span class="bt"><span class="nm">' + esc(x.identity || 'GAP Method™ run') + '</span>' +
         (x.frequency ? '<span class="fr">Current Frequency: ' + esc(x.frequency) + '</span>' : '') + '<span class="dt">Completed ' + esc(day(x.at)) + '</span></span>' + (x.shiftId ? '<span class="arr" aria-hidden="true">→</span>' : '') + '</button>';
-    }).join('') : '<p class="rf-rempty">Each GAP Method™ run you complete gathers here.</p>';
-    el.c.innerHTML = d.codes.length ? d.codes.map(function (x) {
+    }).join('') + more('gap', d.gap.length) : '<p class="rf-rempty">Each GAP Method™ run you complete gathers here.</p>';
+    el.c.innerHTML = d.codes.length ? cap('codes', d.codes).map(function (x) {
       return '<div class="rf-ritem rf-citem">' + (x.card ? '<img class="rf-cthumb" src="/code-cards/' + esc(x.card) + '.webp" alt="" loading="lazy">' : '') + '<span class="bt"><span class="nm">' + esc(x.name) + '</span>' +
         (x.code ? '<span class="fr">' + esc(x.code) + '</span>' : '') + '<span class="dt">' + (x.from === 'saved' ? 'Saved ' : 'Pulled ') + esc(day(x.at)) + '</span></span></div>';
-    }).join('') : '<p class="rf-rempty">Every code you pull on Today\'s Focus is kept here.</p>';
+    }).join('') + more('codes', d.codes.length) : '<p class="rf-rempty">Every code you pull on Today\'s Focus is kept here.</p>';
   }
   // A GAP run opens its Shifting card
   document.addEventListener('click', function (e) {
