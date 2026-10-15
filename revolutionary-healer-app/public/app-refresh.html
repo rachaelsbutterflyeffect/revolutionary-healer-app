@@ -1236,6 +1236,12 @@ body.rf .locked-activation-toast:not(.active){visibility:hidden}
 /* chat: the thread is the only scroller; nothing behind it bounces */
 body.rf[data-rf="chat"] { overflow:hidden; overscroll-behavior:none; }
 html.rf-html:has(body.rf[data-rf="chat"]) { overflow:hidden; overscroll-behavior:none; }
+/* iOS: 100vh is the LARGE viewport (toolbar hidden), so min-height:100vh made the chat page ~15px taller
+   than the screen and the whole page could still be dragged. On the chat screen the page is exactly the
+   visible viewport; the thread is the only thing that scrolls. */
+body.rf { min-height:100dvh; }
+body.rf[data-rf="chat"] { min-height:0 !important; height:100dvh; }
+@supports not (height:100dvh) { body.rf[data-rf="chat"] { height:100vh; height:-webkit-fill-available; } }
 body.rf .rh-chat-thread { overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
 /* keyboard open: give the thread the room (the back row steps aside, header tightens) */
 body.rf.rf-kb[data-rf="chat"] #rf-chat-head { display:none !important; }
