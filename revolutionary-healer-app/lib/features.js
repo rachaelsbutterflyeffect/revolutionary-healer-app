@@ -10,6 +10,9 @@ const list = (s) => String(s || "").split(",").map(norm).filter(Boolean);
 export const FEATURES = {
   codePull: "CODE_PULL",
   homeCheckin: "HOME_CHECKIN",
+  saveSections: "SAVE_SECTIONS", // My Revolution: GAP / Shifting Cards / Codes sections + every code pull saved
+  methodTracking: "METHOD_TRACKING", // My Revolution stat row: GAP SCANS / SHIFTS / CODES
+  codeShifts: "CODE_SHIFTS", // Shift the codes: save a pulled code as a Code Upgrade Shift
 };
 
 export function featureAllowed(key, email, env = process.env) {
