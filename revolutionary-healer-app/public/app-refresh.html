@@ -4233,6 +4233,23 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     t.scrollTop = top;
     requestAnimationFrame(function () { t.style.scrollBehavior = prev; });
   }
+  // Never wait forever (Oct 15, Ray: drawer stuck on "Loading conversations…"):
+  // a request that never settles (phone app resumed from background, network
+  // switch, stalled connection) used to leave the drawer loading for good. Every
+  // chat-history request now gives up after `ms` and the drawer shows a retry.
+  function rhFetchTimeout(url, ms) {
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer;
+    var timeout = new Promise(function (_, reject) {
+      timer = setTimeout(function () { try { if (ctrl) ctrl.abort(); } catch (e) {} reject(new Error('timeout')); }, ms);
+    });
+    var req = fetch(url, ctrl ? { signal: ctrl.signal } : undefined);
+    return Promise.race([req, timeout]).then(function (res) { clearTimeout(timer); return res; }, function (err) { clearTimeout(timer); throw err; });
+  }
+  function rhJsonTimeout(res, ms) {
+    return Promise.race([res.json(), new Promise(function (_, reject) { setTimeout(function () { reject(new Error('timeout')); }, ms); })]);
+  }
+  var RH_HIST_TIMEOUT_MS = 12000;
   var RH_HIST_LIST_LIMIT = 40;
   var RH_HIST_MSG_LIMIT = 60;
   var RH_HIST_MAX_CHATS = 8;
@@ -4276,11 +4293,14 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     // (finger-down prefetch followed by the tap).
     var hit = rhMsgInflight[chatId];
     if (hit && (!hit.done || Date.now() - hit.done < 3000)) return hit.p;
-    var p = fetch('/api/chats/' + encodeURIComponent(chatId) + '?limit=' + RH_HIST_MSG_LIMIT).then(function (res) {
+    var p = rhFetchTimeout('/api/chats/' + encodeURIComponent(chatId) + '?limit=' + RH_HIST_MSG_LIMIT, RH_HIST_TIMEOUT_MS).then(function (res) {
       if (res.status === 404) { var e = new Error('not found'); throw e; }
       if (!res.ok) throw new Error('load failed');
-      return res.json();
-    }).then(function (data) { rhHistPutMsgs(chatId, data); return data; });
+      return rhJsonTimeout(res, RH_HIST_TIMEOUT_MS);
+    }).then(function (data) {
+      if (!data || !Array.isArray(data.messages)) throw new Error('bad response');
+      rhHistPutMsgs(chatId, data); return data;
+    });
     p.catch(function () { if (rhMsgInflight[chatId] && rhMsgInflight[chatId].p === p) delete rhMsgInflight[chatId]; });
     var entry = rhMsgInflight[chatId] = { p: p, done: 0 };
     p.then(function () { entry.done = Date.now(); }, function () {});
@@ -4304,9 +4324,10 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
   var rhListInflight = null;
   function rhFetchChatList() {
     if (rhListInflight) return rhListInflight;
-    rhListInflight = fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL) + '&limit=' + RH_HIST_LIST_LIMIT)
-      .then(function (res) { if (!res.ok) throw new Error('list failed'); return res.json(); })
+    rhListInflight = rhFetchTimeout('/api/chats?email=' + encodeURIComponent(RH_EMAIL) + '&limit=' + RH_HIST_LIST_LIMIT, RH_HIST_TIMEOUT_MS)
+      .then(function (res) { if (!res.ok) throw new Error('list failed'); return rhJsonTimeout(res, RH_HIST_TIMEOUT_MS); })
       .then(function (data) {
+        if (!data || !Array.isArray(data.chats)) throw new Error('bad response');
         if (data.hasMore) {
           // More than fit in the first page: show the newest now, then add the
           // older ones underneath (rows already on screen don't move).
@@ -4317,8 +4338,8 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
             var cut = oldest ? (oldest.lastMessageAt || oldest.updatedAt || oldest.createdAt || '') : '';
             data = { chats: (data.chats || []).concat(prev.filter(function (c) { return !seen[c.id] && (c.lastMessageAt || c.updatedAt || c.createdAt || '') <= cut; })), hasMore: true };
           }
-          fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL)).then(function (r) { return r.ok ? r.json() : null; }).then(function (full) {
-            if (!full || !full.chats) return;
+          rhFetchTimeout('/api/chats?email=' + encodeURIComponent(RH_EMAIL), 20000).then(function (r) { return r.ok ? rhJsonTimeout(r, 20000) : null; }).then(function (full) {
+            if (!full || !Array.isArray(full.chats)) return;
             window.__rhChatList = full.chats;
             rhHistWrite('list', { at: Date.now(), chats: full.chats });
             var d = document.getElementById('rh-drawer');
@@ -4333,22 +4354,44 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     return p;
   }
 
+  // The drawer always leaves "Loading conversations…": it shows the list, the
+  // empty state, or a message with Try again.
+  function rhDrawerMessage(list, text, withRetry) {
+    list.__rhHtml = null; // a later list render must not be skipped as "unchanged"
+    list.innerHTML = '<div class="rh-drawer-empty">' + rhEscapeHtml(text) + '</div>';
+    if (withRetry) {
+      var b = document.createElement('button'); b.type = 'button'; b.textContent = 'Try again'; b.className = 'rh-drawer-retry';
+      b.style.cssText = 'display:block;margin:10px auto 0;background:none;border:none;color:var(--gold);text-decoration:underline;cursor:pointer;padding:6px;font:inherit;';
+      b.addEventListener('click', function () {
+        list.__rhHtml = null;
+        list.innerHTML = '<div class="rh-drawer-empty">Loading conversations&hellip;</div>';
+        rhLoadDrawerList();
+      });
+      list.firstChild.appendChild(b);
+    }
+  }
+  function rhDrawerShowsList(list) { return !!(list && list.querySelector('.rh-drawer-item')); }
   async function rhLoadDrawerList() {
     var list = document.getElementById('rh-drawer-list');
-    if (!list || !RH_EMAIL) return;
+    if (!list) return;
+    if (!RH_EMAIL) { rhDrawerMessage(list, 'Please sign in again to see your conversations.', false); return; }
+    list.__rhPointerDown = false; // a touch that never got its pointerup can't hold the list back
     // Instant paint from this device's copy, then refresh.
     if (!window.__rhChatList) {
       var cached = rhHistRead('list');
-      if (cached && cached.chats) window.__rhChatList = cached.chats;
+      if (cached && Array.isArray(cached.chats)) window.__rhChatList = cached.chats;
     }
-    if (window.__rhChatList) rhRenderDrawerList();
+    if (window.__rhChatList) { try { rhRenderDrawerList(); } catch (e) {} }
     try {
       var data = await rhFetchChatList();
       window.__rhChatList = data.chats || [];
       rhRenderDrawerList();
       rhPrefetchTopChats();
     } catch (e) {
-      if (!window.__rhChatList) list.innerHTML = '<div class="rh-drawer-empty">Could not load conversations.</div>';
+      // Keep a list that's already showing (saved copy); otherwise say so and offer a retry.
+      if (!rhDrawerShowsList(list)) {
+        rhDrawerMessage(list, e && e.message === 'timeout' ? 'Your conversations are taking too long to load.' : "Couldn't load your conversations.", true);
+      }
     }
   }
 
@@ -4360,14 +4403,14 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
   function rhRenderDrawerList() {
     var list = document.getElementById('rh-drawer-list');
     if (!list) return;
-    var chats = (window.__rhChatList || []).filter(function (c) { return !c.archived; });
+    var chats = (Array.isArray(window.__rhChatList) ? window.__rhChatList : []).filter(function (c) { return c && c.id && !c.archived; });
     if (!chats.length) {
-      list.innerHTML = '<div class="rh-drawer-empty">No conversations yet.</div>';
+      rhDrawerMessage(list, 'No conversations yet.', false);
       return;
     }
     chats.sort(function (a, b) {
-      var av = a.lastMessageAt || a.updatedAt || a.createdAt || '';
-      var bv = b.lastMessageAt || b.updatedAt || b.createdAt || '';
+      var av = String(a.lastMessageAt || a.updatedAt || a.createdAt || '');
+      var bv = String(b.lastMessageAt || b.updatedAt || b.createdAt || '');
       return bv.localeCompare(av);
     });
     var html = '';
