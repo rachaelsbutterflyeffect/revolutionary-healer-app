@@ -67,12 +67,20 @@ FONTS = ('<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="
 once('<title>The Revolutionary Healer</title>', '<title>The Revolutionary Healer</title>\n' + GUARD + FONTS, 'title')
 once('</head>\n<body>', '<style id="rf-css">\n' + rd('refresh.css') + '\n</style>\n</head>\n<body class="rf" data-rf="home">\n<canvas id="rf-sky" aria-hidden="true"></canvas><div class="rf-aurora" aria-hidden="true"></div>', 'body')
 
+# ---- activation page order (Rachael, Oct 15): the player, then the Tell Me What You Experienced block with the
+# favourite heart (and Mark as Listened) right under it, then What This Activation Is For / When To Use This.
+# Same elements, ids, onclicks and copy; only their order changes.
+_m = re.search(r'(    <div id="activation-detail-whatfor".*?\n    </div>\n    <div id="activation-detail-whentouse".*?\n    </div>\n)(    <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba\(169,153,127,0.25\);">\n      <h3[^\n]*Tell Me What You Experienced</h3>.*?\n    </div>\n)(    <div class="activation-detail-actions">.*?\n    </div>\n)', s, flags=re.S)
+if not _m: sys.exit('activation detail blocks not found')
+_xp = _m.group(2).replace('<div style="margin-top:24px;', '<div class="rf-xpblock" style="margin-top:24px;', 1)
+s = s[:_m.start()] + _xp + _m.group(3) + _m.group(1) + s[_m.end():]
+
 # ---- Home + Chat header, before the live hero/chat section ----
 HOME = """
 <section class="rf-screen" id="rf-home" aria-label="Home">
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
- <div class="rf-welcome"><h1 class="rf-shine rf-greet" id="rf-say" aria-live="polite">Good day, Revolutionary Healer.</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
+ <div class="rf-welcome"><p class="rf-hi" id="rf-say" aria-live="polite">Good day, Revolutionary Healer, welcome back</p><h1 class="rf-shine rf-big">Welcome<br>Back</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
  <div class="rf-sec rf-reveal"><h3>Your Doors</h3>
   <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">Find the resistance that's keeping you stuck</span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>

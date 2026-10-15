@@ -1345,6 +1345,59 @@ body.rf .rf-scripted { animation:rfpop .45s; }
 }
 @media (min-width:820px) and (max-height:720px) { #rf-nav { padding-top:28px; } #rf-nav .rf-nav-div { margin:18px 18px 20px; } #rf-nav button { margin-bottom:8px; } }
 
+/* ===== Oct 15 round 3: smooth scrolling + page switches (same look) =====
+   The starry sky is a full-screen canvas that redraws every frame, and every frosted card above it used
+   backdrop-filter, so the browser re-blurred each card behind it on every frame and on every scrolled pixel.
+   Cards now use a slightly richer glass fill instead of a live blur (the starfield behind them is dark, so
+   the look is the same); the bottom nav and pop-ups keep their real blur. Decorative motion pauses while the
+   member is scrolling or switching pages (body.rf-busy, set by refresh.js) and picks up again right after. */
+body.rf .rf-door, body.rf .rf-tile, body.rf .rf-deep, body.rf .rf-avatar, body.rf .rf-sbub, body.rf .rf-card,
+body.rf .focus-card, body.rf [data-role="focus-empty"], body.rf .rh-chat-textarea { -webkit-backdrop-filter:none !important; backdrop-filter:none !important; }
+body.rf .rf-door { background:linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,.045)); }
+body.rf .rf-sbub { background:radial-gradient(120% 140% at 0% 50%,rgba(63,214,200,.11),transparent 55%),linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.045)); }
+body.rf .rf-card { background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.045)); }
+body.rf .rf-deep, body.rf .rf-avatar { background:rgba(255,255,255,.08); }
+/* each card paints on its own; a change inside one never re-lays-out the page */
+body.rf .rf-door, body.rf .rf-tile, body.rf .rf-deep, body.rf .rf-sbub, body.rf .rf-card, body.rf .rf-lsec, body.rf .media-card, body.rf .fav-card { contain:layout paint; }
+/* fixed layers stay on the compositor */
+#rf-sky, .rf-aurora, #rf-nav { will-change:transform; backface-visibility:hidden; }
+#rf-sky { transform:translateZ(0); }
+/* the aurora glow: a 140%-of-screen layer with a live 60px blur that also rotated non-stop, so the browser
+   re-blurred the whole screen on every frame (measured: removing it alone took scrolling from ~40 to 60 fps
+   with a 4x-slowed CPU). Same three glows, drawn soft in the gradients themselves; the slow drift stays. */
+.rf-aurora { filter:none !important;
+  background:radial-gradient(48% 38% at 20% 15%,rgba(63,214,200,.30),rgba(63,214,200,.12) 45%,transparent 78%),radial-gradient(52% 42% at 85% 25%,rgba(255,214,130,.32),rgba(255,214,130,.13) 45%,transparent 78%),radial-gradient(58% 48% at 50% 95%,rgba(63,214,200,.19),rgba(63,214,200,.08) 45%,transparent 78%); }
+/* pause decorative motion while scrolling / switching pages */
+body.rf.rf-busy .rf-aurora, body.rf.rf-busy .rf-shine, body.rf.rf-busy .rf-ttl, body.rf.rf-busy .rf-halo, body.rf.rf-busy .rf-door:before,
+body.rf.rf-busy .page-view .section-head h2, body.rf.rf-busy #my-revolution .section-head h2 { animation-play-state:paused !important; }
+/* the Home reveal only fades (no slide), so nothing moves under the finger */
+.rf-reveal { transform:none; transition:opacity .45s; }
+/* the sky canvas is sized to the tallest viewport, so the iOS toolbar collapsing never resizes it */
+#rf-sky { inset:0 0 auto 0; }
+
+/* ---------- Home header (Rachael, Oct 15): small time greeting + welcome back, then the big headline ---------- */
+.rf-welcome { margin-top:4px; }
+.rf-welcome .rf-hi { font-family:"Cormorant Garamond",Georgia,serif; font-size:clamp(17px,4.8vw,21px); font-weight:500; line-height:1.3; color:var(--rf-gold2); margin:0 0 8px; min-height:1.3em; letter-spacing:.01em; }
+.rf-welcome h1.rf-big { font-size:clamp(40px,12vw,54px); line-height:1.02; text-transform:uppercase; margin:0; }
+@media (min-width:820px) { .rf-welcome .rf-hi { font-size:22px; } .rf-welcome h1.rf-big { font-size:60px; } }
+
+/* ---------- Home butterfly: a tad smaller on phones (about 18% of the screen height) ---------- */
+@media (max-width:600px) {
+  .rf-hero { height:clamp(130px,18svh,170px); }
+  .rf-halo { width:clamp(112px,15.5svh,148px); height:clamp(112px,15.5svh,148px); }
+}
+@media (max-width:600px) and (max-height:700px) { .rf-hero { height:clamp(110px,18svh,140px); } }
+
+/* ---------- GAP Method™ opens at once (the pop-up's own slide/fade was up to 0.9 s) ---------- */
+body.rf #hero-gap-embed.gm-modal { transition:transform .22s cubic-bezier(.2,.9,.3,1), opacity .16s ease !important; }
+body.rf #hero-gap-embed.gm-modal .card, body.rf #hero-gap-embed.gm-modal .view.active { animation-duration:.2s !important; }
+body.rf #gm-backdrop { transition-duration:.16s !important; }
+
+/* ---------- activation page: player, then Tell Me What You Experienced + favourite, then what it is for ---------- */
+body.rf #activation-detail-page .rf-xpblock { margin-top:22px !important; }
+body.rf #activation-detail-page .rf-xpblock + .activation-detail-actions { margin-top:14px; }
+body.rf #activation-detail-page .activation-detail-actions + #activation-detail-whatfor { margin-top:30px !important; padding-top:20px; border-top:1px solid rgba(169,153,127,.25); }
+
 </style>
 </head>
 <body class="rf" data-rf="home">
@@ -1494,7 +1547,7 @@ body.rf .rf-scripted { animation:rfpop .45s; }
 <section class="rf-screen" id="rf-home" aria-label="Home">
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
- <div class="rf-welcome"><h1 class="rf-shine rf-greet" id="rf-say" aria-live="polite">Good day, Revolutionary Healer.</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
+ <div class="rf-welcome"><p class="rf-hi" id="rf-say" aria-live="polite">Good day, Revolutionary Healer, welcome back</p><h1 class="rf-shine rf-big">Welcome<br>Back</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
  <div class="rf-sec rf-reveal"><h3>Your Doors</h3>
   <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">Find the resistance that's keeping you stuck</span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
@@ -2324,6 +2377,15 @@ body.rf .rf-scripted { animation:rfpop .45s; }
       </div>
     </div>
     <div class="activation-player" id="activation-detail-player"></div>
+    <div class="rf-xpblock" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(169,153,127,0.25);">
+      <h3 style="color:#CFA646;font-size:15px;letter-spacing:0.02em;margin-bottom:8px;">Tell Me What You Experienced</h3>
+      <p style="color:#F6F2E9;opacity:0.85;line-height:1.6;margin-bottom:12px;">Share what shifted for you, and your guide will reflect it back with you.</p>
+      <button class="btn-secondary" onclick="rhOpenExperienceChat()">Tell Me What You Experienced →</button>
+    </div>
+    <div class="activation-detail-actions">
+      <button class="heart-btn media-heart" id="activation-detail-heart" onclick="toggleHeart(this)" style="position: static;">♡</button>
+      <button class="btn-secondary" id="activation-detail-mark-listened-btn" onclick="if (window.__rhCurrentActivationSlug) { markActivationCompleted(window.__rhCurrentActivationSlug); this.textContent = '✓ Marked as Listened'; this.disabled = true; }">Mark as Listened</button>
+    </div>
     <div id="activation-detail-whatfor" style="display:none;margin-top:24px;">
       <h3 style="color:#CFA646;font-size:15px;letter-spacing:0.02em;margin-bottom:8px;">What This Activation Is For</h3>
       <p style="color:#F6F2E9;opacity:0.85;line-height:1.6;" id="activation-detail-whatfor-text"></p>
@@ -2332,15 +2394,6 @@ body.rf .rf-scripted { animation:rfpop .45s; }
       <h3 style="color:#CFA646;font-size:15px;letter-spacing:0.02em;margin-bottom:8px;">When To Use This</h3>
       <p id="activation-detail-whentouse-intro" style="display:none;color:#F6F2E9;opacity:0.85;line-height:1.6;margin:0 0 8px;"></p>
       <ul style="color:#F6F2E9;opacity:0.85;line-height:1.7;padding-left:20px;margin:0;" id="activation-detail-whentouse-list"></ul>
-    </div>
-    <div style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(169,153,127,0.25);">
-      <h3 style="color:#CFA646;font-size:15px;letter-spacing:0.02em;margin-bottom:8px;">Tell Me What You Experienced</h3>
-      <p style="color:#F6F2E9;opacity:0.85;line-height:1.6;margin-bottom:12px;">Share what shifted for you, and your guide will reflect it back with you.</p>
-      <button class="btn-secondary" onclick="rhOpenExperienceChat()">Tell Me What You Experienced →</button>
-    </div>
-    <div class="activation-detail-actions">
-      <button class="heart-btn media-heart" id="activation-detail-heart" onclick="toggleHeart(this)" style="position: static;">♡</button>
-      <button class="btn-secondary" id="activation-detail-mark-listened-btn" onclick="if (window.__rhCurrentActivationSlug) { markActivationCompleted(window.__rhCurrentActivationSlug); this.textContent = '✓ Marked as Listened'; this.disabled = true; }">Mark as Listened</button>
     </div>
   </div>
 </section>
@@ -7762,8 +7815,16 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
     if (s === 'page') { if (curPage === 'activations-page' || curPage === 'activation-detail-page') return 'lib'; if (curPage === 'favorites-page') return 'rev'; }
     return '';
   }
+  // ---------- smooth scrolling (Oct 15 round 3): decorative motion rests while the member scrolls or switches pages ----------
+  var busyT = null;
+  function busy(ms) { if (!B.classList.contains('rf-busy')) B.classList.add('rf-busy'); clearTimeout(busyT); busyT = setTimeout(function () { B.classList.remove('rf-busy'); }, ms || 180); }
+  window.__rfBusy = function () { return B.classList.contains('rf-busy'); };
+  addEventListener('scroll', function () { busy(180); }, { passive: true, capture: true });
+  addEventListener('touchmove', function () { busy(220); }, { passive: true });
+  addEventListener('wheel', function () { busy(180); }, { passive: true });
   function rfGo(s, opts) {
     opts = opts || {};
+    busy(450);
     B.setAttribute('data-rf', s);
     var k = navKey(s);
     document.querySelectorAll('#rf-nav button').forEach(function (b) { var on = b.getAttribute('data-rf-nav') === k; b.classList.toggle('on', on); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
@@ -7810,7 +7871,11 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
     var c = e.target.closest && e.target.closest('#rf-lib-sub .category-chips .filter-chip');
     if (c && B.getAttribute('data-rf-lib') === 'cat') { var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + c.getAttribute('data-category') + '"] b'), tt = document.getElementById('rf-sec-ttl'); if (tt && sec) tt.textContent = sec.textContent; }
   });
-  var _goRev = window.goToMyRevolution;
+  var _goRev0 = window.goToMyRevolution;
+  var _goRev = function () {
+    var siv = Element.prototype.scrollIntoView; Element.prototype.scrollIntoView = function () {};
+    try { return _goRev0.apply(this, arguments); } finally { Element.prototype.scrollIntoView = siv; }
+  };
   goToMyRevolution = window.goToMyRevolution = function () { var r = _goRev.apply(this, arguments); curPage = null; rfGo('rev'); return r; };
   var _openChat = window.rhOpenChatWithMessage;
   rhOpenChatWithMessage = window.rhOpenChatWithMessage = function () { var r = _openChat.apply(this, arguments); rfGo('chat'); toBottom(); return r; };
@@ -8010,14 +8075,15 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
   function usableName(n) { n = String(n || '').trim(); if (!n || /@/.test(n) || /^(test|tester|testing|test\s*user|member|user|demo|sample|null|undefined)\d*$/i.test(n)) return ''; return n.split(/\s+/)[0]; }
   function firstName() { return usableName(window.__RF_FIRST); }
   function greetFor(h) { var p = h >= 5 && h < 12 ? 'Good morning' : h >= 12 && h < 17 ? 'Good afternoon' : h >= 17 && h < 22 ? 'Good evening' : 'Good night'; return p + ', ' + (firstName() || 'Revolutionary Healer') + '.'; }
+  function homeHi(h) { return greetFor(h).replace(/\.$/, '') + ', welcome back'; }
   var greet = '', gi = 0, gt = null;
   function typeGreet() {
     var say = document.getElementById('rf-say'); if (!say) return;
-    greet = greetFor(new Date().getHours()); gi = 0; clearTimeout(gt);
+    greet = homeHi(new Date().getHours()); gi = 0; clearTimeout(gt);
     say.setAttribute('aria-label', greet);
     (function step() { say.textContent = greet.slice(0, ++gi); if (gi < greet.length) gt = setTimeout(step, RM ? 0 : 45); })();
   }
-  setInterval(function () { var g = greetFor(new Date().getHours()); if (g !== greet) { greet = g; var say = document.getElementById('rf-say'); if (say) say.textContent = g; } }, 60000);
+  setInterval(function () { var g = homeHi(new Date().getHours()); if (g !== greet) { greet = g; var say = document.getElementById('rf-say'); if (say) say.textContent = g; } }, 60000);
   document.addEventListener('rf:name', function () { typeGreet(); fillAccount(); fixWelcome(); });
   function fixWelcome() { var w = document.getElementById('profile-welcome-line'); if (w) w.textContent = greetFor(new Date().getHours()); } // Rachael, Oct 14: the time greeting, never "welcome back"
   var _ipf = window.initProfileFields;
@@ -8252,7 +8318,12 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
   var sky = document.getElementById('rf-sky'), fly = document.getElementById('rf-fly');
   if (sky && sky.getContext) {
     var sx = sky.getContext('2d'), W, H, stars = [], px = 0, py = 0;
-    var rs = function () { var d = Math.min(window.devicePixelRatio || 1, 2); W = innerWidth; H = innerHeight; sky.width = W * d; sky.height = H * d; sky.style.width = W + 'px'; sky.style.height = H + 'px'; sx.setTransform(d, 0, 0, d, 0, 0);
+    var rs = function () { var d = Math.min(window.devicePixelRatio || 1, 2), nh = Math.max(innerHeight, (window.screen && screen.height) || 0);
+      // the iOS toolbar collapsing/expanding only changes the height: keep the canvas (sized to the tallest
+      // viewport) and the same stars, so nothing re-draws or jumps mid-scroll
+      if (W === innerWidth && H && nh <= H) return;
+      var same = W === innerWidth; W = innerWidth; H = Math.max(nh, H || 0); sky.width = W * d; sky.height = H * d; sky.style.width = W + 'px'; sky.style.height = H + 'px'; sx.setTransform(d, 0, 0, d, 0, 0);
+      if (same && stars.length) return;
       stars = Array.from({ length: 110 }, function () { return { x: Math.random() * W, y: Math.random() * H, r: Math.random() * 1.4 + .2, z: Math.random() * .8 + .2, p: Math.random() * 6, g: Math.random() < .35 }; }); };
     rs(); addEventListener('resize', rs);
     addEventListener('pointermove', function (e) { px = (e.clientX / W - .5) * 14; py = (e.clientY / H - .5) * 14; });
@@ -8261,20 +8332,21 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
       pts = Array.from({ length: 520 }, function () { var t = Math.random() * Math.PI * 2, side = Math.random() < .5 ? -1 : 1; var r = (Math.exp(Math.sin(t)) - 2 * Math.cos(4 * t) + Math.pow(Math.sin((2 * t - Math.PI) / 24), 5)) * Math.pow(Math.random(), .35); return { bx: Math.sin(t) * r * side, by: -Math.cos(t) * r, s: side, j: Math.random() * 6, c: Math.random() < .18 }; });
       var k = Math.min(FW, FH) / 7.2; vort = Array.from({ length: 140 }, function () { return { a: Math.random() * 7, r: k * (.9 + Math.random() * 2.4), w: .004 + Math.random() * .01, inw: Math.random() < .4 ? .08 + Math.random() * .15 : 0, s: Math.random() * 1.6 + .4, j: Math.random() * 6, c: Math.random() < .4 }; }); };
     addEventListener('resize', rf);
-    var T = 0;
+    var T = 0, fc = 0, hero = fly && fly.parentNode;
     var frame = function () {
-      T += .016;
-      if (!document.hidden) {
+      T += .016; fc++;
+      if (!document.hidden && !B.classList.contains('rf-busy') && (fc & 1)) {
         sx.clearRect(0, 0, W, H);
         for (var i = 0; i < stars.length; i++) { var s = stars[i], a = .45 + .55 * Math.sin(T * 1.5 + s.p); sx.fillStyle = s.g ? 'rgba(255,226,150,' + a + ')' : 'rgba(220,255,250,' + (a * .8) + ')'; sx.beginPath(); sx.arc(s.x + px * s.z, s.y + py * s.z, s.r, 0, 7); sx.fill(); }
-        if (fx && B.getAttribute('data-rf') === 'home' && !B.classList.contains('gm-lock')) {
+        var hr = hero && hero.getBoundingClientRect();
+        if (fx && B.getAttribute('data-rf') === 'home' && !B.classList.contains('gm-lock') && hr && hr.bottom > 0 && hr.top < innerHeight) {
           if (!FW || fly.clientWidth !== FW) rf();
           if (FW) {
             fx.clearRect(0, 0, FW, FH); var cx = FW / 2 + px * .6, cy = FH / 2 - 6 + py * .6, k = Math.min(FW, FH) / 7.2;
             fx.globalCompositeOperation = 'lighter';
             for (var j = 0; j < pts.length; j++) { var p = pts[j]; var x = cx + Math.abs(p.bx) * p.s * k * .92 + Math.sin(T * .6 + p.j) * .8, y = cy + p.by * k * .9 + Math.cos(T * .5 + p.j) * .8; fx.fillStyle = p.c ? 'rgba(110,240,228,.75)' : 'rgba(255,224,150,.8)'; fx.fillRect(x, y, 1.6, 1.6); }
             fx.fillStyle = 'rgba(255,246,214,.9)'; fx.fillRect(cx - 1, cy - k * .9, 2, k * 1.6);
-            for (var q = 0; q < vort.length; q++) { var v = vort[q]; v.a += v.w * (RM ? 0 : 1); v.r -= v.inw * (RM ? 0 : 1); if (v.r < k * .4) { v.r = k * (2 + Math.random() * 1.4); v.a = Math.random() * 7; }
+            for (var q = 0; q < vort.length; q++) { var v = vort[q]; v.a += v.w * (RM ? 0 : 2); v.r -= v.inw * (RM ? 0 : 2); if (v.r < k * .4) { v.r = k * (2 + Math.random() * 1.4); v.a = Math.random() * 7; }
               var tw = .35 + .65 * Math.abs(Math.sin(T * 2 + v.j)), vx = cx + Math.cos(v.a) * v.r, vy = cy + Math.sin(v.a) * v.r * .62;
               fx.fillStyle = v.c ? 'rgba(110,240,228,' + tw + ')' : 'rgba(255,226,150,' + tw + ')'; fx.beginPath(); fx.arc(vx, vy, v.s, 0, 7); fx.fill();
               if (v.s > 1.3) { fx.fillRect(vx - v.s * 2.5, vy - .3, v.s * 5, .6); fx.fillRect(vx - .3, vy - v.s * 2.5, .6, v.s * 5); } }
