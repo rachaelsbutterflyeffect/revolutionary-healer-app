@@ -12,3 +12,21 @@ body.rf .rf-cthumb { width:38px; height:57px; object-fit:cover; border-radius:6p
 body.rf .rf-citem .fr { letter-spacing:.24em; color:var(--rf-teal); }
 body.rf .rf-rempty { font-family:"Cormorant Garamond",Georgia,serif; font-size:18px; color:#fffc; margin:0; padding:4px 2px; }
 body.rf .rf-rmore { all:unset; cursor:pointer; align-self:center; grid-column:1 / -1; justify-self:center; padding:8px 14px; font-size:13px; letter-spacing:.06em; color:var(--rf-gold); -webkit-tap-highlight-color:transparent; }
+/* My Shifting Cards: in-place accordions (preview). No height animation, so opening never stutters or jumps. */
+body.rf .rf-xhide { display:none !important; }
+body.rf .rf-acc { margin-bottom:12px; }
+body.rf .rf-acc[hidden] { display:none; }
+body.rf .rf-acc-btn { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:14px; width:100%; padding:16px 18px; border-radius:22px; cursor:pointer; -webkit-tap-highlight-color:transparent; border:1px solid rgba(255,236,190,.22); background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04)); box-shadow:0 10px 30px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.18); }
+body.rf .rf-acc-btn:active { transform:scale(.985); }
+body.rf .rf-acc-btn:focus-visible { outline:1px solid var(--rf-gold2,#fff1c4); outline-offset:3px; }
+body.rf .rf-acc-btn .rf-orb { width:42px; height:42px; font-size:17px; flex:none; }
+body.rf .rf-acc-btn .txt { font-family:"Cormorant Garamond",Georgia,serif; font-size:21px; font-weight:600; line-height:1.15; color:#fdfbf5; flex:1; }
+body.rf .rf-acc-n { color:var(--rf-gold); font-size:17px; }
+body.rf .rf-chev { flex:none; width:10px; height:10px; margin:0 6px 4px 0; border-right:2px solid var(--rf-gold); border-bottom:2px solid var(--rf-gold); transform:rotate(45deg); transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+body.rf .rf-acc.open .rf-chev { transform:rotate(225deg); margin-bottom:-4px; }
+body.rf .rf-acc.open .rf-acc-btn { border-color:rgba(255,236,190,.45); }
+body.rf .rf-acc-panel { padding:12px 0 4px; animation:rf-acc-in .28s ease-out; }
+body.rf .rf-acc-panel[hidden] { display:none; }
+body.rf .rf-acc-panel .rf-rempty { padding:6px 4px; }
+@keyframes rf-acc-in { from { opacity:0; transform:translateY(-4px); } }
+@media (prefers-reduced-motion:reduce) { body.rf .rf-acc-panel { animation:none; } body.rf .rf-chev { transition:none; } }
