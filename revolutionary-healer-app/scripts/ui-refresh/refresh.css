@@ -437,7 +437,7 @@ body.rf.rf-busy .page-view .section-head h2, body.rf.rf-busy #my-revolution .sec
 /* the sky canvas is sized to the tallest viewport, so the iOS toolbar collapsing never resizes it */
 #rf-sky { inset:0 0 auto 0; }
 
-/* ---------- Home header (Rachael, Oct 15): small time greeting + welcome back, then the big headline ---------- */
+/* ---------- Home header (Rachael, Oct 15): small time greeting, then the big WELCOME BACK ---------- */
 .rf-welcome { margin-top:4px; }
 .rf-welcome .rf-hi { font-family:"Cormorant Garamond",Georgia,serif; font-size:clamp(17px,4.8vw,21px); font-weight:500; line-height:1.3; color:var(--rf-gold2); margin:0 0 8px; min-height:1.3em; letter-spacing:.01em; }
 .rf-welcome h1.rf-big { font-size:clamp(40px,12vw,54px); line-height:1.02; text-transform:uppercase; margin:0; }
