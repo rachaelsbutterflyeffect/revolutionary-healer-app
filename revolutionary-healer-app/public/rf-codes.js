@@ -58,7 +58,7 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
 
   function deckHTML() {
-    var h = '<div class="q-label" style="text-align:center;margin-top:6px">YOUR DAILY CODE IS WAITING</div><div class="deckhint" id="dhint"><b>Tap or swipe up to pull a card.</b></div><div class="deckstage" id="dstage">';
+    var h = '<div class="deckhint" id="dhint"><b>Tap or swipe up to pull a card.</b></div><div class="deckstage" id="dstage">';
     for (var k = 0; k < 7; k++) { var t = k - 3; h += '<div class="dcard" role="button" tabindex="0" aria-label="Pull this card" data-k="' + k + '" style="--x:' + (t * 34) + 'px;--y:' + (Math.abs(t) * Math.abs(t) * 5) + 'px;--r:' + (t * 9) + 'deg;--d:-' + (k * .6) + 's;z-index:' + (10 - Math.abs(t)) + '"><div class="f" style="background-image:url(' + CU_DIR + 'card-back.webp)"></div><div class="f fr"></div></div>'; }
     return h + '</div><div id="codeinfo"></div>';
   }
@@ -108,17 +108,26 @@
   }
   function burst(st) { for (var k = 0; k < 36; k++) { var p = document.createElement('i'); p.className = 'spark' + (k % 3 ? '' : ' t'); var a = Math.random() * 6.28, r = 90 + Math.random() * 130; p.style.setProperty('--tx', Math.cos(a) * r + 'px'); p.style.setProperty('--ty', Math.sin(a) * r + 'px'); p.style.top = '45%'; st.append(p); (function (p) { setTimeout(function () { p.remove(); }, 1400); })(p); } }
 
+  // Home: the "Find your daily focus today" door from the mock-up (r13-r17 "Your Doors": code, gap, chat), first in the lineup.
+  function homeDoor() {
+    if (document.getElementById('rf-door-code')) return true;
+    var gap = document.querySelector('#rf-home .rf-door[data-rf-go="gap"]'); if (!gap) return false;
+    var d = document.createElement('button'); d.type = 'button'; d.className = 'rf-door'; d.id = 'rf-door-code'; d.setAttribute('data-rf-go', 'focus');
+    d.innerHTML = '<span class="rf-orb" aria-hidden="true">✧</span><span class="txt">Find your daily focus today</span><span class="arr" aria-hidden="true">→</span>';
+    gap.parentNode.insertBefore(d, gap); gap.parentNode.classList.add('rf-doors3');
+    return true;
+  }
+  // Today's Focus = one screen in two parts: today's code (pull, reading, activation, save as a Shift), then the Shift you're in.
   function mount() {
     var head = document.getElementById('rf-focus-head'); if (!head || document.getElementById('rf-codes')) return;
     var sec = document.createElement('section'); sec.className = 'rf-screen'; sec.id = 'rf-codes'; sec.setAttribute('aria-label', 'Your daily code');
-    sec.innerHTML = '<div id="cudeck"></div>';
+    sec.innerHTML = '<div class="rf-sec rf-cu-h"><h3>Your Daily Code</h3></div><div id="cudeck"></div><div class="rf-sec rf-cu-h rf-cu-h2" id="rf-codes-after"><h3>Your Newest Shift</h3></div>';
     head.parentNode.insertBefore(sec, head.nextSibling);
     var sub = head.querySelector('.rf-sub'); if (sub) { sub.setAttribute('data-orig', sub.textContent); sub.hidden = true; }
-    var lbl = document.createElement('div'); lbl.className = 'rf-codes-after'; lbl.id = 'rf-codes-after'; lbl.innerHTML = '<span>Your newest Shift</span>';
-    sec.appendChild(lbl);
     $('#cudeck').innerHTML = deckHTML(); setupDeck();
     CU_CARDS.slice(0, 8).forEach(function (c) { var im = new Image(); im.src = CU_DIR + c.f + '.webp'; });
     document.body.classList.add('rf-has-codes');
+    if (!homeDoor()) { var n = 0, iv = setInterval(function () { if (homeDoor() || ++n > 40) clearInterval(iv); }, 250); }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
 })();

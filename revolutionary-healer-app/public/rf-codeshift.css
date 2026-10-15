@@ -5,3 +5,4 @@
 /* The code card takes the orb's place, so the text keeps its full width. */
 .rf-sbub .rf-cu-thumb { flex:0 0 auto; width:40px; height:60px; object-fit:cover; border-radius:6px; box-shadow:0 0 14px rgba(255,214,130,.35); }
 .rf-sbub.rf-has-cu > .rf-orb { display:none; }
+#rf-codes .cudoor.done .arr { visibility:hidden; }
