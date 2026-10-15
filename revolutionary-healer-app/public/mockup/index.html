@@ -120,6 +120,9 @@ background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold
 .scale-l{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.12em;color:#fffa}
 .qn{font-family:'Cormorant Garamond';font-size:30px;text-align:center;line-height:1.15;margin-top:6px}
 .prog3{display:flex;justify-content:center;gap:8px;margin:6px 0 4px}.prog3 i{width:34px;height:3px;border-radius:3px;background:#ffffff30}.prog3 i.on{background:var(--gold);box-shadow:0 0 10px var(--gold)}
+.small-orb.fit-ring{position:relative;width:190px;height:190px;margin:14px auto 0;background:radial-gradient(circle,rgba(63,214,200,.10) 0%,rgba(63,214,200,.04) 45%,transparent 68%);box-shadow:none!important;animation:none}
+.small-orb.fit-ring canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.small-orb.fit-ring.reveal-orb{box-shadow:none!important}
 .reveal-orb{transform:scale(1.25);box-shadow:0 0 120px rgba(255,214,130,.9),0 0 200px rgba(63,214,200,.45)!important;filter:brightness(1.25)!important}
 .codepop{animation:codepop 1.2s cubic-bezier(.2,.9,.3,1.2) both,sh 6s linear infinite}@keyframes codepop{from{opacity:0;transform:scale(.6);letter-spacing:.5em}}
 .small-orb{transition:transform .9s cubic-bezier(.2,.9,.3,1.2),box-shadow .6s,filter .6s;width:130px;height:130px;margin:22px auto 6px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold) 45%,rgba(63,214,200,.6) 75%,transparent 76%);transition:box-shadow .6s,filter .6s;animation:breathe 5s ease-in-out infinite}
@@ -171,11 +174,6 @@ background:radial-gradient(circle at 40% 35%,#fffdf2,var(--gold2) 20%,var(--gold
 .hist-i{all:unset;box-sizing:border-box;cursor:pointer;display:block;width:100%;margin-top:8px;padding:12px 16px;border-radius:999px;background:radial-gradient(120% 140% at 0% 50%,rgba(63,214,200,.10),transparent 60%);box-shadow:0 0 20px rgba(255,214,130,.08)}
 .hist-i b{display:block;font-family:'Cormorant Garamond';font-size:19px;font-weight:600;color:#F8E7B0}.hist-i small{font-size:11px;color:#fff9}
 .hist-i.on{box-shadow:0 0 0 1px rgba(255,236,190,.4),0 0 24px rgba(255,214,130,.25)}
-.fitring{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:grid;place-items:center;width:250px;height:250px;margin:4px auto 0;border-radius:50%;-webkit-tap-highlight-color:transparent;background:radial-gradient(circle,rgba(63,214,200,.10) 0%,rgba(63,214,200,.04) 45%,transparent 68%);transition:transform .25s}
-.fitring:active{transform:scale(.97)}.fitring:focus-visible{outline:1px solid var(--gold2);outline-offset:4px}
-.fitring canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.fitl{position:relative;top:-8px;max-width:150px;text-align:center;font-family:'Cormorant Garamond';font-size:20px;font-weight:600;line-height:1.15;color:#fff;text-shadow:0 0 16px rgba(255,214,130,.55)}
-.fittap{position:absolute;bottom:52px;left:0;right:0;text-align:center;font-family:Cinzel;font-size:10px;letter-spacing:.22em;color:var(--gold2)}
 .rh-new{all:unset;cursor:pointer;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;color:var(--gold2)}
 .rh-chat-thread{overflow-y:auto;padding:22px 2px;display:flex;flex-direction:column;gap:16px;height:52vh;min-height:250px}
 .rh-chat-welcome{margin:auto;text-align:center;padding:10px}.rh-chat-welcome h3{font-family:'Cormorant Garamond';text-transform:none;letter-spacing:0;font-size:25px;margin-bottom:8px}.rh-chat-welcome p{font-size:14px;color:#fffb;line-height:1.6}
@@ -290,13 +288,14 @@ border-bottom:1px solid rgba(226,190,104,.55);box-shadow:0 14px 18px -16px rgba(
   <div class="door" data-go="chat"><div class="orb">❋</div><div class="txt">Dive deep with Rachael in your back pocket</div><div class="arr">→</div></div>
  </div>
  <div class="sec reveal"><h3>Ask Rachael Anything</h3><div class="lanes">
+  <div class="tile" data-lane="open"><div class="ic">✦</div><div><b>Ask Anything</b><br><small>What's on your mind?</small></div></div>
   <div class="tile" data-lane="gifts"><div class="ic">👁</div><div><b>Spiritual Gifts</b><br><small>What's calling you?</small></div></div>
   <div class="tile" data-lane="money"><div class="ic">✺</div><div><b>Money &amp; Prosperity</b><br><small>Feel the shift</small></div></div>
   <div class="tile" data-lane="energy"><div class="ic">⚡</div><div><b>Energy &amp; Frequency</b><br><small>Tune your field</small></div></div>
   <div class="tile" data-lane="vis"><div class="ic">☀</div><div><b>Visibility &amp; Impact</b><br><small>Be seen</small></div></div>
  </div></div>
  <div class="sec reveal"><h3>Your Activation Today</h3>
-  <button class="fitring" data-go="fit" aria-label="Find the activation that best fits you today"><canvas id="fitc" aria-hidden="true"></canvas><span class="fitl">Find the activation that best fits you today</span><span class="fittap">Tap to begin</span></button>
+  <div class="door" data-go="fit"><div class="orb t">◉</div><div class="txt">Find the activation that best fits you today</div><div class="arr">→</div></div>
  </div>
  <div class="sec reveal"><h3>Go Deeper</h3><div class="deeps">
   <div class="deep" data-go="lib"><div>♫</div>Activation Library</div>
@@ -332,7 +331,7 @@ border-bottom:1px solid rgba(226,190,104,.55);box-shadow:0 14px 18px -16px rgba(
 <section class="screen" id="fit">
  <button class="back" data-go="home">← HOME</button>
  <h2 class="ttl shine">Your Activation</h2><p class="sub">Three quick taps. Then the activation that best fits you today.</p>
- <div class="small-orb" id="dorb"></div>
+ <div class="small-orb fit-ring" id="dorb"><canvas id="fitc" aria-hidden="true"></canvas></div>
  <div id="diag"></div>
 </section>
 
@@ -510,7 +509,7 @@ function revDraw(){$('#tgap').textContent=REV.gap;$('#tshift').textContent=REV.l
 function revAct(x){const k=x.act||(x.num?CUACT[x.num]:null);return k?ACTS.find(a=>a.s===k)||null:null}
 function revShort(d){const w=String(d||'').replace(/\s+/g,' ').trim().split(' ');if(w.length<=12)return w.join(' ');return w.slice(0,12).join(' ').replace(/[,;:.]+$/,'')+'…'}
 function revAdd(o){REV.open=0;REV.list.unshift(Object.assign({dt:'Just now',emb:false},o));revDraw()}
-// ===== Home: swirling gold sparkle ring for the activation finder =====
+// ===== Check-in: swirling gold sparkle ring (moved from Home, r11); brightens as scores rise =====
 (function(){const c=$('#fitc');if(!c)return;const x=c.getContext('2d');let S=0,vis=true;const P=Array.from({length:150},()=>({a:Math.random()*6.283,r:.62+Math.random()*.3,sp:(.0025+Math.random()*.004)*(Math.random()<.85?1:-1),s:.5+Math.random()*1.6,tw:Math.random()*6.283,t:Math.random()<.12,wob:Math.random()*6.283}));
  function size(){const d=Math.min(devicePixelRatio,2);S=c.clientWidth;c.width=S*d;c.height=S*d;x.setTransform(d,0,0,d,0,0)}
  function draw(T){x.clearRect(0,0,S,S);const cx=S/2,cy=S/2,R=S/2;for(const p of P){const rr=R*(p.r+.025*Math.sin(T*.8+p.wob));const px=cx+Math.cos(p.a)*rr,py=cy+Math.sin(p.a)*rr;const al=.35+.65*Math.abs(Math.sin(T*1.6+p.tw));
@@ -519,7 +518,7 @@ function revAdd(o){REV.open=0;REV.list.unshift(Object.assign({dt:'Just now',emb:
  size();addEventListener('resize',()=>{size();if(RM)draw(0)});
  new IntersectionObserver(es=>{vis=es[0].isIntersecting}).observe(c);
  if(RM){draw(0);return}
- let T=0;(function loop(){requestAnimationFrame(loop);if(!vis||!$('#home').classList.contains('on'))return;T+=.016;for(const p of P)p.a+=p.sp;draw(T)})()})();
+ let T=0;(function loop(){requestAnimationFrame(loop);if(!vis||!$('#fit').classList.contains('on'))return;const g=dv.length?dv.reduce((a,b)=>a+b,0)/dv.length/10:0;T+=.016*(1+g*.6);for(const p of P)p.a+=p.sp*(1+g*.8);draw(T)})()})();
 // Today's Focus: Shifting card field (sample only). Linked activation (CUACT, unchanged) is suggested first.
 function setupShiftField(cd){const inp=$('#cusfin'),sug=$('#cusfsug'),ok=$('#cusfok'),box=$('#cusf'),re=$('#cusfre');const linked=CUACT[cd.c]?ACTS.find(a=>a.s===CUACT[cd.c]):null;let pick=null;
  const nm=a=>a.t.split(':')[0];
