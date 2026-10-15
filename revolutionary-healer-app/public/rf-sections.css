@@ -1,0 +1,14 @@
+/* My Revolution sections (SAVE_SECTIONS). Same glass + gold as the Shift cards. */
+body.rf .rf-rsec .rf-rlist { display:flex; flex-direction:column; gap:12px; }
+body.rf .rf-ritem { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:14px; width:100%; padding:16px 18px; border-radius:22px; border:1px solid rgba(255,236,190,.22); background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035)); box-shadow:0 10px 30px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.18); }
+body.rf button.rf-ritem { cursor:pointer; -webkit-tap-highlight-color:transparent; } body.rf button.rf-ritem:active { transform:scale(.98); } body.rf button.rf-ritem[disabled] { cursor:default; }
+body.rf .rf-ritem .rf-orb { width:42px; height:42px; font-size:17px; flex:none; }
+body.rf .rf-ritem .bt { display:flex; flex-direction:column; min-width:0; flex:1; }
+body.rf .rf-ritem .nm { font-family:"Cormorant Garamond",Georgia,serif; font-size:20px; font-weight:600; line-height:1.15; color:#F8E7B0; }
+body.rf .rf-ritem .fr { font-size:12.5px; color:#fffb; margin-top:2px; }
+body.rf .rf-ritem .dt { font-size:11px; color:#fff8; margin-top:3px; }
+body.rf .rf-ritem .arr { color:var(--rf-gold); font-size:18px; margin-left:auto; }
+body.rf .rf-cthumb { width:38px; height:57px; object-fit:cover; border-radius:6px; flex:none; box-shadow:0 0 12px rgba(255,214,130,.3); }
+body.rf .rf-citem .fr { letter-spacing:.24em; color:var(--rf-teal); }
+body.rf .rf-rempty { font-family:"Cormorant Garamond",Georgia,serif; font-size:18px; color:#fffc; margin:0; padding:4px 2px; }
+body.rf .rf-rmore { all:unset; cursor:pointer; align-self:center; grid-column:1 / -1; justify-self:center; padding:8px 14px; font-size:13px; letter-spacing:.06em; color:var(--rf-gold); -webkit-tap-highlight-color:transparent; }
