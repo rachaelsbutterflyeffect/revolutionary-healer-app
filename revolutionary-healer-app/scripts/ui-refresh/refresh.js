@@ -275,7 +275,7 @@
   function usableName(n) { n = String(n || '').trim(); if (!n || /@/.test(n) || /^(test|tester|testing|test\s*user|member|user|demo|sample|null|undefined)\d*$/i.test(n)) return ''; return n.split(/\s+/)[0]; }
   function firstName() { return usableName(window.__RF_FIRST); }
   function greetFor(h) { var p = h >= 5 && h < 12 ? 'Good morning' : h >= 12 && h < 17 ? 'Good afternoon' : h >= 17 && h < 22 ? 'Good evening' : 'Good night'; return p + ', ' + (firstName() || 'Revolutionary Healer') + '.'; }
-  function homeHi(h) { return greetFor(h).replace(/\.$/, '') + ', welcome back'; }
+  function homeHi(h) { return greetFor(h).replace(/\.$/, ''); } // Rachael, Oct 15: just the time greeting; the big WELCOME BACK sits under it
   var greet = '', gi = 0, gt = null;
   function typeGreet() {
     var say = document.getElementById('rf-say'); if (!say) return;

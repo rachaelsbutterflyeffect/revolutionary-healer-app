@@ -1375,7 +1375,7 @@ body.rf.rf-busy .page-view .section-head h2, body.rf.rf-busy #my-revolution .sec
 /* the sky canvas is sized to the tallest viewport, so the iOS toolbar collapsing never resizes it */
 #rf-sky { inset:0 0 auto 0; }
 
-/* ---------- Home header (Rachael, Oct 15): small time greeting + welcome back, then the big headline ---------- */
+/* ---------- Home header (Rachael, Oct 15): small time greeting, then the big WELCOME BACK ---------- */
 .rf-welcome { margin-top:4px; }
 .rf-welcome .rf-hi { font-family:"Cormorant Garamond",Georgia,serif; font-size:clamp(17px,4.8vw,21px); font-weight:500; line-height:1.3; color:var(--rf-gold2); margin:0 0 8px; min-height:1.3em; letter-spacing:.01em; }
 .rf-welcome h1.rf-big { font-size:clamp(40px,12vw,54px); line-height:1.02; text-transform:uppercase; margin:0; }
@@ -1547,7 +1547,7 @@ body.rf #activation-detail-page .activation-detail-actions + #activation-detail-
 <section class="rf-screen" id="rf-home" aria-label="Home">
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
- <div class="rf-welcome"><p class="rf-hi" id="rf-say" aria-live="polite">Good day, Revolutionary Healer, welcome back</p><h1 class="rf-shine rf-big">Welcome<br>Back</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
+ <div class="rf-welcome"><p class="rf-hi" id="rf-say" aria-live="polite">Good day, Revolutionary Healer</p><h1 class="rf-shine rf-big">Welcome<br>Back</h1><div class="rf-divider"></div><p>What are we doing today?<br><b>Pick your focus.</b></p></div>
  <div class="rf-sec rf-reveal"><h3>Your Doors</h3>
   <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">Find the resistance that's keeping you stuck</span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
@@ -8075,7 +8075,7 @@ html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !
   function usableName(n) { n = String(n || '').trim(); if (!n || /@/.test(n) || /^(test|tester|testing|test\s*user|member|user|demo|sample|null|undefined)\d*$/i.test(n)) return ''; return n.split(/\s+/)[0]; }
   function firstName() { return usableName(window.__RF_FIRST); }
   function greetFor(h) { var p = h >= 5 && h < 12 ? 'Good morning' : h >= 12 && h < 17 ? 'Good afternoon' : h >= 17 && h < 22 ? 'Good evening' : 'Good night'; return p + ', ' + (firstName() || 'Revolutionary Healer') + '.'; }
-  function homeHi(h) { return greetFor(h).replace(/\.$/, '') + ', welcome back'; }
+  function homeHi(h) { return greetFor(h).replace(/\.$/, ''); } // Rachael, Oct 15: just the time greeting; the big WELCOME BACK sits under it
   var greet = '', gi = 0, gt = null;
   function typeGreet() {
     var say = document.getElementById('rf-say'); if (!say) return;
