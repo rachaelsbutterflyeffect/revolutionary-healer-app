@@ -1,7 +1,7 @@
-/* Featured Activation event on Home (refresh only; loaded only with featuredEvent). An "event marquee": no glass card,
+/* Featured Activation event at the top of the Activations page (refresh only; loaded only with featuredEvent). An "event marquee": no glass card,
    a charcoal stage with full-width gold rules, the event art as a poster, rising embers and a slow light sweep.
    Motion is transform/opacity only, runs only while on screen, and rests while scrolling. No blur filters. */
-.rf-event { position:relative; margin:40px -20px 6px; padding:22px 0 26px; text-align:center; color:#fdfbf5;
+.rf-event { position:relative; margin:4px -20px 28px; padding:22px 0 26px; text-align:center; color:#fdfbf5;
   background:radial-gradient(90% 55% at 50% 100%,rgba(232,150,60,.20),transparent 70%),radial-gradient(70% 40% at 50% 0%,rgba(232,200,115,.10),transparent 70%),linear-gradient(180deg,#0b0907 0%,#07060a 55%,#0a0705 100%);
   contain:layout paint; }
 .rf-ev-rule { height:1px; margin:0 0 18px; background:linear-gradient(90deg,transparent,rgba(232,200,115,.85) 18%,#fff1c4 50%,rgba(232,200,115,.85) 82%,transparent); box-shadow:0 0 12px rgba(232,200,115,.45); }
@@ -39,7 +39,7 @@ body.rf.rf-busy .rf-event * { animation-play-state:paused !important; }
 @media (prefers-reduced-motion: reduce) { .rf-event * { animation:none !important; } .rf-ev-embers { display:none; } }
 /* desktop + iPad: the event sits in the content column, edge to edge, as its own framed stage */
 @media (min-width:820px) {
-  .rf-event { margin:48px 0 8px; padding:26px 28px 30px; border-radius:30px; border:1px solid rgba(232,200,115,.32); box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 60px rgba(232,170,80,.12); }
+  .rf-event { margin:8px 0 34px; padding:26px 28px 30px; border-radius:30px; border:1px solid rgba(232,200,115,.32); box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 60px rgba(232,170,80,.12); }
   .rf-ev-rule { margin:0 -28px 20px; } .rf-ev-rule-b { margin:28px -28px 0; }
   .rf-ev-poster { border:1px solid rgba(232,200,115,.55); border-radius:18px; }
   .rf-ev-x { top:26px; right:16px; }
@@ -47,3 +47,5 @@ body.rf.rf-busy .rf-event * { animation-play-state:paused !important; }
   .rf-ev-cta { min-width:300px; }
 }
 @media (min-width:1200px) { .rf-ev-eyebrow { font-size:11.5px; letter-spacing:.32em; } .rf-ev-title { font-size:36px; } .rf-ev-tag { font-size:21px; } .rf-ev-x { width:34px; height:34px; } }
+/* only on the main library view, not inside a category */
+body.rf[data-rf-lib="cat"] #rf-event { display:none; }

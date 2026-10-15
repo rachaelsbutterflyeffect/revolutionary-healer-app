@@ -1,4 +1,4 @@
-/* Featured Activation event on Home (refresh only; REVIEW build, Oct 15 2026).
+/* Featured Activation event at the top of the Activations page (refresh only; REVIEW build, Oct 15 2026).
  * Loaded ONLY when /api/features says featuredEvent=true for this member (FEATURED_EVENT=list + FEATURED_EVENT_ALLOWLIST).
  * Swap it monthly by editing RF_EVENT below: it shows from `start` until `end` (member's clock) and then hides itself.
  * Copy: the eyebrow is a label; the title + tagline are the existing SpookBound banner copy from app.html. */
@@ -22,8 +22,9 @@
   function esc(t) { return String(t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   function mount() {
-    var home = document.getElementById('rf-home'); if (!home || document.getElementById('rf-event')) return !!home;
-    var doors = home.querySelector('.rf-door[data-rf-go="gap"]'); doors = doors && doors.closest('.rf-sec'); if (!doors) return false;
+    // Lives at the very top of the Activations page (above the heading, the category tiles and Favourites)
+    var wrap = document.querySelector('#activations-page > .wrap'); if (!wrap || document.getElementById('rf-event')) return !!wrap;
+    var first = wrap.firstElementChild; while (first && first.classList.contains('page-back')) first = first.nextElementSibling;
     var ev = document.createElement('section'); ev.id = 'rf-event'; ev.className = 'rf-event'; ev.setAttribute('aria-label', RF_EVENT.eyebrow + ': ' + RF_EVENT.title);
     var em = ''; for (var i = 0; i < 9; i++) em += '<i></i>';
     ev.innerHTML =
@@ -38,7 +39,7 @@
       '<p class="rf-ev-tag">' + esc(RF_EVENT.tagline) + '</p>' +
       '<button type="button" class="rf-ev-cta" data-rf-ev-open><span class="rf-ev-play" aria-hidden="true"><svg width="10" height="10" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20" fill="currentColor"/></svg></span>' + esc(RF_EVENT.cta) + '</button>' +
       '<div class="rf-ev-rule rf-ev-rule-b" aria-hidden="true"></div>';
-    doors.parentNode.insertBefore(ev, doors.nextSibling);
+    wrap.insertBefore(ev, first);
     ev.addEventListener('click', function (e) {
       if (e.target.closest('.rf-ev-x')) { try { localStorage.setItem(KEY, String(Date.now())); } catch (x) {} ev.remove(); return; }
       if (e.target.closest('[data-rf-ev-open]')) { try { handleActivationCardClick(RF_EVENT.slug); } catch (x) {} }
