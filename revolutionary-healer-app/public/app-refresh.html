@@ -4223,6 +4223,16 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
        - the server reads only the columns it needs and only the newest
          messages first (?limit), in parallel.
      History is drawn in one go with no typewriter; new replies still type. */
+  // Set the thread's scroll position without the smooth glide (the thread has
+  // scroll-behavior:smooth, so opening a long conversation used to visibly
+  // scroll through the whole history for about a second before settling).
+  function rhJumpThread(t, top) {
+    if (!t) return;
+    var prev = t.style.scrollBehavior;
+    t.style.scrollBehavior = 'auto';
+    t.scrollTop = top;
+    requestAnimationFrame(function () { t.style.scrollBehavior = prev; });
+  }
   var RH_HIST_LIST_LIMIT = 40;
   var RH_HIST_MSG_LIMIT = 60;
   var RH_HIST_MAX_CHATS = 8;
@@ -4280,17 +4290,41 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     if (!chatId) return;
     rhFetchChatMessages(chatId).catch(function () {});
   }
+  // While the drawer is open, quietly load the 3 most recent conversations
+  // this device doesn't have yet (once per visit), so the likely tap is instant.
+  var rhPrefetchedOnce = {};
+  function rhPrefetchTopChats() {
+    var chats = (window.__rhChatList || []).filter(function (c) { return !c.archived; }).slice(0, 3);
+    chats.forEach(function (c, i) {
+      if (rhPrefetchedOnce[c.id] || rhHistGetMsgs(c.id)) return;
+      rhPrefetchedOnce[c.id] = 1;
+      setTimeout(function () { rhPrefetchChat(c.id); }, 150 * i);
+    });
+  }
   var rhListInflight = null;
   function rhFetchChatList() {
     if (rhListInflight) return rhListInflight;
     rhListInflight = fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL) + '&limit=' + RH_HIST_LIST_LIMIT)
       .then(function (res) { if (!res.ok) throw new Error('list failed'); return res.json(); })
       .then(function (data) {
-        if (!data.hasMore) return data;
-        // More than fit in the first page: fetch the full list (older chats) too.
-        return fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL)).then(function (r) { return r.ok ? r.json() : data; }).catch(function () { return data; });
-      })
-      .then(function (data) {
+        if (data.hasMore) {
+          // More than fit in the first page: show the newest now, then add the
+          // older ones underneath (rows already on screen don't move).
+          var prev = window.__rhChatList;
+          if (prev && prev.length > (data.chats || []).length) {
+            var seen = {}; (data.chats || []).forEach(function (c) { seen[c.id] = 1; });
+            var oldest = (data.chats || []).slice(-1)[0];
+            var cut = oldest ? (oldest.lastMessageAt || oldest.updatedAt || oldest.createdAt || '') : '';
+            data = { chats: (data.chats || []).concat(prev.filter(function (c) { return !seen[c.id] && (c.lastMessageAt || c.updatedAt || c.createdAt || '') <= cut; })), hasMore: true };
+          }
+          fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL)).then(function (r) { return r.ok ? r.json() : null; }).then(function (full) {
+            if (!full || !full.chats) return;
+            window.__rhChatList = full.chats;
+            rhHistWrite('list', { at: Date.now(), chats: full.chats });
+            var d = document.getElementById('rh-drawer');
+            if (d && d.classList.contains('rh-open')) rhRenderDrawerList();
+          }).catch(function () {});
+        }
         rhHistWrite('list', { at: Date.now(), chats: data.chats || [] });
         return data;
       });
@@ -4312,6 +4346,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
       var data = await rhFetchChatList();
       window.__rhChatList = data.chats || [];
       rhRenderDrawerList();
+      rhPrefetchTopChats();
     } catch (e) {
       if (!window.__rhChatList) list.innerHTML = '<div class="rh-drawer-empty">Could not load conversations.</div>';
     }
@@ -4489,7 +4524,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
     if (cached && cached.messages && cached.messages.length) {
       markActive();
       drawHistory(cached, sigOf(cached));
-      rhScrollToBottom(false);
+      rhJumpThread(t, t.scrollHeight);
       shownFromCache = true;
     }
     try {
@@ -4509,11 +4544,11 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
         var atBottom = (t.scrollHeight - t.scrollTop - t.clientHeight) < 80;
         nodes.forEach(function (n) { if (n.parentNode) n.parentNode.removeChild(n); });
         drawHistory(data, sig);
-        if (atBottom) rhScrollToBottom(false);
+        if (atBottom) rhJumpThread(t, t.scrollHeight);
         return;
       }
       drawHistory(data, sig);
-      rhScrollToBottom(false);
+      rhJumpThread(t, t.scrollHeight);
     } catch (e) {
       if (rhSelectToken !== window.__rhSelectToken) return;
       if (shownFromCache && !(e && e.message === 'not found')) return; // keep showing the saved copy
@@ -4556,7 +4591,7 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
       moreEl.parentNode.insertBefore(frag, moreEl);
       moreEl.remove();
       t.__rhHistNodes = null; t.__rhHistSig = null;
-      t.scrollTop += t.scrollHeight - before;
+      rhJumpThread(t, t.scrollTop + (t.scrollHeight - before));
     } catch (e) {
       if (btn) { btn.disabled = false; btn.textContent = 'Show earlier messages'; }
     }
