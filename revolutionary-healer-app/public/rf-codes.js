@@ -91,7 +91,7 @@
         setTimeout(function () {
           $('#dhint').innerHTML = 'Today\'s code';
           var hasAct = !cd.missing && !!cd.s && HELD_BACK_ACTIVATIONS.indexOf(cd.s) === -1;
-          $('#codeinfo').innerHTML = '<div class="codeinfo"><button type="button" class="chev" id="cuchev" aria-label="Scroll down to your reading"><i></i><i></i><i></i></button><div class="code shine codepop" style="font-size:44px;margin:0">' + esc(cd.n) + '</div><div class="num">' + esc(cd.c) + '</div><div class="divider"></div><div class="cuup" id="cuhead"></div><div class="cusubt">Upgrade this code</div><div class="cudoors">' +
+          $('#codeinfo').innerHTML = '<div class="codeinfo"><button type="button" class="chev" id="cuchev" aria-label="Scroll down to your reading"><i></i><i></i><i></i></button><div class="code shine codepop" style="font-size:44px;margin:0">' + esc(cd.n) + '</div><div class="num">' + esc(cd.c) + '</div><div class="divider"></div><div class="cuup" id="cuhead"></div><div class="cudoors">' +
             '<div class="door cudoor" id="curead" role="button" tabindex="0" aria-expanded="false" aria-controls="cudrop"><div class="orb">✧</div><div class="txt"></div><div class="arr">▾</div></div><div class="cudrop" id="cudrop" hidden><p class="rd"></p></div>' +
             (hasAct ? '<div class="door cudoor" id="cuact" role="button" tabindex="0"><div class="orb t">◉</div><div class="txt"></div><div class="arr">→</div></div>' : '') +
             '<div id="cuextra"></div></div><p class="sub" style="font-size:16px;margin-top:12px">Carry this word with you today. Come back to it whenever the noise gets loud.</p><button class="btn-t" id="cuagain" style="margin-top:10px">↺ Pull another card</button></div>';
