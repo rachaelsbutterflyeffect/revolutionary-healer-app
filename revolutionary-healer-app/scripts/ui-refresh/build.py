@@ -40,7 +40,7 @@ MANAGE_ONCLICK = "window.open('https://www.rachaelsbutterflyeffect.com/settings/
 # "History" with a clock icon, same id (so the same handler opens the same panel); the title sits beside it.
 once('''        <button type="button" class="rh-drawer-toggle" id="rh-drawer-toggle" aria-label="Chat history">
           <span class="rh-hamburger">&#9776;</span> Revolutionary Healer
-        </button>''', '''        <button type="button" class="rh-drawer-toggle rf-hist-btn" id="rh-drawer-toggle" aria-label="Chat history"><svg class="rf-hist-ic" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>History</button>
+        </button>''', '''        <button type="button" class="rh-drawer-toggle rf-hist-btn" id="rh-drawer-toggle" aria-label="Chat history"><svg class="rf-hist-ic" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Chat History</button>
         <span class="rf-chat-title">Revolutionary Healer</span>''', 'chat history pill')
 
 # ---- the classic page's own switch must never run here (it would send this page to itself) ----
