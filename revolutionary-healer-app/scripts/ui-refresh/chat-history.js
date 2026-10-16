@@ -228,9 +228,14 @@
       list.addEventListener('pointerup', up); list.addEventListener('pointercancel', up); list.addEventListener('pointerleave', up);
     }
     list.innerHTML = html;
-    list.querySelectorAll('[data-open]').forEach(function (elx) {
-      elx.addEventListener('pointerdown', function () { rhPrefetchChat(elx.getAttribute('data-open')); }, { passive: true });
-      elx.addEventListener('click', function () { rhSelectChat(elx.getAttribute('data-open')); });
+    // QA Oct 16 (Rachael: "tapping a past conversation does nothing"): only the title text used to open a chat,
+    // so a tap on the rest of the row (its padding, the space beside a short title) did nothing. The WHOLE row
+    // opens it now; the ⋯ button and its Rename / Archive / Delete menu keep working as before.
+    list.querySelectorAll('.rh-drawer-item[data-chat-id]').forEach(function (row) {
+      var id = row.getAttribute('data-chat-id');
+      var onMenu = function (ev) { return !!(ev.target.closest && ev.target.closest('.rh-drawer-item-menu, .rh-drawer-popover')); };
+      row.addEventListener('pointerdown', function (ev) { if (!onMenu(ev)) rhPrefetchChat(id); }, { passive: true });
+      row.addEventListener('click', function (ev) { if (!onMenu(ev)) rhSelectChat(id); });
     });
     list.querySelectorAll('[data-menu]').forEach(function (elx) {
       elx.addEventListener('click', function (ev) {
