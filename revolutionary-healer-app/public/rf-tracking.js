@@ -18,7 +18,8 @@
  * an empty count shows the starter mark ✧ and "first one waiting". */
 (function () {
   if (window.__rfTracking) return; window.__rfTracking = 1;
-  var ROW = [['gapScans', 'GAP Scans', 'GAP Method™ runs completed'], ['shifts', 'Shifts', 'Shifting cards created'], ['codes', 'Codes', 'codes pulled']];
+  // [key, plural label, singular label, plural description, singular description]: 1 reads '1 GAP Scan', '1 Shift', '1 Code'
+  var ROW = [['gapScans', 'GAP Scans', 'GAP Scan', 'GAP Method™ runs completed', 'GAP Method™ run completed'], ['shifts', 'Shifts', 'Shift', 'Shifting cards created', 'Shifting card created'], ['codes', 'Codes', 'Code', 'codes pulled', 'code pulled']];
   function mount() {
     var head = document.getElementById('rf-rev-head'); if (!head) return null;
     var r = document.getElementById('rf-stats');
@@ -35,7 +36,8 @@
       var el = r.querySelector('[data-k="' + x[0] + '"]'), n = +d.counts[x[0]] || 0;
       el.querySelector('b').textContent = n > 0 ? String(n) : '✧'; el.classList.toggle('zero', n === 0);
       el.querySelector('.rf-stat-start').hidden = n > 0;
-      el.setAttribute('aria-label', n > 0 ? n + ' ' + x[2] : 'No ' + x[2] + ' yet');
+      el.querySelector('small').textContent = n === 1 ? x[2] : x[1];
+      el.setAttribute('aria-label', n > 0 ? n + ' ' + (n === 1 ? x[4] : x[3]) : 'No ' + x[3] + ' yet');
     });
   }
   document.addEventListener('rf:rev-data', function (ev) { draw(ev.detail); });

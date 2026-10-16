@@ -7889,10 +7889,13 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     if (!tile || !grid) return;
     var slugs = []; try { slugs = getFavoriteActivationSlugs() || []; } catch (e) {}
     var lib = document.getElementById('activation-library-grid');
-    var cards = slugs.map(function (sl) { return lib ? lib.querySelector('[data-activation-slug="' + sl + '"]') : null; }).filter(Boolean);
+    // one deduped list of favourites that have a library card; the tile count is the number of cards actually put
+    // in the view, so the count and the list can never differ
+    var seen = {}, cards = [];
+    slugs.forEach(function (sl) { sl = String(sl || ''); if (!sl || seen[sl]) return; var c = lib ? lib.querySelector('[data-activation-slug="' + sl + '"]') : null; if (c) { seen[sl] = true; cards.push(c); } });
     grid.innerHTML = '';
     cards.forEach(function (c) { var k = c.cloneNode(true); k.style.removeProperty('display'); grid.appendChild(k); });
-    var n = cards.length;
+    var n = grid.querySelectorAll('.media-card').length;
     if (!n) grid.innerHTML = '<p class="rf-favnone">No favourites yet. Tap the heart on any activation to add it here.</p>';
     tile.querySelector('[data-rf-favcount]').textContent = n + (n === 1 ? ' ACTIVATION' : ' ACTIVATIONS');
     tile.setAttribute('aria-label', 'Favourites · ' + n + (n === 1 ? ' activation' : ' activations'));
