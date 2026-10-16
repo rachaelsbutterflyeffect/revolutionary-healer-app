@@ -360,13 +360,13 @@ body.rf .rf-lsecs { display:none; }
 body.rf[data-rf-lib="sections"] #activations-page .rf-lsecs { display:block; }
 body.rf[data-rf-lib="sections"] #activations-page #rf-lib-sub { display:none !important; }
 body.rf[data-rf-lib="cat"] #activations-page #gap-method-activations-subsection, body.rf[data-rf-lib="cat"] #activations-page .section-head { display:none !important; }
-body.rf .rf-lsec, body.rf .rf-favhead { all:unset; box-sizing:border-box; position:relative; display:block; width:100%; cursor:pointer; margin-top:16px; border-radius:24px; overflow:hidden; min-height:150px; border:1px solid rgba(255,236,190,.3); box-shadow:0 10px 40px rgba(0,0,0,.35),0 0 30px rgba(255,214,130,.15); transition:transform .2s; -webkit-tap-highlight-color:transparent; }
+body.rf .rf-lsec { all:unset; box-sizing:border-box; position:relative; display:block; width:100%; cursor:pointer; margin-top:16px; border-radius:24px; overflow:hidden; min-height:150px; border:1px solid rgba(255,236,190,.3); box-shadow:0 10px 40px rgba(0,0,0,.35),0 0 30px rgba(255,214,130,.15); transition:transform .2s; -webkit-tap-highlight-color:transparent; }
 body.rf .rf-lsec:active { transform:scale(.98); }
-body.rf .rf-lsec .bgc, body.rf .rf-favhead .bgc { position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(.9); }
-body.rf .rf-lsec:after, body.rf .rf-favhead:after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(6,8,11,.1),rgba(6,8,11,.85)); pointer-events:none; }
-body.rf .rf-lsec .in, body.rf .rf-favhead .in { position:relative; z-index:1; display:block; padding:70px 18px 16px; }
-body.rf .rf-lsec b, body.rf .rf-favhead b { display:block; font-family:Cinzel,serif; font-weight:600; font-size:20px; color:var(--rf-gold2); text-shadow:0 0 18px rgba(255,214,130,.6); }
-body.rf .rf-lsec small, body.rf .rf-favhead small { font-size:12px; color:#fffc; letter-spacing:.1em; }
+body.rf .rf-lsec .bgc { position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(.9); }
+body.rf .rf-lsec:after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(6,8,11,.1),rgba(6,8,11,.85)); pointer-events:none; }
+body.rf .rf-lsec .in { position:relative; z-index:1; display:block; padding:70px 18px 16px; }
+body.rf .rf-lsec b { display:block; font-family:Cinzel,serif; font-weight:600; font-size:20px; color:var(--rf-gold2); text-shadow:0 0 18px rgba(255,214,130,.6); }
+body.rf .rf-lsec small { font-size:12px; color:#fffc; letter-spacing:.1em; }
 body.rf .rf-lsec .arr { position:absolute; right:16px; bottom:16px; z-index:1; color:var(--rf-gold); font-size:20px; }
 body.rf .rf-allsecs { display:none; } body.rf[data-rf-lib="cat"] .rf-allsecs { display:inline-flex; margin:6px 0 10px; }
 body.rf .rf-sec-ttl { display:none; } body.rf[data-rf-lib="cat"] .rf-sec-ttl { display:block; font-family:Cinzel,serif; letter-spacing:.2em; text-transform:uppercase; font-size:13px; color:var(--rf-gold); margin:4px 0 12px; }
@@ -477,9 +477,11 @@ body.rf #activation-detail-page .rf-xpblock { margin-top:22px !important; }
 body.rf #activation-detail-page .rf-xpblock + .activation-detail-actions { margin-top:14px; }
 body.rf #activation-detail-page .activation-detail-actions + #activation-detail-whatfor { margin-top:30px !important; padding-top:20px; border-top:1px solid rgba(169,153,127,.25); }
 
-/* Activations: Favourites section at the top (preview, Rachael Oct 15); same card art treatment as the sections */
-body.rf .rf-favsec { display:none; }
-body.rf[data-rf-lib="sections"] #activations-page .rf-favsec:not([hidden]) { display:block; }
-body.rf .rf-favhead { cursor:default; }
-body.rf .rf-favgrid { margin-top:14px; }
+/* Activations: Favourites tile (first category tile) + its category view (Rachael Oct 15) */
+body.rf .rf-lsec[hidden] { display:none !important; }
+body.rf .rf-favgrid { display:none !important; }
+body.rf[data-rf-libfav] #rf-lib-sub .rf-favgrid { display:grid !important; }
+body.rf[data-rf-libfav] #rf-lib-sub .category-chips, body.rf[data-rf-libfav] #rf-lib-sub .rh-lib-tools,
+body.rf[data-rf-libfav] #activation-library-grid, body.rf[data-rf-libfav] #rh-lib-more { display:none !important; }
+body.rf .rf-favnone { grid-column:1 / -1; color:#fffb; font-size:14px; }
 body.rf .rf-gone { display:none !important; }
