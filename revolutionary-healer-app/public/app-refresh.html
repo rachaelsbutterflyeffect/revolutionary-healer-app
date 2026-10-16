@@ -1288,13 +1288,13 @@ body.rf .rf-lsecs { display:none; }
 body.rf[data-rf-lib="sections"] #activations-page .rf-lsecs { display:block; }
 body.rf[data-rf-lib="sections"] #activations-page #rf-lib-sub { display:none !important; }
 body.rf[data-rf-lib="cat"] #activations-page #gap-method-activations-subsection, body.rf[data-rf-lib="cat"] #activations-page .section-head { display:none !important; }
-body.rf .rf-lsec, body.rf .rf-favhead { all:unset; box-sizing:border-box; position:relative; display:block; width:100%; cursor:pointer; margin-top:16px; border-radius:24px; overflow:hidden; min-height:150px; border:1px solid rgba(255,236,190,.3); box-shadow:0 10px 40px rgba(0,0,0,.35),0 0 30px rgba(255,214,130,.15); transition:transform .2s; -webkit-tap-highlight-color:transparent; }
+body.rf .rf-lsec { all:unset; box-sizing:border-box; position:relative; display:block; width:100%; cursor:pointer; margin-top:16px; border-radius:24px; overflow:hidden; min-height:150px; border:1px solid rgba(255,236,190,.3); box-shadow:0 10px 40px rgba(0,0,0,.35),0 0 30px rgba(255,214,130,.15); transition:transform .2s; -webkit-tap-highlight-color:transparent; }
 body.rf .rf-lsec:active { transform:scale(.98); }
-body.rf .rf-lsec .bgc, body.rf .rf-favhead .bgc { position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(.9); }
-body.rf .rf-lsec:after, body.rf .rf-favhead:after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(6,8,11,.1),rgba(6,8,11,.85)); pointer-events:none; }
-body.rf .rf-lsec .in, body.rf .rf-favhead .in { position:relative; z-index:1; display:block; padding:70px 18px 16px; }
-body.rf .rf-lsec b, body.rf .rf-favhead b { display:block; font-family:Cinzel,serif; font-weight:600; font-size:20px; color:var(--rf-gold2); text-shadow:0 0 18px rgba(255,214,130,.6); }
-body.rf .rf-lsec small, body.rf .rf-favhead small { font-size:12px; color:#fffc; letter-spacing:.1em; }
+body.rf .rf-lsec .bgc { position:absolute; inset:0; background-size:cover; background-position:center; filter:saturate(.9); }
+body.rf .rf-lsec:after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(6,8,11,.1),rgba(6,8,11,.85)); pointer-events:none; }
+body.rf .rf-lsec .in { position:relative; z-index:1; display:block; padding:70px 18px 16px; }
+body.rf .rf-lsec b { display:block; font-family:Cinzel,serif; font-weight:600; font-size:20px; color:var(--rf-gold2); text-shadow:0 0 18px rgba(255,214,130,.6); }
+body.rf .rf-lsec small { font-size:12px; color:#fffc; letter-spacing:.1em; }
 body.rf .rf-lsec .arr { position:absolute; right:16px; bottom:16px; z-index:1; color:var(--rf-gold); font-size:20px; }
 body.rf .rf-allsecs { display:none; } body.rf[data-rf-lib="cat"] .rf-allsecs { display:inline-flex; margin:6px 0 10px; }
 body.rf .rf-sec-ttl { display:none; } body.rf[data-rf-lib="cat"] .rf-sec-ttl { display:block; font-family:Cinzel,serif; letter-spacing:.2em; text-transform:uppercase; font-size:13px; color:var(--rf-gold); margin:4px 0 12px; }
@@ -1405,11 +1405,13 @@ body.rf #activation-detail-page .rf-xpblock { margin-top:22px !important; }
 body.rf #activation-detail-page .rf-xpblock + .activation-detail-actions { margin-top:14px; }
 body.rf #activation-detail-page .activation-detail-actions + #activation-detail-whatfor { margin-top:30px !important; padding-top:20px; border-top:1px solid rgba(169,153,127,.25); }
 
-/* Activations: Favourites section at the top (preview, Rachael Oct 15); same card art treatment as the sections */
-body.rf .rf-favsec { display:none; }
-body.rf[data-rf-lib="sections"] #activations-page .rf-favsec:not([hidden]) { display:block; }
-body.rf .rf-favhead { cursor:default; }
-body.rf .rf-favgrid { margin-top:14px; }
+/* Activations: Favourites tile (first category tile) + its category view (Rachael Oct 15) */
+body.rf .rf-lsec[hidden] { display:none !important; }
+body.rf .rf-favgrid { display:none !important; }
+body.rf[data-rf-libfav] #rf-lib-sub .rf-favgrid { display:grid !important; }
+body.rf[data-rf-libfav] #rf-lib-sub .category-chips, body.rf[data-rf-libfav] #rf-lib-sub .rh-lib-tools,
+body.rf[data-rf-libfav] #activation-library-grid, body.rf[data-rf-libfav] #rh-lib-more { display:none !important; }
+body.rf .rf-favnone { grid-column:1 / -1; color:#fffb; font-size:14px; }
 body.rf .rf-gone { display:none !important; }
 
 </style>
@@ -1865,11 +1867,8 @@ body.rf .rf-gone { display:none !important; }
       </div>
     </div>
 
-<section class="rf-favsec" id="rf-favsec" hidden aria-label="Favourites">
-  <div class="rf-favhead"><span class="bgc" style="background-image:url('/images/sections/sec-favourites.webp');background-position:58% 18%" aria-hidden="true"></span><span class="in"><b>Favourites</b><small data-rf-favcount></small></span></div>
-  <div class="card-grid rf-favgrid"></div>
-</section>
 <div class="rf-lsecs" id="rf-lsecs">
+  <button type="button" class="rf-lsec rf-favtile" data-rf-favs hidden><span class="bgc" style="background-image:url('/images/sections/sec-favourites.webp');background-position:58% 18%" aria-hidden="true"></span><span class="in"><b>Favourites</b><small data-rf-favcount></small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Gifts + Spirit"><span class="bgc" style="background-image:url('/images/sections/sec-gifts.webp');background-position:24% 22%" aria-hidden="true"></span><span class="in"><b>Gifts &amp; Spirit</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Money + Receiving"><span class="bgc" style="background-image:url('/images/sections/sec-money.webp');background-position:82% 20%" aria-hidden="true"></span><span class="in"><b>Money &amp; Receiving</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Energy + Frequency"><span class="bgc" style="background-image:url('/images/sections/sec-energy.webp');background-position:72% 26%" aria-hidden="true"></span><span class="in"><b>Energy &amp; Frequency</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
@@ -1946,6 +1945,7 @@ body.rf .rf-gone { display:none !important; }
         <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy &amp; Frequency</button>
       </div>
       <div class="rh-lib-tools"><input type="search" id="rh-lib-search" class="rh-lib-search" placeholder="Search activations" aria-label="Search activations" oninput="rhLibApply()"><span class="rh-lib-count" id="rh-lib-count" aria-live="polite"></span></div>
+      <div class="card-grid rf-favgrid" id="rf-favgrid"></div>
       <div class="card-grid" id="activation-library-grid">
                 <div class="media-card" onclick="handleActivationCardClick('grounding')" style="cursor: pointer;" data-activation-slug="grounding" data-category="Energy + Frequency">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
@@ -7872,40 +7872,51 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
   };
   // ---------- Activations: four big sections (mock-up) -> that section's activations ----------
   function libSections() {
-    B.setAttribute('data-rf-lib', 'sections');
+    B.setAttribute('data-rf-lib', 'sections'); B.removeAttribute('data-rf-libfav');
     document.querySelectorAll('#rf-lsecs .rf-lsec').forEach(function (b) {
       var cat = b.getAttribute('data-rf-sec'), n = 0;
       document.querySelectorAll('#activation-library-grid .media-card').forEach(function (c) { if ((c.getAttribute('data-category') || '').split(',').map(function (x) { return x.trim(); }).indexOf(cat) !== -1) n++; });
       var el = b.querySelector('[data-rf-count]'); if (el) el.textContent = n;
     });
   }
-  // ---------- Activations: Favourites at the top (preview, Rachael Oct 15) ----------
-  // Same source as My Revolution's favourites (getFavoriteActivationSlugs + the library's own cards, shown even when
-  // the library is paging/filtering them: the item 2 fix). Hidden with none; updates whenever a heart is toggled
-  // (classic calls renderFavoritesSections after every change). Favourites no longer show in My Revolution.
+  // ---------- Activations: Favourites tile (Rachael Oct 15) ----------
+  // One category tile, first in the grid, hidden with no favourites. Tapping it opens the category view (same back
+  // and title as any category) listing the favourites as cards. Same source as My Revolution's favourites used
+  // (getFavoriteActivationSlugs + the library's own cards, shown even when the library is paging/filtering them).
+  // Updates whenever a heart is toggled (classic calls renderFavoritesSections after every change).
   function renderFavSec() {
-    var sec = document.getElementById('rf-favsec'); if (!sec) return;
+    var tile = document.querySelector('#rf-lsecs [data-rf-favs]'), grid = document.getElementById('rf-favgrid');
+    if (!tile || !grid) return;
     var slugs = []; try { slugs = getFavoriteActivationSlugs() || []; } catch (e) {}
-    var lib = document.getElementById('activation-library-grid'), grid = sec.querySelector('.rf-favgrid');
+    var lib = document.getElementById('activation-library-grid');
     var cards = slugs.map(function (sl) { return lib ? lib.querySelector('[data-activation-slug="' + sl + '"]') : null; }).filter(Boolean);
     grid.innerHTML = '';
     cards.forEach(function (c) { var k = c.cloneNode(true); k.style.removeProperty('display'); grid.appendChild(k); });
-    var n = cards.length, lbl = n + (n === 1 ? ' ACTIVATION' : ' ACTIVATIONS');
-    sec.querySelector('[data-rf-favcount]').textContent = lbl;
-    sec.setAttribute('aria-label', 'Favourites · ' + n + (n === 1 ? ' activation' : ' activations'));
-    sec.hidden = n === 0;
+    var n = cards.length;
+    if (!n) grid.innerHTML = '<p class="rf-favnone">No favourites yet. Tap the heart on any activation to add it here.</p>';
+    tile.querySelector('[data-rf-favcount]').textContent = n + (n === 1 ? ' ACTIVATION' : ' ACTIVATIONS');
+    tile.setAttribute('aria-label', 'Favourites · ' + n + (n === 1 ? ' activation' : ' activations'));
+    tile.hidden = n === 0;
   }
   window.rfRenderFavSec = renderFavSec;
+  function libFavs() {
+    renderFavSec();
+    var tt = document.getElementById('rf-sec-ttl'); if (tt) tt.textContent = 'Favourites';
+    B.setAttribute('data-rf-lib', 'cat'); B.setAttribute('data-rf-libfav', '1');
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+  document.addEventListener('click', function (e) {
+    var f = e.target.closest && e.target.closest('[data-rf-favs]'); if (f) { e.preventDefault(); libFavs(); }
+  });
   var _rfFavs = window.renderFavoritesSections;
   if (typeof _rfFavs === 'function') renderFavoritesSections = window.renderFavoritesSections = function () { var r = _rfFavs.apply(this, arguments); try { renderFavSec(); } catch (e) {} return r; };
   // My Revolution: no favourites block (preview row, Favorites heading, See all); any old way to the favourites page
-  // (a #favorites-page link) opens the Activations page with the Favourites section instead.
+  // (a #favorites-page link) opens the Activations page's Favourites view instead.
   (function () { var row = document.querySelector('#my-revolution .favorites-row'), sub = row && row.closest('.revolution-subsection'); if (sub) sub.classList.add('rf-gone'); })();
   rhOpenFavorites = window.rhOpenFavorites = function () {
-    try { renderFavSec(); } catch (e) {}
     showPage('activations-page');
-    var sec = document.getElementById('rf-favsec');
-    if (sec && !sec.hidden) setTimeout(function () { try { sec.scrollIntoView({ block: 'start' }); } catch (e) {} }, 30);
+    try { renderFavSec(); } catch (e) {}
+    var tile = document.querySelector('#rf-lsecs [data-rf-favs]'); if (tile && !tile.hidden) libFavs();
   };
   try { renderFavSec(); } catch (e) {}
   function libSection(cat) {
@@ -7915,7 +7926,7 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     if (chip) { try { selectCategoryChip(chip); } catch (e) { chip.click(); } }
     var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + cat + '"] b'), tt = document.getElementById('rf-sec-ttl');
     if (tt) tt.textContent = sec ? sec.textContent : cat;
-    B.setAttribute('data-rf-lib', 'cat');
+    B.setAttribute('data-rf-lib', 'cat'); B.removeAttribute('data-rf-libfav');
     try { window.scrollTo(0, 0); } catch (e) {}
   }
   document.addEventListener('click', function (e) {
