@@ -7938,7 +7938,8 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
   // SpookBound is not part of the refresh: anything that would open it goes to the library instead.
   var _hacc = window.handleActivationCardClick;
   handleActivationCardClick = window.handleActivationCardClick = function (slug) {
-    if (slug === 'spookbound-2026') { showPage('activations-page'); return; }
+    // the Featured Activation event (its own switch, featuredEvent) opens the activation it features
+    if (slug === 'spookbound-2026' && !(window.__rfFeatures && window.__rfFeatures.featuredEvent === true && window.RF_EVENT && window.RF_EVENT.slug === slug)) { showPage('activations-page'); return; }
     return _hacc.apply(this, arguments);
   };
   function stripSpook(root) { (root || document).querySelectorAll('[data-activation-slug="spookbound-2026"]').forEach(function (n) { n.remove(); }); }
@@ -8444,7 +8445,7 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
 // ---- Held-back features (Oct 15 2026): each one is its own file + its own server switch (lib/features.js).
 // Nothing is fetched or shown unless /api/features says true for THIS member.
 (function () {
-  var MAP = { codePull: 'rf-codes', homeCheckin: 'rf-checkin', codeShifts: 'rf-codeshift', saveSections: 'rf-sections', methodTracking: 'rf-tracking' };
+  var MAP = { codePull: 'rf-codes', homeCheckin: 'rf-checkin', codeShifts: 'rf-codeshift', saveSections: 'rf-sections', methodTracking: 'rf-tracking', featuredEvent: 'rf-event' };
   var tries = 0;
   function load(n) {
     if (document.getElementById('rf-feat-' + n)) return;
