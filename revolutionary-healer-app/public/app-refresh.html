@@ -691,6 +691,7 @@
      browsers, embedded views and some home-screen apps silently suppress (the tap then did nothing). */
   .rh-sheet-backdrop{position:fixed;inset:0;z-index:9000;background:rgba(6,6,5,.62);display:flex;align-items:flex-end;justify-content:center;padding:16px;}
   .rh-sheet{width:100%;max-width:440px;background:var(--panel-2);border:1px solid var(--taupe-line);border-radius:18px;padding:20px 18px 16px;box-shadow:0 18px 50px rgba(0,0,0,.55);color:var(--white);margin-bottom:max(8px,env(safe-area-inset-bottom));}
+  .rh-sheet-backdrop.rh-sheet-has-input{align-items:center;}
   .rh-sheet-msg{margin:0 0 14px;font-size:15px;line-height:1.5;}
   .rh-sheet-input{width:100%;box-sizing:border-box;margin:0 0 14px;padding:11px 12px;border-radius:10px;border:1px solid var(--taupe-line);background:rgba(255,255,255,.04);color:var(--white);font:inherit;font-size:16px;}
   .rh-sheet-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;}
@@ -1413,6 +1414,14 @@ body.rf[data-rf-libfav] #rf-lib-sub .category-chips, body.rf[data-rf-libfav] #rf
 body.rf[data-rf-libfav] #activation-library-grid, body.rf[data-rf-libfav] #rh-lib-more { display:none !important; }
 body.rf .rf-favnone { grid-column:1 / -1; color:#fffb; font-size:14px; }
 body.rf .rf-gone { display:none !important; }
+/* Chat history opener (Oct 16): labelled gold pill, 44px tap target, matching the gold-outlined + button */
+body.rf .rh-chat-header { gap:10px; }
+body.rf .rh-drawer-toggle.rf-hist-btn { flex:0 0 auto; box-sizing:border-box; height:44px; padding:0 14px 0 12px; gap:7px; border-radius:999px; border:1px solid rgba(255,236,190,.55); background:rgba(12,14,16,.72); color:var(--rf-gold2) !important; font-family:Inter,system-ui,sans-serif !important; font-size:14px; font-weight:600; letter-spacing:.02em; box-shadow:0 0 14px rgba(255,214,130,.14); }
+body.rf .rh-drawer-toggle.rf-hist-btn:active { background:rgba(255,214,130,.12); }
+body.rf .rf-hist-ic { flex:0 0 auto; display:block; }
+body.rf .rf-chat-title { flex:1 1 auto; min-width:0; text-align:center; white-space:nowrap; font-family:Cinzel,serif; font-size:13px; font-weight:600; letter-spacing:.06em; color:#fdfbf5; }
+body.rf .rh-new-chat-icon { width:44px; height:44px; box-sizing:border-box; font-size:20px; border-color:rgba(255,236,190,.55); }
+@media (max-width:359px) { body.rf .rf-chat-title { font-size:11.5px; letter-spacing:.04em; } body.rf .rh-drawer-toggle.rf-hist-btn { padding:0 11px 0 10px; } }
 
 </style>
 </head>
@@ -1594,9 +1603,8 @@ body.rf .rf-gone { display:none !important; }
 
     <div class="rh-chat-shell" id="rh-chat-shell">
       <div class="rh-chat-header">
-        <button type="button" class="rh-drawer-toggle" id="rh-drawer-toggle" aria-label="Chat history">
-          <span class="rh-hamburger">&#9776;</span> Revolutionary Healer
-        </button>
+        <button type="button" class="rh-drawer-toggle rf-hist-btn" id="rh-drawer-toggle" aria-label="Chat history"><svg class="rf-hist-ic" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>History</button>
+        <span class="rf-chat-title">Revolutionary Healer</span>
         <div class="rh-chat-header-actions">
           <button type="button" class="rh-new-chat-icon" id="rh-new-chat-top-btn" title="New chat" aria-label="New chat">+</button>
         </div>
@@ -2709,7 +2717,17 @@ body.rf .rf-gone { display:none !important; }
       if (!o.alert) { cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'rh-sheet-cancel'; cancel.textContent = o.cancelLabel || 'Cancel'; row.appendChild(cancel); }
       var ok = document.createElement('button'); ok.type = 'button'; ok.className = 'rh-sheet-ok' + (o.danger ? ' rh-danger' : ''); ok.textContent = o.okLabel || 'OK'; row.appendChild(ok);
       sh.appendChild(row); bd.appendChild(sh); document.body.appendChild(bd);
-      function done(v) { document.removeEventListener('keydown', onKey, true); bd.remove(); try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {} resolve(v); }
+      // Oct 16 (Rachael: "Rename this chat" sat at the bottom, under the iPhone keyboard): a sheet with a text box is
+      // centred in the part of the screen the member can actually see, and follows it when the keyboard opens/closes.
+      var vv = inp && window.visualViewport, fit = null;
+      if (inp) {
+        bd.classList.add('rh-sheet-has-input');
+        if (vv) {
+          fit = function () { bd.style.top = vv.offsetTop + 'px'; bd.style.height = vv.height + 'px'; bd.style.bottom = 'auto'; };
+          vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit();
+        }
+      }
+      function done(v) { if (fit) { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit); } document.removeEventListener('keydown', onKey, true); bd.remove(); try { if (prevFocus && prevFocus.focus) prevFocus.focus(); } catch (e) {} resolve(v); }
       function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); done(o.alert ? true : (o.input ? null : false)); } else if (e.key === 'Enter' && inp && document.activeElement === inp) { e.preventDefault(); done(inp.value); } }
       document.addEventListener('keydown', onKey, true);
       ok.addEventListener('click', function (e) { e.stopPropagation(); done(o.alert ? true : (inp ? inp.value : true)); });
