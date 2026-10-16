@@ -263,9 +263,12 @@ process.env.ANTHROPIC_API_KEY = "test-not-a-real-key";
 // old-vs-new comparisons below remove exactly that block, so they still prove
 // nothing ELSE in the request changed. test:chat-ccm checks the block itself.
 const { CCM_CHATBOT_INSTRUCTIONS } = await import(pathToFileURL(path.join(appRoot, "lib", "ccm-chatbot-instructions.js")).href);
+// Oct 15 2026: same for Rachael's bot pricing rules (lib/bot-pricing-rules.js,
+// inserted right after the CCM block). test:bot-pricing checks the block itself.
+const { BOT_PRICING_RULES, BOT_PRICING_PRECEDENCE } = await import(pathToFileURL(path.join(appRoot, "lib", "bot-pricing-rules.js")).href);
 function stripCcm(body) {
   if (!body || !body.system) return body;
-  const cut = (t) => (typeof t === "string" ? t.replace("\n" + CCM_CHATBOT_INSTRUCTIONS + "\n", "") : t);
+  const cut = (t) => (typeof t === "string" ? t.replace("\n" + BOT_PRICING_RULES + "\n" + BOT_PRICING_PRECEDENCE + "\n", "").replace("\n" + CCM_CHATBOT_INSTRUCTIONS + "\n", "") : t);
   const system = Array.isArray(body.system) ? body.system.map((b) => ({ ...b, text: cut(b.text) })) : cut(body.system);
   return { ...body, system };
 }

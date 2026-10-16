@@ -40,6 +40,7 @@ import {
 import { placeholderChatTitle, titleActionForMessage } from "@/lib/chatTitles";
 import { toCachedSystemBlocks } from "@/lib/promptCache";
 import { withCcmInstructions } from "@/lib/ccm-chatbot-instructions";
+import { withPricingRules } from "@/lib/bot-pricing-rules";
 import { ccmTrackingEnabled, getCcmStatus, recordOutcome, isChatCcmDecline, countActivityDays, CCM_CARD_OPENER, ccmStatusPromptNote } from "@/lib/ccm-tracking";
 import {
   chatStreamingAllowed,
@@ -241,6 +242,9 @@ export async function POST(req: NextRequest) {
   // Clear Channel Method chatbot education (Oct 14 2026): static text placed
   // before the UPSELL paragraph, so it stays in the cached prefix.
   systemPrompt = withCcmInstructions(systemPrompt);
+  // Bot pricing rules (Oct 15 2026, Rachael's verbatim copy): also static,
+  // also before UPSELL, so it sits in the cached prefix after the CCM block.
+  systemPrompt = withPricingRules(systemPrompt);
   if (embodimentShift) {
     const f = embodimentShift.fields;
     systemPrompt += `\n\n=== SHIFT PROGRESS CHECK-IN (Update Progress button) ===\nThe member clicked "Update Progress" on this Shift: ${f.divine_identity_name || "their Shift"} / ${f.current_frequency || ""}. GAP: ${f.gap_explanation || ""}. Recommended Activation: ${f.recommended_activation || ""}.\n\nThey were just greeted with: "You're ready to make this shift embodied — tell me, what's your main shift, and what's making you feel like this is fully embodied?" Continue that conversation.\n\nNever mark a Shift Embodied simply because the member listened to an activation. Watch for meaningful evidence the contradiction is no longer driving the same behavior -- e.g. responding differently to the old trigger, taking the action they previously avoided, no longer reopening the same decision, speaking or showing up differently, a change in the repeated pattern, or feeling the old thought/emotion without automatically following the old behavior.\n\nThen ask them directly: "Do you feel like this shift is complete?"\n\nIf they say yes: tell them plainly, using almost exactly this phrase -- "I've updated your card to mark this as Embodied" -- and then celebrate them thoroughly, reflecting back where they started and how far they've come.\n\nIf they say no, or the pattern still feels active: don't say anything about updating their card -- keep supporting them, and let them know it's okay to keep working with this Shift.`;
