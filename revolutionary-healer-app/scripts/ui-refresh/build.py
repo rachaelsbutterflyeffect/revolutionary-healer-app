@@ -252,7 +252,7 @@ once('''el.textContent = sec >= 10 ? ('Working for ' + Math.floor(sec / 60) + ':
 # file or change FAV_ART (path, crop focus); it uses the category sections' card treatment (.rf-lsec).
 FAV_ART = ('/images/sections/sec-favourites.webp', '58% 18%')
 FAVSEC = ('<section class="rf-favsec" id="rf-favsec" hidden aria-label="Favourites">\n'
-  '  <div class="rf-lsec rf-favhead"><span class="bgc" style="background-image:url(\'%s\');background-position:%s" aria-hidden="true"></span>'
+  '  <div class="rf-favhead"><span class="bgc" style="background-image:url(\'%s\');background-position:%s" aria-hidden="true"></span>'
   '<span class="in"><b>Favourites</b><small data-rf-favcount></small></span></div>\n'
   '  <div class="card-grid rf-favgrid"></div>\n</section>\n') % FAV_ART
 once('<div class="rf-lsecs" id="rf-lsecs">', FAVSEC + '<div class="rf-lsecs" id="rf-lsecs">', 'favsec')
