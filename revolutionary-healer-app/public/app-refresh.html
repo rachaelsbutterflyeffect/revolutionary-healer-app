@@ -1421,7 +1421,7 @@ body.rf .rh-drawer-toggle.rf-hist-btn:active { background:rgba(255,214,130,.12);
 body.rf .rf-hist-ic { flex:0 0 auto; display:block; }
 body.rf .rf-chat-title { flex:1 1 auto; min-width:0; text-align:center; white-space:nowrap; font-family:Cinzel,serif; font-size:13px; font-weight:600; letter-spacing:.06em; color:#fdfbf5; }
 body.rf .rh-new-chat-icon { width:44px; height:44px; box-sizing:border-box; font-size:20px; border-color:rgba(255,236,190,.55); }
-@media (max-width:359px) { body.rf .rf-chat-title { font-size:11.5px; letter-spacing:.04em; } body.rf .rh-drawer-toggle.rf-hist-btn { padding:0 11px 0 10px; } }
+@media (max-width:359px) { body.rf .rf-chat-title { font-size:12px; letter-spacing:.05em; white-space:normal; line-height:1.2; } body.rf .rh-drawer-toggle.rf-hist-btn { padding:0 11px 0 10px; } }
 
 </style>
 </head>
@@ -2723,7 +2723,7 @@ body.rf .rh-new-chat-icon { width:44px; height:44px; box-sizing:border-box; font
       if (inp) {
         bd.classList.add('rh-sheet-has-input');
         if (vv) {
-          fit = function () { bd.style.top = vv.offsetTop + 'px'; bd.style.height = vv.height + 'px'; bd.style.bottom = 'auto'; };
+          fit = function () { bd.style.top = vv.offsetTop + 'px'; bd.style.height = Math.min(vv.height, window.innerHeight || vv.height) + 'px'; bd.style.bottom = 'auto'; };
           vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit();
         }
       }

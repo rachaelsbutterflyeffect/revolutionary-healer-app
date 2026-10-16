@@ -2246,7 +2246,7 @@
       if (inp) {
         bd.classList.add('rh-sheet-has-input');
         if (vv) {
-          fit = function () { bd.style.top = vv.offsetTop + 'px'; bd.style.height = vv.height + 'px'; bd.style.bottom = 'auto'; };
+          fit = function () { bd.style.top = vv.offsetTop + 'px'; bd.style.height = Math.min(vv.height, window.innerHeight || vv.height) + 'px'; bd.style.bottom = 'auto'; };
           vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); fit();
         }
       }
