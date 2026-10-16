@@ -485,3 +485,11 @@ body.rf[data-rf-libfav] #rf-lib-sub .category-chips, body.rf[data-rf-libfav] #rf
 body.rf[data-rf-libfav] #activation-library-grid, body.rf[data-rf-libfav] #rh-lib-more { display:none !important; }
 body.rf .rf-favnone { grid-column:1 / -1; color:#fffb; font-size:14px; }
 body.rf .rf-gone { display:none !important; }
+/* Chat history opener (Oct 16): labelled gold pill, 44px tap target, matching the gold-outlined + button */
+body.rf .rh-chat-header { gap:10px; }
+body.rf .rh-drawer-toggle.rf-hist-btn { flex:0 0 auto; box-sizing:border-box; height:44px; padding:0 14px 0 12px; gap:7px; border-radius:999px; border:1px solid rgba(255,236,190,.55); background:rgba(12,14,16,.72); color:var(--rf-gold2) !important; font-family:Inter,system-ui,sans-serif !important; font-size:14px; font-weight:600; letter-spacing:.02em; box-shadow:0 0 14px rgba(255,214,130,.14); }
+body.rf .rh-drawer-toggle.rf-hist-btn:active { background:rgba(255,214,130,.12); }
+body.rf .rf-hist-ic { flex:0 0 auto; display:block; }
+body.rf .rf-chat-title { flex:1 1 auto; min-width:0; text-align:center; white-space:nowrap; font-family:Cinzel,serif; font-size:13px; font-weight:600; letter-spacing:.06em; color:#fdfbf5; }
+body.rf .rh-new-chat-icon { width:44px; height:44px; box-sizing:border-box; font-size:20px; border-color:rgba(255,236,190,.55); }
+@media (max-width:359px) { body.rf .rf-chat-title { font-size:12px; letter-spacing:.05em; white-space:normal; line-height:1.2; } body.rf .rh-drawer-toggle.rf-hist-btn { padding:0 11px 0 10px; } }

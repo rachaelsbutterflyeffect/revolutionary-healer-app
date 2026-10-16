@@ -57,7 +57,7 @@ transform:translateX(var(--x)) translateY(var(--y)) scale(1) rotate(var(--r)) ro
 #rf-codes .chev i{display:block;width:14px;height:14px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(45deg);margin-top:-6px;opacity:.3;animation:mk-chev 1.6s ease-in-out infinite}
 #rf-codes .chev i:nth-child(2){animation-delay:.2s}
 #rf-codes .chev i:nth-child(3){animation-delay:.4s}
-#rf-codes .cuup{margin:22px 0 2px;padding:0 4px;text-align:center;font-family:Cinzel;font-weight:600;font-size:26px;line-height:1.25;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(100deg,var(--goldd) 0%,var(--gold) 30%,#fffbe8 48%,var(--gold) 62%,var(--goldd) 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:mk-sh 6s linear infinite;filter:drop-shadow(0 0 14px rgba(255,214,130,.45))}
+#rf-codes .cuup{margin:22px 0 18px;padding:0 4px;text-align:center;font-family:Cinzel;font-weight:600;font-size:26px;line-height:1.25;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(100deg,var(--goldd) 0%,var(--gold) 30%,#fffbe8 48%,var(--gold) 62%,var(--goldd) 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:mk-sh 6s linear infinite;filter:drop-shadow(0 0 14px rgba(255,214,130,.45))}
 #rf-codes .cusubt{font-family:'Cormorant Garamond';font-size:18px;font-weight:600;color:rgba(253,251,245,.82);margin-bottom:16px}
 #rf-codes .cudoors{text-align:left}
 #rf-codes .cudoor .txt{font-size:21px}
