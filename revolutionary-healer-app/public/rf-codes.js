@@ -53,6 +53,26 @@
   window.RF_CU_CARDS = CU_CARDS; window.RF_CU_DIR = CU_DIR;
   var RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var cuLast = -1;
+  // Today's code stays on Today's Focus until the member's next day (ET): cached per email + ET date (fast path),
+  // else the newest saved code_pull (from /api/revolution-sections) if it was pulled today ET. Restoring shows the
+  // card without the pull event, so nothing is saved or counted twice.
+  function emailOf() { return (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || ''; }
+  function etDay(v) { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', year: 'numeric', month: '2-digit', day: '2-digit' }).format(v ? new Date(v) : new Date()); } catch (e) { return ''; } }
+  function todayKey() { var em = emailOf(); return em ? 'rf_code_' + em.toLowerCase() + '_' + etDay() : ''; }
+  function cardByFile(f) { for (var i = 0; i < CU_CARDS.length; i++) if (CU_CARDS[i].f === f) return CU_CARDS[i]; return null; }
+  function remember(cd) { var k = todayKey(); if (k && cd) try { localStorage.setItem(k, cd.f); } catch (e) {} }
+  function restoreToday() {
+    var k = todayKey(); if (!k) return;
+    var show = function (cd) { var st = $('#dstage'); if (!cd || !st || !st.__pull || st.classList.contains('done') || st.__busy()) return false; st.__pull(st.querySelector('.dcard[data-k="3"]'), cd); return true; };
+    var f = null; try { f = localStorage.getItem(k); } catch (e) {}
+    if (f && show(cardByFile(f))) return;
+    var fromData = function (d) {
+      var c = d && d.codes && d.codes.filter(function (x) { return x && x.from === 'pull' && x.card; })[0];
+      if (c && etDay(c.at) === etDay()) { var cd = cardByFile(c.card); if (show(cd)) remember(cd); }
+    };
+    if (window.__rfRevData) fromData(window.__rfRevData);
+    else { document.addEventListener('rf:rev-data', function h(ev) { document.removeEventListener('rf:rev-data', h); fromData(ev.detail); }); if (window.rfRevData) window.rfRevData(false); }
+  }
   function $(s, r) { return (r || document).querySelector(s); }
   function buzz() { try { navigator.vibrate && navigator.vibrate(8); } catch (e) {} }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -64,6 +84,7 @@
   }
   function setupDeck() {
     var st = $('#dstage'); var busy = false;
+    st.__pull = function (c, cd) { pull(c, cd); }; st.__busy = function () { return busy; };
     st.querySelectorAll('.dcard').forEach(function (c) {
       var y0 = null, x0 = 0, t0 = 0, s0 = 0;
       c.addEventListener('pointerdown', function (e) { y0 = e.clientY; x0 = e.clientX; t0 = Date.now(); s0 = window.scrollY; });
@@ -74,11 +95,13 @@
       });
       c.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pull(c); } });
     });
-    function pull(c) {
-      if (busy) return; busy = true; buzz();
-      var i; do { i = Math.random() * CU_CARDS.length | 0; } while (i === cuLast && CU_CARDS.length > 1); cuLast = i; var cd = CU_CARDS[i];
+    function pull(c, restored) {
+      if (busy) return; busy = true;
+      var cd, RM0 = RM;
+      if (restored) { cd = restored; cuLast = CU_CARDS.indexOf(cd); RM = true; } // today's code: shown at once, no pull event
+      else { buzz(); var i; do { i = Math.random() * CU_CARDS.length | 0; } while (i === cuLast && CU_CARDS.length > 1); cuLast = i; cd = CU_CARDS[i]; }
       window.__rfCodePulled = cd;
-      try { document.dispatchEvent(new CustomEvent('rf:code-pulled', { detail: cd })); } catch (e) {}
+      if (!restored) { remember(cd); try { document.dispatchEvent(new CustomEvent('rf:code-pulled', { detail: cd })); } catch (e) {} }
       c.querySelector('.fr').style.backgroundImage = 'url(' + CU_DIR + cd.f + '.webp)';
       st.querySelectorAll('.dcard').forEach(function (x) { if (x !== c) x.classList.add('gone'); }); c.classList.add('pulled');
       requestAnimationFrame(function () { requestAnimationFrame(function () { c.classList.add('flip'); }); });
@@ -100,7 +123,7 @@
           var ab = $('#cuact');
           if (ab) { ab.querySelector('.txt').textContent = cd.a; ab.setAttribute('aria-label', cd.a + '. Opens it'); key(ab, function () { buzz(); if (typeof window.handleActivationCardClick === 'function') window.handleActivationCardClick(cd.s); }); }
           try { document.dispatchEvent(new CustomEvent('rf:code-shown', { detail: { card: cd, slot: $('#cuextra') } })); } catch (e) {}
-          busy = false;
+          busy = false; RM = RM0;
           $('#cuagain').onclick = function () { $('#cudeck').innerHTML = deckHTML(); setupDeck(); window.scrollTo({ top: 0, behavior: RM ? 'auto' : 'smooth' }); };
         }, RM ? 0 : 800);
       }, 0);
@@ -124,7 +147,7 @@
     sec.innerHTML = '<div class="rf-sec rf-cu-h"><h3>Your Daily Code</h3></div><div id="cudeck"></div><div class="rf-sec rf-cu-h rf-cu-h2" id="rf-codes-after"><h3>Your Newest Shift</h3></div>';
     head.parentNode.insertBefore(sec, head.nextSibling);
     var sub = head.querySelector('.rf-sub'); if (sub) { sub.setAttribute('data-orig', sub.textContent); sub.hidden = true; }
-    $('#cudeck').innerHTML = deckHTML(); setupDeck();
+    $('#cudeck').innerHTML = deckHTML(); setupDeck(); restoreToday();
     CU_CARDS.slice(0, 8).forEach(function (c) { var im = new Image(); im.src = CU_DIR + c.f + '.webp'; });
     document.body.classList.add('rf-has-codes');
     if (!homeDoor()) { var n = 0, iv = setInterval(function () { if (homeDoor() || ++n > 40) clearInterval(iv); }, 250); }
