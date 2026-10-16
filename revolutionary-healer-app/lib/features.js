@@ -1,8 +1,9 @@
 // Per-feature switches for the refreshed app (Oct 15 2026). Each feature has its OWN pair of Vercel env vars:
-//   <KEY>            off (default / missing) | list
+//   <KEY>            off (default / missing) | list | on
 //   <KEY>_ALLOWLIST  comma-separated member emails (exact match, case-insensitive)
-// "list" = ONLY the emails on <KEY>_ALLOWLIST (no tester accounts, aliases or other lists). There is
-// deliberately no "on" mode yet. Rollback = set <KEY>=off (or delete it).
+// "list" = ONLY the emails on <KEY>_ALLOWLIST (no tester accounts, aliases or other lists).
+// "on"   = every signed-in member (any email); the allowlist is ignored (Oct 16 2026 all-member launch).
+// Rollback = set <KEY>=list (back to the allowlist) or off (or delete it).
 const norm = (e) => String(e || "").trim().toLowerCase();
 const list = (s) => String(s || "").split(",").map(norm).filter(Boolean);
 
@@ -18,8 +19,9 @@ export const FEATURES = {
 
 export function featureAllowed(key, email, env = process.env) {
   const mode = String(env[key] || "off").trim().toLowerCase();
-  if (mode !== "list") return false;
+  if (mode !== "list" && mode !== "on") return false;
   const me = norm(email);
+  if (mode === "on") return !!me && me.includes("@");
   return !!me && me.includes("@") && list(env[key + "_ALLOWLIST"]).includes(me);
 }
 
