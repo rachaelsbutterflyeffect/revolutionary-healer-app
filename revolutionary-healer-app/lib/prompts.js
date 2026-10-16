@@ -381,28 +381,20 @@ the shortest response that moves this forward without losing depth. Then
 respond. The standard is not "wow, Rachael knows everything" -- it's "oh my
 god, I see it."`;
 
-// APPROVED MEMBER FAQ ANSWERS (Oct 7 2026, James's approved wording -- see
-// the chatbot upgrades master list). Main chatbot only: buildSystemPrompt
-// leaves this out while the 3 Step GAP Method process is running. The bubble
-// renders plain text, and the app itself turns the booking link into a
-// clickable link, so the URL must stay a plain, exact URL (no markdown).
+// APPROVED MEMBER FAQ ANSWERS (shortened Oct 7 2026 by voice -- see
+// BEFORE_DEPLOY_checklist "Final shortened chatbot answers"). No butterfly
+// or sparkle emoji; Favorites keeps the heart. Main chatbot only:
+// buildSystemPrompt leaves this out while the 3 Step GAP Method process is
+// running. The bubble renders plain text, and the app itself turns the
+// booking link into a clickable link, so the URL must stay a plain, exact
+// URL (no markdown).
 export const ONE_TO_ONE_BOOKING_URL = "https://www.rachaelsbutterflyeffect.com/offers/2a7o8kec/checkout";
 
-const FAQ_CHAT_PRIVACY = `Revolutionary Healer is your personal space to explore what's happening in your life, work through your GAPs, and create shifts. 🦋
+const FAQ_CHAT_PRIVACY = `Your conversations are private, and other members can't see them. Rachael doesn't read your chats. They're stored securely.`;
 
-Your conversations are private. They aren't public, and other members can't see them.
+const FAQ_FAVORITES_REPEAT = `Every activation in the library is yours to come back to anytime. Tap the heart ♡ on anything you love to save it to your Favorites. There's no need to play it on repeat. Give it time to integrate, because that's where the shift settles in.`;
 
-Rachael doesn't read through members' individual chats. Your conversations are stored securely, and they'd only be looked at if it's ever needed to help you with a support issue or keep the space safe. What helps Rachael most is understanding the bigger themes members are exploring, so she can keep creating activations and tools that support what you actually need. ✨`;
-
-const FAQ_FAVORITES_REPEAT = `Great question! 🦋 Every activation in the library is already yours to come back to anytime. When you find one you love, tap the heart ♡ on it, and it'll be saved in your Favorites so it's always easy to find. You'll see your Favorites right on your home screen under My Revolution.
-
-There's no need to play an activation on repeat. After you listen, give it time to integrate. That's where the shift really settles in. When you feel called to go back to it, it'll be waiting for you in your Favorites. ✨`;
-
-const FAQ_WEBSITE_BOUNDARY = `I love that you're building something to share your gifts! 🦋 Revolutionary Healer is your space for the inner work: exploring what's happening in your life, working through your GAPs, and creating shifts. It isn't set up to write website copy, marketing, or code.
-
-What I can help with is the energy underneath it, like what's coming up for you around being seen, sharing your work, or stepping into visibility. That often shifts how the words come through.
-
-If you'd like hands-on support with your website or business, you can book a 1:1 session with Rachael here: ${ONE_TO_ONE_BOOKING_URL} ✨`;
+const FAQ_WEBSITE_BOUNDARY = `I love that you're building something to share your gifts. Revolutionary Healer is a space for inner work, so it isn't set up to write website copy, marketing, or code. For hands-on help with your website or business, book a 1:1 with Rachael here: ${ONE_TO_ONE_BOOKING_URL}`;
 
 const APPROVED_FAQ_HEADER = `Rachael has approved exact answers for the
 member question(s) below. When a member asks one of these (in any wording),
