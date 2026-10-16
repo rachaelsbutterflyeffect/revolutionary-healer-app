@@ -58,6 +58,35 @@
       var el = b.querySelector('[data-rf-count]'); if (el) el.textContent = n;
     });
   }
+  // ---------- Activations: Favourites at the top (preview, Rachael Oct 15) ----------
+  // Same source as My Revolution's favourites (getFavoriteActivationSlugs + the library's own cards, shown even when
+  // the library is paging/filtering them: the item 2 fix). Hidden with none; updates whenever a heart is toggled
+  // (classic calls renderFavoritesSections after every change). Favourites no longer show in My Revolution.
+  function renderFavSec() {
+    var sec = document.getElementById('rf-favsec'); if (!sec) return;
+    var slugs = []; try { slugs = getFavoriteActivationSlugs() || []; } catch (e) {}
+    var lib = document.getElementById('activation-library-grid'), grid = sec.querySelector('.rf-favgrid');
+    var cards = slugs.map(function (sl) { return lib ? lib.querySelector('[data-activation-slug="' + sl + '"]') : null; }).filter(Boolean);
+    grid.innerHTML = '';
+    cards.forEach(function (c) { var k = c.cloneNode(true); k.style.removeProperty('display'); grid.appendChild(k); });
+    var n = cards.length, lbl = n + (n === 1 ? ' ACTIVATION' : ' ACTIVATIONS');
+    sec.querySelector('[data-rf-favcount]').textContent = lbl;
+    sec.setAttribute('aria-label', 'Favourites · ' + n + (n === 1 ? ' activation' : ' activations'));
+    sec.hidden = n === 0;
+  }
+  window.rfRenderFavSec = renderFavSec;
+  var _rfFavs = window.renderFavoritesSections;
+  if (typeof _rfFavs === 'function') renderFavoritesSections = window.renderFavoritesSections = function () { var r = _rfFavs.apply(this, arguments); try { renderFavSec(); } catch (e) {} return r; };
+  // My Revolution: no favourites block (preview row, Favorites heading, See all); any old way to the favourites page
+  // (a #favorites-page link) opens the Activations page with the Favourites section instead.
+  (function () { var row = document.querySelector('#my-revolution .favorites-row'), sub = row && row.closest('.revolution-subsection'); if (sub) sub.classList.add('rf-gone'); })();
+  rhOpenFavorites = window.rhOpenFavorites = function () {
+    try { renderFavSec(); } catch (e) {}
+    showPage('activations-page');
+    var sec = document.getElementById('rf-favsec');
+    if (sec && !sec.hidden) setTimeout(function () { try { sec.scrollIntoView({ block: 'start' }); } catch (e) {} }, 30);
+  };
+  try { renderFavSec(); } catch (e) {}
   function libSection(cat) {
     var chip = document.querySelector('.category-chips .filter-chip[data-category="' + cat + '"]');
     window.__rhLibExpanded = false;
@@ -115,6 +144,17 @@
     else if (g === 'gap') startGap();
     else rfGo(g);
   });
+  // Oct 15 (Rachael): the GAP Method™ header uses the same "← Home" button as Today's Focus and the chat (no RH
+  // mark, no X; see gap.css). It closes GAP exactly as the X does (closeHeroGapEmbed: same resume-where-you-left-off
+  // session), then shows Home. The X stays in the page, hidden, so Esc/backdrop and the GAP code are unchanged.
+  (function () {
+    var tb = document.querySelector('#hero-gap-embed .topbar');
+    if (!tb || document.getElementById('rf-gap-home')) return;
+    var hb = document.createElement('button'); hb.type = 'button'; hb.id = 'rf-gap-home'; hb.className = 'rf-back rf-gap-home';
+    hb.setAttribute('aria-label', 'Close GAP Method and go Home'); hb.textContent = '← Home';
+    hb.onclick = function (e) { e.preventDefault(); e.stopPropagation(); try { closeHeroGapEmbed(); } catch (x) {} setTimeout(function () { showMain(); }, 0); };
+    tb.insertBefore(hb, tb.firstChild);
+  })();
   function startGap() {
     // Same entry as the live GAP Method button (it also resumes a pop-up closed mid-way).
     var b = document.getElementById('gap-method-starter-btn');
@@ -125,10 +165,10 @@
   // Tapping a chip removes the chips, the chip becomes the member's message, and the real chat API answers (streamed).
   // Spiritual Gifts opener + "I feel disconnected today": Rachael's own wording (Oct 15); the rest is the mock-up's.
   var LANES = {
-    gifts: ['Gifts & Spirit', "Let's explore your spiritual gifts. What are you looking at?", ['I feel disconnected today', 'Trusting my intuition', 'Seeing signs', 'Opening my channel', 'Not sure yet']],
-    money: ['Money & Receiving', "Let's look at your money energy. Where do you want to feel the shift?", ['Receiving more', 'Charging my worth', 'Calm around money', 'Clearing old stories']],
+    gifts: ['Spiritual Gifts', "Let's explore your spiritual gifts. What are you looking at?", ['I feel disconnected today', 'Trusting my intuition', 'Seeing signs', 'Opening my channel', 'Not sure yet']],
+    money: ['Money & Prosperity', "Let's look at your money energy. Where do you want to feel the shift?", ['Receiving more', 'Charging my worth', 'Calm around money', 'Clearing old stories']],
     energy: ['Energy & Frequency', "Let's talk about your energy. What kind of energy shift are you looking for today?", ['More energy', 'Calm my nervous system', 'Focus', 'Confidence', 'Clear the static']],
-    vis: ['Business & Impact', "Let's talk about being seen. What feels most true right now?", ["I'm ready to show up", 'Fear of judgment', 'Sharing my message', 'Growing my impact']]
+    vis: ['Visibility & Impact', "Let's talk about being seen. What feels most true right now?", ["I'm ready to show up", 'Fear of judgment', 'Sharing my message', 'Growing my impact']]
   };
   window.RF_LANES = LANES;
   document.addEventListener('click', function (e) {
@@ -348,6 +388,9 @@
     return s.statusClass === 'embodied' ? '<span class="rf-pill emb">Embodied</span>'
       : '<button type="button" class="rf-pill" data-rf-emb="' + esc(s.id) + '">Mark Embodied</button>';
   }
+  // Oct 15 (Rachael): an Embodied Shift can be moved back to Shifting (same progress_status field and
+  // PATCH /api/shifts route as Mark Embodied; "shifting" is the field's other value, as in classic).
+  function unembHtml(s) { return '<button type="button" class="rf-unemb" data-rf-unemb="' + esc(s.id) + '">Move back to Shifting</button>'; }
   var openId = null, fingerDown = false, pending = null;
   function cardHtml(s) {
     var a = actFor(s), open = String(openId) === String(s.id);
@@ -356,7 +399,7 @@
       xp = '<div class="rf-xp"><div class="rf-xth"' + (a && a.cover ? ' style="background-image:url(&quot;' + esc(a.cover) + '&quot;)"' : '') + ' aria-hidden="true">' + (a && a.cover ? '' : '✦') + '</div>' +
         '<div class="rf-xb"><div class="rf-xt">' + esc(a ? a.title : 'Activation Library') + '</div><div class="rf-xl">' + esc(a && a.desc ? shortText(a.desc) : 'Open the library to choose your activation.') + '</div></div>' +
         '<button type="button" class="rf-xlisten" data-rf-listen="' + esc(s.id) + '">▶ Listen</button></div>' +
-        '<div class="rf-xfoot"><button type="button" class="rf-del" data-rf-del="' + esc(s.id) + '">Delete Shift</button></div>';
+        '<div class="rf-xfoot">' + (s.statusClass === 'embodied' ? unembHtml(s) : '') + '<button type="button" class="rf-del" data-rf-del="' + esc(s.id) + '">Delete Shift</button></div>';
     }
     return '<div class="rf-orb" aria-hidden="true">✦</div><div class="bt"><div class="src">' + esc(s.method || 'GAP Method') + '</div><div class="nm">' + esc(s.identity) + '</div><div class="fr">Current Frequency: ' + esc(s.frequency) + '</div><div class="dt">' + esc(s.date) + (s.time ? ' · ' + esc(s.time) : '') + '</div>' +
       (!open && (a ? a.title : s.activation) ? '<div class="ac">' + esc(a ? a.title : s.activation) + '</div>' : '') +
@@ -366,6 +409,7 @@
     d.onclick = function (e) {
       var t = e.target;
       if (t.closest('[data-rf-emb]')) { e.stopPropagation(); embody(s.id, t.closest('[data-rf-emb]')); return; }
+      if (t.closest('[data-rf-unemb]')) { e.stopPropagation(); embody(s.id, t.closest('[data-rf-unemb]'), true); return; }
       if (t.closest('[data-rf-listen]')) { e.stopPropagation(); openAct(s); return; }
       if (t.closest('[data-rf-del]')) { e.stopPropagation(); cardDelete(s.id); return; }
       if (t.closest('.rf-pill')) return;
@@ -414,7 +458,9 @@
     if (!card.onclick) { card.onclick = function () {}; card.setAttribute('role', 'button'); card.style.cursor = 'pointer'; }
     var s = focusShift();
     var old = ff.querySelector('.rf-pill'); if (old) old.remove();
+    var oldU = ff.querySelector('.rf-unemb'); if (oldU) oldU.remove();
     if (s && s.statusClass !== 'embodied') { var w = document.createElement('div'); w.innerHTML = pillHtml(s); var p = w.firstChild; p.style.alignSelf = 'flex-start'; ff.insertBefore(p, fb); }
+    else if (s) { var wu = document.createElement('div'); wu.innerHTML = unembHtml(s); var u = wu.firstChild; u.style.alignSelf = 'center'; ff.insertBefore(u, fb); }
     var x = card.querySelector('.rf-fx');
     if (!x) {
       x = document.createElement('div'); x.className = 'rf-fx';
@@ -431,7 +477,7 @@
   document.addEventListener('click', function (e) {
     var card = e.target.closest && e.target.closest('#my-revolution [data-role="focus-card"]'); if (!card) return;
     var s = focusShift(); var f = e.target.closest('[data-rf-f]');
-    if (e.target.closest('[data-rf-emb]')) return; // the pill handler below
+    if (e.target.closest('[data-rf-emb]') || e.target.closest('[data-rf-unemb]')) return; // the pill handlers below
     e.preventDefault(); e.stopPropagation();
     if (f) {
       var k = f.getAttribute('data-rf-f');
@@ -463,20 +509,23 @@
   document.addEventListener('click', function (e) {
     var p = e.target.closest && e.target.closest('[data-rf-emb]');
     if (p && !p.closest('.rf-sbub')) { e.stopPropagation(); e.preventDefault(); embody(p.getAttribute('data-rf-emb'), p); }
+    var u = e.target.closest && e.target.closest('[data-rf-unemb]');
+    if (u && !u.closest('.rf-sbub')) { e.stopPropagation(); e.preventDefault(); embody(u.getAttribute('data-rf-unemb'), u, true); }
   });
-  function embody(id, btn) {
+  function embody(id, btn, back) { // back: move an Embodied Shift back to Shifting
     if (!id || btn.getAttribute('aria-busy') === 'true') return;
+    var label = btn.textContent;
     btn.setAttribute('aria-busy', 'true'); btn.disabled = true; btn.textContent = 'Saving…';
-    fetch('/api/shifts', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, email: RH_EMAIL, progressStatus: 'embodied' }) })
+    fetch('/api/shifts', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id, email: RH_EMAIL, progressStatus: back ? 'shifting' : 'embodied' }) })
       .then(function (r) { if (!r.ok) throw new Error('status ' + r.status); return r.json(); })
       .then(function () {
-        (window.SHIFTS || []).forEach(function (s) { if (String(s.id) === String(id)) { s.statusClass = 'embodied'; s.statusLabel = '\ud83d\udfe2 Embodied'; } });
+        (window.SHIFTS || []).forEach(function (s) { if (String(s.id) === String(id)) { s.statusClass = back ? 'shifting' : 'embodied'; s.statusLabel = back ? '\u25cf Shifting' : '\ud83d\udfe2 Embodied'; } });
         renderFocusAndShifts(window.SHIFTS || []);
         var cur = window.__rhCurrentShift; if (cur && String(cur.id) === String(id) && typeof renderShiftModal === 'function') renderShiftModal(cur);
       })
       .catch(function () {
-        btn.removeAttribute('aria-busy'); btn.disabled = false; btn.textContent = 'Mark Embodied';
-        rhSheet({ message: "We couldn't mark that Shift as Embodied. Please try again.", alert: true, okLabel: 'OK' });
+        btn.removeAttribute('aria-busy'); btn.disabled = false; btn.textContent = label;
+        rhSheet({ message: back ? "We couldn't move that Shift back to Shifting. Please try again." : "We couldn't mark that Shift as Embodied. Please try again.", alert: true, okLabel: 'OK' });
       });
   }
   // the enlarged Shift bubble (still reachable from older links): a visible Delete (the fixed, exact-id flow)

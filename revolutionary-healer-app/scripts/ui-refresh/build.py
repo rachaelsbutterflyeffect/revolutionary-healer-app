@@ -97,10 +97,10 @@ HOME = """
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
  </div>
  <div class="rf-sec rf-reveal"><h3>Ask Rachael Anything</h3><div class="rf-lanes">
-  <button type="button" class="rf-tile" data-rf-lane="gifts"><span class="ic" aria-hidden="true">👁</span><span><b>Gifts &amp; Spirit</b><br><small>What's calling you?</small></span></button>
-  <button type="button" class="rf-tile" data-rf-lane="money"><span class="ic" aria-hidden="true">✺</span><span><b>Money &amp; Receiving</b><br><small>Feel the shift</small></span></button>
-  <button type="button" class="rf-tile" data-rf-lane="energy"><span class="ic" aria-hidden="true">⚡</span><span><b>Energy &amp; Frequency</b><br><small>Tune your field</small></span></button>
-  <button type="button" class="rf-tile" data-rf-lane="vis"><span class="ic" aria-hidden="true">☀</span><span><b>Business &amp; Impact</b><br><small>Be seen</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="gifts"><span class="ic" aria-hidden="true">👁</span><span><b>Spiritual Gifts</b><br><small>Your gifts are ready for more.</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="money"><span class="ic" aria-hidden="true">✺</span><span><b>Money &amp; Prosperity</b><br><small>Ready for a money breakthrough?</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="energy"><span class="ic" aria-hidden="true">⚡</span><span><b>Energy &amp; Frequency</b><br><small>Change your energy. Change your day.</small></span></button>
+  <button type="button" class="rf-tile" data-rf-lane="vis"><span class="ic" aria-hidden="true">☀</span><span><b>Visibility &amp; Impact</b><br><small>Stop hiding your brilliance.</small></span></button>
  </div></div>
  <div class="rf-sec rf-reveal"><h3>Go Deeper</h3><div class="rf-deeps">
   <button type="button" class="rf-deep" data-rf-go="lib"><span aria-hidden="true">♫</span>Activation Library</button>
@@ -247,6 +247,15 @@ once('''    var target = 97 * (1 - Math.exp(-t / 32)); // QA Oct 14: slower curv
     // keeps creeping toward 97% so a slow reading never looks stalled; gapAnComplete() finishes it on the result.
     var target = Math.min(97, 90 * (1 - Math.exp(-t / 7)) + 7 * (1 - Math.exp(-t / 90)));''', 'qa gap pace')
 once('''el.textContent = sec >= 10 ? ('Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')) : ''; }''', '''el.textContent = 'Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); } // QA Oct 15: timer shows from the start''', 'qa gap timer')
+# ---- Activations: Favourites section at the top (preview, Rachael Oct 15). Hidden with no favourites; filled by
+# refresh.js (renderFavSec) from the same favourites source as My Revolution used. To swap the art, replace the
+# file or change FAV_ART (path, crop focus); it uses the category sections' card treatment (.rf-lsec).
+FAV_ART = ('/images/sections/sec-favourites.webp', '58% 18%')
+FAVSEC = ('<section class="rf-favsec" id="rf-favsec" hidden aria-label="Favourites">\n'
+  '  <div class="rf-favhead"><span class="bgc" style="background-image:url(\'%s\');background-position:%s" aria-hidden="true"></span>'
+  '<span class="in"><b>Favourites</b><small data-rf-favcount></small></span></div>\n'
+  '  <div class="card-grid rf-favgrid"></div>\n</section>\n') % FAV_ART
+once('<div class="rf-lsecs" id="rf-lsecs">', FAVSEC + '<div class="rf-lsecs" id="rf-lsecs">', 'favsec')
 s = s.replace('>← Back to My Revolution</a>', '>← My Revolution</a>').replace('>← Back to Activations</a>', '>← Activations</a>').replace('>← Back to Home</a>', '>← Home</a>')
 
 # ---- end of body: GAP look, nav, refresh script ----
