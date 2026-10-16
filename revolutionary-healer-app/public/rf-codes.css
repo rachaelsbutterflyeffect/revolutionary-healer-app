@@ -1,0 +1,83 @@
+/* Code Upgrade daily card pull (refresh only; loaded only for members with codePull). Rules below the marker are ported verbatim from mock-up r17 (feat/wow-mockup 6ffc46b), scoped to #rf-codes. */
+body.rf.rf-has-codes[data-rf="focus"] #rf-codes { display:block !important; padding-top:0; }
+/* Today's Focus as one screen: two matching section labels (same style as Home's), no second "Today's Focus" eyebrow on the Shift card. */
+#rf-codes .rf-cu-h { margin-top:26px; }
+#rf-codes .rf-cu-h > h3 { justify-content:flex-start; }
+#rf-codes .rf-cu-h2 { margin-top:44px; margin-bottom:-4px; }
+body.rf.rf-has-codes[data-rf="focus"] #my-revolution .focus-card-label { display:none !important; }
+body.rf.rf-has-codes[data-rf="focus"] #my-revolution .focus-card, body.rf.rf-has-codes[data-rf="focus"] #my-revolution [data-role="focus-empty"] { margin-top:14px; }
+/* Home: three doors, all the same size. Phones (and narrow tablets) stack; wide screens get a row of three equal cards. */
+body.rf .rf-doors3 > .rf-door .txt { min-height:3.45em; display:flex; align-items:center; }
+@media (min-width:1100px) {
+  body.rf .rf-doors3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:16px; align-items:stretch; }
+  body.rf .rf-doors3 > h3 { grid-column:1 / -1; }
+  body.rf .rf-doors3 > .rf-door { margin-bottom:0; flex-direction:column; align-items:flex-start; gap:14px; padding:22px 20px; min-height:200px; }
+  body.rf .rf-doors3 > .rf-door .arr { margin:auto 0 0 0; }
+  body.rf .rf-doors3 > .rf-door .txt { align-items:flex-start; min-height:0; }
+}
+#rf-codes .cudoor { -webkit-tap-highlight-color:transparent; } #rf-codes .dcard { -webkit-tap-highlight-color:transparent; }
+/* ---- ported from mock-up r17 ---- */
+#rf-codes{--bg:#06080b;--gold:#e8c873;--gold2:#fff1c4;--goldd:#b8913f;--teal:#3fd6c8;--white:#fdfbf5;--glass:rgba(255,255,255,.06);--line:rgba(232,200,115,.35)}
+#rf-codes .shine{background:linear-gradient(100deg,var(--goldd) 0%,var(--gold) 30%,#fffbe8 48%,var(--gold) 62%,var(--goldd) 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:mk-sh 6s linear infinite;filter:drop-shadow(0 0 18px rgba(255,214,130,.45))}
+#rf-codes .divider{height:1px;width:120px;margin:18px auto;background:linear-gradient(90deg,transparent,var(--gold),transparent);box-shadow:0 0 12px var(--gold)}
+#rf-codes .door{position:relative;display:flex;align-items:center;gap:16px;padding:20px 18px;margin-bottom:14px;border-radius:24px;cursor:pointer;overflow:hidden;
+background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.03));border:1px solid rgba(255,236,190,.28);backdrop-filter:blur(16px);box-shadow:0 10px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.25);transition:transform .2s}
+#rf-codes .door:active{transform:scale(.97)}
+#rf-codes .door:before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,250,230,.22) 50%,transparent 70%);transform:translateX(-120%);animation:mk-glint 7s ease-in-out infinite}
+#rf-codes .door:nth-child(3):before{animation-delay:1.2s}
+#rf-codes .door:nth-child(4):before{animation-delay:2.4s}
+#rf-codes .orb{flex:none;width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:22px;color:#1a1305;background:radial-gradient(circle at 35% 30%,#fffbe8,var(--gold) 45%,var(--goldd));box-shadow:0 0 26px rgba(255,214,130,.7)}
+#rf-codes .orb.t{background:radial-gradient(circle at 35% 30%,#fffbe8,var(--gold) 45%,var(--goldd));box-shadow:0 0 22px rgba(255,214,130,.55),0 0 30px rgba(63,214,200,.22)}
+#rf-codes .door .txt{font-family:'Cormorant Garamond';font-size:23px;line-height:1.15;font-weight:600;color:var(--white)}
+#rf-codes .door .arr{margin-left:auto;color:var(--gold);font-size:20px}
+#rf-codes .sub{text-align:center;font-family:'Cormorant Garamond';font-size:20px;color:#fffc}
+#rf-codes .code{font-family:Cinzel;font-size:46px;text-align:center;margin:10px 0}
+#rf-codes .codepop{animation:mk-codepop 1.2s cubic-bezier(.2,.9,.3,1.2) both,mk-sh 6s linear infinite}
+#rf-codes .btn-t{all:unset;cursor:pointer;color:#fffb;font-size:14px;padding:8px 0}
+#rf-codes .q-label{font-size:12px;letter-spacing:.14em;color:var(--teal);margin-bottom:8px}
+#rf-codes .cudoor:focus-visible{outline:1px solid var(--gold2);outline-offset:3px}
+#rf-codes .deckstage{position:relative;height:330px;margin:4px -20px 0;perspective:1400px}
+#rf-codes .deckhint{text-align:center;font-family:'Cormorant Garamond';font-size:21px;color:#fff;margin-top:6px}
+#rf-codes .deckhint b{color:var(--gold2);font-weight:600}
+#rf-codes .dcard{position:absolute;left:50%;top:40px;width:128px;aspect-ratio:2/3;margin-left:-64px;border-radius:12px;cursor:pointer;transform-style:preserve-3d;touch-action:pan-y;
+transform:translateX(var(--x)) translateY(var(--y)) scale(1) rotate(var(--r)) rotateY(0deg);transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .5s,filter .3s;animation:mk-bob 5s ease-in-out infinite;animation-delay:var(--d)}
+#rf-codes .dcard .f{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;background-size:cover;background-position:center;box-shadow:0 0 26px rgba(255,214,130,.45),0 0 50px rgba(63,214,200,.2)}
+#rf-codes .dcard .fr{transform:rotateY(180deg)}
+@media (hover:hover){#rf-codes .dcard:not(.pulled):hover{filter:brightness(1.15)}}
+#rf-codes .dcard.pulled{filter:none!important}
+#rf-codes .dcard.gone{opacity:0;pointer-events:none}
+#rf-codes .dcard.pulled{animation:none;z-index:5;transform:translateX(0) translateY(-10px) scale(1.65) rotate(0deg) rotateY(0deg)}
+#rf-codes .dcard.flip{transform:translateX(0) translateY(-10px) scale(1.65) rotate(0deg) rotateY(180deg)}
+#rf-codes .deckstage.done{height:420px}
+#rf-codes .deckstage.done .dcard.flip{top:70px}
+#rf-codes .spark{position:absolute;left:50%;top:50%;width:6px;height:6px;border-radius:50%;pointer-events:none;background:#fff1c4;box-shadow:0 0 10px #ffd98a;animation:mk-burst 1.3s ease-out forwards}
+#rf-codes .spark.t{background:#c9fff8;box-shadow:0 0 10px #3fd6c8}
+#rf-codes .chev{all:unset;box-sizing:border-box;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;width:64px;height:52px;margin:-96px auto 10px;padding-top:6px;position:relative;z-index:6}
+@media (max-height:700px){#rf-codes .chev{margin-top:-84px}}
+#rf-codes .chev i{display:block;width:14px;height:14px;border-right:2px solid var(--gold);border-bottom:2px solid var(--gold);transform:rotate(45deg);margin-top:-6px;opacity:.3;animation:mk-chev 1.6s ease-in-out infinite}
+#rf-codes .chev i:nth-child(2){animation-delay:.2s}
+#rf-codes .chev i:nth-child(3){animation-delay:.4s}
+#rf-codes .cuup{margin:22px 0 2px;padding:0 4px;text-align:center;font-family:Cinzel;font-weight:600;font-size:26px;line-height:1.25;letter-spacing:.08em;text-transform:uppercase;background:linear-gradient(100deg,var(--goldd) 0%,var(--gold) 30%,#fffbe8 48%,var(--gold) 62%,var(--goldd) 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:mk-sh 6s linear infinite;filter:drop-shadow(0 0 14px rgba(255,214,130,.45))}
+#rf-codes .cusubt{font-family:'Cormorant Garamond';font-size:18px;font-weight:600;color:rgba(253,251,245,.82);margin-bottom:16px}
+#rf-codes .cudoors{text-align:left}
+#rf-codes .cudoor .txt{font-size:21px}
+#rf-codes .cudoor .arr{transition:transform .3s}
+#rf-codes .cudoor.open .arr{transform:rotate(180deg)}
+#rf-codes .cudoor.open{border-color:rgba(255,236,190,.5);box-shadow:0 14px 44px rgba(0,0,0,.45),0 0 34px rgba(255,214,130,.24)}
+#rf-codes .cudoor.done .txt{color:var(--gold2)}
+#rf-codes .cudoor.done{cursor:default}
+#rf-codes .cudrop{margin:-6px 4px 14px;padding:4px 16px 14px;border-radius:0 0 22px 22px;border-top:1px solid rgba(255,236,190,.16);animation:mk-pop .4s;transform-origin:top center}
+#rf-codes .cudrop[hidden]{display:none}
+#rf-codes .cudrop p.rd{text-align:left;font-size:18px;margin:10px 0 0}
+#rf-codes .codeinfo{text-align:center;animation:mk-pop .8s}
+#rf-codes .codeinfo .num{font-family:Cinzel;letter-spacing:.3em;color:var(--teal);font-size:13px}
+#rf-codes .codeinfo p.rd{font-family:'Cormorant Garamond';font-size:19px;line-height:1.5;color:#fff;margin:12px 4px 0}
+@media (max-height:700px){#rf-codes .dcard{width:110px;margin-left:-55px}#rf-codes .deckstage{height:290px}#rf-codes .deckstage.done{height:370px}}
+@media (prefers-reduced-motion:reduce){#rf-codes .dcard,#rf-codes .spark{animation:none!important;transition:none!important}}
+@keyframes mk-sh{from{background-position:150% 0}to{background-position:-100% 0}}
+@keyframes mk-glint{0%,60%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
+@keyframes mk-pop{from{opacity:0;transform:translateY(10px) scale(.95)}}
+@keyframes mk-codepop{from{opacity:0;transform:scale(.6);letter-spacing:.5em}}
+@keyframes mk-bob{50%{margin-top:-8px}}
+@keyframes mk-burst{to{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+@keyframes mk-chev{0%,100%{opacity:.25}50%{opacity:1}}

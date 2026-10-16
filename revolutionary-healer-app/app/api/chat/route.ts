@@ -39,6 +39,8 @@ import {
 } from "@/lib/memory";
 import { placeholderChatTitle, titleActionForMessage } from "@/lib/chatTitles";
 import { toCachedSystemBlocks } from "@/lib/promptCache";
+import { withCcmInstructions } from "@/lib/ccm-chatbot-instructions";
+import { ccmTrackingEnabled, getCcmStatus, recordOutcome, isChatCcmDecline, countActivityDays, CCM_CARD_OPENER, ccmStatusPromptNote } from "@/lib/ccm-tracking";
 import {
   chatStreamingAllowed,
   createSseChannel,
@@ -146,6 +148,10 @@ export async function POST(req: NextRequest) {
     // a reply as it arrives. Ignored unless the CHAT_STREAMING switch allows
     // it for this member (see lib/chatStreaming.js).
     stream: streamRequested = false,
+    // CCM card (Oct 14 2026): true on the first message after "Tell me more",
+    // so the opener the member saw is part of the conversation. Ignored unless
+    // CCM_TRACKING is on.
+    ccmCardOpener = false,
   } = await req.json();
 
   if (!email || !focusAreaSlug || !message) {
@@ -232,6 +238,9 @@ export async function POST(req: NextRequest) {
     // prompt is identical to before this change.
     faqTopics: isGapMethodProcess ? [] : detectFaqTopics(message),
   });
+  // Clear Channel Method chatbot education (Oct 14 2026): static text placed
+  // before the UPSELL paragraph, so it stays in the cached prefix.
+  systemPrompt = withCcmInstructions(systemPrompt);
   if (embodimentShift) {
     const f = embodimentShift.fields;
     systemPrompt += `\n\n=== SHIFT PROGRESS CHECK-IN (Update Progress button) ===\nThe member clicked "Update Progress" on this Shift: ${f.divine_identity_name || "their Shift"} / ${f.current_frequency || ""}. GAP: ${f.gap_explanation || ""}. Recommended Activation: ${f.recommended_activation || ""}.\n\nThey were just greeted with: "You're ready to make this shift embodied — tell me, what's your main shift, and what's making you feel like this is fully embodied?" Continue that conversation.\n\nNever mark a Shift Embodied simply because the member listened to an activation. Watch for meaningful evidence the contradiction is no longer driving the same behavior -- e.g. responding differently to the old trigger, taking the action they previously avoided, no longer reopening the same decision, speaking or showing up differently, a change in the repeated pattern, or feeling the old thought/emotion without automatically following the old behavior.\n\nThen ask them directly: "Do you feel like this shift is complete?"\n\nIf they say yes: tell them plainly, using almost exactly this phrase -- "I've updated your card to mark this as Embodied" -- and then celebrate them thoroughly, reflecting back where they started and how far they've come.\n\nIf they say no, or the pattern still feels active: don't say anything about updating their card -- keep supporting them, and let them know it's okay to keep working with this Shift.`;
@@ -241,6 +250,24 @@ export async function POST(req: NextRequest) {
     role: m.fields.role === "assistant" ? "assistant" : "user",
     content: m.fields.message_text || "",
   }));
+
+  // Clear Channel Method tracking (CCM_TRACKING only; off = no change at all).
+  if (ccmTrackingEnabled()) {
+    try {
+      if (ccmCardOpener === true && !historyForClaude.length) {
+        historyForClaude.push({ role: "assistant", content: CCM_CARD_OPENER });
+        await createMessage({ chatId, email, role: "assistant", text: CCM_CARD_OPENER });
+      }
+      const prevAssistant = [...historyForClaude].reverse().find((m: any) => m.role === "assistant")?.content || "";
+      let ccmRec: any = await getCcmStatus(email);
+      if (!ccmRec?.fields?.purchased && isChatCcmDecline(message, { previousAssistant: prevAssistant, fromCard: ccmCardOpener === true })) {
+        ccmRec = await recordOutcome(email, "declined", { activityDayCount: await countActivityDays(email) });
+      }
+      systemPrompt += ccmStatusPromptNote(ccmRec?.fields);
+    } catch (err: any) {
+      console.error("ccm chat tracking failed", err?.message);
+    }
+  }
 
   // Persist the member's message before calling Claude so it's never lost
   // even if the model call itself fails.

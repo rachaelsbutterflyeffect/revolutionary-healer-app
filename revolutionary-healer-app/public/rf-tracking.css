@@ -1,0 +1,8 @@
+/* Stat row from mock-up r17 (.stat): three glass cards, Cinzel gold numbers. */
+body.rf .rf-stats { display:flex; gap:10px; margin:22px auto 0; max-width:520px; }
+body.rf .rf-stat { flex:1; text-align:center; padding:16px 8px 14px; border-radius:20px; border:1px solid rgba(255,236,190,.22); background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035)); box-shadow:0 10px 30px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.18); }
+body.rf .rf-stat b { display:block; font-family:Cinzel,serif; font-size:28px; line-height:1.1; color:var(--rf-gold); font-weight:600; }
+body.rf .rf-stat small { display:block; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#fffc; margin-top:4px; }
+body.rf .rf-stat.zero b { font-size:24px; color:var(--rf-gold2,#fff1c4); text-shadow:0 0 14px rgba(255,214,130,.55); }
+body.rf .rf-stat-start { display:block; font-style:normal; font-size:10.5px; color:var(--rf-teal); margin-top:3px; }
+body.rf .rf-stat-start[hidden] { display:none; }

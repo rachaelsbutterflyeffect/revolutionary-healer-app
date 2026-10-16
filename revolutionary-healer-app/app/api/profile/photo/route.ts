@@ -12,6 +12,12 @@ import { getMemberByEmail, normalizeEmail } from "@/lib/airtable";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
+// Oct 15 2026: the Members table + profile_photo field ids differ per Airtable base (the TEST base is a
+// copy with new ids). Env overrides let a preview point at its own base; the defaults are production's
+// ids, so production behaviour is byte-for-byte unchanged when these are not set.
+const MEMBERS_TABLE_ID = () => process.env.AIRTABLE_MEMBERS_TABLE_ID || "tblst1afWTBfy5OQC";
+const PHOTO_FIELD_ID = () => process.env.AIRTABLE_PHOTO_FIELD_ID || "flda1tG8E0chadCwk";
+
 function airtableCreds() {
   const apiKey = process.env.AIRTABLE_API_KEY;
   const baseId = process.env.AIRTABLE_BASE_ID;
@@ -30,7 +36,7 @@ export async function GET(req: NextRequest) {
     if (!member) return NextResponse.json({ error: "Member not found." }, { status: 404 });
 
     const photo = (member.fields as any).profile_photo;
-    const url = Array.isArray(photo) && photo[0]?.url ? photo[0].url : null;
+    const url = Array.isArray(photo) && photo.length && photo[photo.length - 1]?.url ? photo[photo.length - 1].url : null; // newest
     return NextResponse.json({ url });
   } catch (err) {
     console.error("GET /api/profile/photo failed", err);
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
 
     const { apiKey, baseId } = airtableCreds();
     const res = await fetch(
-      `https://content.airtable.com/v0/${baseId}/${member.id}/flda1tG8E0chadCwk/uploadAttachment`,
+      `https://content.airtable.com/v0/${baseId}/${member.id}/${PHOTO_FIELD_ID()}/uploadAttachment`,
       {
         method: "POST",
         headers: {
@@ -80,8 +86,19 @@ export async function POST(req: NextRequest) {
     }
 
     const data = await res.json();
-    const photo = data?.fields?.flda1tG8E0chadCwk;
-    const url = Array.isArray(photo) && photo[0]?.url ? photo[0].url : null;
+    const photo = data?.fields?.[PHOTO_FIELD_ID()] ?? data?.fields?.profile_photo;
+    // uploadAttachment APPENDS: a new photo used to land behind the old one, which kept showing. Keep only
+    // the newest attachment (best effort) and return its URL.
+    const list = Array.isArray(photo) ? photo : [];
+    const newest = list.length ? list[list.length - 1] : null;
+    if (list.length > 1 && newest?.id) {
+      await fetch(`https://api.airtable.com/v0/${baseId}/${MEMBERS_TABLE_ID()}/${member.id}`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: { profile_photo: [{ id: newest.id }] } }),
+      }).catch((e) => console.error("Airtable keep-newest profile_photo failed", e));
+    }
+    const url = newest?.url || null;
     return NextResponse.json({ ok: true, url });
   } catch (err) {
     console.error("POST /api/profile/photo failed", err);
@@ -99,7 +116,7 @@ export async function DELETE(req: NextRequest) {
     if (!member) return NextResponse.json({ error: "Member not found." }, { status: 404 });
 
     const { apiKey, baseId } = airtableCreds();
-    const res = await fetch(`https://api.airtable.com/v0/${baseId}/tblst1afWTBfy5OQC/${member.id}`, {
+    const res = await fetch(`https://api.airtable.com/v0/${baseId}/${MEMBERS_TABLE_ID()}/${member.id}`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${apiKey}`,

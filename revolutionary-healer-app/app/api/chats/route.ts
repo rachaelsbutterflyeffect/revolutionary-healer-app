@@ -4,7 +4,7 @@
 // kept for backward compat but are unused by the frontend as of this
 // rewrite -- the ChatSessions/ChatMessages tables are the real store now).
 import { NextRequest, NextResponse } from "next/server";
-import { createChatSession, listChatSessionsByEmail } from "@/lib/airtable";
+import { createChatSession, listChatSessionsForView } from "@/lib/airtable";
 import { placeholderChatTitle } from "@/lib/chatTitles";
 
 function serializeSession(record: any) {
@@ -27,8 +27,17 @@ export async function GET(req: NextRequest) {
   if (!email) {
     return NextResponse.json({ error: "email is required" }, { status: 400 });
   }
-  const records = await listChatSessionsByEmail(email, { includeArchived });
-  return NextResponse.json({ chats: records.map(serializeSession) });
+  // Optional ?limit=N (1-99): newest N only, plus hasMore. Without it the
+  // response is the full list, exactly as before (classic app.html relies on it).
+  const limitRaw = parseInt(req.nextUrl.searchParams.get("limit") || "", 10);
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 99) : 0;
+  const t0 = Date.now();
+  const { records, hasMore } = await listChatSessionsForView(email, { includeArchived, limit });
+  const ms = Date.now() - t0;
+  const res = NextResponse.json(limit ? { chats: records.map(serializeSession), hasMore } : { chats: records.map(serializeSession) });
+  res.headers.set("Server-Timing", `airtable;dur=${ms}`);
+  res.headers.set("Cache-Control", "private, no-store");
+  return res;
 }
 
 export async function POST(req: NextRequest) {

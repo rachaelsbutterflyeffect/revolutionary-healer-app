@@ -1,0 +1,124 @@
+/* ===== GAP Method pop-up: r16 look (ported from the mock-up restyle; look only) =====
+   Same selectors as the mock-up, which target the live markup. Copy, order and behaviour unchanged. */
+:root { --mk-bg: #06080b; --mk-gold: #e8c873; --mk-gold2: #fff1c4; --mk-goldd: #b8913f; --mk-teal: #3fd6c8; }
+html body.rf #gm-backdrop { background: radial-gradient(90% 60% at 50% 0%, rgba(232,200,115,.10), transparent 70%), radial-gradient(70% 50% at 50% 100%, rgba(63,214,200,.05), transparent 70%), rgba(4,5,7,.9) !important; }
+html body.rf #gm-backdrop::after { background: conic-gradient(from 200deg at 50% -10%, transparent 0deg, rgba(232,200,115,.07) 18deg, transparent 34deg, rgba(232,200,115,.05) 52deg, transparent 70deg, rgba(63,214,200,.03) 95deg, transparent 120deg, transparent 360deg) !important; }
+html body.rf #gm-backdrop .gm-embers span, html body.rf #gm-backdrop .gm-embers span:nth-child(even) { background: #fff1c4 !important; box-shadow: 0 0 10px 3px rgba(232,200,115,.5) !important; }
+html body.rf #hero-gap-embed.gm-modal { background: radial-gradient(110% 45% at 50% -8%, rgba(232,200,115,.12), transparent 62%), radial-gradient(80% 40% at 50% 108%, rgba(63,214,200,.06), transparent 65%), linear-gradient(180deg, #0b0c10 0%, #07090c 55%, #050608 100%) !important; border: 1px solid rgba(232,200,115,.5) !important; color: #fdfbf5 !important; box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 0 50px rgba(232,200,115,.16), 0 0 120px rgba(63,214,200,.06), 0 40px 120px rgba(0,0,0,.75) !important; }
+@keyframes mk-glow { 0%,100% { box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 0 40px rgba(232,200,115,.12), 0 0 110px rgba(63,214,200,.05), 0 40px 120px rgba(0,0,0,.75); } 50% { box-shadow: 0 0 0 1px rgba(0,0,0,.6), 0 0 70px rgba(232,200,115,.24), 0 0 140px rgba(63,214,200,.08), 0 40px 120px rgba(0,0,0,.75); } }
+html body.rf #hero-gap-embed.gm-modal::after { border-color: rgba(232,200,115,.16) !important; }
+/* header: gold foil title in Cinzel caps, thin gold divider */
+html body.rf #hero-gap-embed.gm-modal .topbar { background: linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,0)) !important; }
+html body.rf #hero-gap-embed.gm-modal .topbar::after { background: linear-gradient(90deg, transparent, var(--mk-goldd), var(--mk-gold2), var(--mk-goldd), transparent) !important; background-size: 220% 100% !important; height: 1px !important; }
+html body.rf #hero-gap-embed.gm-modal .eyebrow-top { font-family: Cinzel, serif !important; font-weight: 600 !important; text-transform: uppercase; background: linear-gradient(100deg, var(--mk-goldd) 0%, var(--mk-gold) 30%, #fffbe8 48%, var(--mk-gold) 62%, var(--mk-goldd) 100%) !important; background-size: 250% 100% !important; -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; filter: drop-shadow(0 0 14px rgba(255,214,130,.4)); }
+html body.rf #hero-gap-embed.gm-modal .eyebrow-top .tm { color: var(--mk-gold) !important; -webkit-text-fill-color: var(--mk-gold) !important; }
+html body.rf #hero-gap-embed.gm-modal .day-tabs::before { background: linear-gradient(90deg, transparent, rgba(232,200,115,.6) 15%, rgba(232,200,115,.6) 85%, transparent) !important; }
+html body.rf #hero-gap-embed.gm-modal .day-tab { font-family: Cinzel, serif !important; color: rgba(253,251,245,.55) !important; }
+html body.rf #hero-gap-embed.gm-modal .day-tab::before { background: #06080b !important; border-color: rgba(232,200,115,.75) !important; }
+html body.rf #hero-gap-embed.gm-modal .day-tab.active { color: var(--mk-gold2) !important; }
+html body.rf #hero-gap-embed.gm-modal .day-tab.active::before { background: linear-gradient(135deg, #fffbe8, var(--mk-gold)) !important; box-shadow: 0 0 12px rgba(232,200,115,.9), 0 0 26px rgba(232,200,115,.45) !important; }
+html body.rf #hero-gap-embed.gm-modal .day-tab .check, html body.rf #hero-gap-embed.gm-modal .day-tab.active .check { color: var(--mk-gold) !important; }
+html body.rf #hero-gap-embed.gm-modal .access-note { color: rgba(232,200,115,.78) !important; }
+html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { background: rgba(6,8,11,.85) !important; border: 1px solid rgba(232,200,115,.6) !important; color: var(--mk-gold2) !important; box-shadow: 0 0 14px rgba(232,200,115,.25) !important; }
+html body.rf #hero-gap-embed.gm-modal .gm-start-over:not([hidden]) { background: rgba(6,8,11,.6) !important; border: 1px solid rgba(232,200,115,.55) !important; color: var(--mk-gold2) !important; font-family: Cinzel, serif !important; }
+/* headlines + labels */
+html body.rf #hero-gap-embed.gm-modal h1, html body.rf #hero-gap-embed.gm-modal #d1-intro h1, html body.rf #hero-gap-embed.gm-modal #view-day3 h1, html body.rf #hero-gap-embed.gm-modal .gap-an-title { font-family: Cinzel, serif !important; font-weight: 600 !important; text-transform: uppercase; letter-spacing: .06em !important; background: linear-gradient(100deg, var(--mk-goldd) 0%, var(--mk-gold) 30%, #fffbe8 48%, var(--mk-gold) 62%, var(--mk-goldd) 100%) !important; background-size: 250% 100% !important; -webkit-background-clip: text !important; background-clip: text !important; color: transparent !important; }
+html body.rf #hero-gap-embed.gm-modal .q-text, html body.rf #hero-gap-embed.gm-modal #d1-domain .q-text, html body.rf #hero-gap-embed.gm-modal #r-transition-text { font-family: "Cormorant Garamond", Georgia, serif !important; color: #fdfbf5 !important; font-weight: 500 !important; }
+html body.rf #hero-gap-embed.gm-modal .eyebrow, html body.rf #hero-gap-embed.gm-modal .q-label { font-family: Cinzel, serif !important; color: var(--mk-gold) !important; }
+html body.rf #hero-gap-embed.gm-modal .card.center .eyebrow::before, html body.rf #hero-gap-embed.gm-modal .card.center .eyebrow::after { background: linear-gradient(90deg, transparent, var(--mk-gold)) !important; }
+html body.rf #hero-gap-embed.gm-modal p.copy { color: rgba(253,251,245,.78) !important; }
+html body.rf #hero-gap-embed.gm-modal #d1-intro p.copy[style] { color: rgba(232,200,115,.85) !important; }
+html body.rf #hero-gap-embed.gm-modal .quote-block { border-left-color: var(--mk-gold) !important; color: rgba(253,251,245,.74) !important; }
+/* options */
+html body.rf #hero-gap-embed.gm-modal .opt, html body.rf #hero-gap-embed.gm-modal .domain-chip { background: rgba(255,255,255,.04) !important; border-color: rgba(232,200,115,.3) !important; color: #fdfbf5 !important; }
+html body.rf #hero-gap-embed.gm-modal .opt.selected, html body.rf #hero-gap-embed.gm-modal .domain-chip.selected { background: linear-gradient(135deg, rgba(232,200,115,.24), rgba(232,200,115,.08)) !important; border-color: var(--mk-gold2) !important; box-shadow: 0 0 0 1px rgba(255,241,196,.45) inset, 0 0 22px rgba(232,200,115,.28) !important; }
+html body.rf #hero-gap-embed.gm-modal .domain-chip .tick { color: var(--mk-gold2) !important; }
+html body.rf #hero-gap-embed.gm-modal .dot { background: rgba(255,255,255,.14) !important; }
+html body.rf #hero-gap-embed.gm-modal .dot.done { background: var(--mk-goldd) !important; }
+html body.rf #hero-gap-embed.gm-modal .dot.now { background: var(--mk-gold2) !important; box-shadow: 0 0 8px rgba(232,200,115,.7); }
+/* buttons */
+html body.rf #hero-gap-embed.gm-modal .btn-gold, html body.rf #hero-gap-embed.gm-modal .gap-chat-input-row button { background: linear-gradient(180deg, #fff1c4 0%, #e8c873 45%, #b8913f 100%) !important; color: #0a0a0a !important; font-family: Cinzel, serif !important; font-weight: 600 !important; }
+html body.rf #hero-gap-embed.gm-modal .btn-outline { border-color: var(--mk-gold) !important; color: var(--mk-gold2) !important; background: transparent !important; font-family: Cinzel, serif !important; }
+html body.rf #hero-gap-embed.gm-modal .btn-text { color: rgba(253,251,245,.6) !important; }
+html body.rf #hero-gap-embed.gm-modal .card .row-between { background: linear-gradient(180deg, rgba(5,6,8,0), rgba(5,6,8,.92) 30%, #050608) !important; }
+/* Step 2 chat */
+html body.rf #hero-gap-embed.gm-modal .bubble.bot { background: rgba(255,255,255,.045) !important; border: 1px solid rgba(232,200,115,.28) !important; color: #fdfbf5 !important; box-shadow: 0 0 18px rgba(63,214,200,.04); }
+html body.rf #hero-gap-embed.gm-modal .bubble.user { background: linear-gradient(180deg, #fff1c4, #e8c873) !important; color: #0a0a0a !important; }
+html body.rf #hero-gap-embed.gm-modal .gap-chat-input-row textarea { background: rgba(0,0,0,.5) !important; border-color: rgba(232,200,115,.32) !important; color: #fdfbf5 !important; }
+html body.rf #hero-gap-embed.gm-modal .gap-chat-input-row textarea:focus { border-color: var(--mk-gold2) !important; box-shadow: 0 0 0 3px rgba(232,200,115,.14) !important; }
+html body.rf #hero-gap-embed .bubble.bot .gap-try-again { border-color: rgba(232,200,115,.7) !important; background: rgba(232,200,115,.14) !important; color: var(--mk-gold2) !important; }
+/* Step 3 cards */
+html body.rf #hero-gap-embed.gm-modal .activation-card, html body.rf #hero-gap-embed.gm-modal .reveal-block, html body.rf #hero-gap-embed.gm-modal .reading-card { background: linear-gradient(160deg, rgba(232,200,115,.07), rgba(255,255,255,.02) 45%, rgba(0,0,0,.3)) !important; border: 1px solid rgba(232,200,115,.42) !important; box-shadow: 0 0 24px rgba(63,214,200,.035) inset; }
+html body.rf #hero-gap-embed.gm-modal #view-day3 #d3-meta { color: var(--mk-gold2) !important; }
+html body.rf #hero-gap-embed.gm-modal #view-day3 #d3-gap-contradiction, html body.rf #hero-gap-embed.gm-modal #view-day3 .activation-card h3 { color: #fdfbf5 !important; }
+html body.rf #hero-gap-embed.gm-modal .activation-tag { color: var(--mk-gold) !important; border-color: rgba(232,200,115,.45) !important; background: rgba(232,200,115,.08) !important; }
+html body.rf #hero-gap-embed.gm-modal .activation-meta { color: rgba(253,251,245,.6) !important; }
+html body.rf #view-day3.gap-v2 .gap-shift-close, html body.rf #view-day3.gap-v2 .gap-to-activation { color: var(--mk-gold) !important; }
+/* analyzing screen */
+html body.rf .gap-analyzing { border-color: rgba(232,200,115,.38) !important; background: radial-gradient(90% 70% at 50% 0%, rgba(232,200,115,.10), transparent 70%), rgba(6,8,11,.6) !important; }
+html body.rf .gap-an-ring { border-color: rgba(232,200,115,.55) !important; border-top-color: transparent !important; border-left-color: rgba(255,241,196,.5) !important; }
+html body.rf .gap-an-ring2 { border-color: rgba(232,200,115,.35) !important; border-bottom-color: transparent !important; border-right-color: rgba(255,241,196,.8) !important; }
+html body.rf .gap-an-orb i:nth-of-type(3n) { background: #fff1c4 !important; box-shadow: 0 0 8px 2px rgba(232,200,115,.6) !important; }
+html body.rf .gap-an-bar span { background: linear-gradient(90deg, #b8913f, #e8c873 55%, #fff1c4) !important; }
+html body.rf .gap-an-pct { color: var(--mk-gold) !important; }
+/* mock-up rule: no italic text anywhere */
+html body.rf #hero-gap-embed, html body.rf #hero-gap-embed * { font-style: normal !important; }
+/* Exit always reachable: the live X sits at the top of the scrolling panel, so a long screen could
+   scroll it away. Here it stays pinned to the panel's top-right corner. */
+
+/* ===== r15: airy glass layer (look only) =====================================================
+   Matches the mock-up's own glass: Home doors (.door), Shifting card bubbles (.sbub), chat bubbles,
+   gold pill buttons (.btn-g). See-through panels, soft rounded shapes, faint gold edges, the
+   mock-up's starry sky showing through. No text, markup, order or behaviour changes. */
+html body.rf #gm-backdrop { background: radial-gradient(80% 50% at 50% 0%, rgba(255,214,130,.08), transparent 70%), rgba(4,6,9,.32) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html body.rf #gm-backdrop::before { opacity: .18 !important; }
+html body.rf #gm-backdrop::after { opacity: .5 !important; }
+/* the pop-up itself: a clear glass sheet, not a filled box */
+html body.rf #hero-gap-embed.gm-modal { background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.015) 40%, rgba(255,255,255,.03)) !important; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border: 1px solid rgba(255,236,190,.24) !important; border-radius: 30px !important; box-shadow: 0 20px 70px rgba(0,0,0,.45), 0 0 40px rgba(255,214,130,.10), inset 0 1px 0 rgba(255,255,255,.18) !important; }
+html body.rf #hero-gap-embed.gm-modal::after { display: none !important; }
+html body.rf #hero-gap-embed.gm-modal .topbar { background: none !important; }
+html body.rf #hero-gap-embed.gm-modal .topbar::after { opacity: .7; }
+html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { background: linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.03)) !important; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border: 1px solid rgba(255,236,190,.35) !important; box-shadow: 0 6px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.25) !important; }
+html body.rf #hero-gap-embed.gm-modal .gm-start-over:not([hidden]) { background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.02)) !important; border-color: rgba(255,236,190,.32) !important; box-shadow: inset 0 1px 0 rgba(255,255,255,.2); }
+/* answers = Home-door glass bubbles */
+html body.rf #hero-gap-embed.gm-modal .opt, html body.rf #hero-gap-embed.gm-modal .domain-chip { background: linear-gradient(135deg, rgba(255,255,255,.11), rgba(255,255,255,.03)) !important; border: 1px solid rgba(255,236,190,.28) !important; border-radius: 22px !important; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.22) !important; }
+html body.rf #hero-gap-embed.gm-modal .opt.selected, html body.rf #hero-gap-embed.gm-modal .domain-chip.selected { background: radial-gradient(120% 140% at 0% 50%, rgba(255,214,130,.26), transparent 60%), linear-gradient(135deg, rgba(255,255,255,.14), rgba(255,255,255,.04)) !important; border-color: rgba(255,236,190,.6) !important; box-shadow: 0 10px 30px rgba(0,0,0,.3), 0 0 26px rgba(255,214,130,.28), inset 0 1px 0 rgba(255,255,255,.3) !important; }
+html body.rf #hero-gap-embed.gm-modal .quote-block { background: linear-gradient(135deg, rgba(255,255,255,.07), rgba(255,255,255,.015)) !important; border: 1px solid rgba(255,236,190,.2) !important; border-left: 1px solid rgba(255,236,190,.2) !important; border-radius: 20px !important; padding: 10px 14px !important; }
+/* buttons = the mock-up's gold pills (.btn-g); text links stay plain */
+html body.rf #hero-gap-embed.gm-modal .btn-gold, html body.rf #hero-gap-embed.gm-modal .gap-chat-input-row button { background: linear-gradient(135deg, #fff1c4, #e8c873) !important; color: #1a1305 !important; border-radius: 999px !important; box-shadow: 0 0 26px rgba(255,214,130,.45) !important; }
+html body.rf #hero-gap-embed.gm-modal .btn-outline { background: linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.02)) !important; border: 1px solid rgba(255,236,190,.4) !important; box-shadow: 0 0 20px rgba(255,214,130,.12), inset 0 1px 0 rgba(255,255,255,.2) !important; }
+/* sticky footers: a soft fade, not a solid band */
+html body.rf #hero-gap-embed.gm-modal .card .row-between { background: linear-gradient(180deg, rgba(6,8,11,0), rgba(6,8,11,.55) 45%, rgba(6,8,11,.7)) !important; }
+/* Step 2 chat = the mock-up chat */
+html body.rf #hero-gap-embed.gm-modal .bubble { border-radius: 20px !important; }
+html body.rf #hero-gap-embed.gm-modal .bubble.bot { background: linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.025)) !important; border: 1px solid rgba(232,200,115,.3) !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: 0 8px 26px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.16) !important; }
+html body.rf #hero-gap-embed.gm-modal .bubble.user { background: linear-gradient(135deg, #fff1c4, #e8c873) !important; color: #241c0a !important; box-shadow: 0 0 20px rgba(255,214,130,.3) !important; }
+html body.rf #hero-gap-embed.gm-modal .gap-chat-input-row { border-top: none !important; }
+html body.rf #hero-gap-embed.gm-modal .gap-chat-input-row textarea { background: linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,.02)) !important; border: 1px solid rgba(255,236,190,.28) !important; border-radius: 24px !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+/* Step 3 cards + analyzing = Shifting card bubbles */
+html body.rf #hero-gap-embed.gm-modal .activation-card, html body.rf #hero-gap-embed.gm-modal .reveal-block, html body.rf #hero-gap-embed.gm-modal .reading-card, html body.rf .gap-analyzing { background: radial-gradient(120% 90% at 0% 0%, rgba(63,214,200,.06), transparent 55%), radial-gradient(120% 90% at 100% 100%, rgba(255,214,130,.06), transparent 60%), linear-gradient(135deg, rgba(255,255,255,.09), rgba(255,255,255,.02)) !important; border: 1px solid rgba(255,236,190,.24) !important; border-radius: 28px !important; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: 0 10px 36px rgba(0,0,0,.32), 0 0 26px rgba(255,214,130,.08), inset 0 1px 0 rgba(255,255,255,.18) !important; }
+html body.rf #hero-gap-embed.gm-modal .activation-tag { border-radius: 999px !important; }
+html body.rf #view-day3.gap-v2 #d3-activation-card.gap-v2-flash { box-shadow: 0 0 0 1px rgba(255,236,190,.6), 0 0 30px rgba(255,214,130,.3) !important; }
+/* Step 2: open chat, no boxed panel */
+html body.rf #hero-gap-embed.gm-modal #view-day2 .chat-log { background: none !important; border: 0 !important; gap: 16px !important; padding: 6px 4px 6px 0 !important; }
+html body.rf #hero-gap-embed.gm-modal #view-day2 .bubble { padding: 13px 17px !important; line-height: 1.6 !important; }
+/* r15 quick-reply chips (mock-up addition) */
+html body.rf #hero-gap-embed .mk-chips { align-self: stretch; margin: 2px 0 4px; animation: gm-panel .5s cubic-bezier(.2,.8,.2,1) both; }
+html body.rf #hero-gap-embed .mk-see { margin: 0 0 10px 4px; font-family: "Cormorant Garamond", Georgia, serif; font-size: 16px; font-weight: 600; color: var(--mk-gold2); }
+html body.rf #hero-gap-embed .mk-chip-row { display: flex; flex-wrap: wrap; gap: 8px; }
+html body.rf #hero-gap-embed .mk-chip { all: unset; box-sizing: border-box; cursor: pointer; padding: 9px 15px; border-radius: 999px; font-size: 13.5px; line-height: 1.3; color: #fdfbf5; background: radial-gradient(120% 160% at 0% 50%, rgba(255,214,130,.14), transparent 65%), linear-gradient(135deg, rgba(255,255,255,.10), rgba(255,255,255,.025)); box-shadow: 0 0 0 1px rgba(232,200,115,.45), 0 0 16px rgba(255,214,130,.12), inset 0 1px 0 rgba(255,255,255,.2); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); transition: transform .2s, box-shadow .2s; }
+html body.rf #hero-gap-embed .mk-chip:active { transform: scale(.96); }
+html body.rf #hero-gap-embed .mk-chip:focus-visible { outline: 1px solid var(--mk-gold2); outline-offset: 3px; }
+html body.rf #gm-backdrop { background: transparent !important; }
+html body.rf #gm-backdrop::before, html body.rf #gm-backdrop::after { display: none !important; }
+html body.rf #hero-gap-embed.gm-modal { background: transparent !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; border-color: rgba(255,236,190,.12) !important; box-shadow: none !important; }
+html body.rf #hero-gap-embed.gm-modal .card .row-between { background: linear-gradient(180deg, rgba(6,8,11,0), rgba(6,8,11,.5) 45%, rgba(6,8,11,.62)) !important; }
+
+html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { position: sticky !important; float: right; top: 12px !important; right: auto !important; margin: 12px 12px -44px auto !important; z-index: 40 !important; }
+/* Oct 15 (Rachael): header matches Today's Focus and the chat: "← Home" (#rf-gap-home, refresh.js), no RH mark, no X */
+html body.rf #hero-gap-embed.gm-modal .topbar::before { display: none !important; }
+html body.rf #hero-gap-embed.gm-modal #hero-gap-embed-close { display: none !important; }
+html body.rf #hero-gap-embed:not(.gm-modal) #rf-gap-home { display: none !important; }
+html body.rf #hero-gap-embed.gm-modal #rf-gap-home { position: absolute !important; left: 20px; top: 22px; margin: 0 !important; z-index: 22; }
+html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } /* the title sits under the Home row, as on Today's Focus */
+@media (max-width: 819px) { html body.rf #hero-gap-embed.gm-modal #rf-gap-home { left: 7px; top: 21px; } } /* same spot as the other screens' Home (8, 22) */

@@ -5,7 +5,8 @@ import Airtable from "airtable";
 import crypto from "crypto";
 import { sendGapMethodMagicLink } from "./email";
 import { DIVINE_IDENTITIES } from "./divineIdentities";
-import { testerRecordFields, isUnknownAirtableField } from "./testers.js";
+import { testerRecordFields, isUnknownAirtableField, isTester } from "./testers.js";
+import { ccmTrackingEnabled, isCcmOffer, markCcmPurchased } from "./ccm-tracking.js";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -112,6 +113,18 @@ export async function logEvent(type, meta, memberRecordId) {
         created_at: new Date().toISOString(),
         ...(memberRecordId ? { member: [memberRecordId] } : {}),
     });
+}
+
+// Code Upgrade pulls saved by /api/code-pulls (Events type "code_pull", meta JSON carries the email). Read-only.
+export async function listCodePullEvents(email) {
+    const normalized = normalizeEmail(email);
+    if (!normalized || /["'\\]/.test(normalized)) return [];
+    return base(Tables.Events)
+    .select({
+        filterByFormula: `AND({type} = "code_pull", FIND('"email":"${normalized}"', {meta}) > 0)`,
+        sort: [{ field: "created_at", direction: "desc" }],
+    })
+    .all();
 }
 
 export async function getGapMethodResultByEmail(email) {
@@ -355,7 +368,14 @@ export async function getFavoriteActivationSlugsByEmail(email) {
         filterByFormula: `{member_email} = "${normalized}"`,
     })
     .all();
-    const slugs = records.map((r) => r.fields.activation_slug).filter(Boolean);
+    // Newest first (most recently favorited first). Use favorited_at, falling
+    // back to the Airtable record createdTime when the field is empty.
+    const ts = (r) => {
+        const t = Date.parse(r.fields.favorited_at || r._rawJson?.createdTime || "");
+        return isNaN(t) ? 0 : t;
+    };
+    const sorted = records.slice().sort((a, b) => ts(b) - ts(a));
+    const slugs = sorted.map((r) => r.fields.activation_slug).filter(Boolean);
     return Array.from(new Set(slugs));
 }
 
@@ -445,6 +465,65 @@ export async function listChatSessionsByEmail(email, { includeArchived = false }
     .select({ filterByFormula: formula, sort: [{ field: "last_message_at", direction: "desc" }] })
     .all();
     return records;
+}
+
+// Chat history speed (Oct 15 2026): the drawer and the conversation view only
+// need a handful of columns, so ask Airtable for just those (smaller pages,
+// faster responses). If a column is ever missing on a base, Airtable rejects
+// the whole request, so fall back to the full-row read rather than failing.
+const CHAT_SESSION_VIEW_FIELDS = ["title", "created_at", "updated_at", "last_message_at", "archived", "focus_area_slug"];
+const CHAT_MESSAGE_VIEW_FIELDS = ["role", "message_text", "created_at", "activation_recommended"];
+
+async function selectWithFieldsFallback(table, params, fields, mode) {
+    const run = (p) => (mode === "first" ? base(table).select(p).firstPage() : base(table).select(p).all());
+    try {
+        return await run({ ...params, fields });
+    } catch (err) {
+        if (err && (err.error === "UNKNOWN_FIELD_NAME" || /unknown field/i.test(String(err.message || "")))) {
+            console.warn(`select ${table}: a view field is missing; reading full rows instead`);
+            return run(params);
+        }
+        throw err;
+    }
+}
+
+// Same filter + order as listChatSessionsByEmail, limited to the drawer's
+// columns. With `limit`, returns at most that many (newest activity first)
+// plus whether more exist.
+export async function listChatSessionsForView(email, { includeArchived = false, limit = 0 } = {}) {
+    const normalized = normalizeEmail(email);
+    const formula = includeArchived
+        ? `{member_email} = "${normalized}"`
+        : `AND({member_email} = "${normalized}", {archived} != 1)`;
+    const params = { filterByFormula: formula, sort: [{ field: "last_message_at", direction: "desc" }] };
+    if (limit > 0) {
+        const records = await selectWithFieldsFallback(
+            Tables.ChatSessions, { ...params, pageSize: Math.min(100, limit + 1), maxRecords: limit + 1 }, CHAT_SESSION_VIEW_FIELDS, "first"
+        );
+        return { records: records.slice(0, limit), hasMore: records.length > limit };
+    }
+    const records = await selectWithFieldsFallback(Tables.ChatSessions, params, CHAT_SESSION_VIEW_FIELDS, "all");
+    return { records, hasMore: false };
+}
+
+// Messages of one chat for the conversation view, oldest first. With
+// `limit`, only the newest `limit` messages are read (newest-first query,
+// then reversed) plus whether older ones exist.
+export async function listChatMessagesForView(chatId, { limit = 0 } = {}) {
+    if (!chatId) return { records: [], hasMore: false };
+    const filterByFormula = `{chat_session_id} = "${chatId}"`;
+    if (limit > 0) {
+        const records = await selectWithFieldsFallback(
+            Tables.ChatMessages,
+            { filterByFormula, sort: [{ field: "created_at", direction: "desc" }], pageSize: Math.min(100, limit + 1), maxRecords: limit + 1 },
+            CHAT_MESSAGE_VIEW_FIELDS, "first"
+        );
+        return { records: records.slice(0, limit).reverse(), hasMore: records.length > limit };
+    }
+    const records = await selectWithFieldsFallback(
+        Tables.ChatMessages, { filterByFormula, sort: [{ field: "created_at", direction: "asc" }] }, CHAT_MESSAGE_VIEW_FIELDS, "all"
+    );
+    return { records, hasMore: false };
 }
 
 export async function updateChatSession(chatId, fields) {
@@ -567,14 +646,14 @@ export async function createWebhookEvent({
     if (outcome === "failed") {
         fields.next_retry_at = new Date(Date.now() + 5 * 60 * 1000).toISOString();
     }
-    return base(Tables.WebhookEvents).create(fields);
+    return base(Tables.WebhookEvents).create(fields, { typecast: true }); // typecast: lets the new ignored_offer / ccm_purchased outcomes save
 }
 
 export async function updateWebhookEvent(recordId, fields) {
     return base(Tables.WebhookEvents).update(recordId, {
         ...fields,
         last_attempt_at: new Date().toISOString(),
-    });
+    }, { typecast: true });
 }
 
 export async function listWebhookEventsDueForRetry() {
@@ -591,6 +670,26 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
     const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
     const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;
     const isCancellation = eventType === "cancellation" || eventType === "refund";
+
+    // Unknown-offer guard (CCM card release, Oct 14 2026). Clear Channel
+    // Method offers are a separate program: they must never create or touch a
+    // Revolutionary Healer Members row. When CCM_TRACKING is on they mark the
+    // buyer CCM-purchased (so the card/bot stop selling to them). Every other
+    // offer ID keeps its existing behaviour: the live webhook already receives
+    // several non-CCM offer IDs (Oct 2026 WebhookEvents) whose list membership
+    // could not be verified, so they are deliberately not filtered here.
+    if (offerId && isCcmOffer(offerId) && !isMemberOffer && !isTierOffer && !isGapMethodOffer) {
+        if (!isCancellation && ccmTrackingEnabled()) {
+            try {
+                await markCcmPurchased(normalizedEmail, { offerId, isTest: isTester(normalizedEmail) });
+                return { memberRecordId: "", outcome: "ccm_purchased" };
+            } catch (err) {
+                console.error("markCcmPurchased failed", err?.message);
+                throw err; // retried by the webhook cron; still never a Members row
+            }
+        }
+        return { memberRecordId: "", outcome: "ignored_offer" };
+    }
 
     const existing = await getMemberByEmail(normalizedEmail);
     const fields = {};
