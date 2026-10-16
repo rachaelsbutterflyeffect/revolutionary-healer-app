@@ -51,6 +51,10 @@
         { n: 'Reset', c: '2202', f: 'reset-2202', a: 'Reset Activation', s: '', missing: true, r: 'This card is a clean slate, babe. You\u2019ve been carrying yesterday into today and calling it responsibility. The old code said you had to keep pushing through. The new code is a full reset: breathe, come back to centre, and begin again from your own energy.' }
       ];
   window.RF_CU_CARDS = CU_CARDS; window.RF_CU_DIR = CU_DIR;
+  // TEMPORARY (launch day Oct 16 2026, Rachael): activations held back from the code card while their rename + playback
+  // fix waits on the post-launch cleanup list. The card and its reading still show; only the activation door is left off.
+  // The code -> activation pairings above are NOT changed. To bring an activation back, remove its slug from this list.
+  var HELD_BACK_ACTIVATIONS = ['activating-your-channel-to-spirit'];
   var RM = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
   var cuLast = -1;
   function $(s, r) { return (r || document).querySelector(s); }
@@ -86,7 +90,7 @@
         st.classList.add('done'); if (!RM) burst(st);
         setTimeout(function () {
           $('#dhint').innerHTML = 'Today\'s code';
-          var hasAct = !cd.missing && !!cd.s;
+          var hasAct = !cd.missing && !!cd.s && HELD_BACK_ACTIVATIONS.indexOf(cd.s) === -1;
           $('#codeinfo').innerHTML = '<div class="codeinfo"><button type="button" class="chev" id="cuchev" aria-label="Scroll down to your reading"><i></i><i></i><i></i></button><div class="code shine codepop" style="font-size:44px;margin:0">' + esc(cd.n) + '</div><div class="num">' + esc(cd.c) + '</div><div class="divider"></div><div class="cuup" id="cuhead"></div><div class="cusubt">Upgrade this code</div><div class="cudoors">' +
             '<div class="door cudoor" id="curead" role="button" tabindex="0" aria-expanded="false" aria-controls="cudrop"><div class="orb">✧</div><div class="txt"></div><div class="arr">▾</div></div><div class="cudrop" id="cudrop" hidden><p class="rd"></p></div>' +
             (hasAct ? '<div class="door cudoor" id="cuact" role="button" tabindex="0"><div class="orb t">◉</div><div class="txt"></div><div class="arr">→</div></div>' : '') +
