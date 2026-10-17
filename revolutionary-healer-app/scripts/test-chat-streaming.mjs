@@ -150,9 +150,11 @@ function routeStrip(raw) {
   while (m) { s = s.slice(0, m.index).replace(/\s+$/, ""); m = s.match(re); }
   return s.trim();
 }
+// Oct 17 2026: the Gap is written to the member as "you" (Shift cards never say she/her; see
+// lib/memberVoice.js + scripts/test-member-voice.mjs), so this streaming-parity sample uses that voice.
 const SAVE_SHIFT_REPLY =
   "That makes so much sense, love. I've saved this as a new Shift on your My Revolution page so we can keep working with it.\n\n" +
-  '[[SAVE_SHIFT: {"focusArea": "Prosperity", "divineIdentityName": "Healer", "divineIdentitySlug": "healer", "currentFrequency": "Over-giving", "gap": "She wants ease but keeps rescuing clients", "howItShowsUp": "Discounts every session", "primaryShift": "Receiving", "recommendedActivation": "Receiving"}]]';
+  '[[SAVE_SHIFT: {"focusArea": "Prosperity", "divineIdentityName": "Healer", "divineIdentitySlug": "healer", "currentFrequency": "Over-giving", "gap": "You want ease but keep rescuing clients", "howItShowsUp": "Discounts every session", "primaryShift": "Receiving", "recommendedActivation": "Receiving"}]]';
 const UPDATE_SHIFT_REPLY =
   "Yes -- this is the same pattern we've been working on, so I've added it to that Shift.\n\n\n" +
   '[[UPDATE_SHIFT: {"shiftId": "recShift1", "gap": "Still rescuing clients", "howItShowsUp": "Said yes to a free session"}]]\n';

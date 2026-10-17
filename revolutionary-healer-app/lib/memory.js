@@ -37,13 +37,15 @@ const EXTRACTION_SYSTEM = `You extract durable facts about a coaching member fro
 
 Only extract something if it is a genuinely meaningful, likely-to-still-matter-later fact.
 
-Return strict JSON only, no markdown fences: {"memories": [{"type": "identity"|"active_work"|"recurring_pattern"|"activation_history"|"method_progress"|"preference"|"realization", "topic": "short label", "statement": "one sentence, third person, e.g. 'She is rebuilding her coaching business after a divorce.'", "status": "confirmed"|"hypothesis"}]}
+Return strict JSON only, no markdown fences: {"memories": [{"type": "identity"|"active_work"|"recurring_pattern"|"activation_history"|"method_progress"|"preference"|"realization", "topic": "short label", "statement": "one sentence about the member, using they/their, e.g. 'They are rebuilding their coaching business after a divorce.'", "status": "confirmed"|"hypothesis"}]}
 
-Type meanings: "identity" = who she is / her Divine Identity or defining traits. "active_work" = what she's currently working on or focused on. "recurring_pattern" = a pattern she's named or that's shown up more than once. "activation_history" = an Activation or practice she's done and how it landed. "method_progress" = where she is in the GAP Method or another guided Method. "preference" = a stated preference about how she likes to be coached or what does/doesn't work for her. "realization" = a specific insight or realization she landed on in this conversation.
+Type meanings: "identity" = who they are / their Divine Identity or defining traits. "active_work" = what they're currently working on or focused on. "recurring_pattern" = a pattern they've named or that's shown up more than once. "activation_history" = an Activation or practice they've done and how it landed. "method_progress" = where they are in the GAP Method or another guided Method. "preference" = a stated preference about how they like to be coached or what does/doesn't work for them. "realization" = a specific insight or realization they landed on in this conversation.
 
-Do NOT extract: small talk, one-off venting with no lasting pattern, anything the coach said, anything she explicitly disagreed with or corrected, speculation she didn't confirm, anything that doesn't cleanly fit one of the seven types above.
+Write every statement with they/their/them for the member. Never use she, her, hers, herself, he, him, his or himself for the member, and never use the words "woman" or "women".
 
-status "confirmed" only if she stated it directly or clearly agreed with it. "hypothesis" if it's a reasonable read but she didn't explicitly confirm it. If nothing qualifies, return {"memories": []}. Never invent facts.`;
+Do NOT extract: small talk, one-off venting with no lasting pattern, anything the coach said, anything they explicitly disagreed with or corrected, speculation they didn't confirm, anything that doesn't cleanly fit one of the seven types above.
+
+status "confirmed" only if they stated it directly or clearly agreed with it. "hypothesis" if it's a reasonable read but they didn't explicitly confirm it. If nothing qualifies, return {"memories": []}. Never invent facts.`;
 
 export async function extractMemoriesFromExchange({ email, chatId, userText, assistantText }) {
   const { createMemory } = await import("./airtable");
@@ -114,7 +116,7 @@ export async function getRelevantMemoriesForPrompt(email, { limit = 12 } = {}) {
 // Rolling chat summary (internal, keeps long threads' prompt small) -- PART 7.
 // -----------------------------------------------------------------------
 
-const SUMMARY_SYSTEM = `You maintain a short rolling summary of an ongoing coaching conversation, for the coach's own internal context -- not shown to the member. Update the summary given the previous summary (may be empty) and the newest exchange. Keep it under 150 words, third person, factual: what she's working on, what's been named/confirmed, where the conversation left off. Do not include your own commentary or coaching language, just the facts of what happened. Return only the updated summary text, no preamble.`;
+const SUMMARY_SYSTEM = `You maintain a short rolling summary of an ongoing coaching conversation, for the coach's own internal context -- not shown to the member. Update the summary given the previous summary (may be empty) and the newest exchange. Keep it under 150 words, third person using they/their for the member (never she/her/he/him, never "woman" or "women"), factual: what they're working on, what's been named/confirmed, where the conversation left off. Do not include your own commentary or coaching language, just the facts of what happened. Return only the updated summary text, no preamble.`;
 
 export async function updateRollingSummary({ previousSummary, userText, assistantText }) {
   try {

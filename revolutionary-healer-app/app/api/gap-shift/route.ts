@@ -13,9 +13,10 @@ import { getEntitlementForEmail } from "@/lib/entitlements";
 import { createShiftFromChat } from "@/lib/airtable";
 import { featureAllowed } from "@/lib/features"; // Shift the codes (Oct 15 2026, exact-list gate)
 import { gapShiftOnce } from "@/lib/gapShiftOnce"; // one GAP run = one Shift (duplicate-save fix, Oct 8 2026)
+import { ensureMemberVoice } from "@/lib/memberVoice"; // Shift card speaks to the member as "you" (Oct 17 2026)
 
 export async function POST(req: NextRequest) {
-  const {
+  let {
     email,
     divineIdentitySlug = "",
     divineIdentityName = "",
@@ -47,6 +48,7 @@ export async function POST(req: NextRequest) {
     if (!entitlement.canUseBase) {
       return NextResponse.json({ error: "not entitled", entitlement }, { status: 403 });
     }
+    const voiced = await ensureMemberVoice({ gapExplanation: cut(gapExplanation, 5000) }, { label: "code-upgrade-shift" });
     const shift: any = await createShiftFromChat({
       email,
       memberRecordId: record?.id,
@@ -56,7 +58,7 @@ export async function POST(req: NextRequest) {
       divineIdentityName: name,
       currentFrequency: "Code Upgrade",
       focusArea: focus,
-      gapExplanation: cut(gapExplanation, 5000),
+      gapExplanation: voiced.fields.gapExplanation,
       whatWeNoticed: "",
       recommendedActivation: cut(recommendedActivation, 500),
     });
@@ -73,6 +75,21 @@ export async function POST(req: NextRequest) {
   const { record, entitlement } = await getEntitlementForEmail(email);
   if (!entitlement.canUseBase) {
     return NextResponse.json({ error: "not entitled", entitlement }, { status: 403 });
+  }
+
+  // Rachael's rule (Oct 17 2026): the saved card speaks to the member as "you",
+  // never she/her. The GAP Method instructions are not changed; only the text
+  // written to the Shift card is. The same rewritten text goes to the
+  // duplicate check, so a retried save still finds the card it already made.
+  {
+    const voice: Record<string, string> = {};
+    if (typeof gapExplanation === "string") voice.gapExplanation = gapExplanation;
+    if (typeof whatWeNoticed === "string") voice.whatWeNoticed = whatWeNoticed;
+    if (typeof todaysFocus === "string") voice.todaysFocus = todaysFocus;
+    const v = (await ensureMemberVoice(voice, { label: "gap-shift" })).fields;
+    if (typeof v.gapExplanation === "string") gapExplanation = v.gapExplanation;
+    if (typeof v.whatWeNoticed === "string") whatWeNoticed = v.whatWeNoticed;
+    if (typeof v.todaysFocus === "string") todaysFocus = v.todaysFocus;
   }
 
   const shift: any = await gapShiftOnce({ email, clientRunId, divineIdentitySlug, gapExplanation, whatWeNoticed, recommendedActivation }, () => createShiftFromChat({

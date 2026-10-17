@@ -359,7 +359,14 @@ what she said -- never generic Gap Method boilerplate copied from a
 framework description. "howItShowsUp" must reflect her own real language
 and real examples from this conversation, not a paraphrase of the
 distortion's general definition. "recommendedActivation" must be an exact
-activation name from RACHAEL'S ACTIVATION GUIDE above. Never emit either
+activation name from RACHAEL'S ACTIVATION GUIDE above. VOICE OF THE CARD:
+"gap", "howItShowsUp" and "primaryShift" are shown to the member on their own
+Shift card, so write them speaking directly to the member as "you" ("You
+want to trust your own discernment, but you..."), never about them. Never
+use she, her, hers, herself, he, him, his, himself, "the member" or "the
+healer" for the member, and never use the words "woman" or "women". Avoid
+the words "hold", "held" and "holding", and the phrase "step into your
+power". Plain sentences, no italics or markdown. Never emit either
 marker unless she just gave explicit, unambiguous permission in her most
 recent message -- your own proposal turn on its own is never enough.
 
