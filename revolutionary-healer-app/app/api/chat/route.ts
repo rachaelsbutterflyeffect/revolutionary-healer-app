@@ -3,6 +3,7 @@
 // Memory Architecture doc (rewrite of the previous stateless version, which
 // always sent history: [] and never persisted a single message anywhere).
 import { NextRequest, NextResponse } from "next/server";
+import { ensureMemberVoice } from "@/lib/memberVoice"; // Shift card speaks to the member as "you" (Oct 17 2026)
 import { waitUntil } from "@vercel/functions";
 import Anthropic from "@anthropic-ai/sdk";
 import { getFocusAreaBySlug } from "@/lib/focusAreas";
@@ -120,6 +121,16 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
 // continue, never shown a broken or generic result.
 const DISTORTION_VALIDATION_ERROR_COPY =
   "Something didn't come through clearly on my end just now -- let's try that last part again. Can you tell me a little more about what's been going on for you here? I want to make sure I reflect this back to you accurately before we move on.";
+
+
+// The Shift card text fields that are written in the member's voice ("you").
+function pickVoiceFields(payload: any): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const k of ["gap", "howItShowsUp", "primaryShift"]) {
+    if (payload && typeof payload[k] === "string" && payload[k]) out[k] = payload[k];
+  }
+  return out;
+}
 
 export async function POST(req: NextRequest) {
   // gapMethodResult (added Aug 10, widened same day): optional structured
@@ -468,6 +479,7 @@ export async function POST(req: NextRequest) {
     if (saveShiftMatch && !distortionRoutingErrorOccurred) {
         try {
               const payload = JSON.parse(saveShiftMatch[1]);
+              Object.assign(payload, (await ensureMemberVoice(pickVoiceFields(payload), { label: "chat-save-shift" })).fields);
               const identity = payload.divineIdentitySlug ? getDivineIdentityBySlug(payload.divineIdentitySlug) : null;
               // Identity is a starting frame, not the verdict: divineIdentityName/
               // currentFrequency/gap/howItShowsUp still come from the model's own
@@ -499,6 +511,7 @@ export async function POST(req: NextRequest) {
     } else if (updateShiftMatch) {
         try {
               const payload = JSON.parse(updateShiftMatch[1]);
+              Object.assign(payload, (await ensureMemberVoice(pickVoiceFields(payload), { label: "chat-update-shift" })).fields);
               const belongsToMember = (existingShiftRecords || []).some((s: any) => s.id === payload.shiftId);
               if (payload.shiftId && belongsToMember) {
                       const fields: Record<string, any> = {};
