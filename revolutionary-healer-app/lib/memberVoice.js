@@ -20,7 +20,7 @@
 //     she/her/woman/women is left outside quotes.
 //   * If that edit fails or doesn't pass, a word-by-word rewrite is used
 //     instead (she feels -> you feel, her gifts -> your gifts, herself ->
-//     yourself, woman -> person, women -> people).
+//     yourself, a woman -> a healer, women -> healers, woman's -> healer's).
 //   * Anything inside quotation marks (the member's own words) is never
 //     changed by either step.
 //   * Never throws: on any error the word-by-word rewrite (or, failing
@@ -152,10 +152,11 @@ function rewriteSegment(seg) {
       toks[i] = matchCase(t, obj ? "you" : "your");
       continue;
     }
-    if (lt === "woman") { toks[i] = matchCase(t, "person"); continue; }
-    if (lt === "women") { toks[i] = matchCase(t, "people"); continue; }
-    if (lt === "woman's") { toks[i] = matchCase(t, "person" + t.slice(5)); continue; }
-    if (lt === "women's") { toks[i] = matchCase(t, "people" + t.slice(5)); continue; }
+    // Rachael (Oct 17): "woman" becomes "healer" ("As a healer in business").
+    if (lt === "woman") { toks[i] = matchCase(t, "healer"); continue; }
+    if (lt === "women") { toks[i] = matchCase(t, "healers"); continue; }
+    if (lt === "woman's") { toks[i] = matchCase(t, "healer" + t.slice(5)); continue; }
+    if (lt === "women's") { toks[i] = matchCase(t, "healers" + t.slice(5, 6)); continue; }
     // "You feel energy and trusts it" -> "and trust it" (only common verbs).
     if (subjectInSentence && /^(and|but|or|then|yet)$/.test(lt)) {
       const j = conjVerbAt(i);
@@ -178,7 +179,7 @@ export function toSecondPersonRule(text) {
 // ---------------------------------------------------------------------------
 const AI_SYSTEM = `You copy-edit short notes on a coaching member's Shift card so they speak directly to the member. Rewrite each field so the member is addressed as "you" ("you", "your", "yours", "yourself").
 
-Change ONLY what that requires: words that refer to the member (she, her, hers, herself, he, him, his, himself, "the member", "this member", "the healer") become you/your/yourself, and the verbs that go with them change to match (she feels -> you feel, she is -> you are, she doesn't -> you don't). Never use the words "woman" or "women"; say "person" or "people". Do not add, remove, reorder or reword anything else, and keep every line break. Copy everything inside quotation marks exactly as written, character for character. Words about someone other than the member (for example the member's mother or client) stay as they are.
+Change ONLY what that requires: words that refer to the member (she, her, hers, herself, he, him, his, himself, "the member", "this member", "the healer") become you/your/yourself, and the verbs that go with them change to match (she feels -> you feel, she is -> you are, she doesn't -> you don't). Never use the words "woman" or "women": "a woman" becomes "a healer", "women" becomes "healers", "woman's" becomes "healer's", "women's" becomes "healers'" (for example "As a woman in business" -> "As a healer in business"). Do not add, remove, reorder or reword anything else, and keep every line break. Copy everything inside quotation marks exactly as written, character for character. Words about someone other than the member (for example the member's mother or client) stay as they are.
 
 Reply with only a JSON object that has exactly the same keys as the one you are given.`;
 

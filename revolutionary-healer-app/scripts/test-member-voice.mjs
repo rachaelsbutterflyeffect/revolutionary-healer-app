@@ -17,7 +17,9 @@ const cases = [
   ["Her body pulled inward when she read it. The thought stops her.", "Your body pulled inward when you read it. The thought stops you."],
   ["She's been doubting her work, and she's afraid it's wrong.", "You've been doubting your work, and you're afraid it's wrong."],
   ["She doesn't post, she isn't sure, she hasn't shared it and she wasn't ready.", "You don't post, you aren't sure, you haven't shared it and you weren't ready."],
-  ["As a woman in business, she pushes. Women's circles help her.", "As a person in business, you push. People's circles help you."],
+  ["As a woman in business, she pushes. Women's circles help her.", "As a healer in business, you push. Healers' circles help you."],
+  ["As a woman in business, she doesn't trust herself.", "As a healer in business, you don't trust yourself."],
+  ["Being a woman's voice in a room of women matters to her.", "Being a healer's voice in a room of healers matters to you."],
   ["Gifts are meant for God's role for her.", "Gifts are meant for God's role for you."],
   ["What would it take for her to share it?", "What would it take for you to share it?"],
 ];
@@ -30,6 +32,7 @@ eq(toSecondPersonRule("She said “her voice matters” today."), "You said “h
 eq(needsMemberVoiceFix("You said \"she knows\"."), false, "quoted she alone is fine");
 eq(needsMemberVoiceFix("You want this; it's yours."), false);
 eq(needsMemberVoiceFix("There, here, other, heart, sheer"), false, "no false word hits");
+eq(toSecondPersonRule("She said \"as a woman I matter\" and she's a woman who leads."), "You said \"as a woman I matter\" and you're a healer who leads.", "woman inside quotes untouched");
 
 // Text with nothing to fix comes back identical, with no AI call.
 {
