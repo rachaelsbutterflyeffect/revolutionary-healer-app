@@ -28,7 +28,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
-const AI_TIMEOUT_MS = 8000;
+const AI_TIMEOUT_MS = 10000; // one attempt only (no SDK retries), then the word rewrite
 let anthropic = null;
 function client() {
   if (!anthropic) anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -199,8 +199,9 @@ async function aiRewrite(fields, { create } = {}) {
   if (memo.has(key)) return memo.get(key);
   const call = create || ((params, opts) => client().messages.create(params, opts));
   const resp = await call(
-    { model: MODEL, max_tokens: 4000, system: AI_SYSTEM, messages: [{ role: "user", content: key }] },
-    { timeout: AI_TIMEOUT_MS }
+    // Light edit: lowest thinking setting (same as the GAP Step 2 chat turns).
+    { model: MODEL, max_tokens: 4000, system: AI_SYSTEM, messages: [{ role: "user", content: key }], output_config: { effort: "low" } },
+    { timeout: AI_TIMEOUT_MS, maxRetries: 0 }
   );
   const text = (resp.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
   const m = text.match(/\{[\s\S]*\}/);
