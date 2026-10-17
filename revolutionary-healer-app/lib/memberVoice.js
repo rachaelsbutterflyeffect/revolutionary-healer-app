@@ -20,7 +20,9 @@
 //     she/her/woman/women is left outside quotes.
 //   * If that edit fails or doesn't pass, a word-by-word rewrite is used
 //     instead (she feels -> you feel, her gifts -> your gifts, herself ->
-//     yourself, a woman -> a healer, women -> healers, woman's -> healer's).
+//     yourself, a woman / girl / lady -> a healer, women / girls / ladies ->
+//     healers, woman's -> healer's). The AI edit instead picks a role word
+//     from the card itself ("coach", "creator", "parent"...), never "person".
 //   * Anything inside quotation marks (the member's own words) is never
 //     changed by either step.
 //   * Never throws: on any error the word-by-word rewrite (or, failing
@@ -35,7 +37,9 @@ function client() {
   return anthropic;
 }
 
-const BANNED_RE = /\b(she|her|hers|herself|woman|women|woman['’]s|women['’]s)\b|\b(she)['’](s|d|ll|ve)\b/i;
+// Gendered nouns (woman/women/girl/lady...) count too (Rachael, Oct 17).
+const BANNED_RE = /\b(she|her|hers|herself|woman|women|girl|girls|lady|ladies)\b|\b(she)['’](s|d|ll|ve)\b/i;
+const PERSON_RE = /\bpersons?\b/gi;
 
 // ---------------------------------------------------------------------------
 // Quotes: split text into [{ q: false, t }, { q: true, t: '"..."' }, ...].
@@ -152,11 +156,12 @@ function rewriteSegment(seg) {
       toks[i] = matchCase(t, obj ? "you" : "your");
       continue;
     }
-    // Rachael (Oct 17): "woman" becomes "healer" ("As a healer in business").
-    if (lt === "woman") { toks[i] = matchCase(t, "healer"); continue; }
-    if (lt === "women") { toks[i] = matchCase(t, "healers"); continue; }
-    if (lt === "woman's") { toks[i] = matchCase(t, "healer" + t.slice(5)); continue; }
-    if (lt === "women's") { toks[i] = matchCase(t, "healers" + t.slice(5, 6)); continue; }
+    // Rachael (Oct 17): gendered nouns become "healer" here ("As a healer in
+    // business"); the AI edit picks a role from the card's own context instead.
+    if (/^(woman|girl|lady)$/.test(lt)) { toks[i] = matchCase(t, "healer"); continue; }
+    if (/^(women|girls|ladies)$/.test(lt)) { toks[i] = matchCase(t, "healers"); continue; }
+    if (/^(woman|girl|lady)'s$/.test(lt)) { toks[i] = matchCase(t, "healer's"); continue; }
+    if (/^(women|girls|ladies)'s$/.test(lt) || /^(girls|ladies)'$/.test(lt)) { toks[i] = matchCase(t, "healers'"); continue; }
     // "You feel energy and trusts it" -> "and trust it" (only common verbs).
     if (subjectInSentence && /^(and|but|or|then|yet)$/.test(lt)) {
       const j = conjVerbAt(i);
@@ -179,7 +184,7 @@ export function toSecondPersonRule(text) {
 // ---------------------------------------------------------------------------
 const AI_SYSTEM = `You copy-edit short notes on a coaching member's Shift card so they speak directly to the member. Rewrite each field so the member is addressed as "you" ("you", "your", "yours", "yourself").
 
-Change ONLY what that requires: words that refer to the member (she, her, hers, herself, he, him, his, himself, "the member", "this member", "the healer") become you/your/yourself, and the verbs that go with them change to match (she feels -> you feel, she is -> you are, she doesn't -> you don't). Never use the words "woman" or "women": "a woman" becomes "a healer", "women" becomes "healers", "woman's" becomes "healer's", "women's" becomes "healers'" (for example "As a woman in business" -> "As a healer in business"). Do not add, remove, reorder or reword anything else, and keep every line break. Copy everything inside quotation marks exactly as written, character for character. Words about someone other than the member (for example the member's mother or client) stay as they are.
+Change ONLY what that requires: words that refer to the member (she, her, hers, herself, he, him, his, himself, "the member", "this member", "the healer") become you/your/yourself, and the verbs that go with them change to match (she feels -> you feel, she is -> you are, she doesn't -> you don't). Gendered nouns (woman, women, girl, girls, lady, ladies, female) never appear: replace each one with a role word that is specific to what THIS card is about, taken from the card's own words and context -- for example "healer" ("As a woman in business" -> "As a healer in business"), "coach", "creator", "parent", "mentor", "leader", "teacher". Keep the grammar right ("a woman" -> "a healer", "women" -> "healers", "woman's" -> "healer's", "women's" -> "healers'"). Never use the word "person" (or "persons"), and never use another gendered word (mom, mother, wife, daughter, sister, girl, lady) as the replacement. If no role is clear from the card, use "healer". Do not add, remove, reorder or reword anything else, and keep every line break. Copy everything inside quotation marks exactly as written, character for character. Words about someone other than the member (for example the member's mother or client) stay as they are.
 
 Reply with only a JSON object that has exactly the same keys as the one you are given.`;
 
@@ -188,6 +193,8 @@ const memo = new Map(); // raw JSON -> rewritten fields (same text in = same tex
 function aiResultOk(before, after) {
   if (typeof after !== "string" || !after.trim()) return false;
   if (needsMemberVoiceFix(after)) return false;
+  // Never "person" as a replacement: no more "person" outside quotes than before.
+  if ((outsideQuotes(after).match(PERSON_RE) || []).length > (outsideQuotes(before).match(PERSON_RE) || []).length) return false;
   const r = after.length / Math.max(1, before.length);
   if (r < 0.85 || r > 1.2) return false;
   for (const q of quotedParts(before)) if (!after.includes(q)) return false;

@@ -41,7 +41,7 @@ Return strict JSON only, no markdown fences: {"memories": [{"type": "identity"|"
 
 Type meanings: "identity" = who they are / their Divine Identity or defining traits. "active_work" = what they're currently working on or focused on. "recurring_pattern" = a pattern they've named or that's shown up more than once. "activation_history" = an Activation or practice they've done and how it landed. "method_progress" = where they are in the GAP Method or another guided Method. "preference" = a stated preference about how they like to be coached or what does/doesn't work for them. "realization" = a specific insight or realization they landed on in this conversation.
 
-Write every statement with they/their/them for the member. Never use she, her, hers, herself, he, him, his or himself for the member, and never use the words "woman" or "women" (say "healer" / "healers" instead).
+Write every statement with they/their/them for the member. Never use she, her, hers, herself, he, him, his or himself for the member, and never use gendered nouns (woman, women, girl, lady) or "person" -- use a role word from the conversation instead (healer, coach, creator, parent, mentor).
 
 Do NOT extract: small talk, one-off venting with no lasting pattern, anything the coach said, anything they explicitly disagreed with or corrected, speculation they didn't confirm, anything that doesn't cleanly fit one of the seven types above.
 
@@ -116,7 +116,7 @@ export async function getRelevantMemoriesForPrompt(email, { limit = 12 } = {}) {
 // Rolling chat summary (internal, keeps long threads' prompt small) -- PART 7.
 // -----------------------------------------------------------------------
 
-const SUMMARY_SYSTEM = `You maintain a short rolling summary of an ongoing coaching conversation, for the coach's own internal context -- not shown to the member. Update the summary given the previous summary (may be empty) and the newest exchange. Keep it under 150 words, third person using they/their for the member (never she/her/he/him, never "woman" or "women" -- say "healer"/"healers"), factual: what they're working on, what's been named/confirmed, where the conversation left off. Do not include your own commentary or coaching language, just the facts of what happened. Return only the updated summary text, no preamble.`;
+const SUMMARY_SYSTEM = `You maintain a short rolling summary of an ongoing coaching conversation, for the coach's own internal context -- not shown to the member. Update the summary given the previous summary (may be empty) and the newest exchange. Keep it under 150 words, third person using they/their for the member (never she/her/he/him, never gendered nouns or "person" -- use a role word from the conversation, e.g. healer, coach, parent), factual: what they're working on, what's been named/confirmed, where the conversation left off. Do not include your own commentary or coaching language, just the facts of what happened. Return only the updated summary text, no preamble.`;
 
 export async function updateRollingSummary({ previousSummary, userText, assistantText }) {
   try {

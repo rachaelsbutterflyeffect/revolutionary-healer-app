@@ -5,7 +5,7 @@ import { ensureMemberVoice, toSecondPersonRule, needsMemberVoiceFix, __clearMemb
 
 let n = 0;
 const eq = (a, b, m) => { assert.equal(a, b, m); n++; };
-const BANNED = /\b(she|her|hers|herself|woman|women)\b|\bshe['’]/i;
+const BANNED = /\b(she|her|hers|herself|woman|women|girl|girls|lady|ladies)\b|\bshe['’]/i;
 
 // Word rewrite (fallback): examples shaped like the Oct 16 cards (made-up text).
 const cases = [
@@ -20,6 +20,7 @@ const cases = [
   ["As a woman in business, she pushes. Women's circles help her.", "As a healer in business, you push. Healers' circles help you."],
   ["As a woman in business, she doesn't trust herself.", "As a healer in business, you don't trust yourself."],
   ["Being a woman's voice in a room of women matters to her.", "Being a healer's voice in a room of healers matters to you."],
+  ["As a girl she learned to stay quiet; now the ladies in her circle look to her.", "As a healer you learned to stay quiet; now the healers in your circle look to you."],
   ["Gifts are meant for God's role for her.", "Gifts are meant for God's role for you."],
   ["What would it take for her to share it?", "What would it take for you to share it?"],
 ];
@@ -62,6 +63,30 @@ for (const bad of [
   eq(r.how.gap, "rule", bad);
   eq(r.fields.gap, "You receive clear insight, but the thought 'what if it isn't right' stops you.");
 }
+// AI edit that picks a role word from the card is used.
+{
+  __clearMemberVoiceMemo();
+  const gap = "As a woman who coaches other coaches, she shrinks her prices.";
+  const good = "As a coach who coaches other coaches, you shrink your prices.";
+  const r = await ensureMemberVoice({ gap }, { create: async () => ({ content: [{ type: "text", text: JSON.stringify({ gap: good }) }] }), log: false });
+  eq(r.how.gap, "ai"); eq(r.fields.gap, good);
+}
+// AI edit that uses "person" as the replacement is refused -> word rewrite ("healer").
+{
+  __clearMemberVoiceMemo();
+  const gap = "As a woman in business, she doesn't trust herself.";
+  const r = await ensureMemberVoice({ gap }, { create: async () => ({ content: [{ type: "text", text: JSON.stringify({ gap: "As a person in business, you don't trust yourself." }) }] }), log: false });
+  eq(r.how.gap, "rule"); eq(r.fields.gap, "As a healer in business, you don't trust yourself.");
+  eq(/\bperson\b/i.test(r.fields.gap), false);
+}
+// "person" already in the member's text is allowed to stay (not a replacement).
+{
+  __clearMemberVoiceMemo();
+  const gap = "She is the person everyone calls first.";
+  const good = "You are the person everyone calls first.";
+  const r = await ensureMemberVoice({ gap }, { create: async () => ({ content: [{ type: "text", text: JSON.stringify({ gap: good }) }] }), log: false });
+  eq(r.how.gap, "ai");
+}
 // AI error -> word rewrite, never throws.
 {
   __clearMemberVoiceMemo();
@@ -75,8 +100,8 @@ for (const bad of [
   eq(r.fields.a, "You doubt yourself."); eq(r.how.b, "unchanged");
   if (saved !== undefined) process.env.ANTHROPIC_API_KEY = saved;
 }
-// Every word-rewrite output above is free of banned words outside quotes.
-for (const [a] of cases) eq(needsMemberVoiceFix(toSecondPersonRule(a)), false, a);
+// Every word-rewrite output above is free of banned words outside quotes, and never says "person".
+for (const [a] of cases) { eq(needsMemberVoiceFix(toSecondPersonRule(a)), false, a); eq(/\bperson/i.test(toSecondPersonRule(a)), false, a); }
 // Line breaks kept.
 eq(toSecondPersonRule("She stops.\n\nPrimary Shift: let her speak."), "You stop.\n\nPrimary Shift: let you speak.");
 

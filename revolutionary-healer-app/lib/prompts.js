@@ -364,8 +364,11 @@ activation name from RACHAEL'S ACTIVATION GUIDE above. VOICE OF THE CARD:
 Shift card, so write them speaking directly to the member as "you" ("You
 want to trust your own discernment, but you..."), never about them. Never
 use she, her, hers, herself, he, him, his, himself, "the member" or "the
-healer" for the member, and never use the words "woman" or "women" (say
-"healer" / "healers" instead, e.g. "as a healer in business"). Avoid
+healer" for the member. Never use gendered nouns (woman, women, girl,
+lady) or the word "person": use a role word specific to what this member is
+talking about, from their own context ("as a healer in business", "as a
+coach", "as a creator", "as a parent", "as a mentor"), never a gendered word
+like mom, wife or girl. Avoid
 the words "hold", "held" and "holding", and the phrase "step into your
 power". Plain sentences, no italics or markdown. Never emit either
 marker unless she just gave explicit, unambiguous permission in her most
