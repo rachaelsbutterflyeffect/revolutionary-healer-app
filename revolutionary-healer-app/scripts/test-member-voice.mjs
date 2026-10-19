@@ -1,7 +1,7 @@
 // Tests for lib/memberVoice.js (Shift card speaks to the member as "you").
 // Run: node scripts/test-member-voice.mjs   (no network, no Airtable)
 import assert from "node:assert/strict";
-import { ensureMemberVoice, toSecondPersonRule, needsMemberVoiceFix, __clearMemberVoiceMemo } from "../lib/memberVoice.js";
+import { ensureMemberVoice, toSecondPersonRule, needsMemberVoiceFix, polishMemberVoice, __clearMemberVoiceMemo } from "../lib/memberVoice.js";
 
 let n = 0;
 const eq = (a, b, m) => { assert.equal(a, b, m); n++; };
@@ -103,6 +103,67 @@ for (const bad of [
 // Every word-rewrite output above is free of banned words outside quotes, and never says "person".
 for (const [a] of cases) { eq(needsMemberVoiceFix(toSecondPersonRule(a)), false, a); eq(/\bperson/i.test(toSecondPersonRule(a)), false, a); }
 // Line breaks kept.
-eq(toSecondPersonRule("She stops.\n\nPrimary Shift: let her speak."), "You stop.\n\nPrimary Shift: let you speak.");
+eq(toSecondPersonRule("She stops.\n\nPrimary Shift: let her speak."), "You stop.\n\nPrimary Shift: let yourself speak.");
+
+// ---- Oct 19 tightening: agreement, doubled role words, instructions, capitals ----
+const tight = [
+  // reflexive agrees with its own subject (the known slip)
+  ["She believes a good mom doesn't take time for herself, so she cancels her own sessions.", "You believe a good parent doesn't take time for themselves, so you cancel your own sessions."],
+  ["She believes a woman doesn't take time for herself.", "You believe a healer doesn't take time for themselves."],
+  ["Every woman she mentors trusts herself.", "Every healer you mentor trusts themselves."],
+  ["Her mom doesn't take time for herself.", "Your mom doesn't take time for themselves."],
+  ["As a parent of three, she puts her family first and keeps nothing for herself.", "As a parent of three, you put your family first and keep nothing for yourself."],
+  ["As a mother of three, she puts her family first.", "As a parent of three, you put your family first."],
+  // doubled role words
+  ["As a woman healer, she shrinks.", "As a healer, you shrink."],
+  ["Women entrepreneurs like her undercharge.", "Entrepreneurs like you undercharge."],
+  ["Female founders rush, and she rushes too.", "Founders rush, and you rush too."],
+  ["As a woman in business who is a healer, she waits.", "As a healer in business, you wait."],
+  ["As a healer, she, as a woman, gives.", "As a healer, you give."],
+  // verb agreement after the swap
+  ["She, too, is tired.", "You, too, are tired."],
+  ["She herself knows.", "You yourself know."],
+  ["She tries, fails and tries again.", "You try, fail and try again."],
+  ["She often finishes and then publishes.", "You often finish and then publish."],
+  ["She focuses on others and never applies it.", "You focus on others and never apply it."],
+  ["She was taught to give; she has given ever since.", "You were taught to give; you have given ever since."],
+  // instructions to the member use "yourself"; possessives stay "your"
+  ["Primary Shift: Give her permission to rest.", "Primary Shift: Give yourself permission to rest."],
+  ["Today, allow her to rest.", "Today, allow yourself to rest."],
+  ["Trust her to rest.", "Trust yourself to rest."],
+  ["Let her work be seen before it feels finished.", "Let your work be seen before it feels finished."],
+  ["Primary Shift: Let her creations be seen.", "Primary Shift: Let your creations be seen."],
+  ["Show her work today.", "Show your work today."],
+  ["She doesn't like her work.", "You don't like your work."],
+  // capitals at a sentence start
+  ["She feels it. her body knows.", "You feel it. Your body knows."],
+];
+for (const [a, b] of tight) {
+  const got = toSecondPersonRule(a);
+  eq(got, b, a);
+  eq(needsMemberVoiceFix(got), false, "clean: " + a);
+  eq(/\bperson\b|\b(\w+) \1\b|for yourself(?=.*\bthemselves)/i.test(got), false, "no person/doubled words: " + a);
+}
+// Quotes stay word for word even with the tidy-up.
+eq(toSecondPersonRule("She said \"I'm a woman who gives\" and she gives to herself last."), "You said \"I'm a woman who gives\" and you give to yourself last.");
+eq(toSecondPersonRule("She repeats 'a good mom doesn't take time for herself' to herself."), "You repeat 'a good mom doesn't take time for herself' to yourself.");
+// The tidy-up also fixes an AI edit that slipped (the Oct 17 example), and is used as "ai".
+{
+  __clearMemberVoiceMemo();
+  const gap = "As a mother of three, she puts her family first. She believes a good mom doesn't take time for herself, so she cancels her own sessions.";
+  const slipped = "As a parent of three, you put your family first. You believe a good parent doesn't take time for yourself, so you cancel your own sessions.";
+  const r = await ensureMemberVoice({ gap }, { create: async () => ({ content: [{ type: "text", text: JSON.stringify({ gap: slipped }) }] }), log: false });
+  eq(r.how.gap, "ai");
+  eq(r.fields.gap, "As a parent of three, you put your family first. You believe a good parent doesn't take time for themselves, so you cancel your own sessions.");
+}
+{
+  __clearMemberVoiceMemo();
+  const gap = "As a woman healer, she knows it. As a healer, she, as a woman, doubts it.";
+  const doubled = "As a healer healer, you know it. As a healer, you, as a healer, doubt it.";
+  const r = await ensureMemberVoice({ gap }, { create: async () => ({ content: [{ type: "text", text: JSON.stringify({ gap: doubled }) }] }), log: false });
+  eq(r.fields.gap, "As a healer, you know it. As a healer, you doubt it.");
+}
+// Tidy-up leaves good "you" text alone.
+for (const ok of ["You believe you don't deserve time for yourself.", "Give yourself one session today.", "Your sister says she is too much.", "You are the person everyone calls first.", "Your people-pleasing keeps you small."]) eq(polishMemberVoice(ok), ok, ok);
 
 console.log(`member-voice: ${n} checks passed`);
