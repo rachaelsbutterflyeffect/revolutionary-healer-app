@@ -135,6 +135,10 @@ const tight = [
   ["Primary Shift: Let her creations be seen.", "Primary Shift: Let your creations be seen."],
   ["Show her work today.", "Show your work today."],
   ["She doesn't like her work.", "You don't like your work."],
+  // a reflexive in the next clause belongs to "you" (seen in a real GAP run, Oct 19)
+  ["She deletes the episodes before anyone hears them -- silencing herself first.", "You delete the episodes before anyone hears them -- silencing yourself first."],
+  ["She waits until everyone is served, then forgets herself.", "You wait until everyone is served, then forget yourself."],
+  ["She gives to every client — and keeps nothing for herself.", "You give to every client — and keep nothing for yourself."],
   // capitals at a sentence start
   ["She feels it. her body knows.", "You feel it. Your body knows."],
 ];
@@ -164,6 +168,6 @@ eq(toSecondPersonRule("She repeats 'a good mom doesn't take time for herself' to
   eq(r.fields.gap, "As a healer, you know it. As a healer, you doubt it.");
 }
 // Tidy-up leaves good "you" text alone.
-for (const ok of ["You believe you don't deserve time for yourself.", "Give yourself one session today.", "Your sister says she is too much.", "You are the person everyone calls first.", "Your people-pleasing keeps you small."]) eq(polishMemberVoice(ok), ok, ok);
+for (const ok of ["You delete the episodes before anyone hears them -- silencing yourself first.", "You believe you don't deserve time for yourself.", "Give yourself one session today.", "Your sister says she is too much.", "You are the person everyone calls first.", "Your people-pleasing keeps you small."]) eq(polishMemberVoice(ok), ok, ok);
 
 console.log(`member-voice: ${n} checks passed`);

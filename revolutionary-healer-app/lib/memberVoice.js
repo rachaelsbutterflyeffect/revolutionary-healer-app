@@ -95,7 +95,7 @@ const ADVERBS = new Set(["never", "always", "still", "just", "only", "also", "of
 const IRREGULAR = { focuses: "focus", focusses: "focus", is: "are", was: "were", has: "have", does: "do", goes: "go", "isn't": "aren't", "wasn't": "weren't", "hasn't": "haven't", "doesn't": "don't", "isn’t": "aren’t", "wasn’t": "weren’t", "hasn’t": "haven’t", "doesn’t": "don’t" };
 // Common verbs, so a verb with no "she" right before it ("She feels it and
 // trusts it") is still matched, without turning nouns into verbs.
-const COMMON_VERBS = new Set("abandon allow apologize apply ask avoid back become believe block build buy cancel care carry censor charge chase check choose claim close coach come commit compare contract crave create decide defend deflect delay depend dim dismiss doubt drop edit explain express fail fear feel filter find finish focus follow freeze get give go guard hand help hide hope ignore judge keep know launch lead learn leave let listen long look lose love make market mentor miss move mute need notice offer open overthink override own pause permit plan play polish post price procrastinate protect prove publish pull push put question reach read realize receive redirect refuse rely reply rest retreat return run rush say second-guess see seek sell sense serve settle share show shrink shut sit soften speak start step stop struggle take teach tell think trust try turn undercharge use wait want watch withdraw wish wonder work worry write".split(" "));
+const COMMON_VERBS = new Set("abandon allow apologize apply ask avoid back become believe block brush build buy cancel care carry change cringe delete earn forget forgive hear hit raise record silence update censor charge chase check choose claim close coach come commit compare contract crave create decide defend deflect delay depend dim dismiss doubt drop edit explain express fail fear feel filter find finish focus follow freeze get give go guard hand help hide hope ignore judge keep know launch lead learn leave let listen long look lose love make market mentor miss move mute need notice offer open overthink override own pause permit plan play polish post price procrastinate protect prove publish pull push put question reach read realize receive redirect refuse rely reply rest retreat return run rush say second-guess see seek sell sense serve settle share show shrink shut sit soften speak start step stop struggle take teach tell think trust try turn undercharge use wait want watch withdraw wish wonder work worry write".split(" "));
 
 function matchCase(src, word) {
   if (src === src.toUpperCase() && src.length > 1 && /[A-Z]/.test(src)) return word.toUpperCase();
@@ -284,13 +284,14 @@ export function toSecondPersonRule(text) {
 //     "healer healer" -> "healer"
 //   * "you"/"your" at the start of a sentence is capitalised.
 // ---------------------------------------------------------------------------
-const REFLEXIVE_RE = new RegExp(`(?<![-'’])\\b((?:(?:a|an|every|each|any|no)\\s+(?:[A-Za-z-]+\\s+){0,2}?)?(?:${ROLES}))\\b(?![-'’])(\\s+(?:who|that)\\s+you\\s+[A-Za-z-]+)?((?:(?!\\byou(?:r|rs|['’]re|['’]ve|['’]ll|['’]d)?\\b)[^.!?;:\\n])*?)\\byourself\\b`, "gi");
+const REFLEXIVE_RE = new RegExp(`(?<![-'’])\\b((?:(?:a|an|every|each|any|no)\\s+(?:[A-Za-z-]+\\s+){0,2}?)?(?:${ROLES}))\\b(?![-'’])(\\s+(?:who|that)\\s+you\\s+[A-Za-z-]+)?((?:(?!\\byou(?:r|rs|['’]re|['’]ve|['’]ll|['’]d)?\\b|--)[^.!?;:,—–()\\n])*?)\\byourself\\b`, "gi");
 function polishSegment(seg, atSentenceStart) {
   let s = seg;
   // reflexive agreement with a third-person subject ("a good parent ... themselves",
-  // "your mom ... themselves"; leave "you ... yourself" alone).
+  // "your mom ... themselves"; leave "you ... yourself" alone). Only inside one
+  // clause: a comma or dash ends it ("before anyone hears them -- silencing yourself").
   s = s.replace(REFLEXIVE_RE, (m, subj, rel, mid) => `${subj}${rel || ""}${mid}themselves`);
-  s = s.replace(new RegExp(`\\b(your\\s+(?:${ROLES}))\\b((?:(?!\\byou(?:r|rs|['’]re|['’]ve|['’]ll|['’]d)?\\b)[^.!?;:\\n])*?)\\byourself\\b`, "gi"),
+  s = s.replace(new RegExp(`\\b(your\\s+(?:${ROLES}))\\b((?:(?!\\byou(?:r|rs|['’]re|['’]ve|['’]ll|['’]d)?\\b|--)[^.!?;:,—–()\\n])*?)\\byourself\\b`, "gi"),
     (m, subj, mid) => `${subj}${mid}themselves`);
   // doubled role words
   s = s.replace(new RegExp(`\\b(an?\\s+)(${ROLES})(\\s+[^,.;:!?\\n]{1,40}?)?,?\\s+who\\s+(?:is|are)\\s+an?\\s+\\2\\b`, "gi"), (m, a, r, mid) => `${a}${r}${mid || ""}`);
