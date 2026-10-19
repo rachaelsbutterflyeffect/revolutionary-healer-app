@@ -148,6 +148,12 @@ for (const [a, b] of tight) {
   eq(needsMemberVoiceFix(got), false, "clean: " + a);
   eq(/\bperson\b|\b(\w+) \1\b|for yourself(?=.*\bthemselves)/i.test(got), false, "no person/doubled words: " + a);
 }
+// A "you" card that still calls the member "a mother" is fixed too; "your mom" is someone else.
+eq(needsMemberVoiceFix("You've decided sounding confident as a mother and healer means sounding like 'too much'."), true);
+eq(toSecondPersonRule("You've decided sounding confident as a mother and healer means sounding like 'too much'."), "You've decided sounding confident as a parent and healer means sounding like 'too much'.");
+eq(toSecondPersonRule("As a wife and a coach, you give first."), "As a partner and a coach, you give first.");
+eq(needsMemberVoiceFix("Your mom said you were too much."), false);
+eq(needsMemberVoiceFix("You learned it from your mother, a good teacher."), false);
 // Quotes stay word for word even with the tidy-up.
 eq(toSecondPersonRule("She said \"I'm a woman who gives\" and she gives to herself last."), "You said \"I'm a woman who gives\" and you give to yourself last.");
 eq(toSecondPersonRule("She repeats 'a good mom doesn't take time for herself' to herself."), "You repeat 'a good mom doesn't take time for herself' to yourself.");

@@ -84,8 +84,14 @@ export function splitQuotes(text) {
 const outsideQuotes = (text) => splitQuotes(text).filter((p) => !p.q).map((p) => p.t).join(" ");
 const quotedParts = (text) => splitQuotes(text).filter((p) => p.q).map((p) => p.t);
 
+// "as a mother and healer", "a good mom", "as a wife": a gendered word for the
+// member herself, even when the rest of the card already says "you" (seen in a
+// real GAP run, Oct 19). "your mom" / "her mother" (someone else) don't count.
+const MEMBER_GENDERED_RE = /\bas\s+an?\s+(?:[a-z-]+\s+){0,2}?(mother|mom|mum|mama|wife)\b|\ban?\s+good\s+(mother|mom|mum|mama|wife)\b/i;
 export function needsMemberVoiceFix(text) {
-  return typeof text === "string" && BANNED_RE.test(outsideQuotes(text));
+  if (typeof text !== "string") return false;
+  const o = outsideQuotes(text);
+  return BANNED_RE.test(o) || MEMBER_GENDERED_RE.test(o);
 }
 
 // ---------------------------------------------------------------------------
