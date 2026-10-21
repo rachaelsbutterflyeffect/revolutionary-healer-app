@@ -33,7 +33,7 @@
   // in-place accordions, GAP Method™ Shifts and Code Upgrade Shifts, each listing ALL of that type, newest first),
   // then Codes. Every list is a real [data-role="shifts-list"], so the refresh's own cards render into it with all
   // their behaviour; each list is filtered synchronously (MutationObserver) so nothing flashes or jumps.
-  var ACC = [['gap', '◈', 'GAP Method™ Shifts', 'Your GAP Method™ Shifts will gather here.'], ['code', '✧', 'Code Upgrade Shifts', 'Codes you save as Shifting cards will gather here.']];
+  var ACC = [['gap', '◈', 'GAP Method™ Shifts', 'Your GAP Method™ Shifts will gather here.'], ['code', '✧', 'Code Upgrade Shifts', 'Codes you save as Shifting cards will gather here.'], ['other', '❋', 'Other Shifts', '']];
   function kind(s) { return !s ? '' : s.method === 'GAP Method' ? 'gap' : s.method === 'Code Upgrade' ? 'code' : 'other'; }
   function shiftsArr() { return window.SHIFTS || []; }
   var lastList = null; // only the list the member tapped keeps its card open (no duplicate open cards elsewhere)
@@ -50,7 +50,7 @@
       if (closed) { el.classList.remove('open'); el.setAttribute('aria-expanded', 'false'); el.classList.add('rf-xclosed'); var bt = el.querySelector('.bt'); if (bt && !bt.querySelector('.ac') && s && s.activation) { var ac = document.createElement('div'); ac.className = 'ac'; ac.textContent = s.activation; bt.appendChild(ac); } if (bt && !bt.querySelector('.rf-cue')) { var cu = document.createElement('div'); cu.className = 'rf-cue'; cu.textContent = '▶ Tap to open your activation'; bt.appendChild(cu); } }
     });
     if (f !== 'recent') {
-      var acc = list.closest('.rf-acc'); if (acc) { acc.querySelector('.rf-acc-n').textContent = '(' + n + ')'; var em = acc.querySelector('.rf-rempty'); if (em) em.hidden = n > 0; }
+      var acc = list.closest('.rf-acc'); if (acc) { acc.querySelector('.rf-acc-n').textContent = '(' + n + ')'; var em = acc.querySelector('.rf-rempty'); if (em) em.hidden = n > 0; if (f === 'other') acc.hidden = n === 0; }
     }
   }
   function watch(list) {
@@ -76,7 +76,7 @@
     if (!cards) {
       cards = document.createElement('div'); cards.className = 'revolution-subsection rf-rsec'; cards.id = 'rf-sec-cards';
       cards.innerHTML = '<div class="subsection-head"><h3>' + STAR + ' My Shifting Cards</h3></div>' + ACC.map(function (a) {
-        return '<div class="rf-acc" data-acc="' + a[0] + '"><button type="button" class="rf-acc-btn" aria-expanded="false" aria-controls="rf-acc-' + a[0] + '"><span class="rf-orb" aria-hidden="true">' + a[1] + '</span><span class="txt">' + a[2] + ' <span class="rf-acc-n"></span></span><span class="rf-chev" aria-hidden="true"></span></button>' +
+        return '<div class="rf-acc" data-acc="' + a[0] + '"' + (a[0] === 'other' ? ' hidden' : '') + '><button type="button" class="rf-acc-btn" aria-expanded="false" aria-controls="rf-acc-' + a[0] + '"><span class="rf-orb" aria-hidden="true">' + a[1] + '</span><span class="txt">' + a[2] + ' <span class="rf-acc-n"></span></span><span class="rf-chev" aria-hidden="true"></span></button>' +
           '<div class="rf-acc-panel" id="rf-acc-' + a[0] + '" hidden><div class="shifts-list rf-acc-list" data-role="shifts-list" data-rf-filter="' + a[0] + '"></div>' + (a[3] ? '<p class="rf-rempty" hidden>' + a[3] + '</p>' : '') + '</div></div>';
       }).join('');
       sub.parentNode.insertBefore(cards, sub.nextSibling);
