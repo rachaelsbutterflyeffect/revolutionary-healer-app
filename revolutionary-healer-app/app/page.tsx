@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import PasswordField from "@/components/PasswordField";
 
 const GOLD = "#CFA646";
 const BG = "#121110";
@@ -182,20 +183,13 @@ export default function Home() {
                 fontSize: 14,
               }}
             />
-            <input
-              type="password"
-              required
+            <PasswordField
+              name="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={setPassword}
               placeholder="Password"
-              style={{
-                background: "#141210",
-                border: `1px solid ${TEAL_SOFT}`,
-                borderRadius: 10,
-                padding: "12px 14px",
-                color: TEXT,
-                fontSize: 14,
-              }}
+              borderColor={TEAL_SOFT}
+              autoComplete="current-password"
             />
             {signInError && (
               <div id="signin-error" role="alert" style={{ color: "#E8A33D", fontSize: 13, lineHeight: 1.5 }}>{signInError}</div>

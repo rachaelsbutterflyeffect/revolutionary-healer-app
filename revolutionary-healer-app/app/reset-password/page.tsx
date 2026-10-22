@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import PasswordField from "@/components/PasswordField";
 
 const GOLD = "#CFA646";
 const BG = "#121110";
@@ -117,35 +118,21 @@ function ResetPasswordInner() {
           ) : (
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Choose a new password</div>
-              <input
-                type="password"
-                required
+              <PasswordField
+                name="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={setPassword}
                 placeholder="New password"
-                style={{
-                  background: "#141210",
-                  border: `1px solid ${BORDER}`,
-                  borderRadius: 10,
-                  padding: "12px 14px",
-                  color: TEXT,
-                  fontSize: 14,
-                }}
+                borderColor={BORDER}
+                autoComplete="new-password"
               />
-              <input
-                type="password"
-                required
+              <PasswordField
+                name="confirm-password"
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                onChange={setConfirm}
                 placeholder="Confirm new password"
-                style={{
-                  background: "#141210",
-                  border: `1px solid ${BORDER}`,
-                  borderRadius: 10,
-                  padding: "12px 14px",
-                  color: TEXT,
-                  fontSize: 14,
-                }}
+                borderColor={BORDER}
+                autoComplete="new-password"
               />
               {error && <div style={{ color: "#E8A33D", fontSize: 13, lineHeight: 1.5 }}>{error}</div>}
               <button
