@@ -4,14 +4,36 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import PasswordField from "@/components/PasswordField";
 
-import { DAWN_CSS, DAWN_PRE, DAWN_POST } from "./dawn-content";
+const GOLD = "#CFA646";
+const BG = "#121110";
+const CARD = "#1B1815";
+const BORDER = "#3A342B";
+const TEXT = "#F6F2E9";
+const MUTED = "#A9997F";
+const TEAL = "#01676C";
+const TEAL_SOFT = "#3FA8A3";
 
 const MONTHLY_CHECKOUT = "https://www.rachaelsbutterflyeffect.com/offers/rkwoQv2s/checkout";
 const ANNUAL_CHECKOUT = "https://www.rachaelsbutterflyeffect.com/offers/3YC8s5FV/checkout";
 
-// Nov 3 2026: logged-out home = the approved "dawn" landing (rh-ideal). Checkout links unchanged.
-const PRE_HTML = DAWN_PRE;
-const POST_HTML = DAWN_POST.replace("__MONTHLY__", MONTHLY_CHECKOUT).replace("__ANNUAL__", ANNUAL_CHECKOUT);
+function Mockup({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        background: CARD,
+        border: `1px solid ${BORDER}`,
+        borderRadius: 16,
+        padding: 18,
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+      }}
+    >
+      <div style={{ fontSize: 11, letterSpacing: "0.08em", color: MUTED, textTransform: "uppercase" }}>{label}</div>
+      {children}
+    </div>
+  );
+}
 
 // Oct 15 2026 (old-look flash fix): decide which look a member gets here, before leaving the landing
 // page, and go straight there -- allowed members never load the classic shell first. The decision is
@@ -72,26 +94,6 @@ export default function Home() {
     } catch {}
   }, [checking]);
 
-  // Dawn landing: drifting sparkles + sparkle butterflies (public/dawn/sparkbf.js), once the page is shown.
-  useEffect(() => {
-    if (checking) return;
-    document.querySelectorAll<HTMLElement>(".dawn .sparks").forEach((s) => {
-      if (s.childElementCount) return;
-      const n = +(s.dataset.n || 0);
-      for (let i = 0; i < n; i++) {
-        const e = document.createElement("i"); const r = Math.random();
-        e.style.left = Math.random() * 100 + "%"; e.style.top = Math.random() * 100 + "%";
-        const z = r < 0.2 ? 5 : r < 0.5 ? 3 : 2; e.style.width = e.style.height = z + "px";
-        if (s.dataset.night && Math.random() < 0.2) { e.style.background = "#9FE8DA"; e.style.boxShadow = "0 0 6px rgba(120,220,200,.6)"; }
-        e.style.animationDuration = 6 + Math.random() * 10 + "s"; e.style.animationDelay = -Math.random() * 12 + "s";
-        s.appendChild(e);
-      }
-    });
-    if (!document.getElementById("dawn-sparkbf")) {
-      const sc = document.createElement("script"); sc.id = "dawn-sparkbf"; sc.src = "/dawn/sparkbf.js"; document.body.appendChild(sc);
-    }
-  }, [checking]);
-
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault();
     setSignInError("");
@@ -124,46 +126,276 @@ export default function Home() {
   }
 
   return (
-    <div className="dawn">
-      <style dangerouslySetInnerHTML={{ __html: DAWN_CSS }} />
-      <div dangerouslySetInnerHTML={{ __html: PRE_HTML }} />
-      <section className="signin-sec" id="signin" style={{ paddingTop: 70 }}>
-        <div className="wrap">
-          <div className="glass signin">
-            <div>
-              <div className="eyebrow" style={{ justifyContent: "flex-start" }}>Already a member</div>
-              <h3 style={{ marginTop: 10 }}>Sign in to your Revolution</h3>
-              <p>Use the same email and password you use inside Kajabi.</p>
+    <div
+      style={{
+        minHeight: "100vh",
+        color: TEXT,
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+      }}
+    >
+      {/* HERO */}
+      <div style={{ padding: "64px 24px 40px", textAlign: "center", maxWidth: 720, margin: "0 auto" }}>
+        <div
+          style={{
+            fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
+            fontSize: 30,
+            letterSpacing: "0.03em",
+            marginBottom: 14,
+          }}
+        >
+          The Revolutionary<span style={{ color: GOLD }}> Healer</span>
+        </div>
+        <p style={{ color: MUTED, fontSize: 16, lineHeight: 1.7, maxWidth: 560, margin: "0 auto" }}>
+          Your daily home for the GAP Method, guided activations, and a chat companion that knows your
+          Revolution — so every shift you make actually sticks.
+        </p>
+      </div>
+
+      {/* SIGN IN */}
+      <div style={{ maxWidth: 420, margin: "0 auto", padding: "0 24px 56px" }}>
+        <div
+          style={{
+            background: CARD,
+            border: `1px solid ${BORDER}`,
+            borderRadius: 16,
+            padding: 26,
+            boxShadow: `0 0 24px rgba(1,103,108,0.35), 0 0 60px rgba(1,103,108,0.15)`,
+          }}
+        >
+          <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 4 }}>Sign in to your Revolution</div>
+          <p style={{ color: MUTED, fontSize: 13, marginBottom: 18 }}>
+            Use the same email and password you use inside Kajabi.
+          </p>
+
+          <form onSubmit={handleSignIn} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@example.com"
+              style={{
+                background: "#141210",
+                border: `1px solid ${TEAL_SOFT}`,
+                borderRadius: 10,
+                padding: "12px 14px",
+                color: TEXT,
+                fontSize: 14,
+              }}
+            />
+            <PasswordField
+              name="password"
+              value={password}
+              onChange={setPassword}
+              placeholder="Password"
+              borderColor={TEAL_SOFT}
+              autoComplete="current-password"
+            />
+            {signInError && (
+              <div id="signin-error" role="alert" style={{ color: "#E8A33D", fontSize: 13, lineHeight: 1.5 }}>{signInError}</div>
+            )}
+            <button
+              type="submit"
+              disabled={signingIn}
+              style={{
+                background: GOLD,
+                color: "#241C0A",
+                border: "none",
+                borderRadius: 10,
+                padding: "13px 22px",
+                fontSize: 14,
+                fontWeight: 700,
+                cursor: signingIn ? "default" : "pointer",
+                opacity: signingIn ? 0.7 : 1,
+              }}
+            >
+              {signingIn ? "Signing in…" : "Enter your Revolution →"}
+            </button>
+            <a
+              href="/contact-support"
+              style={{
+                background: "none",
+                border: "none",
+                color: TEAL_SOFT,
+                fontSize: 13,
+                textDecoration: "underline",
+                cursor: "pointer",
+                padding: 0,
+                marginTop: 2,
+                textAlign: "center",
+              }}
+            >
+              Forgot your password?
+            </a>
+          </form>
+        </div>
+      </div>
+
+      {/* INSIDE THE APP PREVIEW */}
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 24px 60px" }}>
+        <div style={{ textAlign: "center", marginBottom: 26 }}>
+          <div style={{ fontSize: 20, fontWeight: 600 }}>A look inside</div>
+          <p style={{ color: MUTED, fontSize: 14, marginTop: 6 }}>What's waiting for you the moment you sign in.</p>
+        </div>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: 18,
+          }}
+        >
+          <Mockup label="My Revolution">
+            <img
+              src="/images/App%20Sneak%20peak%203.jpg"
+              alt="My Revolution screen inside the app"
+              style={{ width: "100%", height: 260, objectFit: "cover", objectPosition: "top", borderRadius: 10, border: `1px solid ${BORDER}`, display: "block" }}
+            />
+          </Mockup>
+          <Mockup label="Your AI Guide">
+            <img
+              src="/images/app%20sneak%20peak%201.jpg"
+              alt="Home screen and AI chat companion inside the app"
+              style={{ width: "100%", height: 260, objectFit: "cover", objectPosition: "top", borderRadius: 10, border: `1px solid ${BORDER}`, display: "block" }}
+            />
+          </Mockup>
+          <Mockup label="Activation Library">
+            <img
+              src="/images/App%20Sneak%20Peak%202.jpg"
+              alt="Activation Library screen inside the app"
+              style={{ width: "100%", height: 260, objectFit: "cover", objectPosition: "top", borderRadius: 10, border: `1px solid ${BORDER}`, display: "block" }}
+            />
+          </Mockup>
+        </div>
+      </div>
+
+      {/* PRICING */}
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 80px" }}>
+        <div style={{ textAlign: "center", marginBottom: 26 }}>
+          <div style={{ fontSize: 20, fontWeight: 600 }}>Step into the app</div>
+          <p style={{ color: MUTED, fontSize: 14, marginTop: 6 }}>Start with a 7-day trial, or go straight to full access.</p>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20 }}>
+          <div
+            style={{
+              background: CARD,
+              border: `1px solid ${GOLD}`,
+              borderRadius: 16,
+              padding: 28,
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: -12,
+                left: 20,
+                background: TEAL,
+                color: TEXT,
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: 999,
+                letterSpacing: "0.04em",
+              }}
+            >
+              7-DAY TRIAL
             </div>
-            <form onSubmit={handleSignIn}>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                autoComplete="email"
-              />
-              <PasswordField
-                name="password"
-                value={password}
-                onChange={setPassword}
-                placeholder="Password"
-                borderColor="rgba(184,145,58,.35)"
-                autoComplete="current-password"
-              />
-              <button type="submit" className="btn btn-gold" disabled={signingIn}>
-                {signingIn ? "Signing in…" : "Enter →"}
-              </button>
-              {signInError && (
-                <div id="signin-error" role="alert" className="err">{signInError}</div>
-              )}
-              <a className="f" href="/contact-support">Forgot your password?</a>
-            </form>
+            <div style={{ fontSize: 13, color: MUTED, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Try It First
+            </div>
+            <div style={{ fontSize: 34, fontWeight: 700 }}>
+              $9<span style={{ fontSize: 15, color: MUTED, fontWeight: 400 }}> for 7 days</span>
+            </div>
+            <p style={{ color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
+              Full access to the app, the GAP Method, and the entire Activation Library.
+            </p>
+            <a
+              href={MONTHLY_CHECKOUT}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                textAlign: "center",
+                background: TEAL,
+                color: TEXT,
+                border: `1px solid ${TEAL}`,
+                borderRadius: 10,
+                padding: "13px 22px",
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Start my 7-day trial →
+            </a>
+            <p style={{ color: MUTED, fontSize: 11, lineHeight: 1.5, marginTop: -4 }}>
+              You'll be charged $9 today for 7 days of full access. After your trial, you'll be automatically charged $30/month until you cancel. Cancel any time.
+            </p>
+          </div>
+
+          <div
+            style={{
+              background: CARD,
+              border: `1px solid ${GOLD}`,
+              borderRadius: 16,
+              padding: 28,
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+              position: "relative",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                top: -12,
+                right: 20,
+                background: GOLD,
+                color: "#241C0A",
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "4px 10px",
+                borderRadius: 999,
+                letterSpacing: "0.04em",
+              }}
+            >
+              BEST VALUE
+            </div>
+            <div style={{ fontSize: 13, color: MUTED, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              Yearly
+            </div>
+            <div style={{ fontSize: 34, fontWeight: 700 }}>
+              $347<span style={{ fontSize: 15, color: MUTED, fontWeight: 400 }}> /year</span>
+            </div>
+            <p style={{ color: MUTED, fontSize: 13, lineHeight: 1.6 }}>
+              Everything in Monthly, at just under $29/month — the same full access, paid once a year.
+            </p>
+            <a
+              href={ANNUAL_CHECKOUT}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                textAlign: "center",
+                background: GOLD,
+                color: "#241C0A",
+                border: `1px solid ${GOLD}`,
+                borderRadius: 10,
+                padding: "13px 22px",
+                fontSize: 14,
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Get yearly access →
+            </a>
           </div>
         </div>
-      </section>
-      <div dangerouslySetInnerHTML={{ __html: POST_HTML }} />
+        <p style={{ textAlign: "center", color: MUTED, fontSize: 12, marginTop: 22 }}>
+          After checkout, come back here and sign in with the same email and password you used at checkout.
+        </p>
+      </div>
     </div>
   );
 }
