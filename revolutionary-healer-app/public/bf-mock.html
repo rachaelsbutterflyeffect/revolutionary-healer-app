@@ -6999,9 +6999,10 @@ window.bfBuy=function(id){var p=id==='all'?{type:'Bundle',name:'All six programs
   document.getElementById('bf-co-note').textContent=id==='all'?'No code needed':'Code 2026BLACKFRIDAY applied (60% off)';document.getElementById('bf-co-btn').href=location.pathname+'?purchased='+id+'#home';
   showPage('bf-checkout-page');};
 var _sm=window.showMain;
-window.showMain=function(){_sm();var h=document.getElementById('bf-home');if(owned().length)h.style.display='';};
+function bfHide(){['bf-page','bf-checkout-page'].forEach(function(i){document.getElementById(i).classList.remove('active')})}
+window.showMain=function(){bfHide();_sm();var h=document.getElementById('bf-home');if(owned().length)h.style.display='';};
 var _sp=window.showPage;
-window.showPage=function(id){_sp(id);document.getElementById('bf-home').style.display='none';};
+window.showPage=function(id){bfHide();_sp(id);document.getElementById('bf-home').style.display='none';};
 function closeGap(){try{var e=document.getElementById('hero-gap-embed');if(e&&e.style.display!=='none'&&typeof closeHeroGapEmbed==='function')closeHeroGapEmbed();}catch(x){}}
 [0,300,900,1600].forEach(function(t){setTimeout(closeGap,t)});
 bfRender();
