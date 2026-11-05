@@ -15,10 +15,10 @@ Preview entry: `/rr-mock.html` (or `/app-refresh.html?rr_mock=1`)
 | Nov 4 intro mp3 | Introduction / Start Here | ~2:24 |
 
 ## Library categories
-- Slowing the Mind → Energy + Frequency
-- Lifting Emotional Anxiety → Energy + Frequency
-- Embodiment Activation → Energy + Frequency
-- Power Activation → Business + Impact
+- Slowing the Mind → Mind + Body
+- Lifting Emotional Anxiety → Mind + Body
+- Embodiment Activation → Mind + Body
+- Power Activation → Energy + Frequency
 - Prosperity Flow Activation → Money + Receiving
 
 ## Codes wired on this branch
