@@ -983,15 +983,17 @@ body.rf{padding-bottom:36px}
 @media (max-width:380px){.rr-card-title{font-size:21px}.rr-card-art{height:168px}}
 .rr-head{padding-bottom:8px}
 .rr-lead{font-family:"Cormorant Garamond",Georgia,serif;font-size:18px;color:rgba(253,251,245,.82);margin:4px 0 18px;line-height:1.35}
-.rr-row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;padding:14px 12px;margin-bottom:10px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid rgba(255,236,190,.22);transition:transform .15s}
+.rr-row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;padding:14px 12px;margin-bottom:14px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,rgba(20,16,10,.92),rgba(10,8,6,.88));border:1px solid rgba(207,166,70,.55);box-shadow:0 0 0 1px rgba(255,236,190,.08) inset,0 0 18px rgba(207,166,70,.28),0 0 36px rgba(207,166,70,.12),inset 0 1px 0 rgba(255,236,190,.18);transition:transform .15s;animation:rr-row-glow 4.2s ease-in-out infinite}
 .rr-row:active{transform:scale(.98)}
-.rr-row.done{border-color:rgba(207,166,70,.55);background:linear-gradient(135deg,rgba(207,166,70,.12),rgba(255,255,255,.02))}
+.rr-row.done{border-color:rgba(228,199,122,.7);background:linear-gradient(135deg,rgba(207,166,70,.16),rgba(10,8,6,.88));box-shadow:0 0 0 1px rgba(255,236,190,.12) inset,0 0 22px rgba(207,166,70,.38),0 0 42px rgba(207,166,70,.16),inset 0 1px 0 rgba(255,236,190,.22)}
+@keyframes rr-row-glow{0%,100%{box-shadow:0 0 0 1px rgba(255,236,190,.08) inset,0 0 16px rgba(207,166,70,.24),0 0 32px rgba(207,166,70,.1),inset 0 1px 0 rgba(255,236,190,.16)}50%{box-shadow:0 0 0 1px rgba(255,236,190,.14) inset,0 0 26px rgba(207,166,70,.42),0 0 48px rgba(207,166,70,.2),inset 0 1px 0 rgba(255,236,190,.24)}}
 .rr-row-meta{flex:1;min-width:0}
 .rr-row-label{font-family:Cinzel,serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#CFA646;margin:0 0 3px}
 .rr-row-title{font-family:Inter,system-ui,sans-serif;font-size:15px;font-weight:600;color:#fdfbf5;margin:0;line-height:1.25}
 .rr-row-len{font-size:12px;color:rgba(253,251,245,.55);margin-top:3px}
-.rr-play{flex-shrink:0;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#E4C77A,#CFA646);color:#241C0A;box-shadow:0 0 14px rgba(228,170,70,.35)}
-.rr-row.done .rr-play{background:#241C0A;color:#CFA646;border:1px solid #CFA646;box-shadow:none}
+.rr-play{flex-shrink:0;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#E4C77A,#CFA646);color:#241C0A;border:1px solid rgba(255,248,220,.45);box-shadow:0 0 16px rgba(228,170,70,.55),0 0 28px rgba(207,166,70,.28);animation:rr-play-glow 3.6s ease-in-out infinite}
+@keyframes rr-play-glow{0%,100%{box-shadow:0 0 14px rgba(228,170,70,.45),0 0 24px rgba(207,166,70,.22)}50%{box-shadow:0 0 22px rgba(228,170,70,.75),0 0 36px rgba(207,166,70,.4)}}
+.rr-row.done .rr-play{background:#241C0A;color:#CFA646;border:1px solid #CFA646;box-shadow:0 0 14px rgba(207,166,70,.35);animation:none}
 
 /* ---------- shared pieces ---------- */
 body.rf h1, body.rf h2, body.rf h3 { font-family:Cinzel,serif; font-weight:600; letter-spacing:.06em; }
