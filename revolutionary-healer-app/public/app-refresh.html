@@ -1246,7 +1246,7 @@ body.rf .rh-sheet-ok.rh-danger { background:#b5483a !important; color:#fff !impo
 body.rf .rh-sheet-actions button:not(.rh-sheet-ok) { border-radius:999px !important; color:var(--rf-gold2) !important; border-color:rgba(255,236,190,.4) !important; background:transparent !important; }
 
 /* ---------- GAP Method open: only the shared starry background behind it (r16) ---------- */
-body.rf.gm-lock > *:not(#hero-gap-embed):not(#gm-backdrop):not(#rf-sky):not(.rf-aurora):not(script):not(style):not(.rh-sheet-backdrop) { visibility:hidden !important; }
+body.rf.gm-lock > *:not(#hero-gap-embed):not(#gm-backdrop):not(#rf-sky):not(.rf-aurora):not(script):not(style):not(.rh-sheet-backdrop):not(#rr-mock-flag) { visibility:hidden !important; }
 /* locked-Activation toast sits above the nav */
 body.rf .locked-activation-toast{bottom:calc(env(safe-area-inset-bottom,0px) + 104px);width:max-content;max-width:calc(100vw - 32px);font-family:inherit;font-style:normal}
 body.rf .locked-activation-toast:not(.active){visibility:hidden}
@@ -4971,6 +4971,8 @@ window.addEventListener('message', function(evt) {
       var savedChatId = null;
       try { savedChatId = localStorage.getItem('rh_active_chat_' + RH_EMAIL); } catch (e) {}
       if (savedChatId) return;
+      // MOCK-UP ONLY: never auto-open GAP on Reset and Restore preview
+      if (typeof RR_MOCK !== 'undefined' && RR_MOCK) return;
       fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL)).then(function (res) { return res.json(); }).then(function (data) {
         var chats = data.chats || [];
         if (!chats.length) startGapMethodInChat();
