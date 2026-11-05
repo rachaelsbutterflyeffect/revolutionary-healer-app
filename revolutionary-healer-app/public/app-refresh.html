@@ -20,21 +20,6 @@
 // remembered "yes" gets a dark screen, never this page, until the server answers (2.5 s cap -> classic).
 (function () {
   try {
-    var mock = false;
-    try { mock = new URLSearchParams(location.search).get('rr_mock') === '1' || sessionStorage.getItem('rr_mock') === '1'; } catch (x) {}
-    if (mock) {
-      try {
-        sessionStorage.setItem('rr_mock', '1');
-        if (!localStorage.getItem('rh_member_email')) {
-          localStorage.setItem('rh_member_email', 'rr.mock@preview.local');
-          localStorage.setItem('rh_member_login_at', String(Date.now()));
-        }
-        var me = localStorage.getItem('rh_member_email');
-        localStorage.setItem('rh_ui_refresh', '1:' + me);
-        sessionStorage.setItem('rh_ui_refresh', '1:' + me);
-      } catch (x) {}
-      return; // stay on refresh page for mock preview
-    }
     var e = localStorage.getItem('rh_member_email');
     if (!e) return; // the page's own sign-in check sends them to '/'
     var K = 'rh_ui_refresh', de = document.documentElement, yes = (localStorage.getItem(K) || sessionStorage.getItem(K)) === '1:' + e;
@@ -953,9 +938,8 @@ body.rf #hero-section > .wrap > h1, body.rf #hero-section .hero-divider, body.rf
 body.rf #membership-management-page { display:none !important; }
 
 
-/* ---------- Reset and Restore series (MOCK-UP ONLY — do not merge) ---------- */
+/* ---------- Reset and Restore series ---------- */
 /* Golden Dawn banner — full native photo + chrome below (home + Activations) */
-.rr-mock-flag{position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#0a0806;color:var(--rf-gold,#CFA646);border-top:1px solid var(--rf-gold,#CFA646);text-align:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:7px 10px;pointer-events:none}
 body.rf{padding-bottom:36px}
 #rr-home-sec{margin:18px -20px 10px;padding:0}
 #rr-lib-sec{margin:4px -20px 22px;padding:0}
@@ -1374,7 +1358,7 @@ body.rf .rh-sheet-ok.rh-danger { background:#b5483a !important; color:#fff !impo
 body.rf .rh-sheet-actions button:not(.rh-sheet-ok) { border-radius:999px !important; color:var(--rf-gold2) !important; border-color:rgba(255,236,190,.4) !important; background:transparent !important; }
 
 /* ---------- GAP Method open: only the shared starry background behind it (r16) ---------- */
-body.rf.gm-lock > *:not(#hero-gap-embed):not(#gm-backdrop):not(#rf-sky):not(.rf-aurora):not(script):not(style):not(.rh-sheet-backdrop):not(#rr-mock-flag) { visibility:hidden !important; }
+body.rf.gm-lock > *:not(#hero-gap-embed):not(#gm-backdrop):not(#rf-sky):not(.rf-aurora):not(script):not(style):not(.rh-sheet-backdrop) { visibility:hidden !important; }
 /* locked-Activation toast sits above the nav */
 body.rf .locked-activation-toast{bottom:calc(env(safe-area-inset-bottom,0px) + 104px);width:max-content;max-width:calc(100vw - 32px);font-family:inherit;font-style:normal}
 body.rf .locked-activation-toast:not(.active){visibility:hidden}
@@ -1585,22 +1569,6 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
   // per Rachael's instruction). It expects an email captured on '/' first --
   // bounce back there immediately if none is stored, before any content
   // paints, rather than showing member content with no known member.
-  /* MOCK-UP ONLY (Reset and Restore preview): ?rr_mock=1 skips login so Rachael can review the layout. Never ship. */
-  var RR_MOCK = (function () {
-    try { return new URLSearchParams(location.search).get('rr_mock') === '1' || sessionStorage.getItem('rr_mock') === '1'; } catch (e) { return false; }
-  })();
-  if (RR_MOCK) {
-    try {
-      sessionStorage.setItem('rr_mock', '1');
-      if (!localStorage.getItem('rh_member_email')) {
-        localStorage.setItem('rh_member_email', 'rr.mock@preview.local');
-        localStorage.setItem('rh_member_login_at', String(Date.now()));
-      }
-      var _rme = localStorage.getItem('rh_member_email');
-      localStorage.setItem('rh_ui_refresh', '1:' + _rme);
-      sessionStorage.setItem('rh_ui_refresh', '1:' + _rme);
-    } catch (e) {}
-  }
   var RH_EMAIL = localStorage.getItem('rh_member_email');
   // Aug 16 (Rachael's 5-day auto-logout request): members can save this page
   // to their phone home screen like an app, so a stored login could otherwise
@@ -1609,7 +1577,7 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
   // below, which only covers Kajabi access being revoked.
   var RH_LOGIN_AT = Number(localStorage.getItem('rh_member_login_at') || 0);
   var RH_FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
-  if (!RR_MOCK && RH_EMAIL && (!RH_LOGIN_AT || (Date.now() - RH_LOGIN_AT) >= RH_FIVE_DAYS_MS)) {
+  if (RH_EMAIL && (!RH_LOGIN_AT || (Date.now() - RH_LOGIN_AT) >= RH_FIVE_DAYS_MS)) {
     localStorage.removeItem('rh_member_email');
     localStorage.removeItem('rh_member_login_at');
     RH_EMAIL = null;
@@ -1631,7 +1599,6 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: RH_EMAIL }),
     }).then(function (r) { return r.json(); }).then(function (data) {
-      if (RR_MOCK) { window.__RH_MEMBER_SINCE__ = null; try { populateMemberSinceIfReady(); } catch (e) {} return; }
       var stillEntitled = !!(data && (data.memberActive || data.tierActive || data.onBetaMembership || data.onDlrhMembership));
       if (!stillEntitled) {
         localStorage.removeItem('rh_member_email');
@@ -3447,7 +3414,7 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
     'sacred-bowl-activation': { title: 'Sacred Bowl Activation', description: 'Uses sound frequency to clear and reset your energy field, leaving you calmer and more spacious.', wistiaId: 'yejf28nfta', whatFor: 'A womb clearing to activate creation, birth and balance feminine frequencies.', whenToUse: ['When your creation energy feels slow.', 'When you want to clear past sexual partners and frequencies from your womb.', 'To balance and harmonize the feminine frequencies.', 'When you desire to birth something new into your reality.'] },
     'throat-chakra-activation': { title: 'Throat Chakra Activation', description: 'Opens and balances your throat chakra, supporting you in speaking and being heard with more ease and truth.', wistiaId: 'r8u3s5n30g' },
     'wealth-frequency-activation': { title: 'Wealth Frequency Activation', description: 'Works with your relationship to money itself -- the fear, forcing, or discounting that shows up when wealth increases or slows down -- so you can hold and receive more without unconsciously blocking it.', wistiaId: '7j51yzmbnl', whatFor: 'Use this when money itself starts changing the way you think or behave -- for example, money increases and you immediately become afraid it will disappear, or money slows down and you start forcing, discounting, creating or questioning everything.', whenToUse: ['Fear immediately after receiving more money.', 'Difficulty allowing money to remain without instantly spending/redirecting it.', 'Panicked business decisions after a quiet period.', 'Repeated patterns around receiving larger amounts.', 'When wealth brings up specific behavioral or energetic reactions.'] },
-    /* Reset and Restore series (MOCK-UP) */
+    /* Reset and Restore series */
     'rr-intro': { title: '5 Days of Reset and Restore', description: 'A short welcome into your Reset and Restore series. Start here, then move through one day at a time.', audioSrc: '/audio/rr/rr-intro.mp3', cover: '/images/covers/slowing-the-mind.jpg', whatFor: 'Listen once at the start of the series to set the container for the five days ahead.', whenToUse: ['Before Day 1 of Reset and Restore.', 'Whenever you want to remember why you started the series.'] },
     'slowing-the-mind': { title: 'Slowing the Mind', description: 'Slows the racing thoughts so your mind can settle, and your body can feel safe enough to rest.', audioSrc: '/audio/rr/slowing-the-mind.mp3', cover: '/images/covers/slowing-the-mind.jpg', whatFor: 'Use this when your mind will not stop spinning and you need a softer pace before sleep or before the next activation.', whenToUse: ['Your thoughts are racing and you cannot settle.', 'Before bed when your mind is still working.', 'Day 1 of Reset and Restore.'] },
     'lifting-emotional-anxiety': { title: 'Lifting Emotional Anxiety', description: 'A bedtime body scan with light language that lifts emotional anxiety from the body so you can rest.', audioSrc: '/audio/rr/lifting-emotional-anxiety.mp3', cover: '/images/covers/lifting-emotional-anxiety.jpg', whatFor: 'Use this when anxiety is sitting in your body and you want it lifted gently before sleep.', whenToUse: ['Emotional anxiety is loud in your chest or stomach.', 'Before bed as Day 2 of Reset and Restore.', 'After a heavy emotional day.'] },
@@ -5131,8 +5098,6 @@ window.addEventListener('message', function(evt) {
       var savedChatId = null;
       try { savedChatId = localStorage.getItem('rh_active_chat_' + RH_EMAIL); } catch (e) {}
       if (savedChatId) return;
-      // MOCK-UP ONLY: never auto-open GAP on Reset and Restore preview
-      if (typeof RR_MOCK !== 'undefined' && RR_MOCK) return;
       fetch('/api/chats?email=' + encodeURIComponent(RH_EMAIL)).then(function (res) { return res.json(); }).then(function (data) {
         var chats = data.chats || [];
         if (!chats.length) startGapMethodInChat();
@@ -8785,13 +8750,6 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     var s = document.createElement('script'); s.src = '/' + n + '.js'; document.body.appendChild(s);
   }
   function go() {
-    // MOCK ONLY: load daily-code deck + home check-in (fits-you-today door) for preview review
-    if (typeof RR_MOCK !== 'undefined' && RR_MOCK) {
-      window.__rfFeatures = { codePull: true, homeCheckin: true };
-      load(MAP.codePull);
-      load(MAP.homeCheckin);
-      return;
-    }
     var em = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || '';
     if (!em) { if (++tries < 80) setTimeout(go, 250); return; }
     fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store' })
@@ -8804,15 +8762,8 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
 
 </script>
 
-<div class="rr-mock-flag" id="rr-mock-flag" hidden>MOCK-UP ONLY · Reset and Restore · do not publish</div>
 <script>
 (function () {
-  var mock = false;
-  try { mock = new URLSearchParams(location.search).get('rr_mock') === '1' || sessionStorage.getItem('rr_mock') === '1'; } catch (e) {}
-  if (mock) {
-    var fl = document.getElementById('rr-mock-flag');
-    if (fl) fl.hidden = false;
-  }
   var ORDER = [
     { id: 'intro', slug: 'rr-intro', label: 'Introduction · Start Here' },
     { id: 'd1', slug: 'slowing-the-mind', label: 'Day 1 · Slowing the Mind' },
