@@ -954,100 +954,87 @@ body.rf #membership-management-page { display:none !important; }
 
 
 /* ---------- Reset and Restore series (MOCK-UP ONLY — do not merge) ---------- */
-/* Golden Dawn cinematic banner — shared by #rr-home-card + #rr-lib-card */
+/* Golden Dawn banner — full native photo + chrome below (home + Activations) */
 .rr-mock-flag{position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#0a0806;color:var(--rf-gold,#CFA646);border-top:1px solid var(--rf-gold,#CFA646);text-align:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:7px 10px;pointer-events:none}
 body.rf{padding-bottom:36px}
-#rr-home-sec{margin:22px -20px 10px;padding:0}
-#rr-lib-sec{margin:4px -20px 26px;padding:0}
+#rr-home-sec{margin:18px -20px 10px;padding:0}
+#rr-lib-sec{margin:4px -20px 22px;padding:0}
 body.rf[data-rf-lib="cat"] #rr-lib-sec{display:none !important}
 
 .rr-card{
-  all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;position:relative;overflow:hidden;
-  min-height:min(55vh,480px);border-radius:0;background:#070604;
-  border-top:1px solid rgba(228,199,122,.55);border-bottom:1px solid rgba(228,199,122,.55);
-  box-shadow:0 0 0 1px rgba(255,236,190,.08) inset,0 28px 64px rgba(0,0,0,.65),0 0 48px rgba(184,140,50,.22),0 0 110px rgba(184,140,50,.12);
+  all:unset;box-sizing:border-box;display:flex;flex-direction:column;width:100%;cursor:pointer;position:relative;overflow:hidden;
+  border-radius:0;background:#070604;
+  box-shadow:0 18px 48px rgba(0,0,0,.55),0 0 36px rgba(184,140,50,.18),0 0 80px rgba(184,140,50,.1);
   animation:rr-border-breathe 4.8s ease-in-out infinite;
 }
 .rr-card:active{transform:scale(.995)}
+.rr-media{position:relative;width:100%;flex:none;line-height:0}
 @keyframes rr-border-breathe{
-  0%,100%{box-shadow:0 0 0 1px rgba(255,236,190,.08) inset,0 28px 64px rgba(0,0,0,.65),0 0 36px rgba(184,140,50,.18),0 0 90px rgba(184,140,50,.1)}
-  50%{box-shadow:0 0 0 1px rgba(255,243,200,.2) inset,0 28px 64px rgba(0,0,0,.65),0 0 64px rgba(228,170,70,.42),0 0 140px rgba(184,140,50,.22)}
+  0%,100%{box-shadow:0 18px 48px rgba(0,0,0,.55),0 0 28px rgba(184,140,50,.14),0 0 70px rgba(184,140,50,.08)}
+  50%{box-shadow:0 18px 48px rgba(0,0,0,.55),0 0 48px rgba(228,170,70,.32),0 0 100px rgba(184,140,50,.18)}
 }
 
-/* Full-bleed cover — frame her face (LEFT); soften right baked type */
+/* Full image at native aspect — no object-fit:cover crop, no Ken Burns clip */
 .rr-card-art{
-  position:absolute;inset:0;z-index:0;
-  background-size:cover;background-repeat:no-repeat;
-  background-position:18% 18%;
-  transform-origin:22% 28%;
-  animation:rr-ken 28s ease-in-out infinite alternate;
+  position:relative;display:block;width:100%;flex:none;
+  aspect-ratio:1672 / 941;
+  background-color:#070604;
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+  background-position:center;
+  animation:none;
 }
-@keyframes rr-ken{
-  0%{transform:scale(1.06) translate3d(0,0,0)}
-  100%{transform:scale(1.16) translate3d(2%,1.2%,0)}
-}
+.rr-vignette,.rr-leak{display:none !important}
 
-/* Charcoal/bronze vignette: clear face left/upper; crush right baked text + bottom for UI */
-.rr-vignette{
-  position:absolute;inset:0;z-index:1;pointer-events:none;
-  background:
-    linear-gradient(180deg,rgba(7,6,4,.28) 0%,rgba(7,6,4,.05) 18%,rgba(7,6,4,.04) 38%,rgba(7,6,4,.55) 62%,rgba(7,6,4,.92) 82%,#070604 100%),
-    linear-gradient(90deg,rgba(7,6,4,.08) 0%,rgba(7,6,4,.02) 28%,rgba(7,6,4,.35) 58%,rgba(7,6,4,.78) 78%,rgba(7,6,4,.9) 100%);
-}
-
-/* Warm sunrise light-leak sweep */
-.rr-leak{
-  position:absolute;inset:-20% -40%;z-index:2;pointer-events:none;opacity:0;
-  background:linear-gradient(105deg,transparent 30%,rgba(255,210,120,.0) 40%,rgba(255,220,150,.28) 48%,rgba(255,180,80,.18) 52%,transparent 62%);
-  mix-blend-mode:screen;
-  animation:rr-leak 9s ease-in-out infinite;
-}
-@keyframes rr-leak{
-  0%,55%{transform:translateX(-35%) skewX(-8deg);opacity:0}
-  62%{opacity:.85}
-  78%{transform:translateX(35%) skewX(-8deg);opacity:.55}
-  90%,100%{transform:translateX(55%) skewX(-8deg);opacity:0}
-}
-
-/* Drifting gold dust */
-.rr-dust{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+/* Soft dust only over the photo */
+.rr-dust{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 .rr-dust i{
   position:absolute;display:block;border-radius:50%;background:#FFE7A8;
   box-shadow:0 0 6px 1px rgba(255,214,130,.75);opacity:0;
   animation:rr-dust-drift linear infinite;
 }
-.rr-dust i:nth-child(1){width:2px;height:2px;left:8%;bottom:-4%;animation-duration:11s;animation-delay:0s}
-.rr-dust i:nth-child(2){width:3px;height:3px;left:18%;bottom:-6%;animation-duration:14s;animation-delay:1.2s}
-.rr-dust i:nth-child(3){width:2px;height:2px;left:28%;bottom:-3%;animation-duration:12s;animation-delay:2.4s}
-.rr-dust i:nth-child(4){width:4px;height:4px;left:38%;bottom:-8%;animation-duration:16s;animation-delay:.6s}
-.rr-dust i:nth-child(5){width:2px;height:2px;left:48%;bottom:-5%;animation-duration:13s;animation-delay:3.1s}
-.rr-dust i:nth-child(6){width:3px;height:3px;left:58%;bottom:-4%;animation-duration:15s;animation-delay:1.8s}
-.rr-dust i:nth-child(7){width:2px;height:2px;left:68%;bottom:-7%;animation-duration:11.5s;animation-delay:4s}
-.rr-dust i:nth-child(8){width:3px;height:3px;left:76%;bottom:-3%;animation-duration:17s;animation-delay:.3s}
-.rr-dust i:nth-child(9){width:2px;height:2px;left:86%;bottom:-6%;animation-duration:12.5s;animation-delay:2.8s}
-.rr-dust i:nth-child(10){width:4px;height:4px;left:14%;bottom:-9%;animation-duration:18s;animation-delay:5s}
-.rr-dust i:nth-child(11){width:2px;height:2px;left:42%;bottom:-2%;animation-duration:10s;animation-delay:3.6s}
-.rr-dust i:nth-child(12){width:3px;height:3px;left:92%;bottom:-5%;animation-duration:14.5s;animation-delay:1s}
+.rr-dust i:nth-child(1){width:2px;height:2px;left:8%;bottom:8%;animation-duration:11s;animation-delay:0s}
+.rr-dust i:nth-child(2){width:3px;height:3px;left:18%;bottom:12%;animation-duration:14s;animation-delay:1.2s}
+.rr-dust i:nth-child(3){width:2px;height:2px;left:28%;bottom:20%;animation-duration:12s;animation-delay:2.4s}
+.rr-dust i:nth-child(4){width:4px;height:4px;left:38%;bottom:10%;animation-duration:16s;animation-delay:.6s}
+.rr-dust i:nth-child(5){width:2px;height:2px;left:48%;bottom:28%;animation-duration:13s;animation-delay:3.1s}
+.rr-dust i:nth-child(6){width:3px;height:3px;left:58%;bottom:16%;animation-duration:15s;animation-delay:1.8s}
+.rr-dust i:nth-child(7){width:2px;height:2px;left:68%;bottom:22%;animation-duration:11.5s;animation-delay:4s}
+.rr-dust i:nth-child(8){width:3px;height:3px;left:76%;bottom:14%;animation-duration:17s;animation-delay:.3s}
+.rr-dust i:nth-child(9){width:2px;height:2px;left:86%;bottom:30%;animation-duration:12.5s;animation-delay:2.8s}
+.rr-dust i:nth-child(10){width:4px;height:4px;left:14%;bottom:35%;animation-duration:18s;animation-delay:5s}
+.rr-dust i:nth-child(11){width:2px;height:2px;left:42%;bottom:40%;animation-duration:10s;animation-delay:3.6s}
+.rr-dust i:nth-child(12){width:3px;height:3px;left:92%;bottom:18%;animation-duration:14.5s;animation-delay:1s}
 @keyframes rr-dust-drift{
   0%{transform:translate3d(0,0,0) scale(.6);opacity:0}
-  12%{opacity:.9}
-  70%{opacity:.55}
-  100%{transform:translate3d(18px,-110%,0) scale(1.1);opacity:0}
+  12%{opacity:.75}
+  70%{opacity:.4}
+  100%{transform:translate3d(12px,-70%,0) scale(1.05);opacity:0}
 }
 
-/* Thin gold rules */
-.rr-rule{position:absolute;left:18px;right:18px;height:1px;z-index:5;pointer-events:none;
+/* Bottom gold rule only (no top rule) */
+.rr-rule{display:none}
+.rr-rule-bot{
+  display:block;position:relative;left:auto;right:auto;top:auto;bottom:auto;
+  width:auto;margin:0 18px;height:1px;z-index:5;pointer-events:none;order:3;
   background:linear-gradient(90deg,transparent,rgba(228,199,122,.85) 18%,rgba(255,243,200,.95) 50%,rgba(228,199,122,.85) 82%,transparent);
-  box-shadow:0 0 10px rgba(228,170,70,.45)}
-.rr-rule-top{top:14px}
-.rr-rule-bot{bottom:14px}
+  box-shadow:0 0 10px rgba(228,170,70,.45)
+}
+.rr-rule-top{display:none !important}
 
-/* Gold ribbon eyebrow */
+/* Chrome strip under the photo */
+.rr-card-body{
+  position:relative;left:auto;right:auto;bottom:auto;z-index:6;order:2;
+  padding:14px 20px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;
+  background:linear-gradient(180deg,rgba(7,6,4,.92),#070604 40%);
+}
+
+/* Ribbon sits in the chrome strip, not over the art */
 .rr-new{
-  position:absolute;top:24px;left:50%;transform:translateX(-50%);z-index:6;
+  position:relative;top:auto;left:auto;transform:none;z-index:6;
   display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
   font-family:Cinzel,serif;font-size:9px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;
-  color:#1a1305;
+  color:#1a1305;margin:0 0 12px;
   background:linear-gradient(90deg,#8F6A22 0%,#E4C77A 28%,#FFF3C8 50%,#E4C77A 72%,#8F6A22 100%);
   background-size:220% 100%;
   padding:7px 16px;border-radius:999px;
@@ -1060,42 +1047,20 @@ body.rf[data-rf-lib="cat"] #rr-lib-sec{display:none !important}
   50%{background-position:100% 50%;box-shadow:0 0 30px rgba(240,180,70,.95),0 0 10px rgba(255,236,190,1),0 4px 14px rgba(0,0,0,.35)}
 }
 
-.rr-card-body{
-  position:absolute;left:0;right:0;bottom:0;z-index:6;
-  padding:0 20px 28px;display:flex;flex-direction:column;align-items:flex-start;text-align:left;
-}
+/* Baked-in cover lettering already has the title — hide duplicate foil overlay */
+.rr-card-title{display:none !important}
 
-/* Huge stacked gold-foil Cinzel */
-.rr-card-title{
-  margin:0 0 10px;padding:0;line-height:0.92;
-  font-family:Cinzel,serif;font-weight:700;text-transform:uppercase;
-  display:flex;flex-direction:column;gap:2px;
-}
-.rr-card-title .rr-t1,.rr-card-title .rr-t2{
-  display:block;
-  background:linear-gradient(100deg,#8F6A22 0%,#CFA646 18%,#FFF3C8 42%,#E4C77A 58%,#CFA646 78%,#8F6A22 100%);
-  background-size:250% 100%;
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-  filter:drop-shadow(0 0 18px rgba(228,170,70,.45)) drop-shadow(0 4px 18px rgba(0,0,0,.65));
-  animation:rr-foil 7s linear infinite;
-}
-.rr-card-title .rr-t1{font-size:clamp(34px,9.2vw,46px);letter-spacing:.12em}
-.rr-card-title .rr-t2{font-size:clamp(24px,6.4vw,32px);letter-spacing:.18em;opacity:.96}
-@keyframes rr-foil{from{background-position:150% 0}to{background-position:-100% 0}}
-
-/* Five day markers */
-.rr-days{display:flex;align-items:center;gap:10px;margin:2px 0 12px}
+.rr-days{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 10px}
 .rr-days i{
   width:7px;height:7px;border-radius:50%;display:block;
   background:radial-gradient(circle at 35% 30%,#FFF3C8,#CFA646 55%,#8F6A22);
-  box-shadow:0 0 8px rgba(228,170,70,.7);
-  opacity:.85;
+  box-shadow:0 0 8px rgba(228,170,70,.7);opacity:.85;
 }
 .rr-days i:first-child{box-shadow:0 0 12px rgba(255,220,150,.95);transform:scale(1.15)}
 
 .rr-card-up{
   font-family:Inter,system-ui,sans-serif;font-size:13px;color:rgba(253,251,245,.78);
-  margin:0 0 16px;letter-spacing:.01em;max-width:28em;
+  margin:0 0 14px;letter-spacing:.01em;max-width:28em;
 }
 .rr-card-up b{color:#E4C77A;font-weight:600}
 
@@ -1115,22 +1080,16 @@ body.rf[data-rf-lib="cat"] #rr-lib-sec{display:none !important}
 
 @media (min-width:520px){
   #rr-home-sec,#rr-lib-sec{margin-left:0;margin-right:0}
-  .rr-card{border-radius:28px;border:2px solid rgba(228,199,122,.65);min-height:420px}
-  .rr-rule-top{top:18px}.rr-rule-bot{bottom:18px}
-  .rr-new{top:28px}
+  .rr-card{border-radius:28px;border:1px solid rgba(228,199,122,.45)}
 }
 
 @media (max-width:380px){
-  .rr-card{min-height:min(54vh,460px)}
-  .rr-card-title .rr-t1{font-size:32px}
-  .rr-card-title .rr-t2{font-size:22px}
+  .rr-card-body{padding:12px 16px 16px}
   .rr-open{padding:12px 26px;font-size:12px}
 }
 
 @media (prefers-reduced-motion:reduce){
-  .rr-card,.rr-card-art,.rr-leak,.rr-dust i,.rr-new,.rr-card-title .rr-t1,.rr-card-title .rr-t2,.rr-open{animation:none !important}
-  .rr-card-art{transform:scale(1.08)}
-  .rr-leak{display:none}
+  .rr-card,.rr-dust i,.rr-new,.rr-open{animation:none !important}
   .rr-dust{display:none}
 }
 
@@ -1777,14 +1736,12 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
  </div>
  <div class="rf-sec rf-reveal" id="rr-home-sec">
   <button type="button" class="rr-card" id="rr-home-card" data-rf-go="rr" aria-label="Open Your Reset and Restore Series">
-   <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" aria-hidden="true"></div>
-   <div class="rr-vignette" aria-hidden="true"></div>
-   <div class="rr-leak" aria-hidden="true"></div>
-   <div class="rr-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-   <div class="rr-rule rr-rule-top" aria-hidden="true"></div>
-   <span class="rr-new">NEW · 5-DAY SERIES</span>
+   <div class="rr-media">
+    <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" role="img" aria-label="Reset and Restore"></div>
+    <div class="rr-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+   </div>
    <div class="rr-card-body">
-    <h2 class="rr-card-title"><span class="rr-t1">RESET</span><span class="rr-t2">&amp; RESTORE</span></h2>
+    <span class="rr-new">NEW · 5-DAY SERIES</span>
     <div class="rr-days" aria-label="Five-day series"><i></i><i></i><i></i><i></i><i></i></div>
     <p class="rr-card-up">Up next: <b id="rr-up-next">Introduction · Start Here</b></p>
     <span class="rr-open">Begin Day 1</span>
@@ -2121,14 +2078,12 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
 
 <div class="rr-lib-wrap" id="rr-lib-sec">
   <button type="button" class="rr-card" id="rr-lib-card" data-rf-go="rr" aria-label="Open Reset and Restore Series">
-   <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" aria-hidden="true"></div>
-   <div class="rr-vignette" aria-hidden="true"></div>
-   <div class="rr-leak" aria-hidden="true"></div>
-   <div class="rr-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-   <div class="rr-rule rr-rule-top" aria-hidden="true"></div>
-   <span class="rr-new">NEW · 5-DAY SERIES</span>
+   <div class="rr-media">
+    <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" role="img" aria-label="Reset and Restore"></div>
+    <div class="rr-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+   </div>
    <div class="rr-card-body">
-    <h2 class="rr-card-title"><span class="rr-t1">RESET</span><span class="rr-t2">&amp; RESTORE</span></h2>
+    <span class="rr-new">NEW · 5-DAY SERIES</span>
     <div class="rr-days" aria-label="Five-day series"><i></i><i></i><i></i><i></i><i></i></div>
     <p class="rr-card-up">Five days to come back to yourself.</p>
     <span class="rr-open">Begin Day 1</span>
