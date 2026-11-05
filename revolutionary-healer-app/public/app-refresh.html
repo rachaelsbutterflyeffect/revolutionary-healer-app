@@ -8623,6 +8623,12 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     var s = document.createElement('script'); s.src = '/' + n + '.js'; document.body.appendChild(s);
   }
   function go() {
+    // MOCK ONLY: load daily-code deck so Embody/Power/Prosperity wiring can be reviewed
+    if (typeof RR_MOCK !== 'undefined' && RR_MOCK) {
+      window.__rfFeatures = { codePull: true };
+      load(MAP.codePull);
+      return;
+    }
     var em = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || '';
     if (!em) { if (++tries < 80) setTimeout(go, 250); return; }
     fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store' })
@@ -8634,5 +8640,71 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
 })();
 
 </script>
+
+<div class="rr-mock-flag" id="rr-mock-flag" hidden>MOCK-UP ONLY · Reset and Restore · do not publish</div>
+<script>
+(function () {
+  var mock = false;
+  try { mock = new URLSearchParams(location.search).get('rr_mock') === '1' || sessionStorage.getItem('rr_mock') === '1'; } catch (e) {}
+  if (mock) {
+    var fl = document.getElementById('rr-mock-flag');
+    if (fl) fl.hidden = false;
+  }
+  var ORDER = [
+    { id: 'intro', slug: 'rr-intro', label: 'Introduction · Start Here' },
+    { id: 'd1', slug: 'slowing-the-mind', label: 'Day 1 · Slowing the Mind' },
+    { id: 'd2', slug: 'lifting-emotional-anxiety', label: 'Day 2 · Lifting Emotional Anxiety' },
+    { id: 'd3', slug: 'embodiment-activation', label: 'Day 3 · Embodiment Activation' },
+    { id: 'd4', slug: 'power-activation', label: 'Day 4 · Power Activation' },
+    { id: 'd5', slug: 'prosperity-flow-activation', label: 'Day 5 · Prosperity Flow Activation' }
+  ];
+  function doneSet() {
+    try { return JSON.parse(localStorage.getItem('rr_done') || '{}') || {}; } catch (e) { return {}; }
+  }
+  function markDone(id) {
+    var d = doneSet(); d[id] = 1;
+    try { localStorage.setItem('rr_done', JSON.stringify(d)); } catch (e) {}
+    paint();
+  }
+  function paint() {
+    var d = doneSet();
+    document.querySelectorAll('#rf-rr .rr-row').forEach(function (row) {
+      var id = row.getAttribute('data-rr');
+      row.classList.toggle('done', !!d[id]);
+      var play = row.querySelector('.rr-play');
+      if (play) play.innerHTML = d[id]
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="4,12 10,18 20,6"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="currentColor"/></svg>';
+    });
+    var next = ORDER[0];
+    for (var i = 0; i < ORDER.length; i++) { if (!d[ORDER[i].id]) { next = ORDER[i]; break; } }
+    var el = document.getElementById('rr-up-next');
+    if (el) el.textContent = next.label;
+  }
+  document.addEventListener('click', function (e) {
+    var row = e.target.closest && e.target.closest('#rf-rr .rr-row');
+    if (!row) return;
+    e.preventDefault();
+    var id = row.getAttribute('data-rr');
+    var slug = row.getAttribute('data-rr-slug');
+    markDone(id);
+    if (typeof window.handleActivationCardClick === 'function') {
+      window.handleActivationCardClick(slug);
+    } else if (typeof window.openActivationDetail === 'function') {
+      window.openActivationDetail(slug);
+    }
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paint); else paint();
+  var _sp = window.showPage;
+  if (typeof _sp === 'function') {
+    window.showPage = function (id) {
+      var r = _sp.apply(this, arguments);
+      try { paint(); } catch (e) {}
+      return r;
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
