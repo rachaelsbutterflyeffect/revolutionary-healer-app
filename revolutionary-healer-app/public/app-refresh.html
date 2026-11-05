@@ -8676,10 +8676,11 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     var s = document.createElement('script'); s.src = '/' + n + '.js'; document.body.appendChild(s);
   }
   function go() {
-    // MOCK ONLY: load daily-code deck so Embody/Power/Prosperity wiring can be reviewed
+    // MOCK ONLY: load daily-code deck + home check-in (fits-you-today door) for preview review
     if (typeof RR_MOCK !== 'undefined' && RR_MOCK) {
-      window.__rfFeatures = { codePull: true };
+      window.__rfFeatures = { codePull: true, homeCheckin: true };
       load(MAP.codePull);
+      load(MAP.homeCheckin);
       return;
     }
     var em = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || '';
