@@ -957,6 +957,13 @@ body.rf #membership-management-page { display:none !important; }
 .rr-mock-flag{position:fixed;left:0;right:0;bottom:0;z-index:9999;background:#0a0806;color:var(--rf-gold,#CFA646);border-top:1px solid var(--rf-gold,#CFA646);text-align:center;font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:7px 10px;pointer-events:none}
 body.rf{padding-bottom:36px}
 #rr-home-sec{margin-top:28px;margin-left:-4px;margin-right:-4px;padding:0 0 6px}
+#rr-lib-sec{margin:6px 0 22px;padding:0}
+body.rf[data-rf-lib="cat"] #rr-lib-sec{display:none !important}
+#rr-lib-sec .rr-card-art{height:160px}
+#rr-lib-sec .rr-card-body{margin-top:-48px;padding:8px 18px 18px}
+#rr-lib-sec .rr-card-title{font-size:22px}
+#rr-lib-sec .rr-card-up{display:none}
+
 .rr-new{position:absolute;top:14px;left:14px;z-index:3;display:inline-flex;align-items:center;justify-content:center;font-family:Cinzel,serif;font-size:11px;font-weight:700;letter-spacing:.28em;text-transform:uppercase;color:#1a1305;background:linear-gradient(90deg,#CFA646 0%,#FFF3C8 45%,#E4C77A 55%,#CFA646 100%);background-size:220% 100%;padding:7px 14px;border-radius:999px;border:1px solid rgba(255,248,220,.65);box-shadow:0 0 18px rgba(240,180,70,.75),0 0 4px rgba(255,236,190,.9);animation:rr-pill 2.4s ease-in-out infinite}
 @keyframes rr-pill{0%,100%{background-position:0% 50%;box-shadow:0 0 14px rgba(240,180,70,.55),0 0 3px rgba(255,236,190,.7)}50%{background-position:100% 50%;box-shadow:0 0 26px rgba(240,180,70,.95),0 0 8px rgba(255,236,190,1)}}
 .rr-card{all:unset;box-sizing:border-box;display:block;width:100%;cursor:pointer;border-radius:24px;overflow:hidden;position:relative;background:#0c0a08;border:1.5px solid rgba(228,199,122,.72);box-shadow:0 0 0 1px rgba(255,236,190,.12) inset,0 18px 48px rgba(0,0,0,.55),0 0 36px rgba(207,166,70,.28),0 0 72px rgba(207,166,70,.12);animation:rr-pulse 3.6s ease-in-out infinite}
@@ -1961,6 +1968,20 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
         <p>Every activation inside Revolutionary Healer is now yours.</p>
       </div>
     </div>
+
+<div class="rr-lib-wrap" id="rr-lib-sec">
+  <button type="button" class="rr-card" id="rr-lib-card" data-rf-go="rr" aria-label="Open Reset and Restore Series">
+   <span class="rr-new">NEW</span>
+   <div class="rr-sparkles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>
+   <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore.jpg')"></div>
+   <div class="rr-card-body">
+    <p class="rr-card-kicker">5-day series</p>
+    <h2 class="rr-card-title">Reset and Restore</h2>
+    <p class="rr-card-up">Five days to come back to yourself.</p>
+    <span class="rr-open">Open Series</span>
+   </div>
+  </button>
+</div>
 
 <div class="rf-lsecs" id="rf-lsecs">
   <button type="button" class="rf-lsec rf-favtile" data-rf-favs hidden><span class="bgc" style="background-image:url('/images/sections/sec-favourites.webp');background-position:58% 18%" aria-hidden="true"></span><span class="in"><b>Favourites</b><small data-rf-favcount></small></span><span class="arr" aria-hidden="true">→</span></button>
