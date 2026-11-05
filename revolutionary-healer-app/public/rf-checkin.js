@@ -71,7 +71,7 @@
     var secs = home.querySelectorAll('.rf-sec'); var lanes = null; secs.forEach(function (s) { if (s.querySelector('.rf-lanes')) lanes = s; });
     var sec = document.createElement('div'); sec.className = 'rf-sec rf-reveal in'; sec.id = 'rf-fit-door';
     sec.innerHTML = '<h3>Your Activation Today</h3><button type="button" class="rf-door" data-rf-go="fit"><span class="rf-orb" aria-hidden="true">◉</span><span class="txt">Find the activation that best fits you today</span><span class="arr" aria-hidden="true">→</span></button>';
-    if (lanes) lanes.parentNode.insertBefore(sec, lanes.nextSibling); else home.appendChild(sec);
+    if (lanes) lanes.parentNode.insertBefore(sec, lanes.nextSibling); else home.appendChild(sec); var rrSec = document.getElementById('rr-home-sec'); if (rrSec) rrSec.parentNode.insertBefore(sec, rrSec);
     var scr = document.createElement('section'); scr.className = 'rf-screen'; scr.id = 'rf-fit'; scr.setAttribute('aria-label', 'Your activation today');
     scr.innerHTML = '<button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="ttl shine">Your Activation</h2><p class="sub">Five quick taps. Then the activation that best fits you today.</p><div class="small-orb fit-ring" id="dorb"><canvas id="fitc" aria-hidden="true"></canvas></div><div id="diag"></div>';
     home.parentNode.insertBefore(scr, home.nextSibling);

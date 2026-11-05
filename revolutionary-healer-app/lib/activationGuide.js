@@ -560,4 +560,133 @@ AI recommendation notes: Do NOT restrict to The Expander. Recommend when
 Restriction/limitation around success is actually supported by the
 conversation. Also, wherever possible, define "success" through the
 specific thing she is limiting rather than using the word alone.
+
+RESET AND RESTORE SERIES (5 days)
+
+Reset and Restore Series
+What this activation is for: A five-day audio series for coming back to
+yourself when you have been running hot, bracing, or living outside your
+body. Start with the short Introduction, then one day at a time: Slowing
+the Mind, Lifting Emotional Anxiety, Embodiment, Power, and Prosperity
+Flow. Recommend the series as a whole when she needs a multi-day soft
+reset rather than a single one-off activation -- burnout after a hard
+stretch, wanting to feel like herself again, or asking for a guided path
+instead of picking one title.
+When to use this: She asks for a multi-day reset or "something gentle over
+a few days." She feels fried, braced, or disconnected from her body and
+power. She pulled one of the Embody / Power / Prosperity Flow codes and
+wants the matching days. She wants a clear start-here path through several
+related activations.
+AI recommendation notes: When recommending the series, name it "Reset and
+Restore" (or "your Reset and Restore series") and tell her to start with
+the Introduction, then Day 1. Do not dump all five day titles unless she
+asks for the full map. Prefer the series over stacking five separate
+one-off recommendations in one reply. If only one day clearly matches,
+recommend that single activation by its exact title instead.
+
+Slowing the Mind
+What this activation is for: Use this when your mind will not stop spinning
+and you need a softer pace before sleep or before the next activation. It
+slows the racing thoughts so your mind can settle, and your body can feel
+safe enough to rest. Day 1 of Reset and Restore.
+When to use this: Your thoughts are racing and you cannot settle. Before
+bed when your mind is still working. Day 1 of Reset and Restore. She says
+she cannot turn her brain off, is overthinking, or needs her mind to slow
+down before she can rest or do deeper work.
+AI recommendation notes: Strong fit for racing thoughts, overthinking, and
+pre-sleep mental noise. Prefer this over heavier clearing when the main
+complaint is speed of thought, not energetic heaviness. Distinct from
+Grounding (body/presence) and Nervous System Recalibration
+(over-responsibility/overworking).
+
+Lifting Emotional Anxiety
+What this activation is for: Use this when anxiety is sitting in your body
+and you want it lifted gently before sleep. A bedtime body scan with light
+language that lifts emotional anxiety from the body so you can rest. Day 2
+of Reset and Restore.
+When to use this: Emotional anxiety is loud in your chest or stomach.
+Before bed as Day 2 of Reset and Restore. After a heavy emotional day. She
+describes anxiety as a body feeling she wants lifted, not analyzed.
+AI recommendation notes: Recommend when anxiety is felt in the body and she
+wants gentle lift/rest, especially at night. Do not use as a catch-all for
+every worry -- if she needs a decision or a strategy, coach that first. Not
+a clinical anxiety treatment; frame as energetic/rest support.
+
+Embodiment Activation
+What this activation is for: Use this when you have been floating above
+your body or leaving yourself during intensity, and you are ready to live
+fully in it again. Calls every part of you back into your body so your
+light has a home and your shifts can finally hold. Day 3 of Reset and
+Restore. Also the paired activation after the Embody 98321 code.
+When to use this: You feel disconnected from your body. Your shifts are
+not sticking. Day 3 of Reset and Restore. After the Embody 98321 code. She
+describes leaving herself, living in her head, or shifts that will not
+hold because she is not actually in her body.
+AI recommendation notes: Prefer this when the issue is being out of the
+body / shifts not landing, not generic "I feel off." Distinct from
+Grounding (scattered energy into present) and Remembrance (soul/identity
+reconnection). After Embody 98321, this is the natural next listen.
+
+Power Activation
+What this activation is for: Use this when your power has been sitting just
+under the surface and you are done apologizing for it. Brings your power up
+from under the surface into steady, grounded authority -- soft and powerful
+at once. Day 4 of Reset and Restore. Also the paired activation after the
+Power 55673 code.
+When to use this: You have been shrinking your strength. Before a decision
+or conversation that needs your full presence. Day 4 of Reset and Restore.
+After the Power 55673 code. She describes dimming, apologizing for her
+strength, or needing steady authority without hardening.
+AI recommendation notes: Recommend for reclaiming soft power / authority,
+not generic "confidence" (see Confidence Activation) and not leadership
+identity work (see Leadership Recode). After Power 55673, this is the
+natural next listen.
+
+Prosperity Flow Activation
+What this activation is for: Use this when you have been holding money
+tightly in case it stops, and you are ready to let prosperity come in and
+stay. Dissolves the bracing around money so prosperity can move through
+you as a current you are allowed to stand in. Day 5 of Reset and Restore.
+Also the paired activation after the Prosperity Flow 36951 code.
+When to use this: You are bracing around money. Before a launch or
+receiving moment. Day 5 of Reset and Restore. After the Prosperity Flow
+36951 code. She describes gripping money, fear it will stop, or difficulty
+letting money move through without bracing.
+AI recommendation notes: Specific to bracing/flow around money, not the
+million-dollar identity (Million Dollar Blueprint) or post-receive fear
+patterns (Wealth Frequency) or "more than enough" overflow discomfort
+(More Than Enough). After Prosperity Flow 36951, this is the natural next
+listen.
+
+ALSO IN THE LIBRARY (short entries so the AI can name them exactly)
+
+Throat Chakra Activation
+What this activation is for: Opens and balances your throat chakra,
+supporting you in speaking and being heard with more ease and truth.
+When to use this: She is holding back words, softening her message, or
+struggling to say what is true. Before a conversation where she needs to
+be heard. When her voice feels stuck or she keeps swallowing what she
+knows.
+AI recommendation notes: Use for speaking/being heard themes with actual
+evidence of holding back. Do not recommend simply because she mentioned a
+hard conversation.
+
+Yes Factor Vibe Booster
+What this activation is for: A quick frequency boost to help you say yes
+to more of what you want, clearing hesitation and doubt.
+When to use this: She keeps hesitating on something she already wants.
+Before saying yes to an opportunity, invite, or next step she has been
+circling. When doubt is delaying a clear yes.
+AI recommendation notes: Short booster -- good when she needs a quick yes
+nudge, not a deep Gap process. Distinct from Removing the Frequency of
+Doubt (second-guessing after knowing).
+
+Morning Vibe Booster
+What this activation is for: A short practice to set your frequency for
+the day, so you start from clarity and calm instead of catching up.
+When to use this: Start of the day when she wants to set her tone before
+inputs hit. When mornings feel like scrambling to catch up. As a light
+daily opener rather than deep clearing.
+AI recommendation notes: Prefer for morning/start-of-day asks. Do not use
+as a substitute for Grounding or Clearing when those specifically match.
 `;

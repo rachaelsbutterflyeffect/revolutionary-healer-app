@@ -927,6 +927,7 @@ body.rf[data-rf="focus"] #my-revolution, body.rf[data-rf="focus"] #rf-focus-head
 body.rf[data-rf="rev"] #my-revolution, body.rf[data-rf="rev"] #rf-rev-head { display:block !important; }
 body.rf[data-rf="page"] .page-view.active { display:block !important; }
 body.rf[data-rf="account"] #rf-account, body.rf[data-rf="support"] #rf-support { display:block !important; }
+body.rf[data-rf="rr"] #rf-rr, body.rf[data-rf="rr"] #rf-rr-head { display:block !important; }
 /* Today's Focus = just the newest-Shift card (or the empty card) */
 body.rf[data-rf="focus"] #my-revolution .section-head, body.rf[data-rf="focus"] #my-revolution .revolution-subsection { display:none !important; }
 /* My Revolution = Shifts + Favorites; the focus card lives on its own tab */
@@ -935,6 +936,160 @@ body.rf[data-rf="rev"] #my-revolution .section-head, body.rf[data-rf="rev"] #my-
 body.rf #hero-section > .wrap > h1, body.rf #hero-section .hero-divider, body.rf #hero-section .hero-subline, body.rf #hero-section > .wrap > .sub, body.rf #hero-section .starters { display:none !important; }
 /* membership-management-page is stale (hard-coded price/date) and unreachable in the refresh */
 body.rf #membership-management-page { display:none !important; }
+
+
+/* ---------- Reset and Restore series ---------- */
+/* Golden Dawn banner — full native photo + chrome below (home + Activations) */
+body.rf{padding-bottom:36px}
+#rr-home-sec{margin:18px -20px 10px;padding:0}
+#rr-lib-sec{margin:4px -20px 22px;padding:0}
+body.rf[data-rf-lib="cat"] #rr-lib-sec{display:none !important}
+
+.rr-card{
+  all:unset;box-sizing:border-box;display:flex;flex-direction:column;width:100%;cursor:pointer;position:relative;overflow:hidden;
+  border-radius:0;background:#070604;
+  box-shadow:0 18px 48px rgba(0,0,0,.55),0 0 36px rgba(184,140,50,.18),0 0 80px rgba(184,140,50,.1);
+  animation:rr-border-breathe 4.8s ease-in-out infinite;
+}
+.rr-card:active{transform:scale(.995)}
+.rr-media{position:relative;width:100%;flex:none;line-height:0}
+@keyframes rr-border-breathe{
+  0%,100%{box-shadow:0 18px 48px rgba(0,0,0,.55),0 0 28px rgba(184,140,50,.14),0 0 70px rgba(184,140,50,.08)}
+  50%{box-shadow:0 18px 48px rgba(0,0,0,.55),0 0 48px rgba(228,170,70,.32),0 0 100px rgba(184,140,50,.18)}
+}
+
+/* Full image at native aspect — no object-fit:cover crop, no Ken Burns clip */
+.rr-card-art{
+  position:relative;display:block;width:100%;flex:none;
+  aspect-ratio:1672 / 941;
+  background-color:#070604;
+  background-size:100% 100%;
+  background-repeat:no-repeat;
+  background-position:center;
+  animation:none;
+}
+.rr-vignette,.rr-leak{display:none !important}
+
+/* Soft dust only over the photo */
+.rr-dust{position:absolute;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+.rr-dust i{
+  position:absolute;display:block;border-radius:50%;background:#FFE7A8;
+  box-shadow:0 0 6px 1px rgba(255,214,130,.75);opacity:0;
+  animation:rr-dust-drift linear infinite;
+}
+.rr-dust i:nth-child(1){width:2px;height:2px;left:8%;bottom:8%;animation-duration:11s;animation-delay:0s}
+.rr-dust i:nth-child(2){width:3px;height:3px;left:18%;bottom:12%;animation-duration:14s;animation-delay:1.2s}
+.rr-dust i:nth-child(3){width:2px;height:2px;left:28%;bottom:20%;animation-duration:12s;animation-delay:2.4s}
+.rr-dust i:nth-child(4){width:4px;height:4px;left:38%;bottom:10%;animation-duration:16s;animation-delay:.6s}
+.rr-dust i:nth-child(5){width:2px;height:2px;left:48%;bottom:28%;animation-duration:13s;animation-delay:3.1s}
+.rr-dust i:nth-child(6){width:3px;height:3px;left:58%;bottom:16%;animation-duration:15s;animation-delay:1.8s}
+.rr-dust i:nth-child(7){width:2px;height:2px;left:68%;bottom:22%;animation-duration:11.5s;animation-delay:4s}
+.rr-dust i:nth-child(8){width:3px;height:3px;left:76%;bottom:14%;animation-duration:17s;animation-delay:.3s}
+.rr-dust i:nth-child(9){width:2px;height:2px;left:86%;bottom:30%;animation-duration:12.5s;animation-delay:2.8s}
+.rr-dust i:nth-child(10){width:4px;height:4px;left:14%;bottom:35%;animation-duration:18s;animation-delay:5s}
+.rr-dust i:nth-child(11){width:2px;height:2px;left:42%;bottom:40%;animation-duration:10s;animation-delay:3.6s}
+.rr-dust i:nth-child(12){width:3px;height:3px;left:92%;bottom:18%;animation-duration:14.5s;animation-delay:1s}
+@keyframes rr-dust-drift{
+  0%{transform:translate3d(0,0,0) scale(.6);opacity:0}
+  12%{opacity:.75}
+  70%{opacity:.4}
+  100%{transform:translate3d(12px,-70%,0) scale(1.05);opacity:0}
+}
+
+/* Bottom gold rule only (no top rule) */
+.rr-rule{display:none}
+.rr-rule-bot{
+  display:block;position:relative;left:auto;right:auto;top:auto;bottom:auto;
+  width:auto;margin:0 18px;height:1px;z-index:5;pointer-events:none;order:3;
+  background:linear-gradient(90deg,transparent,rgba(228,199,122,.85) 18%,rgba(255,243,200,.95) 50%,rgba(228,199,122,.85) 82%,transparent);
+  box-shadow:0 0 10px rgba(228,170,70,.45)
+}
+.rr-rule-top{display:none !important}
+
+/* Chrome strip under the photo */
+.rr-card-body{
+  position:relative;left:auto;right:auto;bottom:auto;z-index:6;order:2;
+  padding:14px 20px 18px;display:flex;flex-direction:column;align-items:center;text-align:center;
+  background:linear-gradient(180deg,rgba(7,6,4,.92),#070604 40%);
+}
+
+/* Ribbon sits in the chrome strip, not over the art */
+.rr-new{
+  position:relative;top:auto;left:auto;transform:none;z-index:6;
+  display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;
+  font-family:Cinzel,serif;font-size:9px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;
+  color:#1a1305;margin:0 0 12px;
+  background:linear-gradient(90deg,#8F6A22 0%,#E4C77A 28%,#FFF3C8 50%,#E4C77A 72%,#8F6A22 100%);
+  background-size:220% 100%;
+  padding:7px 16px;border-radius:999px;
+  border:1px solid rgba(255,248,220,.7);
+  box-shadow:0 0 22px rgba(240,180,70,.7),0 0 6px rgba(255,236,190,.85),0 4px 14px rgba(0,0,0,.35);
+  animation:rr-ribbon 2.8s ease-in-out infinite;
+}
+@keyframes rr-ribbon{
+  0%,100%{background-position:0% 50%;box-shadow:0 0 16px rgba(240,180,70,.55),0 0 4px rgba(255,236,190,.7),0 4px 14px rgba(0,0,0,.35)}
+  50%{background-position:100% 50%;box-shadow:0 0 30px rgba(240,180,70,.95),0 0 10px rgba(255,236,190,1),0 4px 14px rgba(0,0,0,.35)}
+}
+
+/* Baked-in cover lettering already has the title — hide duplicate foil overlay */
+.rr-card-title{display:none !important}
+
+.rr-days{display:flex;align-items:center;justify-content:center;gap:10px;margin:0 0 10px}
+.rr-days i{
+  width:7px;height:7px;border-radius:50%;display:block;
+  background:radial-gradient(circle at 35% 30%,#FFF3C8,#CFA646 55%,#8F6A22);
+  box-shadow:0 0 8px rgba(228,170,70,.7);opacity:.85;
+}
+.rr-days i:first-child{box-shadow:0 0 12px rgba(255,220,150,.95);transform:scale(1.15)}
+
+.rr-card-up{
+  font-family:Inter,system-ui,sans-serif;font-size:13px;color:rgba(253,251,245,.78);
+  margin:0 0 14px;letter-spacing:.01em;max-width:28em;
+}
+.rr-card-up b{color:#E4C77A;font-weight:600}
+
+.rr-open{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,#FFF3C8 0%,#E4C77A 42%,#CFA646 78%,#A67C2E 100%);
+  color:#1a1305;border:1px solid rgba(255,248,220,.65);border-radius:999px;
+  padding:13px 30px;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  font-family:Cinzel,serif;
+  box-shadow:0 0 28px rgba(228,170,70,.65),0 0 56px rgba(184,140,50,.28),0 8px 20px rgba(0,0,0,.4);
+  animation:rr-cta-pulse 2.8s ease-in-out infinite;
+}
+@keyframes rr-cta-pulse{
+  0%,100%{box-shadow:0 0 22px rgba(228,170,70,.5),0 0 44px rgba(184,140,50,.22),0 8px 20px rgba(0,0,0,.4);transform:scale(1)}
+  50%{box-shadow:0 0 36px rgba(255,220,150,.85),0 0 70px rgba(184,140,50,.38),0 8px 20px rgba(0,0,0,.4);transform:scale(1.025)}
+}
+
+@media (min-width:520px){
+  #rr-home-sec,#rr-lib-sec{margin-left:0;margin-right:0}
+  .rr-card{border-radius:28px;border:1px solid rgba(228,199,122,.45)}
+}
+
+@media (max-width:380px){
+  .rr-card-body{padding:12px 16px 16px}
+  .rr-open{padding:12px 26px;font-size:12px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .rr-card,.rr-dust i,.rr-new,.rr-open{animation:none !important}
+  .rr-dust{display:none}
+}
+
+.rr-head{padding-bottom:8px}
+.rr-lead{font-family:"Cormorant Garamond",Georgia,serif;font-size:18px;color:rgba(253,251,245,.82);margin:4px 0 18px;line-height:1.35}
+.rr-row{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:14px;width:100%;padding:14px 12px;margin-bottom:14px;border-radius:16px;cursor:pointer;background:linear-gradient(135deg,rgba(20,16,10,.92),rgba(10,8,6,.88));border:1px solid rgba(207,166,70,.55);box-shadow:0 0 0 1px rgba(255,236,190,.08) inset,0 0 18px rgba(207,166,70,.28),0 0 36px rgba(207,166,70,.12),inset 0 1px 0 rgba(255,236,190,.18);transition:transform .15s;animation:rr-row-glow 4.2s ease-in-out infinite}
+.rr-row:active{transform:scale(.98)}
+.rr-row.done{border-color:rgba(228,199,122,.7);background:linear-gradient(135deg,rgba(207,166,70,.16),rgba(10,8,6,.88));box-shadow:0 0 0 1px rgba(255,236,190,.12) inset,0 0 22px rgba(207,166,70,.38),0 0 42px rgba(207,166,70,.16),inset 0 1px 0 rgba(255,236,190,.22)}
+@keyframes rr-row-glow{0%,100%{box-shadow:0 0 0 1px rgba(255,236,190,.08) inset,0 0 16px rgba(207,166,70,.24),0 0 32px rgba(207,166,70,.1),inset 0 1px 0 rgba(255,236,190,.16)}50%{box-shadow:0 0 0 1px rgba(255,236,190,.14) inset,0 0 26px rgba(207,166,70,.42),0 0 48px rgba(207,166,70,.2),inset 0 1px 0 rgba(255,236,190,.24)}}
+.rr-row-meta{flex:1;min-width:0}
+.rr-row-label{font-family:Cinzel,serif;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#CFA646;margin:0 0 3px}
+.rr-row-title{font-family:Inter,system-ui,sans-serif;font-size:15px;font-weight:600;color:#fdfbf5;margin:0;line-height:1.25}
+.rr-row-len{font-size:12px;color:rgba(253,251,245,.55);margin-top:3px}
+.rr-play{flex-shrink:0;width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#E4C77A,#CFA646);color:#241C0A;border:1px solid rgba(255,248,220,.45);box-shadow:0 0 16px rgba(228,170,70,.55),0 0 28px rgba(207,166,70,.28);animation:rr-play-glow 3.6s ease-in-out infinite}
+@keyframes rr-play-glow{0%,100%{box-shadow:0 0 14px rgba(228,170,70,.45),0 0 24px rgba(207,166,70,.22)}50%{box-shadow:0 0 22px rgba(228,170,70,.75),0 0 36px rgba(207,166,70,.4)}}
+.rr-row.done .rr-play{background:#241C0A;color:#CFA646;border:1px solid #CFA646;box-shadow:0 0 14px rgba(207,166,70,.35);animation:none}
 
 /* ---------- shared pieces ---------- */
 body.rf h1, body.rf h2, body.rf h3 { font-family:Cinzel,serif; font-weight:600; letter-spacing:.06em; }
@@ -1546,6 +1701,21 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
   <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">Find the resistance that's keeping you stuck</span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></button>
  </div>
+ <div class="rf-sec rf-reveal" id="rr-home-sec">
+  <button type="button" class="rr-card" id="rr-home-card" data-rf-go="rr" aria-label="Open Your Reset and Restore Series">
+   <div class="rr-media">
+    <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" role="img" aria-label="Reset and Restore"></div>
+    <div class="rr-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+   </div>
+   <div class="rr-card-body">
+    <span class="rr-new">NEW · 5-DAY SERIES</span>
+    <div class="rr-days" aria-label="Five-day series"><i></i><i></i><i></i><i></i><i></i></div>
+    <p class="rr-card-up">Up next: <b id="rr-up-next">Introduction · Start Here</b></p>
+    <span class="rr-open">Begin Day 1</span>
+   </div>
+   <div class="rr-rule rr-rule-bot" aria-hidden="true"></div>
+  </button>
+ </div>
  <div class="rf-sec rf-reveal"><h3>Ask Rachael Anything</h3><div class="rf-lanes">
   <button type="button" class="rf-tile" data-rf-lane="gifts"><span class="ic" aria-hidden="true">👁</span><span><b>Spiritual Gifts</b><br><small>Your gifts are ready for more.</small></span></button>
   <button type="button" class="rf-tile" data-rf-lane="money"><span class="ic" aria-hidden="true">✺</span><span><b>Money &amp; Prosperity</b><br><small>Ready for a money breakthrough?</small></span></button>
@@ -1557,6 +1727,35 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
   <button type="button" class="rf-deep" data-rf-go="shifts"><span aria-hidden="true">✦</span>Your Shifts</button>
   <button type="button" class="rf-deep" data-rf-go="rev"><span aria-hidden="true">❖</span>My Revolution</button>
  </div></div>
+</section>
+
+<div class="rf-screen" id="rf-rr-head"><button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="rf-ttl">Reset &amp; Restore</h2><p class="rf-sub">Five days to come back to yourself.</p></div>
+<section class="rf-screen" id="rf-rr" aria-label="Reset and Restore Series">
+ <p class="rr-lead">Start with the welcome, then one day at a time.</p>
+ <button type="button" class="rr-row" data-rr="intro" data-rr-slug="rr-intro">
+  <div class="rr-row-meta"><p class="rr-row-label">Introduction</p><p class="rr-row-title">Start Here</p><div class="rr-row-len">2 min</div></div>
+  <span class="rr-play" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="currentColor"/></svg></span>
+ </button>
+ <button type="button" class="rr-row" data-rr="d1" data-rr-slug="slowing-the-mind">
+  <div class="rr-row-meta"><p class="rr-row-label">Day 1</p><p class="rr-row-title">Slowing the Mind</p><div class="rr-row-len">8 min</div></div>
+  <span class="rr-play" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="currentColor"/></svg></span>
+ </button>
+ <button type="button" class="rr-row" data-rr="d2" data-rr-slug="lifting-emotional-anxiety">
+  <div class="rr-row-meta"><p class="rr-row-label">Day 2</p><p class="rr-row-title">Lifting Emotional Anxiety</p><div class="rr-row-len">6 min</div></div>
+  <span class="rr-play" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="currentColor"/></svg></span>
+ </button>
+ <button type="button" class="rr-row" data-rr="d3" data-rr-slug="embodiment-activation">
+  <div class="rr-row-meta"><p class="rr-row-label">Day 3</p><p class="rr-row-title">Embodiment Activation</p><div class="rr-row-len">8 min</div></div>
+  <span class="rr-play" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="currentColor"/></svg></span>
+ </button>
+ <button type="button" class="rr-row" data-rr="d4" data-rr-slug="power-activation">
+  <div class="rr-row-meta"><p class="rr-row-label">Day 4</p><p class="rr-row-title">Power Activation</p><div class="rr-row-len">4 min</div></div>
+  <span class="rr-play" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="currentColor"/></svg></span>
+ </button>
+ <button type="button" class="rr-row" data-rr="d5" data-rr-slug="prosperity-flow-activation">
+  <div class="rr-row-meta"><p class="rr-row-label">Day 5</p><p class="rr-row-title">Prosperity Flow Activation</p><div class="rr-row-len">5 min</div></div>
+  <span class="rr-play" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="currentColor"/></svg></span>
+ </button>
 </section>
 <div class="rf-screen" id="rf-chat-head"><button type="button" class="rf-back" data-rf-go="home">← Home</button></div>
 <section class="hero" id="hero-section">
@@ -1844,8 +2043,25 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
       </div>
     </div>
 
+<div class="rr-lib-wrap" id="rr-lib-sec">
+  <button type="button" class="rr-card" id="rr-lib-card" data-rf-go="rr" aria-label="Open Reset and Restore Series">
+   <div class="rr-media">
+    <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" role="img" aria-label="Reset and Restore"></div>
+    <div class="rr-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+   </div>
+   <div class="rr-card-body">
+    <span class="rr-new">NEW · 5-DAY SERIES</span>
+    <div class="rr-days" aria-label="Five-day series"><i></i><i></i><i></i><i></i><i></i></div>
+    <p class="rr-card-up">Five days to come back to yourself.</p>
+    <span class="rr-open">Begin Day 1</span>
+   </div>
+   <div class="rr-rule rr-rule-bot" aria-hidden="true"></div>
+  </button>
+</div>
+
 <div class="rf-lsecs" id="rf-lsecs">
   <button type="button" class="rf-lsec rf-favtile" data-rf-favs hidden><span class="bgc" style="background-image:url('/images/sections/sec-favourites.webp');background-position:58% 18%" aria-hidden="true"></span><span class="in"><b>Favourites</b><small data-rf-favcount></small></span><span class="arr" aria-hidden="true">→</span></button>
+  <button type="button" class="rf-lsec" data-rf-sec="Mind + Body" style="position:relative"><span class="rf-sec-new" style="position:absolute;top:12px;left:14px;z-index:3;padding:4px 10px;border-radius:999px;background:linear-gradient(135deg,#F3D98A,#CFA646 55%,#A97E2C);color:#241C0A;font:700 10px/1 Cinzel,serif;letter-spacing:.18em;box-shadow:0 0 12px rgba(207,166,70,.65)">NEW</span><span class="bgc" style="background-image:url('/images/sections/sec-mind-body.webp');background-position:62% 28%" aria-hidden="true"></span><span class="in"><b>Mind &amp; Body</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Gifts + Spirit"><span class="bgc" style="background-image:url('/images/sections/sec-gifts.webp');background-position:24% 22%" aria-hidden="true"></span><span class="in"><b>Gifts &amp; Spirit</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Money + Receiving"><span class="bgc" style="background-image:url('/images/sections/sec-money.webp');background-position:82% 20%" aria-hidden="true"></span><span class="in"><b>Money &amp; Receiving</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Energy + Frequency"><span class="bgc" style="background-image:url('/images/sections/sec-energy.webp');background-position:72% 26%" aria-hidden="true"></span><span class="in"><b>Energy &amp; Frequency</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
@@ -1916,14 +2132,76 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
       <button type="button" class="rf-back rf-allsecs" data-rf-allsecs>← All sections</button><h3 class="rf-sec-ttl" id="rf-sec-ttl"></h3>
       <div class="filter-chips category-chips">
         <button class="filter-chip selected" data-category="All" onclick="selectCategoryChip(this)">All</button>
+        <button class="filter-chip" data-category="Mind + Body" onclick="selectCategoryChip(this)">Mind &amp; Body</button>
+        <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy &amp; Frequency</button>
         <button class="filter-chip" data-category="Business + Impact" onclick="selectCategoryChip(this)">Business &amp; Impact</button>
         <button class="filter-chip" data-category="Money + Receiving" onclick="selectCategoryChip(this)">Money &amp; Receiving</button>
         <button class="filter-chip" data-category="Gifts + Spirit" onclick="selectCategoryChip(this)">Gifts &amp; Spirit</button>
-        <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy &amp; Frequency</button>
       </div>
       <div class="rh-lib-tools"><input type="search" id="rh-lib-search" class="rh-lib-search" placeholder="Search activations" aria-label="Search activations" oninput="rhLibApply()"><span class="rh-lib-count" id="rh-lib-count" aria-live="polite"></span></div>
       <div class="card-grid rf-favgrid" id="rf-favgrid"></div>
       <div class="card-grid" id="activation-library-grid">
+<div class="media-card" onclick="handleActivationCardClick('slowing-the-mind')" style="cursor: pointer;" data-activation-slug="slowing-the-mind" data-category="Mind + Body">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <span class="new-badge">NEW</span>
+          <div class="media-thumb" style="background-image:url('/images/covers/slowing-the-mind.jpg'); background-size:cover; background-position:center;"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Slowing the Mind</h3>
+          <p class="media-description">Slows the racing thoughts so your mind can settle, and your body can feel safe enough to rest.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+<div class="media-card" onclick="handleActivationCardClick('lifting-emotional-anxiety')" style="cursor: pointer;" data-activation-slug="lifting-emotional-anxiety" data-category="Mind + Body">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <span class="new-badge">NEW</span>
+          <div class="media-thumb" style="background-image:url('/images/covers/lifting-emotional-anxiety.jpg'); background-size:cover; background-position:center;"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Lifting Emotional Anxiety</h3>
+          <p class="media-description">A bedtime body scan with light language that lifts emotional anxiety from the body so you can rest.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+<div class="media-card" onclick="handleActivationCardClick('embodiment-activation')" style="cursor: pointer;" data-activation-slug="embodiment-activation" data-category="Mind + Body">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <span class="new-badge">NEW</span>
+          <div class="media-thumb" style="background-image:url('/images/covers/embodiment-activation.jpg'); background-size:cover; background-position:center;"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Embodiment Activation</h3>
+          <p class="media-description">Calls every part of you back into your body so your light has a home and your shifts can finally hold.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+<div class="media-card" onclick="handleActivationCardClick('power-activation')" style="cursor: pointer;" data-activation-slug="power-activation" data-category="Energy + Frequency">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <span class="new-badge">NEW</span>
+          <div class="media-thumb" style="background-image:url('/images/covers/power-activation.jpg'); background-size:cover; background-position:center;"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Power Activation</h3>
+          <p class="media-description">Brings your power up from under the surface into steady, grounded authority — soft and powerful at once.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+<div class="media-card" onclick="handleActivationCardClick('prosperity-flow-activation')" style="cursor: pointer;" data-activation-slug="prosperity-flow-activation" data-category="Money + Receiving">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <span class="new-badge">NEW</span>
+          <div class="media-thumb" style="background-image:url('/images/covers/prosperity-flow-activation.jpg'); background-size:cover; background-position:center;"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <h3>Prosperity Flow Activation</h3>
+          <p class="media-description">Dissolves the bracing around money so prosperity can move through you as a current you are allowed to stand in.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
+
                 <div class="media-card" onclick="handleActivationCardClick('grounding')" style="cursor: pointer;" data-activation-slug="grounding" data-category="Energy + Frequency">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <div class="media-thumb glyph-crystal"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
@@ -2356,6 +2634,12 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
             <div class="listening-status">Not started</div>
           </div>
         </div>
+
+        
+        
+        
+        
+        
       </div>
     </div>
   </div>
@@ -3129,7 +3413,14 @@ body.rf .rh-drawer-toggle.rf-hist-btn { white-space:nowrap; font-weight:500; box
 
     'sacred-bowl-activation': { title: 'Sacred Bowl Activation', description: 'Uses sound frequency to clear and reset your energy field, leaving you calmer and more spacious.', wistiaId: 'yejf28nfta', whatFor: 'A womb clearing to activate creation, birth and balance feminine frequencies.', whenToUse: ['When your creation energy feels slow.', 'When you want to clear past sexual partners and frequencies from your womb.', 'To balance and harmonize the feminine frequencies.', 'When you desire to birth something new into your reality.'] },
     'throat-chakra-activation': { title: 'Throat Chakra Activation', description: 'Opens and balances your throat chakra, supporting you in speaking and being heard with more ease and truth.', wistiaId: 'r8u3s5n30g' },
-    'wealth-frequency-activation': { title: 'Wealth Frequency Activation', description: 'Works with your relationship to money itself -- the fear, forcing, or discounting that shows up when wealth increases or slows down -- so you can hold and receive more without unconsciously blocking it.', wistiaId: '7j51yzmbnl', whatFor: 'Use this when money itself starts changing the way you think or behave -- for example, money increases and you immediately become afraid it will disappear, or money slows down and you start forcing, discounting, creating or questioning everything.', whenToUse: ['Fear immediately after receiving more money.', 'Difficulty allowing money to remain without instantly spending/redirecting it.', 'Panicked business decisions after a quiet period.', 'Repeated patterns around receiving larger amounts.', 'When wealth brings up specific behavioral or energetic reactions.'] }
+    'wealth-frequency-activation': { title: 'Wealth Frequency Activation', description: 'Works with your relationship to money itself -- the fear, forcing, or discounting that shows up when wealth increases or slows down -- so you can hold and receive more without unconsciously blocking it.', wistiaId: '7j51yzmbnl', whatFor: 'Use this when money itself starts changing the way you think or behave -- for example, money increases and you immediately become afraid it will disappear, or money slows down and you start forcing, discounting, creating or questioning everything.', whenToUse: ['Fear immediately after receiving more money.', 'Difficulty allowing money to remain without instantly spending/redirecting it.', 'Panicked business decisions after a quiet period.', 'Repeated patterns around receiving larger amounts.', 'When wealth brings up specific behavioral or energetic reactions.'] },
+    /* Reset and Restore series */
+    'rr-intro': { title: '5 Days of Reset and Restore', description: 'A short welcome into your Reset and Restore series. Start here, then move through one day at a time.', audioSrc: '/audio/rr/rr-intro.mp3', cover: '/images/covers/slowing-the-mind.jpg', whatFor: 'Listen once at the start of the series to set the container for the five days ahead.', whenToUse: ['Before Day 1 of Reset and Restore.', 'Whenever you want to remember why you started the series.'] },
+    'slowing-the-mind': { title: 'Slowing the Mind', description: 'Slows the racing thoughts so your mind can settle, and your body can feel safe enough to rest.', audioSrc: '/audio/rr/slowing-the-mind.mp3', cover: '/images/covers/slowing-the-mind.jpg', whatFor: 'Use this when your mind will not stop spinning and you need a softer pace before sleep or before the next activation.', whenToUse: ['Your thoughts are racing and you cannot settle.', 'Before bed when your mind is still working.', 'Day 1 of Reset and Restore.'] },
+    'lifting-emotional-anxiety': { title: 'Lifting Emotional Anxiety', description: 'A bedtime body scan with light language that lifts emotional anxiety from the body so you can rest.', audioSrc: '/audio/rr/lifting-emotional-anxiety.mp3', cover: '/images/covers/lifting-emotional-anxiety.jpg', whatFor: 'Use this when anxiety is sitting in your body and you want it lifted gently before sleep.', whenToUse: ['Emotional anxiety is loud in your chest or stomach.', 'Before bed as Day 2 of Reset and Restore.', 'After a heavy emotional day.'] },
+    'embodiment-activation': { title: 'Embodiment Activation', description: 'Calls every part of you back into your body so your light has a home and your shifts can finally hold.', audioSrc: '/audio/rr/embodiment.mp3', cover: '/images/covers/embodiment-activation.jpg', whatFor: 'Use this when you have been floating above your body or leaving yourself during intensity, and you are ready to live fully in it again.', whenToUse: ['You feel disconnected from your body.', 'Your shifts are not sticking.', 'Day 3 of Reset and Restore.', 'After the Embody 98321 code.'] },
+    'power-activation': { title: 'Power Activation', description: 'Brings your power up from under the surface into steady, grounded authority — soft and powerful at once.', audioSrc: '/audio/rr/power.mp3', cover: '/images/covers/power-activation.jpg', whatFor: 'Use this when your power has been sitting just under the surface and you are done apologizing for it.', whenToUse: ['You have been shrinking your strength.', 'Before a decision or conversation that needs your full presence.', 'Day 4 of Reset and Restore.', 'After the Power 55673 code.'] },
+    'prosperity-flow-activation': { title: 'Prosperity Flow Activation', description: 'Dissolves the bracing around money so prosperity can move through you as a current you are allowed to stand in.', audioSrc: '/audio/rr/prosperity-flow.mp3', cover: '/images/covers/prosperity-flow-activation.jpg', whatFor: 'Use this when you have been holding money tightly in case it stops, and you are ready to let prosperity come in and stay.', whenToUse: ['You are bracing around money.', 'Before a launch or receiving moment.', 'Day 5 of Reset and Restore.', 'After the Prosperity Flow 36951 code.'] }
 
   };
 
@@ -8470,5 +8761,64 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
 })();
 
 </script>
+
+<script>
+(function () {
+  var ORDER = [
+    { id: 'intro', slug: 'rr-intro', label: 'Introduction · Start Here' },
+    { id: 'd1', slug: 'slowing-the-mind', label: 'Day 1 · Slowing the Mind' },
+    { id: 'd2', slug: 'lifting-emotional-anxiety', label: 'Day 2 · Lifting Emotional Anxiety' },
+    { id: 'd3', slug: 'embodiment-activation', label: 'Day 3 · Embodiment Activation' },
+    { id: 'd4', slug: 'power-activation', label: 'Day 4 · Power Activation' },
+    { id: 'd5', slug: 'prosperity-flow-activation', label: 'Day 5 · Prosperity Flow Activation' }
+  ];
+  function doneSet() {
+    try { return JSON.parse(localStorage.getItem('rr_done') || '{}') || {}; } catch (e) { return {}; }
+  }
+  function markDone(id) {
+    var d = doneSet(); d[id] = 1;
+    try { localStorage.setItem('rr_done', JSON.stringify(d)); } catch (e) {}
+    paint();
+  }
+  function paint() {
+    var d = doneSet();
+    document.querySelectorAll('#rf-rr .rr-row').forEach(function (row) {
+      var id = row.getAttribute('data-rr');
+      row.classList.toggle('done', !!d[id]);
+      var play = row.querySelector('.rr-play');
+      if (play) play.innerHTML = d[id]
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><polyline points="4,12 10,18 20,6"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="currentColor"/></svg>';
+    });
+    var next = ORDER[0];
+    for (var i = 0; i < ORDER.length; i++) { if (!d[ORDER[i].id]) { next = ORDER[i]; break; } }
+    var el = document.getElementById('rr-up-next');
+    if (el) el.textContent = next.label;
+  }
+  document.addEventListener('click', function (e) {
+    var row = e.target.closest && e.target.closest('#rf-rr .rr-row');
+    if (!row) return;
+    e.preventDefault();
+    var id = row.getAttribute('data-rr');
+    var slug = row.getAttribute('data-rr-slug');
+    markDone(id);
+    if (typeof window.handleActivationCardClick === 'function') {
+      window.handleActivationCardClick(slug);
+    } else if (typeof window.openActivationDetail === 'function') {
+      window.openActivationDetail(slug);
+    }
+  });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', paint); else paint();
+  var _sp = window.showPage;
+  if (typeof _sp === 'function') {
+    window.showPage = function (id) {
+      var r = _sp.apply(this, arguments);
+      try { paint(); } catch (e) {}
+      return r;
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
