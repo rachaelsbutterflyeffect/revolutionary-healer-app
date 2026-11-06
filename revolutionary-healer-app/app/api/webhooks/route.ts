@@ -31,6 +31,7 @@ import {
   createWebhookEvent,
   updateWebhookEvent,
 } from "@/lib/airtable";
+import { isRefundEvent, readKajabiWebhook, webhookIdempotencyKey } from "@/lib/fiveDayPass";
 
 // RETIRED (Aug 12, Rachael's explicit instruction): the $9 GAP Method offer no
 // longer auto-grants a 3-day Full Access trial. Buyers move through the 3-step
@@ -79,24 +80,28 @@ export async function POST(req: NextRequest) {
     }
 
     const event = JSON.parse(rawBody);
-    const emailRaw: string | undefined = event?.member?.email ?? event?.member_email ?? event?.email;
-    const email = normalizeEmail(emailRaw);
-    const firstName: string | undefined = event?.member?.first_name ?? event?.first_name;
-    const offerIdRaw: string | number | undefined = event?.offer?.id ?? event?.offer_id;
-    const offerId: string | undefined = offerIdRaw != null ? String(offerIdRaw) : undefined;
-    const eventType: string | undefined = event?.event_type;
+    const parsed = readKajabiWebhook(event);
+    const email = normalizeEmail(parsed.email);
+    const firstName: string | undefined = parsed.firstName || undefined;
+    const offerId: string | undefined = parsed.offerId || undefined;
+    const eventType: string | undefined = parsed.eventType || undefined;
 
     if (!email) {
       return NextResponse.json({ error: "no member email in payload" }, { status: 400 });
     }
+    if (!parsed.purchaseId) {
+      console.error("Kajabi webhook has no transaction id. No access was granted.");
+      return NextResponse.json({ ok: true, outcome: "missing_transaction_id", granted: false });
+    }
 
-    const purchaseId: string = String(
-      event?.id ?? event?.purchase?.id ?? `${email}:${offerId ?? "unknown"}:${eventType ?? "purchase"}`
-    );
+    const purchaseId: string = webhookIdempotencyKey(parsed.purchaseId, eventType);
 
     let existingEvent: any = null;
     try {
       existingEvent = await getWebhookEventByPurchaseId(purchaseId);
+      if (!existingEvent && !isRefundEvent(eventType)) {
+        existingEvent = await getWebhookEventByPurchaseId(parsed.purchaseId);
+      }
     } catch (err) {
       console.error("getWebhookEventByPurchaseId failed", err);
     }
@@ -109,7 +114,15 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      const result = await processKajabiPurchase({ email, firstName, offerId, eventType });
+      const result = await processKajabiPurchase({
+        email,
+        firstName,
+        offerId,
+        eventType,
+        purchaseId: parsed.purchaseId,
+        purchasedAt: parsed.purchasedAt || undefined,
+        now: parsed.purchasedAt ? new Date(parsed.purchasedAt) : null,
+      });
 
       try {
         if (existingEvent) {

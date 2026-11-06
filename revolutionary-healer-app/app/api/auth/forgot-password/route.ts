@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMemberByEmail, createMemberResetToken, normalizeEmail } from "@/lib/airtable";
-import { deriveEntitlement } from "@/lib/entitlements";
+import { deriveEntitlement, hasSignInAccess } from "@/lib/entitlements";
 import { generateToken } from "@/lib/auth";
 import { sendPasswordResetEmail } from "@/lib/email";
 
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const member = await getMemberByEmail(email);
     if (member) {
       const entitlement = deriveEntitlement(member.fields as any);
-      const isPaying = entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership || entitlement.onFiveDayPass;
+      const isPaying = hasSignInAccess(entitlement);
       if (isPaying) {
         const token = generateToken();
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
