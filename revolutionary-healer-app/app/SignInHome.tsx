@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
+import { useRouter } from "next/navigation";
 import PasswordField from "@/components/PasswordField";
-import styles from "./signin-mock.module.css";
+import styles from "./sign-in.module.css";
 
 type Star = { x: number; y: number; r: number; z: number; p: number; gold: boolean };
 type Wing = { bx: number; by: number; s: number; j: number; teal: boolean };
@@ -15,8 +16,9 @@ const GOLD_LINE = "rgba(232,200,115,0.38)";
  * (public/app-refresh.html, #rf-fly). Gold is the body of the mark.
  * Teal stays a sparse sparkle, matching the in-app motes, not a fill.
  */
-function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: RefObject<HTMLCanvasElement | null>) {
+function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: RefObject<HTMLCanvasElement | null>, active: boolean) {
   useEffect(() => {
+    if (!active) return;
     const sky = skyRef.current;
     const fly = flyRef.current;
     if (!sky || !fly) return;
@@ -183,21 +185,100 @@ function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: R
       flyObserver.disconnect();
       window.removeEventListener("pointermove", onPointer);
     };
-  }, [skyRef, flyRef]);
+  }, [skyRef, flyRef, active]);
 }
 
-export default function SignInMock({ fontsClassName }: { fontsClassName: string }) {
+// Oct 15 2026 (old-look flash fix): decide which look a member gets here, before leaving the sign-in
+// page, and go straight there -- allowed members never load the classic shell first. The decision is
+// remembered (localStorage rh_ui_refresh) so app.html can also decide synchronously. Fails open to
+// /app.html (which re-checks) after 2.5 s or on any error. ?t= / hash are not used on this page.
+async function memberAppPath(email: string): Promise<string> {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 2500);
+    const r = await fetch("/api/ui-refresh?email=" + encodeURIComponent(email), { cache: "no-store", signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!r.ok) return "/app.html";
+    const d = await r.json();
+    try { localStorage.setItem("rh_ui_refresh", (d && d.refresh ? "1:" : "0:") + email); } catch {}
+    return d && d.refresh ? "/app-refresh.html" : "/app.html";
+  } catch {
+    return "/app.html";
+  }
+}
+
+export default function SignInHome({ fontsClassName }: { fontsClassName: string }) {
+  const router = useRouter();
   const skyRef = useRef<HTMLCanvasElement>(null);
   const flyRef = useRef<HTMLCanvasElement>(null);
+  const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [notice, setNotice] = useState("");
+  const [signInError, setSignInError] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
 
-  useHomeButterfly(skyRef, flyRef);
+  useHomeButterfly(skyRef, flyRef, !checking);
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("rh_member_email") : null;
+    const loginAt = typeof window !== "undefined" ? Number(localStorage.getItem("rh_member_login_at") || 0) : 0;
+    const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
+    if (stored && loginAt && Date.now() - loginAt < fiveDaysMs) {
+      memberAppPath(stored).then((path) => router.replace(path));
+    } else {
+      if (stored) {
+        localStorage.removeItem("rh_member_email");
+        localStorage.removeItem("rh_member_login_at");
+      }
+      setChecking(false);
+    }
+  }, [router]);
+
+  // Every sign-in problem must be seen: on iPhone the keyboard covers the message under the button, so close
+  // the keyboard and bring the message into view. A member the app sent back here (no active access) gets
+  // the reason instead of a silent return to this form.
+  useEffect(() => {
+    if (!signInError) return;
+    try { (document.activeElement as HTMLElement | null)?.blur(); } catch {}
+    const t = setTimeout(() => { try { document.getElementById("signin-error")?.scrollIntoView({ block: "center", behavior: "smooth" }); } catch {} }, 60);
+    return () => clearTimeout(t);
+  }, [signInError]);
+  useEffect(() => {
+    try {
+      const n = sessionStorage.getItem("rh_signin_notice");
+      if (n) { sessionStorage.removeItem("rh_signin_notice"); setSignInError(n); }
+    } catch {}
+  }, [checking]);
+
+  async function handleSignIn(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setNotice("Preview only. This page does not sign you in.");
+    setSignInError("");
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !password) return;
+    setSigningIn(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmedEmail, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSignInError(data?.error || "Something went wrong signing you in.");
+        return;
+      }
+      localStorage.setItem("rh_member_email", data.email || trimmedEmail);
+      localStorage.setItem("rh_member_login_at", String(Date.now()));
+      router.replace(await memberAppPath(data.email || trimmedEmail));
+    } catch {
+      setSignInError("Something went wrong. Please try again.");
+    } finally {
+      setSigningIn(false);
+    }
+  }
+
+  if (checking) {
+    return <div className={`${styles.page} ${fontsClassName}`} />;
   }
 
   return (
@@ -214,11 +295,11 @@ export default function SignInMock({ fontsClassName }: { fontsClassName: string 
           <h1 className={styles.title}>Sign in</h1>
           <div className={styles.divider} aria-hidden="true" />
           <p className={styles.hint}>Use the same email and password you use inside Kajabi.</p>
-          <form className={styles.bubble} onSubmit={onSubmit}>
-            <label className={styles.field} htmlFor="signin-mock-email">
+          <form className={styles.bubble} onSubmit={handleSignIn}>
+            <label className={styles.field} htmlFor="signin-email">
               <span className={styles.eyebrow}>Email</span>
               <input
-                id="signin-mock-email"
+                id="signin-email"
                 className={styles.input}
                 type="email"
                 name="email"
@@ -230,10 +311,7 @@ export default function SignInMock({ fontsClassName }: { fontsClassName: string 
                 spellCheck={false}
                 placeholder="you@example.com"
                 value={email}
-                onChange={(event) => {
-                  setNotice("");
-                  setEmail(event.target.value);
-                }}
+                onChange={(event) => setEmail(event.target.value)}
               />
             </label>
             <label className={styles.field}>
@@ -241,23 +319,20 @@ export default function SignInMock({ fontsClassName }: { fontsClassName: string 
               <PasswordField
                 name="password"
                 value={password}
-                onChange={(value) => {
-                  setNotice("");
-                  setPassword(value);
-                }}
+                onChange={setPassword}
                 placeholder="Password"
                 borderColor={GOLD_LINE}
                 autoComplete="current-password"
               />
             </label>
-            <button type="submit" className={styles.button}>
-              Sign in
-            </button>
-            {notice ? (
-              <p className={styles.notice} role="status">
-                {notice}
-              </p>
+            {signInError ? (
+              <div id="signin-error" role="alert" className={styles.error}>
+                {signInError}
+              </div>
             ) : null}
+            <button type="submit" className={styles.button} disabled={signingIn}>
+              {signingIn ? "Signing in…" : "Sign in"}
+            </button>
             <a className={styles.forgot} href="/contact-support">
               Forgot your password?
             </a>
