@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getEntitlementForEmail } from "@/lib/entitlements";
 import { createAirtableSessionStore } from "@/lib/sessionAirtable";
 import {
-    ACCESS_COOKIE, REFRESH_COOKIE, accessCookie, clearSessionCookies, migrationActive,
+    ACCESS_COOKIE, REFRESH_COOKIE, accessCookie,
     readCookie, refreshCookie, refreshLoginSession, sessionSecret, sessionStatus, verifyAccessToken,
 } from "@/lib/sessions";
 
@@ -44,5 +44,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ migration: true, reauth: false, error: "Session store unavailable." }, { status: 503 });
     }
 }
-
-export { migrationActive, clearSessionCookies };

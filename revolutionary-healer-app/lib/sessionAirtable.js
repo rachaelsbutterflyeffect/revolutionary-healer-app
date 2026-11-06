@@ -5,6 +5,14 @@ import Airtable from "airtable";
 import { hashRefreshToken } from "./sessions.js";
 
 const TYPE = "member_session";
+
+export function memberSessionFormula(email) {
+    const normalized = String(email || "").trim().toLowerCase();
+    if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(normalized)) {
+        throw new Error("Refusing a session lookup for an unsafe email.");
+    }
+    return `AND({type}="${TYPE}", FIND('"memberEmail":"${normalized}"', {meta}))`;
+}
 let baseClient;
 
 function base(env) {
@@ -74,7 +82,8 @@ export function createAirtableSessionStore(env = process.env) {
         async revokeEmail(email, now) {
             const normalized = String(email || "").trim().toLowerCase();
             const records = await base(env)("Events").select({
-                filterByFormula: `AND({type}="${TYPE}", FIND("${normalized}", {meta}))`,
+                filterByFormula: memberSessionFormula(normalized),
+                maxRecords: 100,
                 fields: ["type", "meta"],
             }).all();
             for (const record of records) {

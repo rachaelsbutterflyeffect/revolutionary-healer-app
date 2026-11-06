@@ -8,6 +8,11 @@ export const ACTIVITY_TYPE = "activity";
 export const OWNER_EMAIL = "rachaelsbutterflyeffect@gmail.com";
 export const BATCH_LIMIT = 8;
 export const BATCH_GAP_MS = 15000;
+
+export function rateAllows(lastAt, now) {
+    if (!lastAt) return true;
+    return now - lastAt >= BATCH_GAP_MS;
+}
 export const RESET_DAYS = ["intro", "d1", "d2", "d3", "d4", "d5"];
 export const RESET_SLUGS = {
     intro: "rr-intro",
@@ -21,13 +26,14 @@ export const RESET_SLUGS = {
 const EVENTS = new Set([
     "activation_open", "activation_play", "finder_complete", "reset_day",
     "gap_start", "gap_step", "gap_complete", "presence", "nav",
-    "favorite_add", "favorite_remove", "code_pull",
+    "favorite_add", "favorite_remove", "code_pull", "chat_turn", "gap_reading", "gap_shift",
 ]);
 const PLAY_STATES = new Set(["start", "pause", "ended", "hidden"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SLUG = /^[a-z0-9-]{1,80}$/;
 
 export const COVERAGE_GAP = "People already inside the app on a saved email have no server session. New activity from those browsers is stored under a random device id and shown as unverified. It is not attached to a member, including after a later login. Browsers that do not open the app cannot be counted or signed out from here.";
+export const IDEMPOTENCY_NOTE = "Each event id is counted once in this report. The Events table has no unique column, so two servers can insert the same id before either read sees it. Duplicate rows can remain. Totals are deduped. A unique event_id field is not created here.";
 
 export function torontoParts(now) {
     const date = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now));
@@ -98,6 +104,12 @@ export function validateActivityEvent(input) {
         if (!num(input.foregroundSeconds, 6 * 3600) || !num(input.backgroundAudioSeconds, 6 * 3600)) return { error: "Invalid presence." };
         return { value: { ...base, foregroundSeconds: input.foregroundSeconds, backgroundAudioSeconds: input.backgroundAudioSeconds } };
     }
+    if (input.event === "chat_turn") {
+        const chatId = String(input.chatId || "").slice(0, 40);
+        if (!chatId) return { error: "Invalid chat." };
+        return { value: { ...base, chatId, processSlug: String(input.processSlug || "").slice(0, 40) } };
+    }
+    if (input.event === "gap_reading" || input.event === "gap_shift") return { value: { ...base } };
     if (input.event === "nav") {
         const screen = String(input.screen || "").slice(0, 60);
         if (!screen) return { error: "Invalid screen." };
@@ -137,11 +149,29 @@ function inRange(row, from, to) {
     return true;
 }
 
-export function buildOwnerReport(rows, { from, to, now, includeTesters = false, includeUnverified = false } = {}) {
+function summarize(rows) {
+    return {
+        events: rows.length,
+        shown: true,
+        separateFromVerifiedTotals: true,
+        activationOpens: rows.filter((row) => row.event === "activation_open").length,
+        playStarts: new Set(rows.filter((row) => row.event === "activation_play").map((row) => row.playId)).size,
+        chatTurns: rows.filter((row) => row.event === "chat_turn").length,
+        finderCompletes: rows.filter((row) => row.event === "finder_complete").length,
+        resetDayMarks: rows.filter((row) => row.event === "reset_day").length,
+        gapStarts: rows.filter((row) => row.event === "gap_start").length,
+        gapReadings: rows.filter((row) => row.event === "gap_reading").length,
+        gapShifts: rows.filter((row) => row.event === "gap_shift").length,
+        codePulls: rows.filter((row) => row.event === "code_pull").length,
+    };
+}
+
+export function buildOwnerReport(rows, { from = "", to = "", now = Date.now(), includeTesters = false, includeUnverified = false } = {}) {
     const all = dedupeActivity(rows);
     const verified = all.filter((row) => row.verified === true);
     const unverified = all.filter((row) => row.verified !== true);
     const scoped = verified.filter((row) => (includeTesters || row.isTest !== true) && inRange(row, from, to));
+    const unverifiedScoped = unverified.filter((row) => inRange(row, from, to));
     const plays = new Map();
     for (const row of scoped.filter((item) => item.event === "activation_play")) {
         const prev = plays.get(row.playId) || { playId: row.playId, slug: row.slug, listenedSeconds: 0, finished: false, memberEmail: row.memberEmail, torontoDay: row.torontoDay, at: row.at };
@@ -195,7 +225,7 @@ export function buildOwnerReport(rows, { from, to, now, includeTesters = false, 
         coverage: {
             verifiedEvents: verified.length,
             unverifiedEvents: unverified.length,
-            unverifiedIncludedInAggregates: includeUnverified === true,
+            unverifiedIncludedInAggregates: false,
             testersIncludedInAggregates: includeTesters === true,
             gap: COVERAGE_GAP,
             legacyNote: "Chat counts, current favorites, and code pulls saved before a server session are labelled unverified because the email was supplied by the browser.",
@@ -210,6 +240,9 @@ export function buildOwnerReport(rows, { from, to, now, includeTesters = false, 
             gapStarts: scoped.filter((row) => row.event === "gap_start").length,
             gapCompletes: scoped.filter((row) => row.event === "gap_complete").length,
             codePulls: scoped.filter((row) => row.event === "code_pull").length,
+            chatTurns: scoped.filter((row) => row.event === "chat_turn").length,
+            gapReadings: scoped.filter((row) => row.event === "gap_reading").length,
+            gapShifts: scoped.filter((row) => row.event === "gap_shift").length,
             foregroundSeconds: scoped.filter((row) => row.event === "presence").reduce((sum, row) => sum + row.foregroundSeconds, 0),
             backgroundAudioSeconds: scoped.filter((row) => row.event === "presence").reduce((sum, row) => sum + row.backgroundAudioSeconds, 0),
         },
@@ -217,7 +250,8 @@ export function buildOwnerReport(rows, { from, to, now, includeTesters = false, 
         cohorts,
         lastScreens: lastScreens(scoped),
         lastScreenNote: "Last observed screen in the range. This is not a claim that the member abandoned there.",
-        unverifiedSummary: includeUnverified ? { events: unverified.filter((row) => inRange(row, from, to)).length } : { events: unverified.length, hiddenFromAggregates: true },
+        unverifiedSummary: includeUnverified ? summarize(unverifiedScoped) : { events: unverified.length, shown: false },
+        idempotency: IDEMPOTENCY_NOTE,
     };
 }
 

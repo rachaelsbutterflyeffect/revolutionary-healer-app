@@ -101,10 +101,15 @@
         });
         client.setHidden(win.document.visibilityState === "hidden");
         win.document.addEventListener("visibilitychange", function () {
+            var hiddenNow = win.document.visibilityState === "hidden";
+            if (hiddenNow && client.playId()) client.stopPlay("hidden");
             client.presence();
-            client.setHidden(win.document.visibilityState === "hidden");
+            client.setHidden(hiddenNow);
             client.flush(true);
         });
+        win.setInterval(function () {
+            if (win.document.visibilityState !== "hidden" || client.playId()) client.presence();
+        }, 60000);
         win.addEventListener("pagehide", function () { client.presence(); client.flush(true); });
         win.addEventListener("freeze", function () { client.presence(); client.flush(true); });
         client.watchAudio = function (audio, slug) {
@@ -121,8 +126,18 @@
                 win._wq = win._wq || [];
                 win._wq.push({ id: wistiaId, onReady: function (video) {
                     var playId = null;
-                    video.bind("play", function () { if (!playId) { playId = uuid(); client.startPlay(slug, playId, video.time() || 0, null); } });
-                    video.bind("secondchange", function (second) { client.sample(second || 0, null); });
+                    function durationOf(video) {
+                    try {
+                        var value = typeof video.duration === "function" ? video.duration() : video.duration;
+                        return typeof value === "number" && isFinite(value) && value > 0 ? value : null;
+                    } catch (e) { return null; }
+                }
+                video.bind("play", function () {
+                    var duration = durationOf(video);
+                    if (!playId) { playId = uuid(); client.startPlay(slug, playId, video.time() || 0, duration); }
+                    else client.sample(video.time() || 0, duration);
+                });
+                    video.bind("secondchange", function (second) { client.sample(second || 0, durationOf(video)); });
                     video.bind("pause", function () { client.stopPlay("pause", video.time() || 0); });
                     video.bind("end", function () { client.stopPlay("ended", video.time() || 0); playId = null; });
                 } });

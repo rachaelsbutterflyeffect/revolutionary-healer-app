@@ -16,12 +16,13 @@ export async function GET(req: NextRequest) {
     const includeTesters = req.nextUrl.searchParams.get("testers") === "1";
     const includeUnverified = req.nextUrl.searchParams.get("unverified") === "1";
     try {
-        const rows = await store.list();
-        const report = buildOwnerReport(rows, { from, to, now: Date.now(), includeTesters, includeUnverified });
-        const timeline = member ? memberTimeline(rows, member) : [];
+        const scanned = await store.list({ from, to, limit: 200 } as { from?: string; to?: string; limit?: number });
+        const report = buildOwnerReport(scanned.rows, { from, to, now: Date.now(), includeTesters, includeUnverified });
+        const timeline = member ? memberTimeline(scanned.rows, member) : [];
+        const scan = { cap: scanned.cap, truncated: scanned.truncated, complete: scanned.complete === true };
         let legacy = null;
         try { legacy = await legacySample(); } catch (err) { legacy = { label: "Existing chat and favorite rows could not be read.", error: true }; }
-        return NextResponse.json({ ...report, timeline, legacy, owner: access.email });
+        return NextResponse.json({ ...report, scan, timeline, legacy, owner: access.email });
     } catch (err) {
         console.error("GET /api/owner/activity failed", err);
         return NextResponse.json({ error: "Activity report is unavailable.", code: "activity_storage_unavailable" }, { status: 503 });

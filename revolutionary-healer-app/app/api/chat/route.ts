@@ -4,6 +4,7 @@
 // always sent history: [] and never persisted a single message anywhere).
 import { NextRequest, NextResponse } from "next/server";
 import { ensureMemberVoice } from "@/lib/memberVoice"; // Shift card speaks to the member as "you" (Oct 17 2026)
+import { recordChatTurn } from "@/lib/recordChatTurn";
 import { waitUntil } from "@vercel/functions";
 import Anthropic from "@anthropic-ai/sdk";
 import { getFocusAreaBySlug } from "@/lib/focusAreas";
@@ -569,6 +570,16 @@ export async function POST(req: NextRequest) {
           BOOKKEEPING_TIMEOUT_MS,
           "createMessage(assistant)"
         );
+        try {
+          await recordChatTurn({
+            cookie: req.headers.get("cookie"),
+            deviceId: req.headers.get("x-rh-device"),
+            chatId,
+            processSlug: process?.slug || "",
+          });
+        } catch (err) {
+          console.error("chat activity was not stored", err);
+        }
 
         // Auto-title (see titleAction above) -- never overwrites a manual
         // rename (title_is_auto flips to false the moment a member renames a

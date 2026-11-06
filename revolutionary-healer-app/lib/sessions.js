@@ -17,7 +17,7 @@ export function migrationActive(env = process.env) {
 
 export function sessionSecret(env = process.env) {
     const secret = env && env.SESSION_SECRET;
-    return typeof secret === "string" && secret.length >= 16 ? secret : "";
+    return typeof secret === "string" && Buffer.byteLength(secret) >= 32 ? secret : "";
 }
 
 export function hashRefreshToken(token) {
@@ -205,6 +205,26 @@ export async function refreshLoginSession({ refreshToken, store, env, now, entit
         };
     }
     return { ok: false, reason: "conflict" };
+}
+
+export async function revokeRequestSession({ cookieHeader, store, env, now = Date.now() }) {
+    const access = verifyAccessToken(readCookie(cookieHeader, ACCESS_COOKIE), env, now);
+    const refreshToken = readCookie(cookieHeader, REFRESH_COOKIE);
+    let revoked = false;
+    if (access) {
+        await store.revokeSession(access.sessionId, now);
+        revoked = true;
+    }
+    if (refreshToken) {
+        const row = await store.findByRefreshToken(refreshToken);
+        if (row && !row.revokedAt) {
+            await store.revokeSession(row.sessionId, now);
+            revoked = true;
+        } else if (row && row.revokedAt) {
+            revoked = true;
+        }
+    }
+    return { revoked, hadAccess: !!access, hadRefresh: !!refreshToken };
 }
 
 export function sessionStatus({ accessToken, refreshToken, env, now }) {

@@ -4232,7 +4232,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
       if (processSlug) payload.processSlug = processSlug;
       if (rhCanStream()) payload.stream = true;
       if (window.__rhCcmCardOpener) { payload.ccmCardOpener = true; window.__rhCcmCardOpener = false; }
-      var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal });
+      var res = await fetch('/api/chat', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'x-rh-device': (window.rhDeviceId || '') }, body: JSON.stringify(payload), signal: rhAbortController.signal });
       if (rhIsChatStream(res)) {
         // The 180s last-resort cap keeps running while the reply streams.
         st = { thinkingEl: thinkingEl, stillWorkingTimer: rhStillWorkingTimer, bubble: null, text: '', chatId: null };
@@ -6060,6 +6060,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
       }
     }
     gapCurrentStep = n;
+    if (window.rhActivity) window.rhActivity.gap('gap_step', { step: n });
     setTimeout(gapUpdateStartOver, 0);
     [1,2,3].forEach(function(i) {
       document.getElementById('view-day' + i).classList.toggle('active', i === n);
@@ -6901,6 +6902,7 @@ if (forceComplete) { goDay(3); }
       if (run !== gapReadingRun || gapReadingState !== 'running') return;
       gapShowAnalyzing(false);
       gapReadingState = 'done';
+      if (window.rhActivity) window.rhActivity.gap('gap_reading');
       goDay(3); // setupDay3 + the one Shift save, exactly as before
     });
   }
@@ -7177,7 +7179,7 @@ if (forceComplete) { goDay(3); }
           // pinned for the browser session to whichever Shift was newest at login (Sept 23 "stable Today's
           // Focus"), so the new Shift never showed until the next visit. Pin it to the Shift just saved.
           var newShiftId = result.body && result.body.shiftId ? String(result.body.shiftId) : null;
-          if (newShiftId) { window.__gapShiftSavedId = newShiftId; window.__gapShiftSavedRunId = runId; try { sessionStorage.setItem('rhFocusShiftId', newShiftId); } catch (e) {} }
+          if (newShiftId) { window.__gapShiftSavedId = newShiftId; window.__gapShiftSavedRunId = runId; try { sessionStorage.setItem('rhFocusShiftId', newShiftId); } catch (e) {} if (window.rhActivity) window.rhActivity.gap('gap_shift'); }
           if (typeof loadMemberRevolutionData === 'function') return Promise.resolve(loadMemberRevolutionData()).then(function() { return true; });
           return true;
         }

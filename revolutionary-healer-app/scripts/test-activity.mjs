@@ -1,13 +1,17 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import {
-    COVERAGE_GAP, RESET_DAYS, addTorontoDays, buildOwnerReport, memberTimeline, stampActivity, torontoParts, validateActivityEvent,
+    COVERAGE_GAP, IDEMPOTENCY_NOTE, RESET_DAYS, addTorontoDays, buildOwnerReport, memberTimeline, rateAllows, stampActivity, torontoParts, validateActivityEvent,
 } from "../lib/activity.js";
+import { createIdempotentWriter } from "../lib/activityStore.js";
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const { createClient } = require("../public/rh-activity.js");
 
 let passed = 0;
+const tests = [];
 function test(name, fn) {
-    try { fn(); passed++; console.log("ok - " + name); }
-    catch (err) { console.error("FAIL - " + name); console.error(err); process.exitCode = 1; }
+    tests.push(Promise.resolve().then(fn).then(() => { passed++; console.log("ok - " + name); }, (err) => { console.error("FAIL - " + name); console.error(err); process.exitCode = 1; }));
 }
 
 const device = "00000000-0000-4000-8000-000000000001";
@@ -97,6 +101,74 @@ test("timeline is verified member only", () => {
     assert.equal(memberTimeline([verified, anon], "member@example.com").length, 1);
 });
 
+test("unverified totals stay separate when the extra tally is requested", () => {
+    const row = stampActivity(validateActivityEvent({ eventId, deviceId: device, event: "activation_play", playId, slug: "grounding", state: "start", listenedSeconds: 3, durationSeconds: 10 }).value, { now: Date.parse("2026-11-01T15:00:00Z"), verified: false });
+    const report = buildOwnerReport([row], { now: Date.parse("2026-11-05T15:00:00Z"), includeUnverified: true });
+    assert.equal(report.coverage.unverifiedIncludedInAggregates, false);
+    assert.equal(report.totals.playStarts, 0);
+    assert.equal(report.unverifiedSummary.separateFromVerifiedTotals, true);
+    assert.equal(report.unverifiedSummary.playStarts, 1);
+    assert.match(IDEMPOTENCY_NOTE, /no unique column/);
+    assert.equal(rateAllows(1000, 2000), false);
+    assert.equal(rateAllows(1000, 20000), true);
+});
+
+test("client wires GAP, reset, chat, Wistia duration, and hidden stop", () => {
+    const sent = [];
+    let clock = 1_000_000;
+    const client = createClient({ deviceId: device, now: () => clock, send: async (batch) => { sent.push(batch); return { ok: true }; } });
+    client.gap("gap_step", { step: 2 });
+    client.gap("gap_reading");
+    client.gap("gap_shift");
+    client.resetDay("d3");
+    client.startPlay("grounding", playId, 0, 120);
+    clock += 4000;
+    client.sample(4, 120);
+    client.stopPlay("hidden", 4);
+    const flat = sent.flat();
+    assert.equal(flat.some((row) => row.event === "gap_step" && row.step === 2), true);
+    assert.equal(flat.some((row) => row.event === "gap_reading"), true);
+    assert.equal(flat.some((row) => row.event === "gap_shift"), true);
+    assert.equal(flat.some((row) => row.event === "reset_day" && row.dayId === "d3"), true);
+    const hidden = flat.find((row) => row.state === "hidden");
+    assert.equal(hidden.durationSeconds, 120);
+    assert.ok(hidden.listenedSeconds > 0);
+    for (const file of ["public/app.html", "public/app-refresh.html"]) {
+        const html = fs.readFileSync(file, "utf8");
+        assert.match(html, /gap_step/);
+        assert.match(html, /gap_reading/);
+        assert.match(html, /gap_shift/);
+        assert.match(html, /x-rh-device/);
+    }
+    const clientSource = fs.readFileSync("public/rh-activity.js", "utf8");
+    assert.match(clientSource, /durationOf/);
+    assert.match(clientSource, /stopPlay\("hidden"\)/);
+    assert.match(clientSource, /60000/);
+    assert.match(fs.readFileSync("app/api/chat/route.ts", "utf8"), /recordChatTurn/);
+    assert.doesNotMatch(fs.readFileSync("app/api/auth/session/route.ts", "utf8"), /export \{ migrationActive/);
+});
+
+test("one process retries the same event id once", async () => {
+    let inserts = 0;
+    let visible = null;
+    const write = createIdempotentWriter({
+        find: async () => visible,
+        insert: async (row) => {
+            inserts += 1;
+            await new Promise((resolve) => setTimeout(resolve, 20));
+            visible = row;
+            return row;
+        },
+    });
+    const row = { eventId };
+    const [first, second] = await Promise.all([write(row), write(row)]);
+    assert.equal(first, second);
+    assert.equal(inserts, 1);
+    const retried = await write(row);
+    assert.equal(retried, row);
+    assert.equal(inserts, 1);
+});
+
 test("migration flag is not armed in the pages and logout is explicit", () => {
     for (const file of ["public/app.html", "public/app-refresh.html"]) {
         const html = fs.readFileSync(file, "utf8");
@@ -110,5 +182,6 @@ test("migration flag is not armed in the pages and logout is explicit", () => {
     assert.doesNotMatch(fs.readFileSync("lib/sessions.js", "utf8"), /90 \* 24|180 \* 24/);
 });
 
+await Promise.all(tests);
 if (process.exitCode) console.error("activity tests failed");
 else console.log(`\n${passed} passed`);

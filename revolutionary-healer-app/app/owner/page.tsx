@@ -11,6 +11,8 @@ type Report = {
     lastScreens?: { memberEmail: string; screen: string; at: string }[];
     lastScreenNote?: string;
     timeline?: { at: string; event: string; slug?: string; code?: string; screen?: string }[];
+    scan?: { cap: number; complete: boolean };
+    unverifiedSummary?: { shown?: boolean; events?: number; playStarts?: number; chatTurns?: number };
     legacy?: { label?: string; chatSessionsSample?: number; favoritesSample?: number };
 };
 
@@ -50,14 +52,16 @@ export default function OwnerActivityPage() {
                 <label>To <input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></label>
                 <label>Member <input value={member} onChange={(e) => setMember(e.target.value)} placeholder="verified email" /></label>
                 <label><input type="checkbox" checked={testers} onChange={(e) => setTesters(e.target.checked)} /> Include owner and testers</label>
-                <label><input type="checkbox" checked={unverified} onChange={(e) => setUnverified(e.target.checked)} /> Show unverified count in the extra line</label>
+                <label><input type="checkbox" checked={unverified} onChange={(e) => setUnverified(e.target.checked)} /> Show a separate unverified tally. Totals stay verified members only.</label>
                 <button type="button" onClick={load}>Load</button>
             </div>
             {error ? <p>{error} Use the normal sign-in page. This page does not sign anyone out.</p> : null}
             {report?.coverage ? (
                 <>
                     <h2>Coverage</h2>
-                    <p>Verified events: {report.coverage.verifiedEvents}. Unverified device events: {report.coverage.unverifiedEvents}.</p>
+                    <p>Verified events in this scan: {report.coverage.verifiedEvents}. Unverified device events in this scan: {report.coverage.unverifiedEvents}. Unverified rows are not inside the totals below.</p>
+                    {report.scan ? <p>Scan cap {report.scan.cap}. {report.scan.complete ? "This scan reached the end of the matching rows." : "This scan stopped at the cap, so the totals are not a complete history."}</p> : null}
+                    {report.unverifiedSummary?.shown ? <p>Separate unverified tally (not added into the totals): {report.unverifiedSummary.events} events, {report.unverifiedSummary.playStarts} play starts, {report.unverifiedSummary.chatTurns} chat turns.</p> : null}
                     <p>{report.coverage.gap}</p>
                     <p>{report.coverage.legacyNote}</p>
                     {report.legacy ? <p>{report.legacy.label} Chats in this sample: {report.legacy.chatSessionsSample ?? "—"}. Favorites in this sample: {report.legacy.favoritesSample ?? "—"}.</p> : null}

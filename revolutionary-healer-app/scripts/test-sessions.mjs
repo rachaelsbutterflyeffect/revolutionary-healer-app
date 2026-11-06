@@ -2,10 +2,11 @@ import assert from "node:assert/strict";
 import {
     ACCESS_MS, FIVE_DAYS_MS, REFRESH_GRACE_MS, OWNER_EMAIL,
     createMemorySessionStore, issueLoginSession, migrationActive, refreshLoginSession,
-    rotateRefresh, sessionStatus, verifyAccessToken,
+    revokeRequestSession, sessionSecret, sessionStatus, verifyAccessToken,
 } from "../lib/sessions.js";
+import { memberSessionFormula } from "../lib/sessionAirtable.js";
 
-const env = { SESSION_SECRET: "test-secret-value-32", AUTH_SESSION_MIGRATION: "", NODE_ENV: "test" };
+const env = { SESSION_SECRET: "test-secret-value-0123456789abcdef", AUTH_SESSION_MIGRATION: "", NODE_ENV: "test" };
 let passed = 0;
 function test(name, fn) {
     return Promise.resolve().then(fn).then(() => { passed++; console.log("ok - " + name); }, (err) => { console.error("FAIL - " + name); console.error(err); process.exitCode = 1; });
@@ -69,6 +70,22 @@ it("lost entitlement and password reset revoke", async () => {
     await store.revokeEmail("member@example.com", now + 50);
     const after = await refreshLoginSession({ refreshToken: again.refreshToken, store, env, now: now + 100, entitled: async () => true });
     assert.equal(after.ok, false);
+});
+
+it("a short secret is refused and logout still revokes an expired access cookie", async () => {
+    assert.equal(sessionSecret({ SESSION_SECRET: "short-secret" }), "");
+    const store = createMemorySessionStore();
+    const now = 1_700_000_000_000;
+    const issued = await issueLoginSession("member@example.com", store, env, now);
+    const header = `rh_access=expired.token; rh_refresh=${issued.refreshToken}`;
+    const result = await revokeRequestSession({ cookieHeader: header, store, env, now: now + 60 * 60 * 1000 });
+    assert.equal(result.hadAccess, false);
+    assert.equal(result.revoked, true);
+    assert.equal(store.rows[0].revokedAt != null, true);
+    const formula = memberSessionFormula("member@example.com");
+    assert.match(formula, /"memberEmail":"member@example.com"/);
+    assert.equal(formula.includes("not-member@example.com"), false);
+    assert.throws(() => memberSessionFormula('bad"email@example.com'), /unsafe email/);
 });
 
 it("owner identity is the verified email, not a request body", () => {

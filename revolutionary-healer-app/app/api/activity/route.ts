@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { BATCH_GAP_MS, BATCH_LIMIT, stampActivity, validateActivityEvent } from "@/lib/activity";
+import { BATCH_LIMIT, rateAllows, stampActivity, validateActivityEvent } from "@/lib/activity";
 import { createAirtableActivityStore } from "@/lib/activityStore";
 import { readCookie, ACCESS_COOKIE, verifyAccessToken } from "@/lib/sessions";
 
@@ -14,7 +14,12 @@ export async function POST(req: NextRequest) {
     const deviceId = String(events[0]?.deviceId || "");
     const now = Date.now();
     const previous = lastBatch.get(deviceId) || 0;
-    if (deviceId && now - previous < BATCH_GAP_MS) {
+    let storedAt = null;
+    try { storedAt = await store.latestAtForDevice(deviceId); } catch (err) {
+        console.error("activity rate lookup failed", err);
+        return NextResponse.json({ error: "Activity was not stored.", code: "activity_storage_unavailable" }, { status: 503 });
+    }
+    if (!rateAllows(Math.max(previous, storedAt || 0), now)) {
         return NextResponse.json({ error: "Slow down.", code: "rate_limited" }, { status: 429 });
     }
     const access = verifyAccessToken(readCookie(req.headers.get("cookie"), ACCESS_COOKIE), process.env, now);
@@ -22,7 +27,7 @@ export async function POST(req: NextRequest) {
     try {
         for (const input of events) {
             const parsed = validateActivityEvent(input);
-            if (parsed.error) return NextResponse.json({ error: parsed.error }, { status: 400 });
+            if (parsed.error || !parsed.value) return NextResponse.json({ error: parsed.error || "Invalid event." }, { status: 400 });
             if (parsed.value.deviceId !== events[0].deviceId) {
                 return NextResponse.json({ error: "Mixed devices." }, { status: 400 });
             }
