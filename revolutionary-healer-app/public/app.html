@@ -2647,6 +2647,7 @@
 
   function renderRhActivationPlayer(a) {
     var playerEl = document.getElementById('activation-detail-player');
+    if (window.rhListening) window.rhListening.release();
     if (a.cover && (a.audioSrc || a.audioOnly)) {
       playerEl.innerHTML =
         '<div class="audio-cover-player" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
@@ -2656,7 +2657,8 @@
         '</div>';
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+      if (window.rhListening) window.rhListening.claim({ slug: window.__rhCurrentActivationSlug, player: "wistia-video", wistiaId: a.wistiaId });
     } else {
       playerEl.innerHTML =
         '<div style="padding:40px 20px;text-align:center;color:#c9b8a8;">Video coming soon.</div>';
@@ -2667,15 +2669,18 @@
     var a = window.__rhCurrentActivation;
     if (!a) { return; }
     var playerEl = document.getElementById('activation-detail-player');
+    if (window.rhListening) window.rhListening.release();
     if (a.wistiaId && a.audioOnly) {
       playerEl.innerHTML =
         '<div class="audio-cover-player" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
         '<div class="audio-cover-overlay"><div class="audio-playing-badge" style="color:#F6F2E9;font-size:14px;letter-spacing:0.04em;">&#9654; Now Playing</div></div>' +
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
         '</div>';
+      if (window.rhListening) window.rhListening.claim({ slug: window.__rhCurrentActivationSlug, player: "wistia-audio", wistiaId: a.wistiaId });
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+      if (window.rhListening) window.rhListening.claim({ slug: window.__rhCurrentActivationSlug, player: "wistia-video", wistiaId: a.wistiaId });
     } else if (a.audioSrc) {
       playerEl.innerHTML =
         '<div class="audio-native-wrap" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
@@ -2744,6 +2749,7 @@
       pct = Math.max(0, Math.min(1, pct));
       if (audio.duration) { audio.currentTime = pct * audio.duration; }
     });
+    if (window.rhListening) window.rhListening.claim({ slug: window.__rhCurrentActivationSlug, player: "native-audio", media: audio });
     audio.play();
     setPlayIcon(true);
   }
@@ -3115,6 +3121,8 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
 });
 
   function signOutMember() {
+    try { if (window.rhListening) window.rhListening.release(); } catch (e) {}
+    try { if (navigator.sendBeacon) navigator.sendBeacon('/api/auth/logout'); } catch (e) {}
     localStorage.removeItem('rh_member_email');
     localStorage.removeItem('rh_member_login_at');
     window.location.href = '/';
@@ -6059,6 +6067,7 @@ if (forceComplete) { goDay(3); }
   }
 </script>
 
+<script src="/rh-listening.js" defer></script>
 <script src="/activation-covers.js" defer></script>
 <script src="/cover-fixes.js" defer></script>
 <!-- Gap Method pop-up modal shell (presentation only). Wraps the existing
