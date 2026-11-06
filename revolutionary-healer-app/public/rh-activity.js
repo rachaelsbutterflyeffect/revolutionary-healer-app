@@ -15,7 +15,7 @@
         return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
     }
     function createClient(opts) {
-        var now = opts.now, send = opts.send, queue = [], play = null, lastNav = "", foregroundSince = 0, backgroundSince = 0, hidden = false, audioOn = false, lastFlush = 0;
+        var now = opts.now, send = opts.send, queue = [], play = null, lastNav = "", foregroundSince = 0, backgroundSince = 0, hidden = false, audioOn = false, lastFlush = 0, retryTimer = 0;
         function deviceId() { return opts.deviceId; }
         function push(event) {
             event.eventId = uuid();
@@ -25,28 +25,48 @@
             if (event.event === "activation_play" || event.event === "finder_complete" || event.event === "gap_complete" || event.event === "presence") return flush(true);
             return Promise.resolve();
         }
+        function scheduleRetry() {
+            if (retryTimer) return;
+            var wait = Math.max(50, 15000 - (now() - lastFlush) + 50);
+            var schedule = opts.schedule || function (fn, ms) { return setTimeout(fn, ms); };
+            retryTimer = schedule(function () { retryTimer = 0; flush(true); }, wait) || 1;
+        }
         function flush(force) {
             if (!queue.length) return Promise.resolve();
             if (!force && now() - lastFlush < 15000) return Promise.resolve();
             var batch = queue.splice(0, 8);
             lastFlush = now();
-            return send(batch).catch(function () { queue = batch.concat(queue).slice(0, 30); });
+            return send(batch).catch(function () { queue = batch.concat(queue).slice(0, 30); scheduleRetry(); });
         }
-        function credit(mediaTime) {
-            if (!play || !play.playing) return;
+        function credit(mediaTime, evenIfPaused) {
+            if (!play) return;
+            if (!play.playing && !evenIfPaused) return;
             var t = now();
             var wall = Math.max(0, (t - play.mark) / 1000);
-            var moved = (typeof mediaTime === "number" ? mediaTime : play.media) - play.media;
-            if (moved > 0.05) play.listened += Math.min(moved, wall + 1.5);
+            var position = typeof mediaTime === "number" ? mediaTime : play.media;
+            var moved = position - play.media;
+            if (moved > 0.05) play.listened += Math.min(moved, wall + 0.35);
             else if (moved < -0.35) play.listened += Math.min(wall, 120);
             play.mark = t;
-            play.media = typeof mediaTime === "number" ? mediaTime : play.media;
+            play.media = position;
+        }
+        function playPayload(state) {
+            return { event: "activation_play", playId: play.playId, slug: play.slug, state: state, listenedSeconds: Math.round(play.listened * 10) / 10, durationSeconds: play.duration };
+        }
+        function checkpoint(mediaTime) {
+            if (!play) return Promise.resolve();
+            credit(typeof mediaTime === "number" ? mediaTime : play.media, true);
+            return push(playPayload("pause"));
         }
         return {
             deviceId: deviceId,
             open: function (slug, entry) { return push({ event: "activation_open", slug: slug, entry: entry || "" }); },
             favorite: function (slug, on) { return push({ event: on ? "favorite_add" : "favorite_remove", slug: slug }); },
-            nav: function (screen) { if (!screen || screen === lastNav) return Promise.resolve(); lastNav = screen; return push({ event: "nav", screen: screen }); },
+            nav: function (screen) {
+                if (screen && screen !== lastNav) { lastNav = screen; push({ event: "nav", screen: screen }); }
+                if (play) return checkpoint(play.media);
+                return flush(true);
+            },
             finder: function (result) { return push({ event: "finder_complete", slug: result.slug, scores: result.scores, bodyOrMind: result.bm, pace: result.sm }); },
             resetDay: function (dayId) { return push({ event: "reset_day", dayId: dayId }); },
             gap: function (kind, extra) { extra = extra || {}; extra.event = kind; return push(extra); },
@@ -62,13 +82,14 @@
             },
             stopPlay: function (state, mediaTime) {
                 if (!play) return Promise.resolve();
-                credit(mediaTime || play.media);
+                credit(typeof mediaTime === "number" ? mediaTime : play.media, true);
                 play.playing = false;
                 audioOn = state !== "ended" && state !== "pause" ? audioOn : false;
-                var payload = { event: "activation_play", playId: play.playId, slug: play.slug, state: state, listenedSeconds: Math.round(play.listened * 10) / 10, durationSeconds: play.duration };
+                var payload = playPayload(state);
                 if (state === "ended") play = null;
                 return push(payload);
             },
+            checkpoint: checkpoint,
             presence: function () {
                 var t = now();
                 var chunk = 0;
@@ -85,10 +106,17 @@
             playId: function () { return play ? play.playId : null; },
             playing: function () { return !!(play && play.playing); },
             listened: function () { return play ? play.listened : 0; },
-            resume: function () {
-                if (!play) return;
+            resume: function (mediaTime) {
+                if (!play || play.playing) return;
+                var position = typeof mediaTime === "number" ? mediaTime : play.media;
+                var moved = position - play.media;
+                var wall = Math.max(0, (now() - play.mark) / 1000);
                 play.playing = true;
                 audioOn = true;
+                if (moved > 0.05 && moved <= wall + 0.35) {
+                    play.listened += moved;
+                    play.media = position;
+                } else if (typeof mediaTime === "number") play.media = position;
                 play.mark = now();
             },
         };
@@ -117,15 +145,17 @@
         win.setInterval(function () {
             if (win.document.visibilityState !== "hidden" || client.playId()) client.presence();
         }, 60000);
-        win.addEventListener("pagehide", function () { client.presence(); client.flush(true); });
-        win.addEventListener("freeze", function () { client.presence(); client.flush(true); });
+        win.addEventListener("pagehide", function () { client.checkpoint(); client.presence(); client.flush(true); });
+        win.addEventListener("freeze", function () { client.checkpoint(); client.presence(); client.flush(true); });
         client.watchAudio = function (audio, slug) {
             var playId = null;
-            audio.addEventListener("playing", function () {
-                if (!playId) { playId = uuid(); client.startPlay(slug, playId, audio.currentTime || 0, audio.duration || null); }
-                else if (!client.playing()) client.resume();
-                else client.sample(audio.currentTime || 0, audio.duration || null);
-            });
+            function begin() {
+                var duration = audio.duration || null;
+                if (!playId) { playId = uuid(); client.startPlay(slug, playId, audio.currentTime || 0, duration); }
+                else client.resume(audio.currentTime || 0);
+            }
+            audio.addEventListener("play", begin);
+            audio.addEventListener("playing", begin);
             audio.addEventListener("timeupdate", function () { client.sample(audio.currentTime || 0, audio.duration || null); });
             win.setInterval(function () {
                 if (!playId || audio.paused) return;
@@ -148,8 +178,7 @@
                 video.bind("play", function () {
                     var duration = durationOf(video);
                     if (!playId) { playId = uuid(); client.startPlay(slug, playId, video.time() || 0, duration); }
-                    else if (!client.playing()) client.resume();
-                    else client.sample(video.time() || 0, duration);
+                    else client.resume(video.time() || 0);
                 });
                 win.setInterval(function () {
                     if (!playId || (typeof video.state === "function" && video.state() === "paused")) return;

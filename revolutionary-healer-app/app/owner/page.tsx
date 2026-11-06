@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import styles from "./owner.module.css";
 
 type Report = {
     ready?: boolean;
@@ -77,10 +78,11 @@ export default function OwnerActivityPage() {
     const ready = report?.ready === true && report.scan?.complete === true;
 
     return (
-        <main style={{ maxWidth: 880, margin: "40px auto", fontFamily: "Georgia, serif", color: "#241c0a", padding: 16 }}>
+        <main className={styles.page}>
+            <div className={styles.sheet}>
             <h1>Owner activity</h1>
             <p>Private to the owner session. Totals, top 5, and next-day cohorts appear only after every matching row in the date range has been read. Owner and tester rows stay out of those totals unless that filter is on. Unverified rows stay in a separate tally.</p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "end" }}>
+            <div className={styles.controls}>
                 <label>From <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} /></label>
                 <label>To <input type="date" value={to} onChange={(e) => setTo(e.target.value)} /></label>
                 <label>Member <input value={member} onChange={(e) => setMember(e.target.value)} placeholder="verified email" /></label>
@@ -112,6 +114,7 @@ export default function OwnerActivityPage() {
                     <ul>{(report.timeline || []).map((row, index) => <li key={index}>{row.at} {row.event} {row.slug || row.code || row.screen || ""}</li>)}</ul>
                 </>
             ) : null}
+            </div>
         </main>
     );
 }

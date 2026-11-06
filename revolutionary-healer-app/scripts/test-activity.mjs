@@ -260,6 +260,71 @@ test("one process retries the same event id once", async () => {
     assert.equal(inserts, 1);
 });
 
+test("a pause at 0:34 keeps the resumed listen, and the report uses the longer row", async () => {
+    const sent = [];
+    let clock = 1_000_000;
+    let failHigh = true;
+    let retry = null;
+    const client = createClient({
+        deviceId: device,
+        now: () => clock,
+        schedule: (fn) => { retry = fn; return 1; },
+        send: async (batch) => {
+            if (failHigh && batch.some((row) => row.state === "pause" && row.listenedSeconds > 20)) {
+                failHigh = false;
+                throw new Error("retry");
+            }
+            sent.push(batch.map((row) => ({ ...row })));
+            return { ok: true };
+        },
+    });
+    client.startPlay("slowing-the-mind", playId, 0, 600);
+    clock += 15000;
+    await client.stopPlay("pause", 15);
+    const first = sent.flat().find((row) => row.state === "pause");
+    assert.ok(first.listenedSeconds >= 14.6 && first.listenedSeconds <= 15.4, String(first.listenedSeconds));
+    clock += 2000;
+    clock += 19000;
+    await client.stopPlay("pause", 34);
+    assert.equal(typeof retry, "function");
+    clock += 16000;
+    await retry();
+    const last = sent.flat().filter((row) => row.state === "pause").pop();
+    assert.ok(last.listenedSeconds >= 33 && last.listenedSeconds <= 34.4, String(last.listenedSeconds));
+    assert.equal(client.playId(), playId);
+    const resumed = createClient({ deviceId: device, now: () => clock, send: async (batch) => { sent.push(batch.map((row) => ({ ...row }))); return { ok: true }; } });
+    const resumedId = "00000000-0000-4000-8000-000000000044";
+    clock += 1000;
+    resumed.startPlay("slowing-the-mind", resumedId, 0, 600);
+    clock += 15000;
+    await resumed.stopPlay("pause", 15);
+    clock += 5000;
+    resumed.resume(15);
+    clock += 19000;
+    resumed.sample(34, 600);
+    await resumed.stopPlay("pause", 34);
+    assert.ok(resumed.listened() >= 33 && resumed.listened() <= 34.4);
+    clock += 1000;
+    const leaving = createClient({ deviceId: device, now: () => clock, send: async (batch) => { sent.push(batch.map((row) => ({ ...row }))); return { ok: true }; } });
+    leaving.startPlay("slowing-the-mind", "00000000-0000-4000-8000-000000000045", 0, 600);
+    clock += 34000;
+    leaving.sample(34, 600);
+    await leaving.nav("library");
+    const flushed = sent.flat().filter((row) => row.playId === "00000000-0000-4000-8000-000000000045" && row.state === "pause").pop();
+    assert.ok(flushed.listenedSeconds >= 33 && flushed.listenedSeconds <= 34.4, String(flushed.listenedSeconds));
+    assert.equal(leaving.playing(), true);
+    const low = stampActivity(validateActivityEvent({ eventId, deviceId: device, event: "activation_play", playId, slug: "slowing-the-mind", state: "pause", listenedSeconds: 15.9, durationSeconds: 600 }).value, { now: Date.parse("2026-11-06T15:00:00Z"), email: "member@example.com", verified: true });
+    const high = stampActivity(validateActivityEvent({ eventId: "00000000-0000-4000-8000-000000000046", deviceId: device, event: "activation_play", playId, slug: "slowing-the-mind", state: "pause", listenedSeconds: 34, durationSeconds: 600 }).value, { now: Date.parse("2026-11-06T15:01:00Z"), email: "member@example.com", verified: true });
+    const report = buildOwnerReport([low, high], { now: Date.parse("2026-11-08T15:00:00Z") });
+    assert.equal(report.totals.playStarts, 1);
+    assert.equal(report.top5[0].listenedSeconds, 34);
+    assert.match(fs.readFileSync("public/rh-activity.js", "utf8"), /pagehide/);
+    assert.match(fs.readFileSync("public/rh-activity.js", "utf8"), /checkpoint\(\)/);
+    assert.match(fs.readFileSync("app/owner/owner.module.css", "utf8"), /#f6f2e9/);
+    assert.match(fs.readFileSync("app/owner/owner.module.css", "utf8"), /#cfa646/);
+    assert.match(fs.readFileSync("app/owner/owner.module.css", "utf8"), /#121110/);
+});
+
 test("migration flag is not armed in the pages and logout is explicit", () => {
     for (const file of ["public/app.html", "public/app-refresh.html"]) {
         const html = fs.readFileSync(file, "utf8");
