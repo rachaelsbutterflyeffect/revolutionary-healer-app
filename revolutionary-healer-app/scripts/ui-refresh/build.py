@@ -255,11 +255,13 @@ once('''    var target = 97 * (1 - Math.exp(-t / 32)); // QA Oct 14: slower curv
     var target = Math.min(97, 90 * (1 - Math.exp(-t / 7)) + 7 * (1 - Math.exp(-t / 90)));''', 'qa gap pace')
 once('''el.textContent = sec >= 10 ? ('Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0')) : ''; }''', '''el.textContent = 'Working for ' + Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0'); } // QA Oct 15: timer shows from the start''', 'qa gap timer')
 # ---- Activations: Favourites is one category tile, first in the grid (Rachael Oct 15). Hidden with no favourites;
-# tapping it opens the category view in favourites mode (refresh.js libFavs). To swap the art, replace the file or
-# change FAV_ART (path, crop focus); same card treatment as the other category tiles (.rf-lsec).
-FAV_ART = ('/images/sections/sec-favourites.webp', '58% 18%')
-FAVTILE = ('  <button type="button" class="rf-lsec rf-favtile" data-rf-favs hidden><span class="bgc" style="background-image:url(\'%s\');background-position:%s" aria-hidden="true"></span>'
-  '<span class="in"><b>Favourites</b><small data-rf-favcount></small></span><span class="arr" aria-hidden="true">→</span></button>\n') % FAV_ART
+# tapping it opens the category view in favourites mode (refresh.js libFavs). The face is the approved champagne
+# bubble (no photo). data-rf-favcount stays so renderFavSec can still set the count, aria-label, and hidden state.
+# public/app-refresh.html also carries later hand edits (the live Reset & Restore banner and nav clearance).
+# Keep this tile string in sync there. Do not regenerate the whole page for this change; a full rebuild drops those edits.
+FAVTILE = ('  <button type="button" class="rf-lsec rf-favtile" data-rf-favs hidden>'
+  '<span class="in"><b>Favorites</b><small class="rf-favpitch">Create a list of your favorite activations</small>'
+  '<small data-rf-favcount></small></span><span class="arr" aria-hidden="true">→</span></button>\n')
 once('<div class="rf-lsecs" id="rf-lsecs">\n', '<div class="rf-lsecs" id="rf-lsecs">\n' + FAVTILE, 'favtile')
 once('      <div class="card-grid" id="activation-library-grid">', '      <div class="card-grid rf-favgrid" id="rf-favgrid"></div>\n      <div class="card-grid" id="activation-library-grid">', 'favgrid')
 s = s.replace('>← Back to My Revolution</a>', '>← My Revolution</a>').replace('>← Back to Activations</a>', '>← Activations</a>').replace('>← Back to Home</a>', '>← Home</a>')
