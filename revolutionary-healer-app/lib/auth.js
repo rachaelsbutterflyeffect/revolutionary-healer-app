@@ -8,6 +8,7 @@
 // network call, safe default cost factor. Never store or log plaintext.
 
 import crypto from "crypto";
+import { hasSignInAccess } from "./entitlements.js";
 
 export function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -24,6 +25,17 @@ export function verifyPassword(password, stored) {
   const b = Buffer.from(hash, "hex");
   if (a.length !== b.length) return false;
   return crypto.timingSafeEqual(a, b);
+}
+
+export function decideAppLogin({ entitlement, passwordHash, password }) {
+    if (!entitlement || entitlement.hasAccount === false) return { ok: false, status: 401, code: "no_purchase" };
+    if (!hasSignInAccess(entitlement)) return { ok: false, status: 403, code: "inactive" };
+    if (!passwordHash) {
+        if (String(password || "").length < 6) return { ok: false, status: 400, code: "short_password" };
+        return { ok: true, status: 200, setPassword: true };
+    }
+    if (!verifyPassword(password, passwordHash)) return { ok: false, status: 401, code: "incorrect_password" };
+    return { ok: true, status: 200, setPassword: false };
 }
 
 export function generateToken() {

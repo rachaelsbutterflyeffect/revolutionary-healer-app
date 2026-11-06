@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMemberByEmail, setMemberPassword, normalizeEmail } from "@/lib/airtable";
 import { deriveEntitlement } from "@/lib/entitlements";
-import { hashPassword, verifyPassword } from "@/lib/auth";
+import { decideAppLogin, hashPassword } from "@/lib/auth";
 import { createAirtableSessionStore } from "@/lib/sessionAirtable";
 import { accessCookie, issueLoginSession, refreshCookie, sessionSecret } from "@/lib/sessions";
 
@@ -31,24 +31,27 @@ export async function POST(req: NextRequest) {
     }
 
     const entitlement = deriveEntitlement(member.fields as any);
-    const isPaying = entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership || entitlement.onDlrhMembership;
-    if (!isPaying) {
+    const stored = (member.fields as any).password_hash as string | undefined;
+    const decision = decideAppLogin({ entitlement, passwordHash: stored, password });
+    if (!decision.ok && decision.code === "no_purchase") {
+      return NextResponse.json(
+        { error: "We don't see a purchase for that email. Double-check you're using the exact email you purchased with, or reach out for help." },
+        { status: 401 }
+      );
+    }
+    if (!decision.ok && decision.code === "inactive") {
       return NextResponse.json(
         { error: "This email doesn't have active access yet. If you just purchased, please try again in a few minutes." },
         { status: 403 }
       );
     }
-
-    const stored = (member.fields as any).password_hash as string | undefined;
-
-    if (!stored) {
-      if (password.length < 6) {
-        return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
-      }
-      await setMemberPassword(member.id, hashPassword(password));
-    } else if (!verifyPassword(password, stored)) {
+    if (!decision.ok && decision.code === "short_password") {
+      return NextResponse.json({ error: "Password must be at least 6 characters." }, { status: 400 });
+    }
+    if (!decision.ok) {
       return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
     }
+    if (decision.setPassword) await setMemberPassword(member.id, hashPassword(password));
 
     if (!sessionSecret(process.env)) {
         return NextResponse.json({ ok: true, email, tracking: false, code: "session_unconfigured" });

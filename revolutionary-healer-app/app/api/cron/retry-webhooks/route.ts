@@ -21,6 +21,7 @@ import {
   updateWebhookEvent,
 } from "@/lib/airtable";
 import { sendOpsAlert } from "@/lib/email";
+import { isRefundEvent, readKajabiWebhook } from "@/lib/fiveDayPass";
 
 // Vercel Cron sends "Authorization: Bearer <CRON_SECRET>" automatically on
 // every invocation when a CRON_SECRET env var is set on the project (this is
@@ -66,7 +67,24 @@ export async function GET(req: NextRequest) {
       // (lib/airtable.js) requires the key to be present (even if its value
       // is undefined) since it has no default value in its destructured
       // parameter, which TypeScript then infers as a required property.
-      const result = await processKajabiPurchase({ email, firstName: undefined, offerId, eventType });
+      let purchasedAt = f.received_at || undefined;
+      let transactionId = String(f.purchase_id || "");
+      const kind = isRefundEvent(eventType) ? "refund" : "purchase";
+      if (transactionId.endsWith(`:${kind}`)) transactionId = transactionId.slice(0, -(kind.length + 1));
+      try {
+        const parsed = readKajabiWebhook(JSON.parse(f.raw_payload || "{}"));
+        if (parsed.purchasedAt) purchasedAt = parsed.purchasedAt;
+        if (parsed.purchaseId) transactionId = parsed.purchaseId;
+      } catch { /* keep the stored receipt time */ }
+      const result = await processKajabiPurchase({
+        email,
+        firstName: undefined,
+        offerId,
+        eventType,
+        purchaseId: transactionId,
+        purchasedAt,
+        now: purchasedAt ? new Date(purchasedAt) : null,
+      });
       await updateWebhookEvent(row.id, {
         outcome: result.outcome,
         member_record_id: result.memberRecordId,

@@ -3,10 +3,11 @@
 
 import Airtable from "airtable";
 import crypto from "crypto";
-import { sendGapMethodMagicLink } from "./email";
-import { DIVINE_IDENTITIES } from "./divineIdentities";
+import { sendGapMethodMagicLink } from "./email.js";
+import { DIVINE_IDENTITIES } from "./divineIdentities.js";
 import { testerRecordFields, isUnknownAirtableField, isTester } from "./testers.js";
 import { ccmTrackingEnabled, isCcmOffer, markCcmPurchased } from "./ccm-tracking.js";
+import { isFiveDayOffer, planFiveDayPass } from "./fiveDayPass.js";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -610,9 +611,9 @@ export async function listActiveMemoriesByEmail(email) {
     return records;
 }
 
-const MEMBER_OFFER_IDS = (process.env.MEMBER_OFFER_IDS ?? "").split(",").filter(Boolean);
-const TIER_OFFER_IDS = (process.env.TIER_OFFER_IDS ?? "").split(",").filter(Boolean);
-const GAP_METHOD_OFFER_IDS = (process.env.GAP_METHOD_OFFER_IDS ?? "2151330100").split(",").filter(Boolean);
+function offerList(env, name, fallback = "") {
+    return String((env && env[name]) ?? fallback).split(",").map((id) => id.trim()).filter(Boolean);
+}
 
 export async function getWebhookEventByPurchaseId(purchaseId) {
     return findOneByField(Tables.WebhookEvents, "purchase_id", purchaseId);
@@ -664,20 +665,51 @@ export async function listWebhookEventsDueForRetry() {
     .all();
 }
 
-export async function processKajabiPurchase({ email, firstName, offerId, eventType }) {
+export async function processKajabiPurchase(input = {}) {
+    const { email, firstName, offerId, eventType, purchasedAt = "", purchaseId = "", env = process.env, store = undefined } = input;
     const normalizedEmail = normalizeEmail(email);
-    const isMemberOffer = offerId ? MEMBER_OFFER_IDS.includes(offerId) : true;
-    const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
-    const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;
+    const db = store || { getMemberByEmail, writeRow };
+    const when = purchasedAt ? new Date(purchasedAt) : (input.now ? new Date(input.now) : new Date());
+    const memberIds = offerList(env, "MEMBER_OFFER_IDS");
+    const tierIds = offerList(env, "TIER_OFFER_IDS");
+    const gapIds = offerList(env, "GAP_METHOD_OFFER_IDS", "2151330100");
+    const isMemberOffer = !!offerId && memberIds.includes(String(offerId));
+    const isTierOffer = !!offerId && tierIds.includes(String(offerId));
+    const isGapMethodOffer = !!offerId && gapIds.includes(String(offerId));
+    if (isFiveDayOffer(offerId, env)) {
+        if (!purchaseId) return { memberRecordId: "", outcome: "missing_transaction_id", sendEmail: false };
+        const existing = await db.getMemberByEmail(normalizedEmail);
+        const plan = planFiveDayPass({
+            existingFields: existing?.fields,
+            eventType,
+            now: when,
+            purchasedAt: when.toISOString(),
+            purchaseId,
+        });
+        if (!existing) {
+            if (!Object.keys(plan.patch).length) return { memberRecordId: "", outcome: plan.outcome || "already_existed", sendEmail: false };
+            const created = await db.writeRow("create", Tables.Members, null, {
+                email: normalizedEmail,
+                member_active: false,
+                ...plan.patch,
+            }, normalizedEmail);
+            return { memberRecordId: created.id, outcome: "created", sendEmail: false };
+        }
+        if (Object.keys(plan.patch).length) {
+            await db.writeRow("update", Tables.Members, existing.id, plan.patch, normalizedEmail);
+        }
+        return { memberRecordId: existing.id, outcome: "already_existed", sendEmail: false };
+    }
+    if (!offerId) {
+        return { memberRecordId: "", outcome: "ignored_offer", sendEmail: false };
+    }
     const isCancellation = eventType === "cancellation" || eventType === "refund";
 
-    // Unknown-offer guard (CCM card release, Oct 14 2026). Clear Channel
-    // Method offers are a separate program: they must never create or touch a
-    // Revolutionary Healer Members row. When CCM_TRACKING is on they mark the
-    // buyer CCM-purchased (so the card/bot stop selling to them). Every other
-    // offer ID keeps its existing behaviour: the live webhook already receives
-    // several non-CCM offer IDs (Oct 2026 WebhookEvents) whose list membership
-    // could not be verified, so they are deliberately not filtered here.
+    // Clear Channel Method offers never write a Revolutionary Healer Members
+    // row. Every other non-RR offer keeps its existing fulfillment, including
+    // offers that are not listed in MEMBER_OFFER_IDS. Only a missing offer id
+    // stops before that path. Offer 2151496665 is handled above and never
+    // reaches this membership write.
     if (offerId && isCcmOffer(offerId) && !isMemberOffer && !isTierOffer && !isGapMethodOffer) {
         if (!isCancellation && ccmTrackingEnabled()) {
             try {
@@ -691,7 +723,7 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
         return { memberRecordId: "", outcome: "ignored_offer" };
     }
 
-    const existing = await getMemberByEmail(normalizedEmail);
+    const existing = await db.getMemberByEmail(normalizedEmail);
     const fields = {};
     if (isMemberOffer) fields.member_active = !isCancellation;
     if (isTierOffer) fields.tier_active = !isCancellation;
@@ -699,23 +731,23 @@ export async function processKajabiPurchase({ email, firstName, offerId, eventTy
     let memberRecordId;
     let outcome;
     if (existing) {
-        await writeRow("update", Tables.Members, existing.id, fields, normalizedEmail);
+            await db.writeRow("update", Tables.Members, existing.id, fields, normalizedEmail);
         memberRecordId = existing.id;
         outcome = "already_existed";
     } else {
-        const created = await writeRow("create", Tables.Members, null, { email: normalizedEmail, member_active: !isCancellation, ...fields }, normalizedEmail);
+        const created = await db.writeRow("create", Tables.Members, null, { email: normalizedEmail, member_active: !isCancellation, ...fields }, normalizedEmail);
         memberRecordId = created.id;
         outcome = "created";
     }
 
-    if (isGapMethodOffer && !isCancellation) {
+    if (!store && isGapMethodOffer && !isCancellation) {
         const { sessionToken } = await upsertGapMethodResultOnPurchase({ email: normalizedEmail, offerId, firstName });
         sendGapMethodMagicLink({ email: normalizedEmail, firstName, sessionToken }).catch((err) => {
             console.error("sendGapMethodMagicLink failed", err);
         });
     }
 
-    if ((isMemberOffer || isTierOffer) && !isCancellation) {
+    if (!store && (isMemberOffer || isTierOffer) && !isCancellation) {
         await linkGapMethodResultToMember(normalizedEmail, memberRecordId);
     }
 
