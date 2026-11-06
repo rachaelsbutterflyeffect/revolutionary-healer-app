@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getEntitlementForEmail } from "@/lib/entitlements";
+import { getEntitlementForEmail, hasSignInAccess } from "@/lib/entitlements";
 import { createAirtableSessionStore } from "@/lib/sessionAirtable";
 import {
     accessCookie, ensureAccess, migrationActive, refreshCookie, sessionBody,
@@ -9,7 +9,7 @@ const store = createAirtableSessionStore();
 
 function entitled(email: string) {
     return getEntitlementForEmail(email).then(({ entitlement }) => !!(
-        entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership || entitlement.onDlrhMembership
+        hasSignInAccess(entitlement)
     ));
 }
 

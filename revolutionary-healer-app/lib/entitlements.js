@@ -36,6 +36,7 @@
 
 import { getMemberByEmail } from "./airtable.js";
 import { GAP_METHOD_ACTIVATION_SLUGS } from "./activations.js";
+import { fiveDayPassState } from "./fiveDayPass.js";
 
 const TRIAL_DAYS = Number(process.env.TRIAL_DAYS ?? 7);
 const TRIAL_CHAT_LIMIT = Number(process.env.TRIAL_CHAT_LIMIT ?? 10);
@@ -65,6 +66,10 @@ export function deriveEntitlement(memberFields, now = new Date()) {
       onDlrhMembership: false,
       dlrhMembershipExpired: false,
       dlrhMembershipDaysRemaining: 0,
+      onFiveDayPass: false,
+      fiveDayPassExpired: false,
+      fiveDayPassDaysRemaining: 0,
+      fiveDayPassEndsAt: null,
       canUseBase: false,
       canUseTier: false,
       unlockedActivationSlugs: [],
@@ -137,11 +142,20 @@ export function deriveEntitlement(memberFields, now = new Date()) {
     dlrhMembershipDaysRemaining = Math.max(0, Math.ceil((cutoff.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)));
   }
 
-  const canUseBase = memberActive || onGapTrial || onBetaMembership || onDlrhMembership || (onTrial && trialChatsRemaining > 0);
-  // Higher-tier content (the whole Activation Library) requires tier_active or an
-  // active Beta membership. As of Aug 10 the GAP trial no longer grants this --
-  // it only grants base (chat) access plus the 7 GAP Method activations below.
-  const canUseTier = tierActive || onBetaMembership || onDlrhMembership;
+  // Reset & Restore five-day pass. Kajabi only takes payment. The app grants
+  // full access from rr_pass_started_at for five 24-hour periods. It does not
+  // replace member_active, tier_active, Beta, or DLRH.
+  const fiveDay = fiveDayPassState(memberFields, now);
+  const onFiveDayPass = fiveDay.active;
+  const fiveDayPassExpired = fiveDay.expired;
+  const fiveDayPassDaysRemaining = fiveDay.daysRemaining;
+  const fiveDayPassEndsAt = fiveDay.endsAt;
+
+  const canUseBase = memberActive || onGapTrial || onBetaMembership || onDlrhMembership || onFiveDayPass || (onTrial && trialChatsRemaining > 0);
+  // Higher-tier content (the whole Activation Library, including Reset & Restore
+  // in the app) requires tier_active, Beta, DLRH, or an active five-day pass.
+  // As of Aug 10 the GAP trial no longer grants this.
+  const canUseTier = tierActive || onBetaMembership || onDlrhMembership || onFiveDayPass;
 
   // Aug 10: which activation slugs this member can play. "ALL" is a sentinel the
   // UI can check first (===) before ever consulting the list, for full/Beta
@@ -173,6 +187,10 @@ export function deriveEntitlement(memberFields, now = new Date()) {
     onDlrhMembership,
     dlrhMembershipExpired,
     dlrhMembershipDaysRemaining,
+    onFiveDayPass,
+    fiveDayPassExpired,
+    fiveDayPassDaysRemaining,
+    fiveDayPassEndsAt,
     canUseBase,
     canUseTier,
     unlockedActivationSlugs,
@@ -186,6 +204,13 @@ export function isActivationUnlocked(slug, entitlement) {
   return (
     entitlement.unlockedActivationSlugs === "ALL" ||
     entitlement.unlockedActivationSlugs.includes(slug)
+  );
+}
+
+export function hasSignInAccess(entitlement) {
+  if (!entitlement) return false;
+  return !!(
+    entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership || entitlement.onDlrhMembership || entitlement.onFiveDayPass
   );
 }
 

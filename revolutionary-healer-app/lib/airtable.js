@@ -3,10 +3,11 @@
 
 import Airtable from "airtable";
 import crypto from "crypto";
-import { sendGapMethodMagicLink } from "./email";
-import { DIVINE_IDENTITIES } from "./divineIdentities";
+import { sendGapMethodMagicLink } from "./email.js";
+import { DIVINE_IDENTITIES } from "./divineIdentities.js";
 import { testerRecordFields, isUnknownAirtableField, isTester } from "./testers.js";
 import { ccmTrackingEnabled, isCcmOffer, markCcmPurchased } from "./ccm-tracking.js";
+import { isFiveDayOffer, planFiveDayPass } from "./fiveDayPass.js";
 
 // `base` is called as a function (base(TableName)) everywhere in this file
 // and in app/api/webhooks/route.ts. Lazily instantiate the real Airtable
@@ -664,8 +665,30 @@ export async function listWebhookEventsDueForRetry() {
     .all();
 }
 
-export async function processKajabiPurchase({ email, firstName, offerId, eventType }) {
+export async function processKajabiPurchase({ email, firstName, offerId, eventType, now = undefined, env = process.env }) {
     const normalizedEmail = normalizeEmail(email);
+    if (isFiveDayOffer(offerId, env)) {
+        const existing = await getMemberByEmail(normalizedEmail);
+        const plan = planFiveDayPass({ existingFields: existing?.fields, eventType, now: now || new Date() });
+        let memberRecordId;
+        let outcome;
+        if (existing) {
+            if (Object.keys(plan.patch).length) {
+                await writeRow("update", Tables.Members, existing.id, plan.patch, normalizedEmail);
+            }
+            memberRecordId = existing.id;
+            outcome = "already_existed";
+        } else {
+            const created = await writeRow("create", Tables.Members, null, {
+                email: normalizedEmail,
+                member_active: false,
+                ...plan.patch,
+            }, normalizedEmail);
+            memberRecordId = created.id;
+            outcome = "created";
+        }
+        return { memberRecordId, outcome, sendEmail: false };
+    }
     const isMemberOffer = offerId ? MEMBER_OFFER_IDS.includes(offerId) : true;
     const isTierOffer = offerId ? TIER_OFFER_IDS.includes(offerId) : false;
     const isGapMethodOffer = offerId ? GAP_METHOD_OFFER_IDS.includes(offerId) : false;

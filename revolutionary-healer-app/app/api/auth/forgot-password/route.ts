@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     const member = await getMemberByEmail(email);
     if (member) {
       const entitlement = deriveEntitlement(member.fields as any);
-      const isPaying = entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership;
+      const isPaying = entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership || entitlement.onFiveDayPass;
       if (isPaying) {
         const token = generateToken();
         const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();

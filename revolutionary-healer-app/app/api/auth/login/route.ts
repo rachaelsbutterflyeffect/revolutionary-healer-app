@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMemberByEmail, setMemberPassword, normalizeEmail } from "@/lib/airtable";
-import { deriveEntitlement } from "@/lib/entitlements";
+import { deriveEntitlement, hasSignInAccess } from "@/lib/entitlements";
 import { hashPassword, verifyPassword } from "@/lib/auth";
 import { createAirtableSessionStore } from "@/lib/sessionAirtable";
 import { accessCookie, issueLoginSession, refreshCookie, sessionSecret } from "@/lib/sessions";
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     }
 
     const entitlement = deriveEntitlement(member.fields as any);
-    const isPaying = entitlement.memberActive || entitlement.tierActive || entitlement.onBetaMembership || entitlement.onDlrhMembership;
+    const isPaying = hasSignInAccess(entitlement);
     if (!isPaying) {
       return NextResponse.json(
         { error: "This email doesn't have active access yet. If you just purchased, please try again in a few minutes." },

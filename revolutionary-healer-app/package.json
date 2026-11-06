@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test:entitlements": "node scripts/test-entitlements.mjs",
+    "test:five-day-pass": "node scripts/test-five-day-pass.mjs",
     "test:chat-speed": "node scripts/test-chat-speed.mjs",
     "test:chat-streaming": "node scripts/test-chat-streaming.mjs",
     "test:gap-streaming": "node scripts/test-gap-streaming.mjs",
