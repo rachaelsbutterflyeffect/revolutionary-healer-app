@@ -5,33 +5,26 @@ import { useRouter } from "next/navigation";
 import PasswordField from "@/components/PasswordField";
 import styles from "./sign-in.module.css";
 
-type Star = { x: number; y: number; r: number; z: number; p: number; gold: boolean };
 type Wing = { bx: number; by: number; s: number; j: number; teal: boolean };
 type Swirl = { a: number; r: number; w: number; inw: number; s: number; j: number; teal: boolean };
 
 const GOLD_LINE = "rgba(232,200,115,0.38)";
 
 /**
- * Same particle butterfly and orbiting swirl drawn on the in-app home
- * (public/app-refresh.html, #rf-fly). Gold is the body of the mark.
- * Teal stays a sparse sparkle, matching the in-app motes, not a fill.
+ * The signed-in home butterfly (#rf-fly in public/app-refresh.html): 520 wing
+ * points, 140 inward swirls, the same curve, colors, and every-other-frame loop.
  */
-function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: RefObject<HTMLCanvasElement | null>, active: boolean) {
+function useAppButterfly(flyRef: RefObject<HTMLCanvasElement | null>, active: boolean) {
   useEffect(() => {
     if (!active) return;
-    const sky = skyRef.current;
     const fly = flyRef.current;
-    if (!sky || !fly) return;
-    const sx = sky.getContext("2d");
+    if (!fly) return;
     const fx = fly.getContext("2d");
-    if (!sx || !fx) return;
+    if (!fx) return;
 
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let W = 0;
-    let H = 0;
     let FW = 0;
     let FH = 0;
-    let stars: Star[] = [];
     let wings: Wing[] = [];
     let swirl: Swirl[] = [];
     let px = 0;
@@ -40,28 +33,6 @@ function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: R
     let frame = 0;
     let raf = 0;
     let stopped = false;
-
-    const resizeSky = () => {
-      const d = Math.min(window.devicePixelRatio || 1, 2);
-      const nw = window.innerWidth;
-      const nh = window.innerHeight;
-      if (W === nw && H === nh && stars.length) return;
-      W = nw;
-      H = nh;
-      sky.width = Math.max(1, W * d);
-      sky.height = Math.max(1, H * d);
-      sky.style.width = W + "px";
-      sky.style.height = H + "px";
-      sx.setTransform(d, 0, 0, d, 0, 0);
-      stars = Array.from({ length: 110 }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        r: Math.random() * 1.4 + 0.2,
-        z: Math.random() * 0.8 + 0.2,
-        p: Math.random() * 6,
-        gold: Math.random() < 0.35,
-      }));
-    };
 
     const resizeFly = () => {
       const d = Math.min(window.devicePixelRatio || 1, 2);
@@ -100,18 +71,10 @@ function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: R
       }));
     };
 
-    const draw = (force: boolean) => {
+    const draw = () => {
       T += 0.016;
       frame += 1;
-      if (!force && (document.hidden || frame % 2 === 1)) return;
-      sx.clearRect(0, 0, W, H);
-      for (const s of stars) {
-        const a = 0.45 + 0.55 * Math.sin(T * 1.5 + s.p);
-        sx.fillStyle = s.gold ? `rgba(255,226,150,${a})` : `rgba(220,255,250,${a * 0.8})`;
-        sx.beginPath();
-        sx.arc(s.x + px * s.z, s.y + py * s.z, s.r, 0, Math.PI * 2);
-        sx.fill();
-      }
+      if (document.hidden || (frame & 1) === 0) return;
       if (!FW || !FH) return;
       fx.clearRect(0, 0, FW, FH);
       const cx = FW / 2 + px * 0.6;
@@ -121,10 +84,10 @@ function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: R
       for (const p of wings) {
         const x = cx + Math.abs(p.bx) * p.s * k * 0.92 + Math.sin(T * 0.6 + p.j) * 0.8;
         const y = cy + p.by * k * 0.9 + Math.cos(T * 0.5 + p.j) * 0.8;
-        fx.fillStyle = p.teal ? "rgba(110,240,228,0.75)" : "rgba(255,224,150,0.8)";
+        fx.fillStyle = p.teal ? "rgba(110,240,228,.75)" : "rgba(255,224,150,.8)";
         fx.fillRect(x, y, 1.6, 1.6);
       }
-      fx.fillStyle = "rgba(255,246,214,0.9)";
+      fx.fillStyle = "rgba(255,246,214,.9)";
       fx.fillRect(cx - 1, cy - k * 0.9, 2, k * 1.6);
       const step = reduce ? 0 : 2;
       for (const v of swirl) {
@@ -139,7 +102,7 @@ function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: R
         const vy = cy + Math.sin(v.a) * v.r * 0.62;
         fx.fillStyle = v.teal ? `rgba(110,240,228,${tw})` : `rgba(255,226,150,${tw})`;
         fx.beginPath();
-        fx.arc(vx, vy, v.s, 0, Math.PI * 2);
+        fx.arc(vx, vy, v.s, 0, 7);
         fx.fill();
         if (v.s > 1.3) {
           fx.fillRect(vx - v.s * 2.5, vy - 0.3, v.s * 5, 0.6);
@@ -151,41 +114,38 @@ function useHomeButterfly(skyRef: RefObject<HTMLCanvasElement | null>, flyRef: R
 
     const loop = () => {
       if (stopped) return;
-      draw(false);
+      draw();
       raf = requestAnimationFrame(loop);
     };
 
     const onPointer = (event: PointerEvent) => {
-      if (!W || !H) return;
-      px = (event.clientX / W - 0.5) * 14;
-      py = (event.clientY / H - 0.5) * 14;
+      const w = window.innerWidth || 1;
+      const h = window.innerHeight || 1;
+      px = (event.clientX / w - 0.5) * 14;
+      py = (event.clientY / h - 0.5) * 14;
     };
 
-    resizeSky();
     resizeFly();
-    if (reduce) draw(true);
-    else loop();
+    if (reduce) {
+      window.setTimeout(draw, 300);
+    } else {
+      loop();
+    }
 
-    const skyObserver = new ResizeObserver(() => {
-      resizeSky();
-      if (reduce) draw(true);
-    });
     const flyObserver = new ResizeObserver(() => {
       resizeFly();
-      if (reduce) draw(true);
+      if (reduce) draw();
     });
-    skyObserver.observe(document.documentElement);
     flyObserver.observe(fly);
     window.addEventListener("pointermove", onPointer);
 
     return () => {
       stopped = true;
       cancelAnimationFrame(raf);
-      skyObserver.disconnect();
       flyObserver.disconnect();
       window.removeEventListener("pointermove", onPointer);
     };
-  }, [skyRef, flyRef, active]);
+  }, [flyRef, active]);
 }
 
 // Oct 15 2026 (old-look flash fix): decide which look a member gets here, before leaving the sign-in
@@ -209,7 +169,6 @@ async function memberAppPath(email: string): Promise<string> {
 
 export default function SignInHome({ fontsClassName }: { fontsClassName: string }) {
   const router = useRouter();
-  const skyRef = useRef<HTMLCanvasElement>(null);
   const flyRef = useRef<HTMLCanvasElement>(null);
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
@@ -217,7 +176,7 @@ export default function SignInHome({ fontsClassName }: { fontsClassName: string 
   const [signInError, setSignInError] = useState("");
   const [signingIn, setSigningIn] = useState(false);
 
-  useHomeButterfly(skyRef, flyRef, !checking);
+  useAppButterfly(flyRef, !checking);
 
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("rh_member_email") : null;
@@ -283,62 +242,60 @@ export default function SignInHome({ fontsClassName }: { fontsClassName: string 
 
   return (
     <div className={`${styles.page} ${fontsClassName}`}>
-      <canvas ref={skyRef} className={styles.sky} aria-hidden="true" />
-      <div className={styles.aurora} aria-hidden="true" />
-      <div className={styles.stage}>
-        <div className={styles.col}>
-          <p className={styles.mark}>Revolutionary Healer</p>
-          <div className={styles.hero} aria-hidden="true">
-            <span className={styles.halo} />
-            <canvas ref={flyRef} className={styles.fly} />
-          </div>
-          <h1 className={styles.title}>Sign in</h1>
-          <div className={styles.divider} aria-hidden="true" />
-          <p className={styles.hint}>Use the same email and password you use inside Kajabi.</p>
-          <form className={styles.bubble} onSubmit={handleSignIn}>
-            <label className={styles.field} htmlFor="signin-email">
-              <span className={styles.eyebrow}>Email</span>
-              <input
-                id="signin-email"
-                className={styles.input}
-                type="email"
-                name="email"
-                required
-                autoComplete="email"
-                inputMode="email"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                placeholder="you@example.com"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-              />
-            </label>
-            <label className={styles.field}>
-              <span className={styles.eyebrow}>Password</span>
-              <PasswordField
-                name="password"
-                value={password}
-                onChange={setPassword}
-                placeholder="Password"
-                borderColor={GOLD_LINE}
-                autoComplete="current-password"
-              />
-            </label>
-            {signInError ? (
-              <div id="signin-error" role="alert" className={styles.error}>
-                {signInError}
-              </div>
-            ) : null}
-            <button type="submit" className={styles.button} disabled={signingIn}>
-              {signingIn ? "Signing in…" : "Sign in"}
-            </button>
-            <a className={styles.forgot} href="/contact-support">
-              Forgot your password?
-            </a>
-          </form>
+      <main className={styles.stage}>
+        <div className={styles.glow}>
+          <section className={styles.card} aria-labelledby="signin-heading">
+            <div className={styles.mark} aria-hidden="true">
+              <canvas ref={flyRef} className={styles.fly} />
+            </div>
+            <div className={styles.rule} aria-hidden="true" />
+            <p className={styles.welcome}>Welcome to</p>
+            <h1 id="signin-heading" className={styles.title}>Revolutionary Healer</h1>
+            <form className={styles.form} onSubmit={handleSignIn}>
+              <label className={styles.field} htmlFor="signin-email">
+                <span className={styles.sr}>Email</span>
+                <input
+                  id="signin-email"
+                  className={styles.input}
+                  type="email"
+                  name="email"
+                  required
+                  autoComplete="email"
+                  inputMode="email"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                />
+              </label>
+              <label className={styles.field}>
+                <span className={styles.sr}>Password</span>
+                <PasswordField
+                  name="password"
+                  value={password}
+                  onChange={setPassword}
+                  placeholder="Password"
+                  borderColor={GOLD_LINE}
+                  autoComplete="current-password"
+                />
+              </label>
+              {signInError ? (
+                <div id="signin-error" role="alert" className={styles.error}>
+                  {signInError}
+                </div>
+              ) : null}
+              <button type="submit" className={styles.button} disabled={signingIn}>
+                {signingIn ? "Signing in…" : "Sign in"}
+              </button>
+              <a className={styles.forgot} href="/contact-support">
+                Forgot your password?
+              </a>
+            </form>
+          </section>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
