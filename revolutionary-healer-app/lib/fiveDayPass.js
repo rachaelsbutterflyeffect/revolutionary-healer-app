@@ -36,27 +36,38 @@ function firstText(...values) {
     return "";
 }
 
-// Kajabi's purchase webhook does not need a product or a course. Offer id and
-// purchaser email are enough. A wrapped payload and a flat payload both work.
+function asObject(value) {
+    return value && typeof value === "object" ? value : {};
+}
+
+// Live Kajabi deliveries are payment.succeeded. The root id is a new UUID on
+// every delivery. The purchase is payment_transaction.id, and its created_at
+// is the purchase time. A payment.succeeded body with no transaction id is
+// not given the event UUID, because that UUID would grant again on retry.
 export function readKajabiWebhook(event) {
-    const root = event && typeof event === "object" ? event : {};
-    const wrapped = root.payload && typeof root.payload === "object" ? root.payload : {};
-    const member = root.member || wrapped.member || {};
-    const offer = root.offer || wrapped.offer || {};
+    const root = asObject(event);
+    const wrapped = asObject(root.payload);
+    const member = asObject(root.member || wrapped.member);
+    const offer = asObject(root.offer || wrapped.offer);
+    const transaction = asObject(root.payment_transaction || wrapped.payment_transaction);
+    const eventType = firstText(root.event_type, root.event, wrapped.event_type, wrapped.event);
+    const transactionId = firstText(transaction.id, root.purchase && root.purchase.id, wrapped.purchase_id);
+    const eventId = firstText(root.id, wrapped.id);
+    const paymentSucceeded = /^payment[._]succeeded$/i.test(eventType);
     return {
-        email: firstText(member.email, root.member_email, wrapped.member_email, wrapped.member && wrapped.member.email),
-        firstName: firstText(member.first_name, root.first_name, wrapped.member_first_name, wrapped.member && wrapped.member.first_name),
-        offerId: firstText(offer.id, root.offer_id, wrapped.offer_id, wrapped.offer && wrapped.offer.id),
-        eventType: firstText(root.event_type, root.event, wrapped.event_type, wrapped.event),
-        purchaseId: firstText(root.id, root.purchase && root.purchase.id, wrapped.purchase_id, wrapped.id),
-        purchasedAt: firstText(root.created_at, root.purchased_at, wrapped.created_at, wrapped.purchased_at),
+        email: firstText(member.email, root.member_email, wrapped.member_email),
+        firstName: firstText(member.first_name, root.first_name, wrapped.member_first_name),
+        offerId: firstText(offer.id, root.offer_id, wrapped.offer_id),
+        eventType,
+        purchaseId: transactionId || (paymentSucceeded ? "" : eventId),
+        purchasedAt: firstText(transaction.created_at, root.purchased_at, wrapped.purchased_at, transactionId ? "" : root.created_at, transactionId ? "" : wrapped.created_at),
     };
 }
 
-// Only these two spellings revoke a pass. Kajabi's refund body has not been
-// confirmed, so any other event is not treated as a refund.
+// Refund bodies have not been verified against a live Kajabi payload.
+// payment.succeeded grants. cancellation and refund do not change the pass.
 export const KNOWN_REFUND_EVENTS = ["cancellation", "refund"];
-export const REFUND_PAYLOAD_NOTE = "Kajabi's refund webhook body has not been confirmed. Only event_type or event of exactly cancellation or refund revokes the five-day pass. Anything else leaves access unchanged and needs a manual revoke.";
+export const REFUND_PAYLOAD_NOTE = "Kajabi's refund webhook body has not been verified. payment.succeeded grants the five-day pass. A cancellation or refund event does not change it, and needs a manual revoke. A refund of an older purchase must not shorten a later purchase.";
 
 export function isRefundEvent(eventType) {
     return KNOWN_REFUND_EVENTS.includes(String(eventType || "").trim().toLowerCase());
@@ -72,8 +83,8 @@ function idList(value) {
 }
 
 export function isFiveDayOffer(offerId, env = process.env) {
-    if (offerId == null || String(offerId).trim() === "") return false;
-    return fiveDayOfferIds(env).includes(String(offerId));
+    const known = fiveDayOfferIds(env);
+    return String(offerId || "").split(",").map((id) => id.trim()).some((id) => id && known.includes(id));
 }
 
 export function fiveDayPassState(fields, now = new Date()) {
@@ -98,28 +109,17 @@ export function fiveDayPassState(fields, now = new Date()) {
 }
 
 // A new transaction extends five days from the current paid end. The same
-// transaction never extends. A transaction that was refunded never grants,
-// even if a later retry is newer than the refund. The patch never includes
-// member_active, tier_active, beta, DLRH, or a password.
+// transaction never extends. Refunds are not applied here. The patch never
+// includes member_active, tier_active, beta, DLRH, or a password.
 export function planFiveDayPass({ existingFields = null, eventType, now = new Date(), purchaseId, purchasedAt }) {
     const fields = existingFields || {};
     const applied = idList(fields.rr_pass_purchase_ids);
-    const refunded = idList(fields.rr_pass_refunded_ids);
     const id = String(purchaseId || "").trim();
-    if (!id) {
-        return { patch: {}, sendEmail: false, outcome: "missing_transaction_id", manualRevoke: isRefundEvent(eventType) };
-    }
     if (isRefundEvent(eventType)) {
-        if (refunded.includes(id)) return { patch: {}, sendEmail: false, outcome: "already_existed" };
-        const nextRefunded = [...refunded, id];
-        const patch = { rr_pass_refunded_ids: nextRefunded.join(",") };
-        if (applied.includes(id) && fields.rr_pass_ends_at) {
-            patch.rr_pass_ends_at = new Date(new Date(fields.rr_pass_ends_at).getTime() - FIVE_DAY_PASS_MS).toISOString();
-        }
-        return { patch, sendEmail: false, outcome: "already_existed" };
+        return { patch: {}, sendEmail: false, outcome: "manual_revoke", manualRevoke: true };
     }
-    if (refunded.includes(id)) {
-        return { patch: {}, sendEmail: false, outcome: "already_existed", blockedByRefund: true };
+    if (!id) {
+        return { patch: {}, sendEmail: false, outcome: "missing_transaction_id" };
     }
     if (applied.includes(id)) {
         return { patch: {}, sendEmail: false, outcome: "already_existed", duplicate: true };

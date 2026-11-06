@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { deriveEntitlement, hasSignInAccess } from "../lib/entitlements.js";
 import {
-    APP_SIGN_IN_URL, FIVE_DAY_PASS_MS, PURCHASE_EMAIL_DRAFT, RESET_RESTORE_OFFER_ID, fiveDayPassState, isFiveDayOffer, planFiveDayPass, readKajabiWebhook,
+    APP_SIGN_IN_URL, FIVE_DAY_PASS_MS, PURCHASE_EMAIL_DRAFT, REFUND_PAYLOAD_NOTE, RESET_RESTORE_OFFER_ID, fiveDayPassState, isFiveDayOffer, planFiveDayPass, readKajabiWebhook,
 } from "../lib/fiveDayPass.js";
 
 const offerEnv = { RR_FIVE_DAY_OFFER_IDS: "fixture-rr-1550" };
@@ -64,6 +64,50 @@ test("a productless purchase webhook still maps to the five-day pass", () => {
     assert.equal(wrapped.purchaseId, "fixture-purchase-1");
 });
 
+test("a live payment.succeeded uses the transaction id and purchase time, not the event uuid", () => {
+    const first = readKajabiWebhook({
+        id: "11111111-1111-4111-8111-111111111111",
+        event: "payment.succeeded",
+        created_at: "2026-11-06T18:00:00.000Z",
+        offer: { id: 2151496665, title: "Reset and Restore", type: "one-time" },
+        member: { id: 100, email: "fixture-buyer@example.com", name: "Fixture Buyer", first_name: "Fixture", last_name: "Buyer" },
+        payment_transaction: {
+            id: 55555,
+            created_at: "2026-11-06T15:00:00.000Z",
+            currency: "USD",
+            amount_paid: 1550,
+            payment_processor: "Kajabi Payments",
+        },
+    });
+    const retry = readKajabiWebhook({
+        id: "22222222-2222-4222-8222-222222222222",
+        event: "payment.succeeded",
+        created_at: "2026-11-08T18:00:00.000Z",
+        offer: { id: "2151496665", title: "Reset and Restore" },
+        member: { email: "fixture-buyer@example.com", first_name: "Fixture" },
+        payment_transaction: { id: "55555", created_at: "2026-11-06T15:00:00.000Z" },
+    });
+    assert.equal(first.purchaseId, "55555");
+    assert.equal(first.purchasedAt, "2026-11-06T15:00:00.000Z");
+    assert.equal(first.offerId, "2151496665");
+    assert.equal(first.eventType, "payment.succeeded");
+    assert.notEqual(first.purchaseId, "11111111-1111-4111-8111-111111111111");
+    assert.equal(retry.purchaseId, first.purchaseId);
+    assert.equal(retry.purchasedAt, first.purchasedAt);
+    const missingTransaction = readKajabiWebhook({
+        id: "33333333-3333-4333-8333-333333333333",
+        event: "payment.succeeded",
+        created_at: "2026-11-06T18:00:00.000Z",
+        offer: { id: 2151496665 },
+        member: { email: "fixture-buyer@example.com" },
+    });
+    assert.equal(missingTransaction.purchaseId, "");
+    const plan = planFiveDayPass({ existingFields: null, eventType: first.eventType, now, purchaseId: first.purchaseId, purchasedAt: first.purchasedAt });
+    const duplicate = planFiveDayPass({ existingFields: plan.patch, eventType: retry.eventType, now: new Date("2026-11-08T18:00:00.000Z"), purchaseId: retry.purchaseId, purchasedAt: retry.purchasedAt });
+    assert.deepEqual(duplicate.patch, {});
+    assert.equal(plan.patch.rr_pass_ends_at, new Date(new Date(first.purchasedAt).getTime() + FIVE_DAY_PASS_MS).toISOString());
+});
+
 test("a new purchase grants five days and does not touch membership flags", () => {
     const plan = planFiveDayPass({ existingFields: null, eventType: "purchase", now, purchaseId: "txn-1" });
     assert.equal(plan.sendEmail, false);
@@ -122,27 +166,17 @@ test("the same transaction does not extend, and a new one extends from the paid 
     assert.equal(fiveDayPassState({ rr_pass_started_at: now.toISOString() }, now).endsAt, new Date(now.getTime() + FIVE_DAY_PASS_MS).toISOString());
 });
 
-test("a refunded transaction cannot be regranted by a later retry", () => {
-    const first = planFiveDayPass({ existingFields: null, eventType: "purchase", now, purchaseId: "txn-1", purchasedAt: now.toISOString() });
-    const refund = planFiveDayPass({ existingFields: first.patch, eventType: "refund", now: new Date(now.getTime() + day), purchaseId: "txn-1" });
-    const retry = planFiveDayPass({
-        existingFields: { ...first.patch, ...refund.patch },
-        eventType: "purchase",
-        now: new Date(now.getTime() + 2 * day),
-        purchaseId: "txn-1",
-    });
-    assert.equal(retry.blockedByRefund, true);
-    assert.deepEqual(retry.patch, {});
-    const entitlement = deriveEntitlement({ member_active: true, tier_active: true, ...first.patch, ...refund.patch }, new Date(now.getTime() + 2 * day));
-    assert.equal(entitlement.onFiveDayPass, false);
-    assert.equal(entitlement.memberActive, true);
-    assert.equal(entitlement.canUseTier, true);
-});
-
-test("a refund without a transaction id does not guess", () => {
-    const plan = planFiveDayPass({ existingFields: { rr_pass_ends_at: new Date(now.getTime() + day).toISOString() }, eventType: "refund", now });
-    assert.equal(plan.manualRevoke, true);
-    assert.deepEqual(plan.patch, {});
+test("a refund of an expired purchase does not shorten a later purchase", () => {
+    const older = planFiveDayPass({ existingFields: null, eventType: "payment.succeeded", now, purchaseId: "txn-a", purchasedAt: now.toISOString() });
+    const afterExpiry = new Date(now.getTime() + 6 * day);
+    const newer = planFiveDayPass({ existingFields: older.patch, eventType: "payment.succeeded", now: afterExpiry, purchaseId: "txn-b", purchasedAt: afterExpiry.toISOString() });
+    const refundOlder = planFiveDayPass({ existingFields: { ...older.patch, ...newer.patch }, eventType: "refund", now: new Date(afterExpiry.getTime() + day), purchaseId: "txn-a" });
+    assert.equal(refundOlder.manualRevoke, true);
+    assert.deepEqual(refundOlder.patch, {});
+    assert.equal(newer.patch.rr_pass_ends_at, new Date(afterExpiry.getTime() + FIVE_DAY_PASS_MS).toISOString());
+    assert.match(REFUND_PAYLOAD_NOTE, /has not been verified/);
+    assert.match(REFUND_PAYLOAD_NOTE, /manual revoke/);
+    assert.match(REFUND_PAYLOAD_NOTE, /must not shorten a later purchase/);
 });
 
 test("an email without this offer does not grant the pass", () => {

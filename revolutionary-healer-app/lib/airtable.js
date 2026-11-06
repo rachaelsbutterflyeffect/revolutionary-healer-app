@@ -700,14 +700,16 @@ export async function processKajabiPurchase(input = {}) {
         }
         return { memberRecordId: existing.id, outcome: "already_existed", sendEmail: false };
     }
-    if (!offerId || (!isMemberOffer && !isTierOffer && !isGapMethodOffer && !isCcmOffer(offerId, env))) {
+    if (!offerId) {
         return { memberRecordId: "", outcome: "ignored_offer", sendEmail: false };
     }
     const isCancellation = eventType === "cancellation" || eventType === "refund";
 
-    // A missing or unknown offer id does not create a member and does not set
-    // member_active. Known membership, tier, and GAP offers keep their paths.
-    // Clear Channel Method offers never write a Revolutionary Healer Members row.
+    // Clear Channel Method offers never write a Revolutionary Healer Members
+    // row. Every other non-RR offer keeps its existing fulfillment, including
+    // offers that are not listed in MEMBER_OFFER_IDS. Only a missing offer id
+    // stops before that path. Offer 2151496665 is handled above and never
+    // reaches this membership write.
     if (offerId && isCcmOffer(offerId) && !isMemberOffer && !isTierOffer && !isGapMethodOffer) {
         if (!isCancellation && ccmTrackingEnabled()) {
             try {
