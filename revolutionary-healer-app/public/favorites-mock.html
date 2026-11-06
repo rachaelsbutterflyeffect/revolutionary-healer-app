@@ -229,6 +229,28 @@
   .door .txt { font-family: "Cormorant Garamond", Georgia, serif; font-size: 18px; font-weight: 600; line-height: 1.1; }
   .door .arr { margin-left: auto; color: var(--gold); }
   .home-rr { margin-top: 8px; }
+  .fit-sec { margin-top: 12px; }
+  .fit-sec h3 {
+    margin: 0 0 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: Cinzel, serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .fit-sec h3:after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(232,200,115,.45), transparent); }
+  .fit-card { margin: 0; }
+  .fit-card .txt {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: #241c0a;
+  }
   @media (min-width: 820px) {
     .nav { display: none; }
     .col { padding-bottom: 48px; }
@@ -301,6 +323,14 @@
         <span class="rr-open">Begin Day 1</span>
       </div>
     </article>
+    <div class="fit-sec">
+      <h3>Your Activation Today</h3>
+      <div class="fav-bubble fit-card" role="group" aria-label="Find the activation that best fits you today">
+        <span class="orb" aria-hidden="true">◉</span>
+        <span class="txt">Find the activation that best fits you today</span>
+        <span class="arr" aria-hidden="true">→</span>
+      </div>
+    </div>
   </main>
   <main class="col view" id="view-act">
     <a class="back" href="#activations" tabindex="-1">← My Revolution</a>
