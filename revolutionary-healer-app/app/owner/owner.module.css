@@ -1,0 +1,56 @@
+.page {
+  min-height: 100vh;
+  box-sizing: border-box;
+  background: #121110;
+  color: #f6f2e9;
+  font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+  padding: 40px 16px 64px;
+}
+
+.sheet {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.page h1,
+.page h2 {
+  color: #cfa646;
+  font-weight: 500;
+}
+
+.page p,
+.page li,
+.page label {
+  color: #f6f2e9;
+  line-height: 1.5;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.page input {
+  background: #f6f2e9;
+  color: #241c0a;
+  border: 1px solid #cfa646;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.page button {
+  background: #cfa646;
+  color: #241c0a;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.page button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
