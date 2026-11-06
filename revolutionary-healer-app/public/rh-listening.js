@@ -68,14 +68,22 @@
                         session.unacked = null;
                         session.queued = null;
                         session.held = null;
+                        if (res.body && res.body.code === "no_server_session_to_migrate" && !session.coverageWarned) {
+                            session.coverageWarned = true;
+                            if (typeof console !== "undefined" && console.warn) {
+                                console.warn("Activation listening was not recorded for this open login. No server session exists to migrate, and the email in this browser is not accepted as identity.");
+                            }
+                        }
                         return res;
                     }
                     if (status === 400) {
                         session.unacked = null;
                         return res;
                     }
-                    if (!res || typeof status !== "number" || status >= 500) {
+                    if (status === 202 || action === "unconfirmed" || status === 429 || !res || typeof status !== "number" || status >= 500) {
                         session.attempts += 1;
+                        session.unacked = payload;
+                        session.nextRetryAt = now() + (session.attempts <= 1 ? 0 : Math.min(20000, 1000 * Math.pow(2, session.attempts - 1)));
                         return res;
                     }
                     if (action === "coalesce") {
@@ -98,6 +106,8 @@
                 .catch(function () {
                     session.inFlight = false;
                     session.attempts += 1;
+                    session.unacked = payload;
+                    session.nextRetryAt = now();
                 });
         }
 
@@ -141,6 +151,12 @@
                 return transmit(payload, opts.beacon);
             }
             if (session.inFlight) {
+                if (opts.beacon && session.unacked && (eventName === "hidden" || eventName === "ended" || eventName === "pause")) {
+                    payload.seq = session.unacked.seq + 1;
+                    session.queued = payload;
+                    send(payload, { beacon: true });
+                    return Promise.resolve();
+                }
                 session.queued = payload;
                 return Promise.resolve();
             }
@@ -171,7 +187,7 @@
             },
             tick: function () {
                 if (!session || session.dead || session.inFlight) return Promise.resolve();
-                if (session.unacked && session.attempts > 0 && session.attempts < 6) {
+                if (session.unacked && session.attempts > 0 && now() >= (session.nextRetryAt || 0)) {
                     return transmit(session.unacked, false);
                 }
                 if (session.held && !session.unacked && now() - session.lastSentAt >= HEARTBEAT_MS) {
@@ -210,7 +226,9 @@
                 if (opts && opts.beacon && win.navigator && win.navigator.sendBeacon) {
                     var blob = new Blob([body], { type: "application/json" });
                     if (win.navigator.sendBeacon("/api/activation-listens", blob)) {
-                        return Promise.resolve({ status: 200, body: { ok: true, action: "update" } });
+                        // The beacon has no response. Keep the sample unacked so a
+                        // restored page retries it; the server dedupes that retry.
+                        return Promise.resolve({ status: 202, body: { action: "unconfirmed" } });
                     }
                 }
                 return win.fetch("/api/activation-listens", {
@@ -310,7 +328,9 @@
         }
 
         win.addEventListener("pagehide", function () { flush(true); });
+        win.addEventListener("freeze", function () { flush(true); });
         win.addEventListener("pageshow", function () {
+            client.tick();
             if (boundMedia && !boundMedia.paused && !boundMedia.ended) {
                 client.onMedia({ type: "playing", mediaTime: boundMedia.currentTime || 0 });
             }

@@ -8,7 +8,7 @@
 
 import { ACTIVATIONS, GAP_METHOD_ACTIVATIONS } from "./activations.js";
 import { isTester, normalizeTesterEmail } from "./testers.js";
-import { tokenFromHeaders, verifyMemberSession } from "./memberSession.js";
+import { assessPersistentLoginBootstrap } from "./memberSession.js";
 
 export const LISTEN_EVENT_TYPE = "activation_listen";
 export const LISTEN_TABLE = "Events";
@@ -18,6 +18,11 @@ export const LISTEN_TABLE = "Events";
 export const LISTEN_HEARTBEAT_MS = 20 * 1000;
 export const LISTEN_CLOCK_SLOP_SECONDS = 1.5;
 export const LISTEN_SERVER_SLOP_MS = 2000;
+// Airtable's REST API allows 5 requests per second per base, shared with
+// every other table this app writes. A persisted sample is one filtered read
+// plus one create or update.
+export const AIRTABLE_BASE_REQUESTS_PER_SECOND = 5;
+export const LISTEN_REQUESTS_PER_SAMPLE = 2;
 
 export const PLAYERS = ["native-audio", "wistia-video", "wistia-audio"];
 
@@ -60,11 +65,24 @@ export const METRIC_DEFINITIONS = {
     ranking: "Top 5 is the five activation slugs with the most plays among sessions that are not owner/tester activity. Ties break by listened seconds, then slug. Raw rows are kept, including tester rows. Rankings omit isTest sessions, the four owner emails, and any account isTester() already flags.",
 };
 
+export function listenWriteCapacity(heartbeatMs = LISTEN_HEARTBEAT_MS, baseRps = AIRTABLE_BASE_REQUESTS_PER_SECOND) {
+    const samplesPerSecond = 1000 / heartbeatMs;
+    const requestsPerListenerPerSecond = samplesPerSecond * LISTEN_REQUESTS_PER_SAMPLE;
+    return {
+        heartbeatMs,
+        baseRequestsPerSecond: baseRps,
+        requestsPerPersistedSample: LISTEN_REQUESTS_PER_SAMPLE,
+        steadyConcurrentListeners: Math.floor(baseRps / requestsPerListenerPerSecond),
+        sharedWith: "every other Airtable call on this base",
+    };
+}
+
 export const LISTEN_STORAGE = {
     table: LISTEN_TABLE,
     type: LISTEN_EVENT_TYPE,
     fields: ["type", "meta", "created_at"],
-    prerequisite: "No new Airtable table, field, or environment variable. Sessions reuse Events (type, meta, created_at) and the session cookie is signed with the existing AIRTABLE_API_KEY. Do not delete or edit ActivationCompletions or Favorites. Members record plays after the next password sign-in, which sets the cookie. Plays from an already-open login are not backfilled.",
+    writeCapacity: listenWriteCapacity(),
+    prerequisite: "No new Airtable table, field, or environment variable. Sessions reuse Events (type, meta, created_at). The session cookie is signed with the existing AIRTABLE_API_KEY and is set only after a password login. An already-open login cannot be migrated: see PERSISTENT_LOGIN_BLOCKER. Do not delete or edit ActivationCompletions or Favorites. Do not mint a listening session from a client email.",
 };
 
 const KNOWN_SLUGS = new Set([
@@ -75,6 +93,7 @@ const KNOWN_SLUGS = new Set([
 
 const SESSION_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const EVENTS = new Set(["playing", "pause", "seeked", "ended", "heartbeat", "hidden"]);
+const TERMINAL_EVENTS = new Set(["pause", "ended", "hidden"]);
 const MAX_MEDIA_SECONDS = 8 * 60 * 60;
 const MAX_CLOCK_SKEW_MS = 24 * 60 * 60 * 1000;
 
@@ -189,7 +208,12 @@ export function applyListenEvent(prev, event, { serverNow, email, isTest }) {
     if (prev.activationSlug !== event.activationSlug || prev.player !== event.player) {
         return { error: "Session does not match this activation." };
     }
-    if (event.seq !== prev.lastSeq + 1) return { error: "Out of order listening event." };
+    // A mobile flush can skip the in-flight heartbeat (one or two sequence
+    // numbers). Credit still comes from the last stored sample, so the skip
+    // does not add the missing event a second time when it arrives later.
+    const sequential = event.seq === prev.lastSeq + 1;
+    const terminalSkip = TERMINAL_EVENTS.has(event.event) && event.seq > prev.lastSeq + 1 && event.seq <= prev.lastSeq + 3;
+    if (!sequential && !terminalSkip) return { error: "Out of order listening event." };
     if (Math.abs(event.clientTs - serverNow) > MAX_CLOCK_SKEW_MS) {
         return { error: "Client clock is too far from the server." };
     }
@@ -224,44 +248,66 @@ export function applyListenEvent(prev, event, { serverNow, email, isTest }) {
     return { action: "update", state: next };
 }
 
-export async function ingestListen(body, { email, store, now, env }) {
-    const parsed = validateListenEvent(body);
-    if (parsed.error) return { status: 400, body: { error: parsed.error } };
-    const event = parsed.value;
-    const existing = await store.findBySessionId(event.sessionId);
-    const applied = applyListenEvent(existing, event, {
-        serverNow: now,
-        email,
-        isTest: isListeningExcluded(email, env),
-    });
-    if (applied.error) return { status: 400, body: { error: applied.error } };
-    if (applied.action === "duplicate" || applied.action === "coalesce") {
-        return { status: 200, body: { ok: true, action: applied.action } };
-    }
-    if (applied.action === "create") {
-        await store.create(applied.state);
-    } else if (applied.action === "update") {
-        await store.update(existing.id, applied.state);
-    } else {
-        return { status: 500, body: { error: "Listening event was not stored.", code: "listen_storage_unavailable" } };
-    }
+export function pickCanonicalListenRow(rows) {
+    const list = (rows || []).filter((row) => row && row.id);
+    if (!list.length) return null;
+    return list.slice().sort((a, b) => String(a.id).localeCompare(String(b.id)))[0];
+}
+
+function listenResult(action, state) {
     return {
         status: 200,
         body: {
             ok: true,
-            action: applied.action,
-            listenedSeconds: applied.state.listenedSeconds,
-            finished: applied.state.finished === true,
+            action,
+            listenedSeconds: state ? state.listenedSeconds : 0,
+            finished: !!(state && state.finished),
         },
     };
 }
 
+// One logical session under concurrent duplicate creates. Extra physical rows
+// can appear if two creates pass the empty read together; later writes all
+// target the lowest record id, and ranking keeps the max listened time.
+export async function ingestListen(body, { email, store, now, env }) {
+    const parsed = validateListenEvent(body);
+    if (parsed.error) return { status: 400, body: { error: parsed.error } };
+    const event = parsed.value;
+    const context = { serverNow: now, email, isTest: isListeningExcluded(email, env) };
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+        const matches = await store.findAllBySessionId(event.sessionId);
+        const existing = pickCanonicalListenRow(matches);
+        const applied = applyListenEvent(existing, event, context);
+        if (applied.error) return { status: 400, body: { error: applied.error } };
+        if (applied.action === "duplicate" || applied.action === "coalesce") {
+            return listenResult(applied.action, existing);
+        }
+        if (applied.action === "create") {
+            await store.create(applied.state);
+            const confirmed = pickCanonicalListenRow(await store.findAllBySessionId(event.sessionId));
+            if (confirmed && confirmed.lastSeq >= event.seq) return listenResult("create", confirmed);
+            continue;
+        }
+        await store.update(existing.id, applied.state);
+        return listenResult("update", applied.state);
+    }
+    const confirmed = pickCanonicalListenRow(await store.findAllBySessionId(event.sessionId));
+    if (confirmed && confirmed.lastSeq >= event.seq) return listenResult("duplicate", confirmed);
+    return { status: 503, body: { error: "Listening event was not stored.", code: "listen_storage_unavailable" } };
+}
+
 export async function postActivationListen({ headers, body, store, now, env }) {
-    const token = tokenFromHeaders(headers);
-    const session = verifyMemberSession(token, env, now);
-    if (!session) return { status: 401, body: { error: "Sign in required." } };
-    // Identity is the signed session. A client-supplied email is ignored.
-    return ingestListen(body, { email: session.email, store, now, env });
+    const decision = assessPersistentLoginBootstrap({
+        email: body && body.email,
+        loginAt: body && body.loginAt,
+        headers,
+        env,
+        now,
+    });
+    if (!decision.authorized) {
+        return { status: 401, body: { error: "Sign in required.", code: decision.code } };
+    }
+    return ingestListen(body, { email: decision.email, store, now, env });
 }
 
 export function mergeListenRows(rows) {

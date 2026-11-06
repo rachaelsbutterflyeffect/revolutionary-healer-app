@@ -68,6 +68,27 @@ export function clearMemberSessionCookie(env = process.env) {
     return `${MEMBER_SESSION_COOKIE}=; ${cookieFlags(env, 0)}`;
 }
 
+// Persistent logins that already exist cannot be upgraded into this cookie.
+// rh_member_email and rh_member_login_at are the whole client session. Login
+// never stored a server nonce, and the password is not on the device. Minting
+// a cookie from that email would accept anyone who knows the address.
+export const PERSISTENT_LOGIN_MIGRATION_CODE = "no_server_session_to_migrate";
+export const PERSISTENT_LOGIN_BLOCKER = "A signed-in browser only stores rh_member_email and rh_member_login_at. Password login does not leave a server session, cookie, or device secret, and the password is not kept on the device. That email is not proof this browser passed login: any caller who knows it can present the same pair. Issuing rh_session from it, including from POST /api/access, would attribute plays to whoever is named in the request. Plays from logins that started before this cookie exists cannot be covered without that forgery or a password prompt.";
+
+export function assessPersistentLoginBootstrap({ email, loginAt, headers, env = process.env, now = Date.now() } = {}) {
+    const session = verifyMemberSession(tokenFromHeaders(headers || {}), env, now);
+    if (session) return { authorized: true, email: session.email, source: "session_cookie" };
+    return {
+        authorized: false,
+        email: null,
+        source: "refused",
+        code: PERSISTENT_LOGIN_MIGRATION_CODE,
+        blocker: PERSISTENT_LOGIN_BLOCKER,
+        presentedEmail: typeof email === "string" ? email : "",
+        presentedLoginAt: loginAt ?? null,
+    };
+}
+
 export function tokenFromHeaders(headers) {
     const source = headers || {};
     const authorization = source.authorization || source.Authorization || "";

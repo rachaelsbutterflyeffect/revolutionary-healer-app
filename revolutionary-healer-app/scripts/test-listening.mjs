@@ -11,11 +11,13 @@ import {
     creditListenSeconds,
     isKnownActivationSlug,
     isListeningExcluded,
+    listenWriteCapacity,
+    pickCanonicalListenRow,
     postActivationListen,
     rankListeningSessions,
 } from "../lib/listening.js";
 import { ListenStorageError, createMemoryListenStore, listenCreateFields, listenUpdateFields, parseListenRecord } from "../lib/listeningStore.js";
-import { MEMBER_SESSION_MS, clearMemberSessionCookie, memberSessionCookie, signMemberSession, verifyMemberSession } from "../lib/memberSession.js";
+import { MEMBER_SESSION_MS, PERSISTENT_LOGIN_BLOCKER, PERSISTENT_LOGIN_MIGRATION_CODE, assessPersistentLoginBootstrap, clearMemberSessionCookie, memberSessionCookie, signMemberSession, verifyMemberSession } from "../lib/memberSession.js";
 
 const require = createRequire(import.meta.url);
 const { createListeningClient, handleHtmlMediaEvent, handleWistiaEvent } = require("../public/rh-listening.js");
@@ -59,7 +61,7 @@ function harness(email = "member@example.com", sendWrap) {
                 now,
                 env: ENV,
             });
-            if (sendWrap) return sendWrap(payload, once);
+            if (sendWrap) return sendWrap(payload, once, opts);
             return once();
         },
     });
@@ -414,8 +416,155 @@ it("session tokens expire, reject tampering, and hide the signing key", () => {
     const created = applyListenEvent(null, { sessionId: "00000000-0000-4000-8000-000000000055", seq: 1, activationSlug: "grounding", player: "native-audio", event: "playing", mediaTime: 12, clientTs: T0 }, { serverNow: T0, email: "member@example.com", isTest: false });
     assert.equal(created.state.listenedSeconds, 0);
     assert.equal(created.state.lastMediaTime, 12);
-    const skipped = applyListenEvent(created.state, { ...created.state, seq: 3, event: "pause", mediaTime: 20, clientTs: T0 + 8000, sessionId: created.state.sessionId, activationSlug: "grounding", player: "native-audio" }, { serverNow: T0 + 8000, email: "member@example.com", isTest: false });
+    const skipped = applyListenEvent(created.state, { sessionId: created.state.sessionId, seq: 3, activationSlug: "grounding", player: "native-audio", event: "heartbeat", mediaTime: 20, clientTs: T0 + 8000 }, { serverNow: T0 + 8000, email: "member@example.com", isTest: false });
     assert.equal(skipped.error, "Out of order listening event.");
+    const flushed = applyListenEvent(created.state, { sessionId: created.state.sessionId, seq: 3, activationSlug: "grounding", player: "native-audio", event: "hidden", mediaTime: 10, clientTs: T0 + 10000 }, { serverNow: T0 + 10000, email: "member@example.com", isTest: false });
+    assert.equal(flushed.action, "update");
+    assert.equal(flushed.state.listenedSeconds, 10);
+    const lateHeartbeat = applyListenEvent(flushed.state, { sessionId: created.state.sessionId, seq: 2, activationSlug: "grounding", player: "native-audio", event: "heartbeat", mediaTime: 8, clientTs: T0 + 8000 }, { serverNow: T0 + 10000, email: "member@example.com", isTest: false });
+    assert.equal(lateHeartbeat.action, "duplicate");
+    assert.equal(lateHeartbeat.state.listenedSeconds, 10);
+});
+
+it("an existing signed-in browser cannot become a listening session from its email", async () => {
+    const store = createMemoryListenStore();
+    const decision = assessPersistentLoginBootstrap({
+        email: "member@example.com",
+        loginAt: T0,
+        headers: {},
+        env: ENV,
+        now: T0 + 60 * 1000,
+    });
+    assert.equal(decision.authorized, false);
+    assert.equal(decision.email, null);
+    assert.equal(decision.code, PERSISTENT_LOGIN_MIGRATION_CODE);
+    assert.match(decision.blocker, /rh_member_email/);
+    assert.match(PERSISTENT_LOGIN_BLOCKER, /POST \/api\/access/);
+    const refused = await postActivationListen({
+        headers: {},
+        body: {
+            email: "member@example.com",
+            loginAt: T0,
+            sessionId: "00000000-0000-4000-8000-000000000066",
+            seq: 1,
+            activationSlug: "grounding",
+            player: "native-audio",
+            event: "playing",
+            mediaTime: 0,
+            clientTs: T0,
+        },
+        store,
+        now: T0,
+        env: ENV,
+    });
+    assert.equal(refused.status, 401);
+    assert.equal(refused.body.code, PERSISTENT_LOGIN_MIGRATION_CODE);
+    assert.equal(store.rows.length, 0);
+    const access = fs.readFileSync("app/api/access/route.ts", "utf8");
+    assert.doesNotMatch(access, /rh_session|signMemberSession|memberSessionCookie/);
+    const token = signMemberSession("member@example.com", ENV, T0);
+    const allowed = assessPersistentLoginBootstrap({
+        email: "someoneelse@example.com",
+        loginAt: T0,
+        headers: { cookie: `rh_session=${token}` },
+        env: ENV,
+        now: T0,
+    });
+    assert.equal(allowed.authorized, true);
+    assert.equal(allowed.email, "member@example.com");
+    assert.equal(listenWriteCapacity().heartbeatMs, 20000);
+    assert.equal(listenWriteCapacity().requestsPerPersistedSample, 2);
+    assert.equal(listenWriteCapacity().steadyConcurrentListeners, 50);
+});
+
+it("concurrent duplicate retries upsert onto one canonical session", async () => {
+    const rows = [];
+    let n = 0;
+    const store = {
+        rows,
+        async findAllBySessionId(sessionId) {
+            await Promise.resolve();
+            return rows.filter((row) => row.sessionId === sessionId).map((row) => ({ ...row }));
+        },
+        async create(state) {
+            await Promise.resolve();
+            n += 1;
+            const row = { id: `rec${String(n).padStart(3, "0")}`, ...state };
+            rows.push(row);
+            return { ...row };
+        },
+        async update(id, state) {
+            const row = rows.find((item) => item.id === id);
+            Object.assign(row, state);
+            return { ...row };
+        },
+    };
+    const headers = { authorization: `Bearer ${signMemberSession("member@example.com", ENV, T0)}` };
+    const event = {
+        sessionId: "00000000-0000-4000-8000-000000000088",
+        seq: 1,
+        activationSlug: "grounding",
+        player: "native-audio",
+        event: "playing",
+        mediaTime: 0,
+        clientTs: T0,
+        email: "attacker@example.com",
+    };
+    const [first, second] = await Promise.all([
+        postActivationListen({ headers, body: event, store, now: T0, env: ENV }),
+        postActivationListen({ headers, body: event, store, now: T0, env: ENV }),
+    ]);
+    assert.equal(first.status, 200);
+    assert.equal(second.status, 200);
+    assert.equal(pickCanonicalListenRow(rows).memberEmail, "member@example.com");
+    const beat = { ...event, seq: 2, event: "heartbeat", mediaTime: 20, clientTs: T0 + 20000 };
+    const applied = await postActivationListen({ headers, body: beat, store, now: T0 + 20000, env: ENV });
+    const replay = await postActivationListen({ headers, body: beat, store, now: T0 + 20000, env: ENV });
+    assert.equal(applied.body.action, "update");
+    assert.equal(replay.body.action, "duplicate");
+    const ranked = rankListeningSessions(rows, { env: ENV });
+    assert.equal(ranked.rankedSessions, 1);
+    assert.equal(ranked.top[0].plays, 1);
+    assert.equal(ranked.top[0].listenedSeconds, 20);
+    assert.equal(pickCanonicalListenRow(rows).id, "rec001");
+    assert.equal(pickCanonicalListenRow(rows).listenedSeconds, 20);
+});
+
+it("a mobile beacon stays unconfirmed until a retry, and a 429 does not double a play", async () => {
+    let posts = 0;
+    const beaconed = harness("member@example.com", async (payload, once, opts) => {
+        if (opts && opts.beacon) return { status: 202, body: { action: "unconfirmed" } };
+        posts += 1;
+        return once();
+    });
+    beaconed.client.setTarget({ slug: "grounding", player: "native-audio" });
+    await beaconed.client.onMedia({ type: "playing", mediaTime: 0 });
+    beaconed.advance(4000);
+    await beaconed.client.onMedia({ type: "hidden", mediaTime: 4, retain: true, beacon: true });
+    assert.equal(beaconed.calls.at(-1).beacon, true);
+    assert.equal(beaconed.store.rows[0].listenedSeconds, 0);
+    await beaconed.client.tick();
+    assert.equal(posts, 2);
+    assert.equal(beaconed.store.rows.length, 1);
+    assert.equal(beaconed.store.rows[0].listenedSeconds, 4);
+    assert.equal(beaconed.store.rows[0].status, "hidden");
+    await beaconed.client.tick();
+    assert.equal(beaconed.store.rows[0].listenedSeconds, 4);
+
+    let attempts = 0;
+    const limited = harness("member@example.com", async (_payload, once) => {
+        attempts += 1;
+        if (attempts === 1) return { status: 429, body: {} };
+        return once();
+    });
+    limited.client.setTarget({ slug: "clearing-activation", player: "wistia-video" });
+    await limited.client.onMedia({ type: "playing", mediaTime: 0 });
+    assert.equal(limited.store.rows.length, 0);
+    await limited.client.tick();
+    assert.equal(limited.store.rows.length, 1);
+    await limited.client.tick();
+    assert.equal(limited.store.rows.length, 1);
+    assert.equal(attempts, 2);
 });
 
 it("both apps keep legacy completions and wire every player", () => {

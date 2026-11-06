@@ -3,7 +3,7 @@
 // writes ActivationCompletions, Favorites, or any other table.
 
 import Airtable from "airtable";
-import { LISTEN_EVENT_TYPE, LISTEN_TABLE } from "./listening.js";
+import { LISTEN_EVENT_TYPE, LISTEN_TABLE, pickCanonicalListenRow } from "./listening.js";
 
 export class ListenStorageError extends Error {
     constructor(message, cause) {
@@ -63,17 +63,17 @@ function wrap(err) {
     return new ListenStorageError("Listening storage rejected the write. The play was not recorded.", err);
 }
 
-async function findRecord(sessionId, env) {
-    if (!/^[0-9a-f-]{36}$/i.test(sessionId)) return null;
+async function findAllRecords(sessionId, env) {
+    if (!/^[0-9a-f-]{36}$/i.test(sessionId)) return [];
     try {
         const records = await getBase(env)(LISTEN_TABLE)
             .select({
                 filterByFormula: `AND({type}="${LISTEN_EVENT_TYPE}", FIND("${sessionId}", {meta}))`,
-                maxRecords: 1,
+                maxRecords: 10,
                 fields: ["type", "meta", "created_at"],
             })
             .firstPage();
-        return records[0] ? parseListenRecord(records[0]) : null;
+        return records.map(parseListenRecord).filter(Boolean);
     } catch (err) {
         throw wrap(err);
     }
@@ -81,8 +81,11 @@ async function findRecord(sessionId, env) {
 
 export function createAirtableListenStore(env = process.env) {
     return {
+        async findAllBySessionId(sessionId) {
+            return findAllRecords(sessionId, env);
+        },
         async findBySessionId(sessionId) {
-            return findRecord(sessionId, env);
+            return pickCanonicalListenRow(await findAllRecords(sessionId, env));
         },
         async create(state) {
             try {
@@ -124,8 +127,11 @@ export function createMemoryListenStore() {
     const rows = [];
     return {
         rows,
+        async findAllBySessionId(sessionId) {
+            return rows.filter((row) => row.sessionId === sessionId).map((row) => ({ ...row }));
+        },
         async findBySessionId(sessionId) {
-            return rows.find((row) => row.sessionId === sessionId) || null;
+            return pickCanonicalListenRow(rows.filter((row) => row.sessionId === sessionId));
         },
         async create(state) {
             const row = { id: `rec${rows.length + 1}`, ...state };
