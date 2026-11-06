@@ -112,12 +112,12 @@
   }
   function burst(st) { for (var k = 0; k < 36; k++) { var p = document.createElement('i'); p.className = 'spark' + (k % 3 ? '' : ' t'); var a = Math.random() * 6.28, r = 90 + Math.random() * 130; p.style.setProperty('--tx', Math.cos(a) * r + 'px'); p.style.setProperty('--ty', Math.sin(a) * r + 'px'); p.style.top = '45%'; st.append(p); (function (p) { setTimeout(function () { p.remove(); }, 1400); })(p); } }
 
-  // Home: the "Find your daily focus today" door from the mock-up (r13-r17 "Your Doors": code, gap, chat), first in the lineup.
+  // Home: Code Upgrade is the first of the three Your Doors (code, gap, chat).
   function homeDoor() {
     if (document.getElementById('rf-door-code')) return true;
     var gap = document.querySelector('#rf-home .rf-door[data-rf-go="gap"]'); if (!gap) return false;
     var d = document.createElement('button'); d.type = 'button'; d.className = 'rf-door'; d.id = 'rf-door-code'; d.setAttribute('data-rf-go', 'focus');
-    d.innerHTML = '<span class="rf-orb" aria-hidden="true">✧</span><span class="txt">Find your daily focus today</span><span class="arr" aria-hidden="true">→</span>';
+    d.innerHTML = '<span class="rf-orb" aria-hidden="true">✧</span><span class="txt"><span><b>Code Upgrade</b><br><small>See what energy is calling you today</small></span></span><span class="arr" aria-hidden="true">→</span>';
     gap.parentNode.insertBefore(d, gap); gap.parentNode.classList.add('rf-doors3');
     return true;
   }
