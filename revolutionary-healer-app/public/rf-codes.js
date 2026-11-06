@@ -117,7 +117,7 @@
     if (document.getElementById('rf-door-code')) return true;
     var gap = document.querySelector('#rf-home .rf-door[data-rf-go="gap"]'); if (!gap) return false;
     var d = document.createElement('button'); d.type = 'button'; d.className = 'rf-door'; d.id = 'rf-door-code'; d.setAttribute('data-rf-go', 'focus');
-    d.innerHTML = '<span class="rf-orb" aria-hidden="true">✧</span><span class="txt"><span><b>Code Upgrade</b><br><small>See what energy is calling you today</small></span></span><span class="arr" aria-hidden="true">→</span>';
+    d.innerHTML = '<span class="rf-orb" aria-hidden="true">✧</span><span class="txt"><span><b>Pull your daily code</b><br><small>See your energy reading and activation for today</small></span></span><span class="arr" aria-hidden="true">→</span>';
     gap.parentNode.insertBefore(d, gap); gap.parentNode.classList.add('rf-doors3');
     return true;
   }

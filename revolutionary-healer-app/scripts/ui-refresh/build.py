@@ -100,7 +100,7 @@ HOME = """
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
  <div class="rf-welcome"><h1 class="rf-shine rf-big">Welcome back</h1><div class="rf-divider"></div><p><b>Pick your focus.</b></p></div>
  <div class="rf-sec rf-reveal"><h3>Your Doors</h3>
-  <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt"><span><b>GAP Method™</b><br><small>Find out why the same thing keeps happening</small></span></span><span class="arr" aria-hidden="true">→</span></button>
+  <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt"><span><b>Find your Gap</b><br><small>Stop the patterns that are keeping you stuck</small></span></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt"><span><b>Chat with Rachael</b><br><small>Talk through what's coming up for you</small></span></span><span class="arr" aria-hidden="true">→</span></button>
  </div>
  <div class="rf-sec rf-reveal"><h3>Ask Rachael Anything</h3><div class="rf-lanes">
