@@ -36,17 +36,62 @@
     if (s === 'chat') { sizeChat(); setTimeout(sizeChat, 60); }
     if (s === 'home') revealHome();
     if (s === 'account') fillAccount();
+    booted = true;
   }
   window.rfGo = rfGo;
 
   var _showMain = window.showMain;
   showMain = window.showMain = function () { var r = _showMain.apply(this, arguments); curPage = null; rfGo('home'); return r; };
   var _showPage = window.showPage;
+  // In-app origin only. Never history.back(): a direct link or an outside page must not leave the app.
+  var booted = false, actFrom = null, libFrom = null;
+  var ORIGIN = { home: 1, rev: 1, focus: 1, chat: 1 };
+  function rememberActFrom() {
+    if (!booted) { actFrom = null; return; }
+    var rf = B.getAttribute('data-rf');
+    actFrom = ORIGIN[rf] ? rf : null;
+  }
+  function paintActBack() {
+    var btn = document.querySelector('#activations-page > .wrap > a.page-back');
+    if (!btn) return;
+    if (btn.getAttribute('data-rf-back') !== '1') {
+      btn.setAttribute('data-rf-back', '1');
+      btn.textContent = '← Back';
+      btn.onclick = function (e) { e.preventDefault(); leaveActivations(); };
+    }
+    btn.hidden = B.getAttribute('data-rf-lib') === 'cat' || !actFrom;
+  }
+  function leaveActivations() {
+    var dest = actFrom;
+    actFrom = null;
+    paintActBack();
+    if (dest === 'home') { showMain(); return; }
+    if (dest === 'rev') { goToMyRevolution(); return; }
+    if (dest === 'focus') { goToMyRevolution(); curPage = null; rfGo('focus'); return; }
+    if (dest === 'chat') { showMain(); rfGo('chat'); return; }
+    libSections();
+  }
+  function noteLibFrom() {
+    if (B.getAttribute('data-rf-lib') === 'cat') return;
+    libFrom = B.getAttribute('data-rf-lib') === 'sections' ? 'sections' : (actFrom || null);
+  }
+  function libBack() {
+    var dest = libFrom;
+    libFrom = null;
+    if (dest === 'home') { showMain(); return; }
+    if (dest === 'rev') { goToMyRevolution(); return; }
+    if (dest === 'focus') { goToMyRevolution(); curPage = null; rfGo('focus'); return; }
+    if (dest === 'chat') { showMain(); rfGo('chat'); return; }
+    libSections();
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
   showPage = window.showPage = function (id) {
     if (id === 'membership-management-page') { window.open(MANAGE, '_blank', 'noopener'); return; }
-    var from = curPage, r = _showPage.apply(this, arguments); curPage = id; rfGo('page');
+    var from = curPage;
+    if (id === 'activations-page' && from !== 'activation-detail-page' && from !== 'activations-page') rememberActFrom();
+    var r = _showPage.apply(this, arguments); curPage = id; rfGo('page');
     // back from an activation returns to the section it was opened from; any other way in starts at the sections
-    if (id === 'activations-page') { if (from === 'activation-detail-page' && B.getAttribute('data-rf-lib') === 'cat') {} else libSections(); }
+    if (id === 'activations-page') { if (from === 'activation-detail-page' && B.getAttribute('data-rf-lib') === 'cat') { paintActBack(); } else libSections(); }
     return r;
   };
   // ---------- Activations: four big sections (mock-up) -> that section's activations ----------
@@ -57,6 +102,7 @@
       document.querySelectorAll('#activation-library-grid .media-card').forEach(function (c) { if ((c.getAttribute('data-category') || '').split(',').map(function (x) { return x.trim(); }).indexOf(cat) !== -1) n++; });
       var el = b.querySelector('[data-rf-count]'); if (el) el.textContent = n;
     });
+    paintActBack();
   }
   // ---------- Activations: Favourites tile (Rachael Oct 15) ----------
   // One category tile, first in the grid, hidden with no favourites. Tapping it opens the category view (same back
@@ -82,9 +128,11 @@
   }
   window.rfRenderFavSec = renderFavSec;
   function libFavs() {
+    noteLibFrom();
     renderFavSec();
     var tt = document.getElementById('rf-sec-ttl'); if (tt) tt.textContent = 'Favourites';
     B.setAttribute('data-rf-lib', 'cat'); B.setAttribute('data-rf-libfav', '1');
+    paintActBack();
     try { window.scrollTo(0, 0); } catch (e) {}
   }
   document.addEventListener('click', function (e) {
@@ -102,6 +150,7 @@
   };
   try { renderFavSec(); } catch (e) {}
   function libSection(cat) {
+    noteLibFrom();
     var chip = document.querySelector('.category-chips .filter-chip[data-category="' + cat + '"]');
     window.__rhLibExpanded = false;
     var se = document.getElementById('rh-lib-search'); if (se) se.value = '';
@@ -109,11 +158,12 @@
     var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + cat + '"] b'), tt = document.getElementById('rf-sec-ttl');
     if (tt) tt.textContent = sec ? sec.textContent : cat;
     B.setAttribute('data-rf-lib', 'cat'); B.removeAttribute('data-rf-libfav');
+    paintActBack();
     try { window.scrollTo(0, 0); } catch (e) {}
   }
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('[data-rf-sec]'); if (b) { e.preventDefault(); libSection(b.getAttribute('data-rf-sec')); return; }
-    var a = e.target.closest && e.target.closest('[data-rf-allsecs]'); if (a) { e.preventDefault(); libSections(); try { window.scrollTo(0, 0); } catch (x) {} return; }
+    var a = e.target.closest && e.target.closest('[data-rf-allsecs]'); if (a) { e.preventDefault(); libBack(); return; }
     // the section tabs inside a section switch the title with them
     var c = e.target.closest && e.target.closest('#rf-lib-sub .category-chips .filter-chip');
     if (c && B.getAttribute('data-rf-lib') === 'cat') { var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + c.getAttribute('data-category') + '"] b'), tt = document.getElementById('rf-sec-ttl'); if (tt && sec) tt.textContent = sec.textContent; }

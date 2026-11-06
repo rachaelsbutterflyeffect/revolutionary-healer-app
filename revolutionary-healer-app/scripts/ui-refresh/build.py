@@ -197,7 +197,7 @@ LSECS = """<div class="rf-lsecs" id="rf-lsecs">
     ('Energy + Frequency', 'energy', '72% 26%', 'Energy &amp; Frequency'), ('Business + Impact', 'vis', '62% 26%', 'Business &amp; Impact')]) + "</div>\n"
 once('<div class="revolution-subsection" id="gap-method-activations-subsection">', LSECS + '<div class="revolution-subsection" id="gap-method-activations-subsection">', 'lsecs')
 once('    <div class="revolution-subsection">\n      <div class="filter-chips category-chips">',
-     '    <div class="revolution-subsection" id="rf-lib-sub">\n      <button type="button" class="rf-back rf-allsecs" data-rf-allsecs>← All sections</button><h3 class="rf-sec-ttl" id="rf-sec-ttl"></h3>\n      <div class="filter-chips category-chips">', 'libsub')
+     '    <div class="revolution-subsection" id="rf-lib-sub">\n      <button type="button" class="rf-back rf-allsecs" data-rf-allsecs>← Back</button><h3 class="rf-sec-ttl" id="rf-sec-ttl"></h3>\n      <div class="filter-chips category-chips">', 'libsub')
 
 # ---- back-link labels (text only; onclicks unchanged) ----
 # ---- QA Oct 15 (Ray's findings): refresh-only patches to code carried over from app.html (classic unchanged).
