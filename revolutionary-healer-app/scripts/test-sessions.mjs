@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
 import {
     ACCESS_MS, FIVE_DAYS_MS, REFRESH_GRACE_MS, OWNER_EMAIL,
-    createMemorySessionStore, issueLoginSession, migrationActive, refreshLoginSession,
+    createMemorySessionStore, issueLoginSession, logoutResponse, migrationActive, refreshLoginSession,
     revokeRequestSession, sessionSecret, sessionStatus, verifyAccessToken,
 } from "../lib/sessions.js";
-import { memberSessionFormula } from "../lib/sessionAirtable.js";
+import { memberSessionFormula, visitAllSessionPages } from "../lib/sessionAirtable.js";
+import { decideMigrationPoll, keepStoredSignIn } from "../lib/migrationClient.js";
+import { createRequire } from "node:module";
+const require = createRequire(import.meta.url);
+const browserMigration = require("../public/rh-migration.js");
 
 const env = { SESSION_SECRET: "test-secret-value-0123456789abcdef", AUTH_SESSION_MIGRATION: "", NODE_ENV: "test" };
 let passed = 0;
@@ -86,6 +90,57 @@ it("a short secret is refused and logout still revokes an expired access cookie"
     assert.match(formula, /"memberEmail":"member@example.com"/);
     assert.equal(formula.includes("not-member@example.com"), false);
     assert.throws(() => memberSessionFormula('bad"email@example.com'), /unsafe email/);
+});
+
+it("a refresh slides five days across later days and a fresh login is not cleared", async () => {
+    const store = createMemorySessionStore();
+    const start = Date.parse("2026-11-01T15:00:00Z");
+    let token = (await issueLoginSession("member@example.com", store, env, start)).refreshToken;
+    let now = start;
+    for (const day of [1, 4, 8]) {
+        now = start + day * 24 * 60 * 60 * 1000;
+        const renewed = await refreshLoginSession({ refreshToken: token, store, env, now, entitled: async () => true });
+        assert.equal(renewed.ok, true);
+        assert.equal(renewed.refreshExpiresAt, now + FIVE_DAYS_MS);
+        token = renewed.refreshToken;
+    }
+    const dead = await refreshLoginSession({ refreshToken: token, store, env, now: now + FIVE_DAYS_MS + 1000, entitled: async () => true });
+    assert.equal(dead.ok, false);
+    const fresh = { response: { migration: true, reauth: true }, now: 5_000, loginAt: 4_000 };
+    assert.equal(decideMigrationPoll(fresh).clear, false);
+    assert.equal(decideMigrationPoll(fresh).retry, true);
+    assert.equal(browserMigration.decideMigrationPoll(fresh).clear, false);
+    const once = decideMigrationPoll({ response: { migration: true, reauth: true }, now: 10 * 60 * 1000, loginAt: 0 });
+    assert.equal(once.clear, true);
+    assert.equal(once.redirect, true);
+    const live = decideMigrationPoll({ response: { migration: true, reauth: false, error: "Session store unavailable." }, now: 9 * 24 * 60 * 60 * 1000, loginAt: 1 });
+    assert.equal(live.clear, false);
+    assert.equal(browserMigration.decideMigrationPoll({ response: { migration: true, reauth: false }, now: 9 * 24 * 60 * 60 * 1000, loginAt: 1 }).clear, false);
+    assert.equal(keepStoredSignIn({ armed: true, loginAt: 1, now: 9 * 24 * 60 * 60 * 1000 }), true);
+    assert.equal(keepStoredSignIn({ armed: false, loginAt: 1, now: 9 * 24 * 60 * 60 * 1000 }), false);
+});
+
+it("logout storage failure does not claim a revoke and password reset visits every page", async () => {
+    const failed = logoutResponse({ failed: true, revoked: false });
+    assert.equal(failed.status, 503);
+    assert.equal(failed.clearCookies, false);
+    assert.equal(failed.body.revoked, false);
+    assert.equal(JSON.stringify(failed.body).includes("refreshToken"), false);
+    const store = createMemorySessionStore();
+    const now = 1_700_000_000_000;
+    const issued = await issueLoginSession("member@example.com", store, env, now);
+    const header = `rh_refresh=${issued.refreshToken}`;
+    const throwing = { ...store, findByRefreshToken: async () => { throw new Error("down"); } };
+    await assert.rejects(() => revokeRequestSession({ cookieHeader: header, store: throwing, env, now: now + 60 * 60 * 1000 }));
+    const retry = await revokeRequestSession({ cookieHeader: header, store, env, now: now + 60 * 60 * 1000 });
+    assert.equal(retry.revoked, true);
+    const sessions = Array.from({ length: 101 }, (_, index) => ({ sessionId: `s${index}`, memberEmail: "member@example.com", revokedAt: null }));
+    await visitAllSessionPages(async (cursor) => {
+        const start = cursor ? Number(cursor) : 0;
+        const slice = sessions.slice(start, start + 100);
+        return { rows: slice, nextCursor: start + 100 < sessions.length ? String(start + 100) : null };
+    }, async (row) => { row.revokedAt = 5; });
+    assert.equal(sessions.every((row) => row.revokedAt === 5), true);
 });
 
 it("owner identity is the verified email, not a request body", () => {

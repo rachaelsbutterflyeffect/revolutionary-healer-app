@@ -1,8 +1,9 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import {
-    COVERAGE_GAP, IDEMPOTENCY_NOTE, RESET_DAYS, addTorontoDays, buildOwnerReport, memberTimeline, rateAllows, stampActivity, torontoParts, validateActivityEvent,
+    COVERAGE_GAP, IDEMPOTENCY_NOTE, RESET_DAYS, addTorontoDays, buildOwnerReport, dedupeActivity, memberTimeline, pageActivityRows, projectReport, rateAllows, reportRangeError, stampActivity, torontoParts, validateActivityEvent,
 } from "../lib/activity.js";
+import { readReportCursor, signReportCursor } from "../lib/activityCursor.js";
 import { createIdempotentWriter } from "../lib/activityStore.js";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
@@ -113,7 +114,97 @@ test("unverified totals stay separate when the extra tally is requested", () => 
     assert.equal(rateAllows(1000, 20000), true);
 });
 
-test("client wires GAP, reset, chat, Wistia duration, and hidden stop", () => {
+test("background listening keeps the same play and the longer media time", () => {
+    const sent = [];
+    let clock = 1_000_000;
+    const client = createClient({ deviceId: device, now: () => clock, send: async (batch) => { sent.push(batch); return { ok: true }; } });
+    client.startPlay("grounding", playId, 0, 120);
+    clock += 10000;
+    client.sample(10, 120);
+    const id = client.playId();
+    client.setHidden(true);
+    client.presence();
+    clock += 30000;
+    client.sample(40, 120);
+    client.setHidden(false);
+    client.sample(45, 120);
+    assert.equal(client.playId(), id);
+    assert.equal(client.playing(), true);
+    client.stopPlay("pause", 45);
+    const flat = sent.flat();
+    assert.equal(flat.filter((row) => row.state === "start").length, 1);
+    assert.equal(flat.some((row) => row.state === "hidden"), false);
+    const pause = flat.find((row) => row.state === "pause");
+    assert.ok(pause.listenedSeconds >= 40);
+    assert.doesNotMatch(fs.readFileSync("public/rh-activity.js", "utf8"), /stopPlay\("hidden"\)/);
+});
+
+test("top 5 and next-day cohorts include rows past the first 200", () => {
+    const rows = [];
+    for (let n = 1; n <= 220; n += 1) {
+        const event = `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+        const play = `10000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+        rows.push(stampActivity(validateActivityEvent({ eventId: event, deviceId: device, event: "activation_play", playId: play, slug: "quiet", state: "start", listenedSeconds: 3, durationSeconds: 10 }).value, { now: Date.parse("2026-11-01T15:00:00Z"), email: "member@example.com", verified: true }));
+    }
+    rows.push(stampActivity(validateActivityEvent({ eventId: "00000000-0000-4000-8000-000000000901", deviceId: device, event: "nav", screen: "home" }).value, { now: Date.parse("2026-11-02T15:00:00Z"), email: "member@example.com", verified: true }));
+    for (let n = 1; n <= 180; n += 1) {
+        const event = `20000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+        const play = `30000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+        rows.push(stampActivity(validateActivityEvent({ eventId: event, deviceId: device, event: "activation_play", playId: play, slug: "loud", state: "start", listenedSeconds: 2, durationSeconds: 10 }).value, { now: Date.parse("2026-11-08T15:00:00Z"), email: "other@example.com", verified: true }));
+    }
+    const options = { from: "2026-11-01", to: "2026-11-09", now: Date.parse("2026-11-10T15:00:00Z") };
+    let cursor = null;
+    let seen = [];
+    let pages = 0;
+    do {
+        const page = pageActivityRows(rows, { pageSize: 100, cursor });
+        const projected = projectReport([...seen, ...page.rows], { ...options, done: !page.nextCursor, member: "" });
+        assert.equal(projected.ready, !page.nextCursor);
+        if (!projected.ready) assert.equal(projected.body.top5, null);
+        seen = projected.rows;
+        cursor = page.nextCursor;
+        pages += 1;
+    } while (cursor);
+    assert.ok(pages > 2);
+    const full = buildOwnerReport(rows, options);
+    const paged = buildOwnerReport(seen, options);
+    assert.equal(paged.top5[0].slug, "quiet");
+    assert.equal(paged.top5[0].starts, 220);
+    assert.equal(paged.top5[0].starts, full.top5[0].starts);
+    assert.equal(paged.cohorts.some((row) => row.returnedNextDay === 1), true);
+    const newest = [...rows].sort((a, b) => String(b.at).localeCompare(String(a.at))).slice(0, 200);
+    const truncated = buildOwnerReport(newest, options);
+    assert.equal(truncated.top5[0].slug, "loud");
+    const secret = "cursor-secret-0123456789abcdef";
+    const token = signReportCursor({ v: 1, from: options.from, to: options.to, testers: false, unverified: false, member: "", cursor, rows: seen.slice(0, 5) }, secret);
+    assert.equal(readReportCursor(token, secret).from, options.from);
+    assert.equal(readReportCursor(token + "x", secret), null);
+    assert.match(reportRangeError("", "2026-11-09"), /start and end/);
+});
+
+test("two stores inserting one event keep the longer listen", async () => {
+    const table = [];
+    function instance() {
+        return { async create(row) {
+            const seen = table.some((item) => item.eventId === row.eventId);
+            await new Promise((resolve) => setTimeout(resolve, 15));
+            table.push({ ...row, duplicate: seen });
+            return row;
+        } };
+    }
+    const early = stampActivity(validateActivityEvent({ eventId, deviceId: device, event: "activation_play", playId, slug: "grounding", state: "start", listenedSeconds: 8, durationSeconds: 50 }).value, { now: Date.parse("2026-11-01T15:00:00Z"), email: "member@example.com", verified: true });
+    const later = { ...early, listenedSeconds: 25, state: "pause" };
+    await Promise.all([instance().create(early), instance().create(later)]);
+    assert.equal(table.length, 2);
+    const merged = dedupeActivity(table);
+    assert.equal(merged.length, 1);
+    assert.equal(merged[0].listenedSeconds, 25);
+    const report = buildOwnerReport(table, { now: Date.parse("2026-11-05T15:00:00Z") });
+    assert.equal(report.totals.playStarts, 1);
+    assert.equal(report.top5[0].listenedSeconds, 25);
+});
+
+test("client wires GAP, reset, chat, and Wistia duration", () => {
     const sent = [];
     let clock = 1_000_000;
     const client = createClient({ deviceId: device, now: () => clock, send: async (batch) => { sent.push(batch); return { ok: true }; } });
@@ -124,15 +215,15 @@ test("client wires GAP, reset, chat, Wistia duration, and hidden stop", () => {
     client.startPlay("grounding", playId, 0, 120);
     clock += 4000;
     client.sample(4, 120);
-    client.stopPlay("hidden", 4);
+    client.stopPlay("pause", 4);
     const flat = sent.flat();
     assert.equal(flat.some((row) => row.event === "gap_step" && row.step === 2), true);
     assert.equal(flat.some((row) => row.event === "gap_reading"), true);
     assert.equal(flat.some((row) => row.event === "gap_shift"), true);
     assert.equal(flat.some((row) => row.event === "reset_day" && row.dayId === "d3"), true);
-    const hidden = flat.find((row) => row.state === "hidden");
-    assert.equal(hidden.durationSeconds, 120);
-    assert.ok(hidden.listenedSeconds > 0);
+    const pause = flat.find((row) => row.state === "pause");
+    assert.equal(pause.durationSeconds, 120);
+    assert.ok(pause.listenedSeconds > 0);
     for (const file of ["public/app.html", "public/app-refresh.html"]) {
         const html = fs.readFileSync(file, "utf8");
         assert.match(html, /gap_step/);
@@ -142,7 +233,7 @@ test("client wires GAP, reset, chat, Wistia duration, and hidden stop", () => {
     }
     const clientSource = fs.readFileSync("public/rh-activity.js", "utf8");
     assert.match(clientSource, /durationOf/);
-    assert.match(clientSource, /stopPlay\("hidden"\)/);
+    assert.doesNotMatch(clientSource, /stopPlay\("hidden"\)/);
     assert.match(clientSource, /60000/);
     assert.match(fs.readFileSync("app/api/chat/route.ts", "utf8"), /recordChatTurn/);
     assert.doesNotMatch(fs.readFileSync("app/api/auth/session/route.ts", "utf8"), /export \{ migrationActive/);
@@ -173,8 +264,9 @@ test("migration flag is not armed in the pages and logout is explicit", () => {
     for (const file of ["public/app.html", "public/app-refresh.html"]) {
         const html = fs.readFileSync(file, "utf8");
         assert.match(html, /rh_auth_migration/);
-        assert.match(html, /data.migration !== true/);
+        assert.match(html, /decideMigrationPoll/);
         assert.match(html, /\/api\/auth\/session/);
+        assert.match(html, /revoke_failed/);
         assert.doesNotMatch(html, /AUTH_SESSION_MIGRATION\s*=\s*["']on["']/);
     }
     const login = fs.readFileSync("app/api/auth/login/route.ts", "utf8");

@@ -207,6 +207,22 @@ export async function refreshLoginSession({ refreshToken, store, env, now, entit
     return { ok: false, reason: "conflict" };
 }
 
+export function logoutResponse({ failed, revoked }) {
+    if (failed) {
+        return {
+            status: 503,
+            clearCookies: false,
+            body: {
+                ok: false,
+                revoked: false,
+                code: "revoke_failed",
+                error: "The server session was not revoked. This device can clear its saved sign-in and retry. The refresh cookie stays in the browser and is not shown.",
+            },
+        };
+    }
+    return { status: 200, clearCookies: true, body: { ok: true, revoked: revoked === true } };
+}
+
 export async function revokeRequestSession({ cookieHeader, store, env, now = Date.now() }) {
     const access = verifyAccessToken(readCookie(cookieHeader, ACCESS_COOKIE), env, now);
     const refreshToken = readCookie(cookieHeader, REFRESH_COOKIE);

@@ -33,7 +33,10 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{1
 const SLUG = /^[a-z0-9-]{1,80}$/;
 
 export const COVERAGE_GAP = "People already inside the app on a saved email have no server session. New activity from those browsers is stored under a random device id and shown as unverified. It is not attached to a member, including after a later login. Browsers that do not open the app cannot be counted or signed out from here.";
-export const IDEMPOTENCY_NOTE = "Each event id is counted once in this report. The Events table has no unique column, so two servers can insert the same id before either read sees it. Duplicate rows can remain. Totals are deduped. A unique event_id field is not created here.";
+export const IDEMPOTENCY_NOTE = "Each event id is counted once. The Events table has no unique column, so two servers can insert the same id. Duplicate raw rows can remain. A repeated id keeps the longer listened time and does not add a second play. A unique event_id field is not created here.";
+export const REPORT_PAGE_SIZE = 100;
+export const REPORT_RANGE_DAYS = 366;
+export const REPORT_CURSOR_BYTES = 3_000_000;
 
 export function torontoParts(now) {
     const date = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Toronto", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(now));
@@ -131,15 +134,34 @@ export function stampActivity(value, { now, email, verified }) {
     };
 }
 
+function mergeActivityRow(prev, next) {
+    if (!prev) return next;
+    if (!next) return prev;
+    if (prev.event !== "activation_play" || next.event !== "activation_play") return prev;
+    const nextEarlier = String(next.at || "") < String(prev.at || "");
+    const finished = prev.finished === true || next.finished === true || prev.state === "ended" || next.state === "ended";
+    return {
+        ...prev,
+        listenedSeconds: Math.max(Number(prev.listenedSeconds) || 0, Number(next.listenedSeconds) || 0),
+        finished,
+        state: finished ? "ended" : prev.state,
+        proportion: next.proportion != null ? next.proportion : prev.proportion,
+        durationSeconds: Number(next.durationSeconds) > 0 ? next.durationSeconds : prev.durationSeconds,
+        at: nextEarlier ? next.at : prev.at,
+        torontoDay: nextEarlier ? next.torontoDay : prev.torontoDay,
+        weekday: nextEarlier ? next.weekday : prev.weekday,
+    };
+}
+
 export function dedupeActivity(rows) {
-    const seen = new Set();
-    const out = [];
+    const map = new Map();
+    const order = [];
     for (const row of rows) {
-        if (!row || seen.has(row.eventId)) continue;
-        seen.add(row.eventId);
-        out.push(row);
+        if (!row || !row.eventId) continue;
+        if (!map.has(row.eventId)) order.push(row.eventId);
+        map.set(row.eventId, mergeActivityRow(map.get(row.eventId), row));
     }
-    return out;
+    return order.map((id) => map.get(id));
 }
 
 function inRange(row, from, to) {
@@ -268,4 +290,72 @@ export function memberTimeline(rows, email) {
     const normalized = normalizeTesterEmail(email);
     return dedupeActivity(rows).filter((row) => row.verified === true && row.memberEmail === normalized)
         .sort((a, b) => String(a.at).localeCompare(String(b.at)));
+}
+
+export function reportRangeError(from, to) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(from || "") || !/^\d{4}-\d{2}-\d{2}$/.test(to || "")) {
+        return "Choose a start and end date. A report is complete only after every matching row in that range is read.";
+    }
+    if (from > to) return "The start date is after the end date.";
+    const span = Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
+    if (span > REPORT_RANGE_DAYS) {
+        return `Split this into ranges of ${REPORT_RANGE_DAYS} days or fewer. Airtable cannot keep a running total safely, and one continuation cannot hold an unbounded history.`;
+    }
+    return "";
+}
+
+function rowKey(row) {
+    return { at: String(row.at || ""), recordId: String(row.recordId || row.eventId || "") };
+}
+
+export function pageActivityRows(rows, { pageSize = REPORT_PAGE_SIZE, cursor = null } = {}) {
+    const size = Math.min(REPORT_PAGE_SIZE, Math.max(1, Number(pageSize) || REPORT_PAGE_SIZE));
+    const sorted = [...(rows || [])].filter((row) => row && row.at).sort((a, b) => {
+        const byTime = String(b.at).localeCompare(String(a.at));
+        if (byTime) return byTime;
+        return rowKey(b).recordId.localeCompare(rowKey(a).recordId);
+    });
+    let start = 0;
+    if (cursor && cursor.at) {
+        const at = String(cursor.at);
+        const id = String(cursor.recordId || "");
+        start = sorted.findIndex((row) => {
+            const key = rowKey(row);
+            return key.at < at || (key.at === at && key.recordId < id);
+        });
+        if (start < 0) start = sorted.length;
+    }
+    const page = sorted.slice(start, start + size);
+    const last = page[page.length - 1];
+    const nextCursor = page.length === size && last ? rowKey(last) : null;
+    return { rows: page, nextCursor, pageSize: size };
+}
+
+export function projectReport(rows, { done, from, to, now, includeTesters, includeUnverified, member }) {
+    const merged = dedupeActivity(rows);
+    if (!done) {
+        return {
+            ready: false,
+            rows: merged,
+            body: {
+                ready: false,
+                scan: { complete: false, rowsRead: merged.length, pageSize: REPORT_PAGE_SIZE, nextCursor: null },
+                totals: null,
+                top5: null,
+                cohorts: null,
+                timeline: [],
+            },
+        };
+    }
+    const report = buildOwnerReport(merged, { from, to, now, includeTesters, includeUnverified });
+    return {
+        ready: true,
+        rows: merged,
+        body: {
+            ...report,
+            ready: true,
+            timeline: member ? memberTimeline(merged, member) : [],
+            scan: { complete: true, rowsRead: merged.length, pageSize: REPORT_PAGE_SIZE, nextCursor: null },
+        },
+    };
 }

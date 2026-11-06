@@ -108,9 +108,9 @@ try {
     assert.equal(logoutBody.revoked, false);
     assert.equal(logoutBody.code, "revoke_failed");
     const cleared = logout.headers.getSetCookie?.() || [];
-    assert.equal(cleared.some((cookie) => cookie.startsWith(`${ACCESS_COOKIE}=`) && cookie.includes("Max-Age=0")), true);
-    assert.equal(cleared.some((cookie) => cookie.startsWith(`${REFRESH_COOKIE}=`) && cookie.includes("Max-Age=0")), true);
-    console.log("ok - unarmed session, owner 401, spoof, logout failure clears cookies");
+    assert.equal(cleared.length, 0);
+    assert.equal(JSON.stringify(logoutBody).includes("refreshToken"), false);
+    console.log("ok - unarmed session, owner 401, spoof, logout failure keeps the cookie");
 } finally {
     await stop(unarmed);
 }

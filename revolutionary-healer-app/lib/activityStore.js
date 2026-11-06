@@ -2,7 +2,7 @@
 // No columns are added or deleted. A missing secret or a failed write is an error.
 
 import Airtable from "airtable";
-import { ACTIVITY_TYPE } from "./activity.js";
+import { ACTIVITY_TYPE, pageActivityRows } from "./activity.js";
 
 export class ActivityStorageError extends Error {
     constructor(message) {
@@ -73,9 +73,8 @@ export function createMemoryActivityStore() {
             const times = rows.filter((row) => row.deviceId === deviceId).map((row) => Date.parse(row.at)).filter((time) => !Number.isNaN(time));
             return times.length ? Math.max(...times) : null;
         },
-        async list({ limit = 200 } = {}) {
-            const cap = Math.min(200, Math.max(1, Number(limit) || 200));
-            return { rows: rows.slice(0, cap), truncated: rows.length > cap, cap, complete: rows.length <= cap };
+        async listPage({ pageSize = 100, cursor = null } = {}) {
+            return pageActivityRows(rows, { pageSize, cursor });
         },
     };
 }
@@ -105,20 +104,37 @@ export function createAirtableActivityStore(env = process.env) {
             const row = found[0] ? parseActivity(found[0]) : null;
             return row && row.at ? Date.parse(row.at) : null;
         },
-        async list({ from = "", to = "", limit = 200 } = {}) {
-            const cap = Math.min(200, Math.max(1, Number(limit) || 200));
-            let formula = `{type}="${ACTIVITY_TYPE}"`;
-            if (from && /^\d{4}-\d{2}-\d{2}$/.test(from)) formula = `AND(${formula}, IS_AFTER({created_at}, "${from}"))`;
-            if (to && /^\d{4}-\d{2}-\d{2}$/.test(to)) formula = `AND(${formula}, IS_BEFORE({created_at}, "${to}T23:59:59.000Z"))`;
+        async listPage({ from = "", to = "", cursor = null, pageSize = 100 } = {}) {
+            const size = Math.min(100, Math.max(1, Number(pageSize) || 100));
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) {
+                throw new ActivityStorageError("A date range is required before activity rows are read.");
+            }
+            const start = new Date(Date.parse(`${from}T00:00:00.000Z`) - 2 * 86400000).toISOString();
+            const end = new Date(Date.parse(`${to}T00:00:00.000Z`) + 3 * 86400000).toISOString();
+            let formula = `AND({type}="${ACTIVITY_TYPE}", IS_AFTER({created_at}, "${start}"), IS_BEFORE({created_at}, "${end}"))`;
+            if (cursor && cursor.at && cursor.recordId) {
+                if (!/^\d{4}-\d{2}-\d{2}T[0-9:.+-]+Z$/.test(cursor.at) || !/^rec[A-Za-z0-9]+$/.test(cursor.recordId)) {
+                    throw new ActivityStorageError("The report continuation is not valid.");
+                }
+                formula = `AND(${formula}, OR(IS_BEFORE({created_at}, "${cursor.at}"), AND(IS_SAME({created_at}, "${cursor.at}", "seconds"), RECORD_ID() < "${cursor.recordId}")))`;
+            }
             const records = await base(env)("Events").select({
                 filterByFormula: formula,
-                maxRecords: cap + 1,
-                pageSize: Math.min(100, cap + 1),
+                pageSize: size,
+                maxRecords: size,
                 sort: [{ field: "created_at", direction: "desc" }],
                 fields: ["type", "meta", "created_at"],
-            }).all();
-            const parsed = records.map(parseActivity).filter(Boolean);
-            return { rows: parsed.slice(0, cap), truncated: parsed.length > cap, cap, complete: parsed.length <= cap };
+            }).firstPage();
+            const parsed = records.map((record) => {
+                const meta = parseActivity(record);
+                if (!meta) return null;
+                return { ...meta, recordId: record.id, at: meta.at || record.fields.created_at };
+            }).filter(Boolean);
+            const last = records[records.length - 1];
+            const nextCursor = records.length === size && last
+                ? { at: last.fields.created_at, recordId: last.id }
+                : null;
+            return { rows: parsed, nextCursor, pageSize: size };
         },
     };
     store.write = createIdempotentWriter({

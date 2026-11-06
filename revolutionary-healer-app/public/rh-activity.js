@@ -35,12 +35,12 @@
         function credit(mediaTime) {
             if (!play || !play.playing) return;
             var t = now();
-            var delta = Math.max(0, Math.min(5, (t - play.mark) / 1000));
-            var moved = mediaTime - play.media;
-            if (moved > 0 && moved < 5) play.listened += Math.min(moved, delta + 1.5);
-            else if (moved < -0.35) play.listened += delta;
+            var wall = Math.max(0, (t - play.mark) / 1000);
+            var moved = (typeof mediaTime === "number" ? mediaTime : play.media) - play.media;
+            if (moved > 0.05) play.listened += Math.min(moved, wall + 1.5);
+            else if (moved < -0.35) play.listened += Math.min(wall, 120);
             play.mark = t;
-            play.media = mediaTime;
+            play.media = typeof mediaTime === "number" ? mediaTime : play.media;
         }
         return {
             deviceId: deviceId,
@@ -83,6 +83,14 @@
             setHidden: function (value) { hidden = !!value; if (hidden) backgroundSince = audioOn ? now() : 0; else foregroundSince = now(); },
             flush: flush,
             playId: function () { return play ? play.playId : null; },
+            playing: function () { return !!(play && play.playing); },
+            listened: function () { return play ? play.listened : 0; },
+            resume: function () {
+                if (!play) return;
+                play.playing = true;
+                audioOn = true;
+                play.mark = now();
+            },
         };
     }
     function attach(win) {
@@ -102,7 +110,6 @@
         client.setHidden(win.document.visibilityState === "hidden");
         win.document.addEventListener("visibilitychange", function () {
             var hiddenNow = win.document.visibilityState === "hidden";
-            if (hiddenNow && client.playId()) client.stopPlay("hidden");
             client.presence();
             client.setHidden(hiddenNow);
             client.flush(true);
@@ -116,8 +123,14 @@
             var playId = null;
             audio.addEventListener("playing", function () {
                 if (!playId) { playId = uuid(); client.startPlay(slug, playId, audio.currentTime || 0, audio.duration || null); }
+                else if (!client.playing()) client.resume();
+                else client.sample(audio.currentTime || 0, audio.duration || null);
             });
             audio.addEventListener("timeupdate", function () { client.sample(audio.currentTime || 0, audio.duration || null); });
+            win.setInterval(function () {
+                if (!playId || audio.paused) return;
+                client.sample(audio.currentTime || 0, audio.duration || null);
+            }, 15000);
             audio.addEventListener("pause", function () { client.stopPlay("pause", audio.currentTime || 0); });
             audio.addEventListener("ended", function () { client.stopPlay("ended", audio.currentTime || 0); playId = null; });
         };
@@ -135,8 +148,13 @@
                 video.bind("play", function () {
                     var duration = durationOf(video);
                     if (!playId) { playId = uuid(); client.startPlay(slug, playId, video.time() || 0, duration); }
+                    else if (!client.playing()) client.resume();
                     else client.sample(video.time() || 0, duration);
                 });
+                win.setInterval(function () {
+                    if (!playId || (typeof video.state === "function" && video.state() === "paused")) return;
+                    client.sample(video.time() || 0, durationOf(video));
+                }, 15000);
                     video.bind("secondchange", function (second) { client.sample(second || 0, durationOf(video)); });
                     video.bind("pause", function () { client.stopPlay("pause", video.time() || 0); });
                     video.bind("end", function () { client.stopPlay("ended", video.time() || 0); playId = null; });

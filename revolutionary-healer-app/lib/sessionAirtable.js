@@ -35,6 +35,14 @@ function parse(record) {
     }
 }
 
+function eachPage(query, onPage) {
+    return new Promise((resolve, reject) => {
+        query.eachPage((records, next) => {
+            Promise.resolve(onPage(records)).then(() => next(), reject);
+        }, (err) => (err ? reject(err) : resolve()));
+    });
+}
+
 async function findFormula(env, formula) {
     const records = await base(env)("Events").select({
         filterByFormula: formula,
@@ -42,6 +50,23 @@ async function findFormula(env, formula) {
         fields: ["type", "meta", "created_at"],
     }).firstPage();
     return records.map(parse).filter(Boolean);
+}
+
+// Pages until the source has no next cursor. A 100-row cap is not a full revoke.
+export async function visitAllSessionPages(fetchPage, visit) {
+    let cursor = null;
+    const seen = new Set();
+    do {
+        const page = await fetchPage(cursor);
+        for (const row of page.rows || []) {
+            const id = row && (row.sessionId || row.recordId);
+            if (!row || !id || seen.has(id)) continue;
+            seen.add(id);
+            await visit(row);
+        }
+        cursor = page.nextCursor || null;
+    } while (cursor);
+    return seen.size;
 }
 
 export function createAirtableSessionStore(env = process.env) {
@@ -81,17 +106,19 @@ export function createAirtableSessionStore(env = process.env) {
         },
         async revokeEmail(email, now) {
             const normalized = String(email || "").trim().toLowerCase();
-            const records = await base(env)("Events").select({
-                filterByFormula: memberSessionFormula(normalized),
-                maxRecords: 100,
+            const formula = memberSessionFormula(normalized);
+            await eachPage(base(env)("Events").select({
+                filterByFormula: formula,
+                pageSize: 100,
                 fields: ["type", "meta"],
-            }).all();
-            for (const record of records) {
-                const row = parse(record);
-                if (!row || row.memberEmail !== normalized) continue;
-                row.revokedAt = now;
-                await base(env)("Events").update(record.id, { meta: JSON.stringify({ ...row, kind: TYPE }) });
-            }
+            }), async (records) => {
+                for (const record of records) {
+                    const row = parse(record);
+                    if (!row || row.memberEmail !== normalized || row.revokedAt) continue;
+                    row.revokedAt = now;
+                    await base(env)("Events").update(record.id, { meta: JSON.stringify({ ...row, kind: TYPE }) });
+                }
+            });
         },
     };
 }
