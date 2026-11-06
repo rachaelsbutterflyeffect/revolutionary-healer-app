@@ -75,7 +75,7 @@
     background: #070604;
     box-shadow: 0 12px 28px rgba(0,0,0,.45), 0 0 22px rgba(184,140,50,.14);
   }
-  .rr-media { position: relative; }
+  .rr-media { position: relative; line-height: 0; }
   .rr-art {
     display: block;
     width: 100%;
@@ -85,32 +85,31 @@
     background: #070604;
   }
   .rr-new {
-    position: absolute;
-    top: 8px;
-    left: 10px;
-    z-index: 2;
-    display: inline-flex;
-    padding: 5px 12px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,248,220,.75);
-    background: linear-gradient(90deg, #8F6A22, #E4C77A 28%, #FFF3C8 50%, #E4C77A 72%, #8F6A22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 5px 10px;
+    background: #070604;
     color: #1a1305;
     font-family: Cinzel, serif;
     font-size: 8px;
     font-weight: 700;
-    letter-spacing: .18em;
+    letter-spacing: .16em;
+  }
+  .rr-new span {
+    display: inline-flex;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,248,220,.75);
+    background: linear-gradient(90deg, #8F6A22, #E4C77A 28%, #FFF3C8 50%, #E4C77A 72%, #8F6A22);
+    box-shadow: 0 0 12px rgba(240,180,70,.4);
     white-space: nowrap;
-    box-shadow: 0 0 16px rgba(240,180,70,.55);
   }
   .rr-body {
     padding: 8px 16px 10px;
     text-align: center;
     background: linear-gradient(180deg, rgba(7,6,4,.92), #070604 40%);
-  }
-  .rr-days { display: flex; justify-content: center; gap: 8px; margin-bottom: 4px; }
-  .rr-days i {
-    width: 6px; height: 6px; border-radius: 50%; display: block;
-    background: radial-gradient(circle at 35% 30%, #FFF3C8, #CFA646 55%, #8F6A22);
   }
   .rr p { margin: 0 0 6px; font-size: 13px; color: rgba(253,251,245,.78); }
   .rr b { color: #E4C77A; font-weight: 600; }
@@ -293,12 +292,11 @@
     <div class="door"><span class="orb" aria-hidden="true">◈</span><span class="txt">Find the resistance that's keeping you stuck</span><span class="arr" aria-hidden="true">→</span></div>
     <div class="door"><span class="orb" aria-hidden="true">❋</span><span class="txt">Dive deep with Rachael in your back pocket</span><span class="arr" aria-hidden="true">→</span></div>
     <article class="rr home-rr" aria-label="Reset and Restore">
+      <div class="rr-new"><span>NEW · 5-DAY SERIES</span></div>
       <div class="rr-media">
         <img class="rr-art" src="/images/covers/reset-and-restore-banner.jpg" alt="Reset and Restore">
-        <span class="rr-new">NEW · 5-DAY SERIES</span>
       </div>
       <div class="rr-body">
-        <div class="rr-days" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <p>Up next: <b>Introduction · Start Here</b></p>
         <span class="rr-open">Begin Day 1</span>
       </div>
@@ -309,18 +307,6 @@
     <h1>Activations</h1>
     <p class="intro">Every activation inside Revolutionary Healer is now yours.</p>
 
-    <article class="rr" aria-label="Reset and Restore">
-      <div class="rr-media">
-        <img class="rr-art" src="/images/covers/reset-and-restore-banner.jpg" alt="Reset and Restore">
-        <span class="rr-new">NEW · 5-DAY SERIES</span>
-      </div>
-      <div class="rr-body">
-        <div class="rr-days" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-        <p>Five days to come back to yourself.</p>
-        <span class="rr-open">Begin Day 1</span>
-      </div>
-    </article>
-
     <div class="fav-bubble" role="group" aria-label="Favorites">
       <span>
         <b>Favorites</b>
@@ -328,6 +314,17 @@
       </span>
       <span class="arr" aria-hidden="true">→</span>
     </div>
+
+    <article class="rr" aria-label="Reset and Restore">
+      <div class="rr-new"><span>NEW · 5-DAY SERIES</span></div>
+      <div class="rr-media">
+        <img class="rr-art" src="/images/covers/reset-and-restore-banner.jpg" alt="Reset and Restore">
+      </div>
+      <div class="rr-body">
+        <p>Five days to come back to yourself.</p>
+        <span class="rr-open">Begin Day 1</span>
+      </div>
+    </article>
 
     <div class="sec" aria-hidden="true">
       <span class="new">NEW</span>
