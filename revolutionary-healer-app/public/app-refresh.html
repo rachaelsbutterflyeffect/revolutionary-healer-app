@@ -1602,6 +1602,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
 <body class="rf" data-rf="home">
 <canvas id="rf-sky" aria-hidden="true"></canvas><div class="rf-aurora" aria-hidden="true"></div>
 
+<script src="/rh-migration.js"></script>
 <script>
   // Aug 13 rebuild: this page is the real member "home" experience (matches
   // the-revolutionary-healer-mockup.html, Quantum Dollars + Go Deeper removed
@@ -1616,11 +1617,31 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
   // below, which only covers Kajabi access being revoked.
   var RH_LOGIN_AT = Number(localStorage.getItem('rh_member_login_at') || 0);
   var RH_FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
-  if (RH_EMAIL && (!RH_LOGIN_AT || (Date.now() - RH_LOGIN_AT) >= RH_FIVE_DAYS_MS)) {
+  var RH_MIGRATION_ARMED = localStorage.getItem('rh_auth_migration') === 'on';
+  if (!RH_MIGRATION_ARMED && RH_EMAIL && (!RH_LOGIN_AT || (Date.now() - RH_LOGIN_AT) >= RH_FIVE_DAYS_MS)) {
     localStorage.removeItem('rh_member_email');
     localStorage.removeItem('rh_member_login_at');
     RH_EMAIL = null;
   }
+  function rhApplyMigration(data, allowRetry) {
+    var decision = window.rhMigration.decideMigrationPoll({ response: data, now: Date.now(), loginAt: Number(localStorage.getItem('rh_member_login_at') || 0) });
+    if (!decision.arm) { try { localStorage.removeItem('rh_auth_migration'); } catch (e) {} return; }
+    try { localStorage.setItem('rh_auth_migration', 'on'); } catch (e) {}
+    if (decision.retry && allowRetry) {
+      setTimeout(function () { fetch('/api/auth/session', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (again) { rhApplyMigration(again, false); }).catch(function () {}); }, 500);
+      return;
+    }
+    if (decision.clear) {
+      localStorage.removeItem('rh_member_email');
+      localStorage.removeItem('rh_member_login_at');
+      window.location.href = '/';
+    }
+  }
+  function rhPollMigration() {
+    fetch('/api/auth/session', { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (data) { rhApplyMigration(data, true); }).catch(function () {});
+  }
+  rhPollMigration();
+  setInterval(rhPollMigration, 10 * 60 * 1000);
   if (!RH_EMAIL) {
     window.location.href = '/';
   } else {
@@ -3250,6 +3271,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
       nowFav = false;
     }
     FAVORITE_ACTIVATION_SLUGS = favs;
+    if (window.rhActivity && typeof nowFav !== 'undefined') window.rhActivity.favorite(slug, nowFav);
     favoritesLoaded = true;
     try { localStorage.setItem('rh_favorites_' + RH_EMAIL, JSON.stringify(favs)); } catch (e) {}
     applyFavoriteBadges();
@@ -3474,7 +3496,8 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
         '</div>';
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+      if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else {
       playerEl.innerHTML =
         '<div style="padding:40px 20px;text-align:center;color:#c9b8a8;">Video coming soon.</div>';
@@ -3489,11 +3512,13 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
       playerEl.innerHTML =
         '<div class="audio-cover-player" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
         '<div class="audio-cover-overlay"><div class="audio-playing-badge" style="color:#F6F2E9;font-size:14px;letter-spacing:0.04em;">&#9654; Now Playing</div></div>' +
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
         '</div>';
+      if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+      if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else if (a.audioSrc) {
       playerEl.innerHTML =
         '<div class="audio-native-wrap" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
@@ -3562,6 +3587,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
       pct = Math.max(0, Math.min(1, pct));
       if (audio.duration) { audio.currentTime = pct * audio.duration; }
     });
+    if (window.rhActivity) window.rhActivity.watchAudio(audio, window.__rhCurrentActivationSlug);
     audio.play();
     setPlayIcon(true);
   }
@@ -3571,6 +3597,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
     if (!a) { return; }
     window.__rhCurrentActivation = a;
     window.__rhCurrentActivationSlug = slug;
+    if (window.rhActivity) window.rhActivity.open(slug, 'detail');
     if (typeof applyCompletionBadges === 'function') { applyCompletionBadges(); }
     var markBtn = document.getElementById('activation-detail-mark-listened-btn');
     if (markBtn) {
@@ -3645,6 +3672,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
     document.getElementById('my-revolution').style.display = 'none';
     hideAllPages();
     document.getElementById(pageId).classList.add('active');
+    if (window.rhActivity) window.rhActivity.nav(pageId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -3900,6 +3928,7 @@ function resetGapMethodState() {
 }
 
 function startGapMethodInChat() {
+        if (window.rhActivity) window.rhActivity.gap('gap_start', { surface: 'chat' });
         var embedWrap = document.getElementById('hero-gap-embed');
         window.__rhGapMethodActive = true;
         // The dialog is position:fixed, so scrolling it into view only moves the page behind it
@@ -3936,10 +3965,33 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
 }
 });
 
-  function signOutMember() {
-    localStorage.removeItem('rh_member_email');
-    localStorage.removeItem('rh_member_login_at');
-    window.location.href = '/';
+  async function signOutMember() {
+    var note = document.getElementById('rh-signout-note');
+    if (!note) {
+      note = document.createElement('p');
+      note.id = 'rh-signout-note';
+      note.setAttribute('role', 'status');
+      note.style.cssText = 'position:fixed;bottom:16px;left:16px;right:16px;background:#fff;color:#241c0a;padding:12px;z-index:9999;border:1px solid #241c0a;';
+      document.body.appendChild(note);
+    }
+    note.textContent = 'Signing out…';
+    try {
+      var res = await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+      var data = {};
+      try { data = await res.json(); } catch (e) {}
+      if (JSON.stringify(data).indexOf('refreshToken') !== -1) { note.textContent = 'Sign-out was rejected.'; return; }
+      localStorage.removeItem('rh_member_email');
+      localStorage.removeItem('rh_member_login_at');
+      if (!res.ok || data.code === 'revoke_failed') {
+        note.textContent = 'This device forgot the saved sign-in, but the server session was not revoked. Retry sign out. No token is shown.';
+        return;
+      }
+      window.location.href = '/';
+    } catch (e) {
+      localStorage.removeItem('rh_member_email');
+      localStorage.removeItem('rh_member_login_at');
+      note.textContent = 'This device forgot the saved sign-in, but the server could not be reached. Retry sign out. No token is shown.';
+    }
   }
 
   async function loadMemberRevolutionData() {
@@ -4213,7 +4265,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
       if (processSlug) payload.processSlug = processSlug;
       if (rhCanStream()) payload.stream = true;
       if (window.__rhCcmCardOpener) { payload.ccmCardOpener = true; window.__rhCcmCardOpener = false; }
-      var res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), signal: rhAbortController.signal });
+      var res = await fetch('/api/chat', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'x-rh-device': (window.rhDeviceId || '') }, body: JSON.stringify(payload), signal: rhAbortController.signal });
       if (rhIsChatStream(res)) {
         // The 180s last-resort cap keeps running while the reply streams.
         st = { thinkingEl: thinkingEl, stillWorkingTimer: rhStillWorkingTimer, bubble: null, text: '', chatId: null };
@@ -6041,6 +6093,7 @@ if (n === 3) { var c2el = document.getElementById('check2'); if (!c2el || c2el.t
       }
     }
     gapCurrentStep = n;
+    if (window.rhActivity) window.rhActivity.gap('gap_step', { step: n });
     setTimeout(gapUpdateStartOver, 0);
     [1,2,3].forEach(function(i) {
       document.getElementById('view-day' + i).classList.toggle('active', i === n);
@@ -6882,6 +6935,7 @@ if (forceComplete) { goDay(3); }
       if (run !== gapReadingRun || gapReadingState !== 'running') return;
       gapShowAnalyzing(false);
       gapReadingState = 'done';
+      if (window.rhActivity) window.rhActivity.gap('gap_reading');
       goDay(3); // setupDay3 + the one Shift save, exactly as before
     });
   }
@@ -7158,7 +7212,7 @@ if (forceComplete) { goDay(3); }
           // pinned for the browser session to whichever Shift was newest at login (Sept 23 "stable Today's
           // Focus"), so the new Shift never showed until the next visit. Pin it to the Shift just saved.
           var newShiftId = result.body && result.body.shiftId ? String(result.body.shiftId) : null;
-          if (newShiftId) { window.__gapShiftSavedId = newShiftId; window.__gapShiftSavedRunId = runId; try { sessionStorage.setItem('rhFocusShiftId', newShiftId); } catch (e) {} }
+          if (newShiftId) { window.__gapShiftSavedId = newShiftId; window.__gapShiftSavedRunId = runId; try { sessionStorage.setItem('rhFocusShiftId', newShiftId); } catch (e) {} if (window.rhActivity) window.rhActivity.gap('gap_shift'); }
           if (typeof loadMemberRevolutionData === 'function') return Promise.resolve(loadMemberRevolutionData()).then(function() { return true; });
           return true;
         }
@@ -7174,6 +7228,7 @@ if (forceComplete) { goDay(3); }
   }
 </script>
 
+<script src="/rh-activity.js" defer></script>
 <script src="/activation-covers.js" defer></script>
 <script src="/cover-fixes.js" defer></script>
 <!-- Gap Method pop-up modal shell (presentation only). Wraps the existing
@@ -8891,6 +8946,7 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     var id = row.getAttribute('data-rr');
     var slug = row.getAttribute('data-rr-slug');
     markDone(id);
+    if (window.rhActivity) window.rhActivity.resetDay(id);
     if (typeof window.handleActivationCardClick === 'function') {
       window.handleActivationCardClick(slug);
     } else if (typeof window.openActivationDetail === 'function') {

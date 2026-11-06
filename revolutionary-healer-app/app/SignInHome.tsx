@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent, type RefObject } from "react";
 import { useRouter } from "next/navigation";
 import PasswordField from "@/components/PasswordField";
+import { keepStoredSignIn } from "@/lib/migrationClient";
 import styles from "./sign-in.module.css";
 
 type Wing = { bx: number; by: number; s: number; j: number; teal: boolean };
@@ -181,8 +182,8 @@ export default function SignInHome({ fontsClassName }: { fontsClassName: string 
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("rh_member_email") : null;
     const loginAt = typeof window !== "undefined" ? Number(localStorage.getItem("rh_member_login_at") || 0) : 0;
-    const fiveDaysMs = 5 * 24 * 60 * 60 * 1000;
-    if (stored && loginAt && Date.now() - loginAt < fiveDaysMs) {
+    const armed = typeof window !== "undefined" && localStorage.getItem("rh_auth_migration") === "on";
+    if (stored && keepStoredSignIn({ armed, loginAt, now: Date.now() })) {
       memberAppPath(stored).then((path) => router.replace(path));
     } else {
       if (stored) {

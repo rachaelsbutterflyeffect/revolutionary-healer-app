@@ -45,6 +45,7 @@
     var lead = need === 'high' ? 'All three scores came in high today (' + e + ', ' + c + ', ' + g + '), so this is about ' + DNEED.high + '.' : ({ energy: 'Energy', connection: 'Connection', grounded: 'Grounded' }[need]) + ' came in lowest (' + m + '/10), so today is about ' + DNEED[need] + '.';
     var why = lead + ' You said your ' + dp.bm + ' is pulling at you most and you want to ' + (dp.sm === 'slow' ? 'slow down' : 'get moving') + ', so this one meets you there.';
     window.__rfCheckinResult = { need: need, bm: dp.bm, sm: dp.sm, slug: slug, scores: [e, c, g] };
+    if (window.rhActivity) window.rhActivity.finder(window.__rfCheckinResult);
     d.innerHTML = '<div><div class="q-label" style="text-align:center">YOUR ACTIVATION</div><div class="qn" style="font-size:26px">Here\'s the activation that best fits you today, based on your energy</div><div class="acard"><div class="cv"></div><div class="bd"><h2></h2><p class="ad"></p><p class="why"></p><button type="button" class="btn-g" id="d-play">▶ Listen now</button></div></div><div style="text-align:center;margin-top:14px"><button type="button" class="btn-t" id="d-again">↺ Retake</button></div></div>';
     if (a.bg) d.querySelector('.acard .cv').style.backgroundImage = a.bg; else d.querySelector('.acard .cv').style.display = 'none';
     d.querySelector('.acard h2').textContent = a.t; d.querySelector('.acard .ad').textContent = a.d; d.querySelector('.acard .why').textContent = '✦ ' + why;
