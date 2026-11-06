@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Favorites bubble mock · The Revolutionary Healer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* Visual mock only. Does not replace the Activations Favourites tile or call favorites. */
+  :root {
+    --gold: #e8c873;
+    --gold-2: #fff1c4;
+    --ink: #fdfbf5;
+    --charcoal: #06080b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--charcoal); color: var(--ink); }
+  body {
+    min-height: 100vh;
+    font-family: Inter, system-ui, sans-serif;
+    font-style: normal;
+  }
+  .sky {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(42% 32% at 16% 8%, rgba(255, 214, 130, .28), transparent 72%),
+      radial-gradient(18% 14% at 82% 78%, rgba(63, 214, 200, .1), transparent 70%),
+      radial-gradient(ellipse at center, transparent 46%, rgba(6, 8, 11, .55) 100%);
+  }
+  .col {
+    position: relative;
+    z-index: 1;
+    width: min(440px, 100%);
+    margin: 0 auto;
+    padding: 22px 20px 48px;
+  }
+  .back {
+    color: var(--gold);
+    font-size: 13px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+  h1 {
+    margin: 22px 0 18px;
+    text-align: center;
+    font-family: Cinzel, serif;
+    font-weight: 600;
+    font-size: 28px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    background: linear-gradient(100deg, #b8913f 0%, #e8c873 32%, #fffbe8 50%, #e8c873 68%, #b8913f 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .rr {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0 0 22px 22px;
+    background: #070604;
+    box-shadow: 0 18px 48px rgba(0,0,0,.55), 0 0 36px rgba(184,140,50,.16);
+  }
+  .rr-art {
+    display: block;
+    width: 100%;
+    aspect-ratio: 1672 / 941;
+    object-fit: fill;
+    background: #070604;
+  }
+  .rr-body {
+    padding: 14px 20px 18px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(7,6,4,.92), #070604 40%);
+  }
+  .rr-new {
+    display: inline-flex;
+    margin-bottom: 12px;
+    padding: 7px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,248,220,.7);
+    background: linear-gradient(90deg, #8F6A22, #E4C77A 28%, #FFF3C8 50%, #E4C77A 72%, #8F6A22);
+    color: #1a1305;
+    font-family: Cinzel, serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .28em;
+  }
+  .rr-days { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
+  .rr-days i {
+    width: 7px; height: 7px; border-radius: 50%; display: block;
+    background: radial-gradient(circle at 35% 30%, #FFF3C8, #CFA646 55%, #8F6A22);
+  }
+  .rr p { margin: 0 0 14px; font-size: 13px; color: rgba(253,251,245,.78); }
+  .rr b { color: #E4C77A; font-weight: 600; }
+  .rr-open {
+    display: inline-flex;
+    padding: 12px 28px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #FFF3C8, #E4C77A 42%, #CFA646 78%, #A67C2E);
+    color: #1a1305;
+    font-family: Cinzel, serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .16em;
+  }
+  /* Proposed Favorites entry: compact home-style glass bubble, no artwork. */
+  .fav-bubble {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    margin: 16px 0 4px;
+    padding: 14px 16px;
+    border-radius: 24px;
+    text-align: left;
+    color: var(--ink);
+    background: linear-gradient(135deg, rgba(255,255,255,.13), rgba(255,255,255,.045));
+    border: 1px solid rgba(255,236,190,.32);
+    box-shadow: 0 10px 30px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.22);
+  }
+  .fav-bubble b {
+    display: block;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: #fdfbf5;
+  }
+  .fav-bubble small {
+    display: block;
+    margin-top: 3px;
+    font-family: Inter, system-ui, sans-serif;
+    font-size: 13.5px;
+    line-height: 1.35;
+    letter-spacing: 0;
+    color: rgba(253,251,245,.78);
+  }
+  .fav-bubble .arr {
+    margin-left: auto;
+    color: var(--gold);
+    font-size: 20px;
+  }
+  .sec {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-height: 132px;
+    margin-top: 16px;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid rgba(255,236,190,.3);
+    box-shadow: 0 10px 40px rgba(0,0,0,.35), 0 0 30px rgba(255,214,130,.12);
+  }
+  .sec .bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+  }
+  .sec:after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(6,8,11,.1), rgba(6,8,11,.85));
+  }
+  .sec .in { position: relative; z-index: 1; display: block; padding: 62px 18px 16px; }
+  .sec b {
+    display: block;
+    font-family: Cinzel, serif;
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--gold-2);
+  }
+  .sec small { font-size: 11px; letter-spacing: .1em; color: #fff; }
+  .sec .arr { position: absolute; right: 16px; bottom: 16px; z-index: 1; color: var(--gold); font-size: 20px; }
+  .new {
+    position: absolute;
+    top: 12px;
+    left: 14px;
+    z-index: 2;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #F3D98A, #CFA646 55%, #A97E2C);
+    color: #241C0A;
+    font-family: Cinzel, serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .16em;
+  }
+</style>
+</head>
+<body>
+  <div class="sky" aria-hidden="true"></div>
+  <main class="col">
+    <a class="back" href="#activations" tabindex="-1">← My Revolution</a>
+    <h1>Activations</h1>
+
+    <article class="rr" aria-label="Reset and Restore">
+      <img class="rr-art" src="/images/covers/reset-and-restore-banner.jpg" alt="Reset and Restore">
+      <div class="rr-body">
+        <span class="rr-new">New · 5-day series</span>
+        <div class="rr-days" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <p>Five days to come back to yourself.</p>
+        <span class="rr-open">Begin Day 1</span>
+      </div>
+    </article>
+
+    <div class="fav-bubble" role="group" aria-label="Favorites">
+      <span>
+        <b>Favorites</b>
+        <small>Create a list of your favorite activations</small>
+      </span>
+      <span class="arr" aria-hidden="true">→</span>
+    </div>
+
+    <div class="sec" aria-hidden="true">
+      <span class="new">NEW</span>
+      <span class="bg" style="background-image:url('/images/sections/sec-mind-body.webp');background-position:62% 28%"></span>
+      <span class="in"><b>Mind &amp; Body</b><small>ACTIVATIONS</small></span>
+      <span class="arr">→</span>
+    </div>
+    <div class="sec" aria-hidden="true">
+      <span class="bg" style="background-image:url('/images/sections/sec-gifts.webp');background-position:24% 22%"></span>
+      <span class="in"><b>Gifts &amp; Spirit</b><small>ACTIVATIONS</small></span>
+      <span class="arr">→</span>
+    </div>
+    <div class="sec" aria-hidden="true">
+      <span class="bg" style="background-image:url('/images/sections/sec-money.webp');background-position:82% 20%"></span>
+      <span class="in"><b>Money &amp; Receiving</b><small>ACTIVATIONS</small></span>
+      <span class="arr">→</span>
+    </div>
+    <div class="sec" aria-hidden="true">
+      <span class="bg" style="background-image:url('/images/sections/sec-energy.webp');background-position:72% 26%"></span>
+      <span class="in"><b>Energy &amp; Frequency</b><small>ACTIVATIONS</small></span>
+      <span class="arr">→</span>
+    </div>
+    <div class="sec" aria-hidden="true">
+      <span class="bg" style="background-image:url('/images/sections/sec-vis.webp');background-position:62% 26%"></span>
+      <span class="in"><b>Business &amp; Impact</b><small>ACTIVATIONS</small></span>
+      <span class="arr">→</span>
+    </div>
+  </main>
+</body>
+</html>
