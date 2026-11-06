@@ -86,7 +86,9 @@ const unarmed = start("");
 try {
     await waitReady(unarmed);
     const session = await fetch(`${BASE}/api/auth/session`).then((res) => res.json());
-    assert.deepEqual(session, { migration: false, reauth: false });
+    assert.equal(session.migration, false);
+    assert.equal(session.reauth, false);
+    assert.equal(session.ok, false);
 
     const anon = await fetch(`${BASE}/api/owner/activity`);
     assert.equal(anon.status, 401);

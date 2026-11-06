@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent, type RefObject } from "rea
 import { useRouter } from "next/navigation";
 import PasswordField from "@/components/PasswordField";
 import { keepStoredSignIn } from "@/lib/migrationClient";
+import { safeReturnPath, signInDestination } from "@/lib/returnPath";
 import styles from "./sign-in.module.css";
 
 type Wing = { bx: number; by: number; s: number; j: number; teal: boolean };
@@ -183,15 +184,21 @@ export default function SignInHome({ fontsClassName }: { fontsClassName: string 
     const stored = typeof window !== "undefined" ? localStorage.getItem("rh_member_email") : null;
     const loginAt = typeof window !== "undefined" ? Number(localStorage.getItem("rh_member_login_at") || 0) : 0;
     const armed = typeof window !== "undefined" && localStorage.getItem("rh_auth_migration") === "on";
-    if (stored && keepStoredSignIn({ armed, loginAt, now: Date.now() })) {
-      memberAppPath(stored).then((path) => router.replace(path));
-    } else {
-      if (stored) {
+    const next = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") || "" : "";
+    const go = (data: { ok?: boolean } | null) => {
+      const dest = signInDestination({ sessionOk: data?.ok === true, stored: !!stored, armed, loginAt, now: Date.now(), next });
+      if (dest.kind === "return" && dest.path) { router.replace(dest.path); return; }
+      if (dest.kind === "app" && stored) { memberAppPath(stored).then((path) => router.replace(path)); return; }
+      if (stored && !keepStoredSignIn({ armed, loginAt, now: Date.now() }) && !safeReturnPath(next)) {
         localStorage.removeItem("rh_member_email");
         localStorage.removeItem("rh_member_login_at");
       }
       setChecking(false);
-    }
+    };
+    fetch("/api/auth/session", { credentials: "same-origin" })
+      .then((res) => res.json())
+      .then(go)
+      .catch(() => go(null));
   }, [router]);
 
   // Every sign-in problem must be seen: on iPhone the keyboard covers the message under the button, so close
@@ -229,7 +236,8 @@ export default function SignInHome({ fontsClassName }: { fontsClassName: string 
       }
       localStorage.setItem("rh_member_email", data.email || trimmedEmail);
       localStorage.setItem("rh_member_login_at", String(Date.now()));
-      router.replace(await memberAppPath(data.email || trimmedEmail));
+      const next = safeReturnPath(new URLSearchParams(window.location.search).get("next") || "");
+      router.replace(next || await memberAppPath(data.email || trimmedEmail));
     } catch {
       setSignInError("Something went wrong. Please try again.");
     } finally {

@@ -1,9 +1,10 @@
 import assert from "node:assert/strict";
 import {
     ACCESS_MS, FIVE_DAYS_MS, REFRESH_GRACE_MS, OWNER_EMAIL,
-    createMemorySessionStore, issueLoginSession, logoutResponse, migrationActive, refreshLoginSession,
-    revokeRequestSession, sessionSecret, sessionStatus, verifyAccessToken,
+    createMemorySessionStore, ensureAccess, isOwnerEmail, issueLoginSession, logoutResponse, migrationActive, refreshLoginSession,
+    revokeRequestSession, sessionBody, sessionSecret, sessionStatus, verifyAccessToken,
 } from "../lib/sessions.js";
+import { ownerSignInHref, safeReturnPath, signInDestination } from "../lib/returnPath.js";
 import { memberSessionFormula, visitAllSessionPages } from "../lib/sessionAirtable.js";
 import { decideMigrationPoll, keepStoredSignIn } from "../lib/migrationClient.js";
 import { createRequire } from "node:module";
@@ -141,6 +142,54 @@ it("logout storage failure does not claim a revoke and password reset visits eve
         return { rows: slice, nextCursor: start + 100 < sessions.length ? String(start + 100) : null };
     }, async (row) => { row.revokedAt = 5; });
     assert.equal(sessions.every((row) => row.revokedAt === 5), true);
+});
+
+it("an expired access cookie renews from the refresh cookie without a password or migration", async () => {
+    const store = createMemorySessionStore();
+    const start = 1_700_000_000_000;
+    const issued = await issueLoginSession(OWNER_EMAIL, store, env, start);
+    const header = `rh_access=${issued.accessToken}; rh_refresh=${issued.refreshToken}`;
+    const fresh = await ensureAccess({ cookieHeader: header, store, env, now: start + 60_000, entitled: async () => true });
+    assert.equal(fresh.renewed, false);
+    assert.equal(fresh.email, OWNER_EMAIL);
+    const soon = await ensureAccess({ cookieHeader: header, store, env, now: start + ACCESS_MS - 5 * 60 * 1000, entitled: async () => true });
+    assert.equal(soon.renewed, true);
+    assert.equal(soon.email, OWNER_EMAIL);
+    const later = start + ACCESS_MS + 60_000;
+    assert.equal(verifyAccessToken(issued.accessToken, env, later), null);
+    const ensured = await ensureAccess({
+        cookieHeader: `rh_access=${issued.accessToken}; rh_refresh=${soon.refreshToken}`,
+        store, env, now: later, entitled: async () => true,
+    });
+    assert.equal(ensured.ok, true);
+    assert.equal(ensured.renewed, true);
+    assert.equal(ensured.email, OWNER_EMAIL);
+    assert.equal(verifyAccessToken(ensured.accessToken, env, later).email, OWNER_EMAIL);
+    const quiet = sessionBody({ migration: false, ensured });
+    assert.equal(quiet.body.reauth, false);
+    assert.equal(quiet.body.ok, true);
+    assert.equal(quiet.cookies, true);
+    const member = await issueLoginSession("member@example.com", store, env, start);
+    const memberAccess = await ensureAccess({
+        cookieHeader: `rh_refresh=${member.refreshToken}`,
+        store, env, now: later, entitled: async () => true,
+    });
+    assert.equal(memberAccess.ok, true);
+    assert.equal(isOwnerEmail(memberAccess.email), false);
+    assert.equal(sessionBody({ migration: false, ensured: { ok: false, reason: "expired" } }).body.reauth, false);
+    assert.equal(sessionBody({ migration: true, ensured: { ok: false, reason: "expired" } }).body.reauth, true);
+    assert.equal(safeReturnPath("/owner"), "/owner");
+    assert.equal(safeReturnPath("//evil.example"), "");
+    assert.equal(safeReturnPath("/login"), "");
+    assert.equal(ownerSignInHref(), "/?next=/owner");
+    const backToForm = signInDestination({ sessionOk: false, stored: true, armed: false, loginAt: later, now: later, next: "/owner" });
+    assert.equal(backToForm.kind, "form");
+    const backToOwner = signInDestination({ sessionOk: true, stored: true, armed: false, loginAt: start, now: later, next: "/owner" });
+    assert.equal(backToOwner.kind, "return");
+    assert.equal(backToOwner.path, "/owner");
+    const home = signInDestination({ sessionOk: false, stored: true, armed: false, loginAt: later, now: later, next: "" });
+    assert.equal(home.kind, "app");
+    assert.equal(decideMigrationPoll({ response: quiet.body, now: later, loginAt: start }).clear, false);
 });
 
 it("owner identity is the verified email, not a request body", () => {

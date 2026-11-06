@@ -6,6 +6,7 @@ import { normalizeTesterEmail } from "./testers.js";
 
 export const FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
 export const ACCESS_MS = 30 * 60 * 1000;
+export const ACCESS_RENEW_MS = 10 * 60 * 1000;
 export const REFRESH_GRACE_MS = 2 * 60 * 1000;
 export const OWNER_EMAIL = "rachaelsbutterflyeffect@gmail.com";
 export const ACCESS_COOKIE = "rh_access";
@@ -241,6 +242,46 @@ export async function revokeRequestSession({ cookieHeader, store, env, now = Dat
         }
     }
     return { revoked, hadAccess: !!access, hadRefresh: !!refreshToken };
+}
+
+// A valid refresh cookie renews the 30-minute access cookie. This runs whether
+// or not the one-time migration switch is on. It never accepts an email from
+// the request body.
+export async function ensureAccess({ cookieHeader, store, env, now = Date.now(), entitled }) {
+    if (!sessionSecret(env)) return { ok: false, reason: "unconfigured" };
+    const access = verifyAccessToken(readCookie(cookieHeader, ACCESS_COOKIE), env, now);
+    const refreshToken = readCookie(cookieHeader, REFRESH_COOKIE);
+    if (access && access.exp - now > ACCESS_RENEW_MS) {
+        return { ok: true, email: access.email, sessionId: access.sessionId, renewed: false };
+    }
+    if (!refreshToken) {
+        if (access) return { ok: true, email: access.email, sessionId: access.sessionId, renewed: false };
+        return { ok: false, reason: "no_session" };
+    }
+    const renewed = await refreshLoginSession({ refreshToken, store, env, now, entitled });
+    if (!renewed.ok) {
+        if (access) return { ok: true, email: access.email, sessionId: access.sessionId, renewed: false };
+        return { ok: false, reason: renewed.reason || "refresh" };
+    }
+    return {
+        ok: true,
+        email: renewed.email,
+        sessionId: renewed.sessionId,
+        renewed: true,
+        accessToken: renewed.accessToken,
+        refreshToken: renewed.refreshToken,
+    };
+}
+
+export function sessionBody({ migration, ensured }) {
+    if (!ensured.ok && ensured.reason === "unconfigured") {
+        return { status: 503, body: { migration: migration === true, reauth: false, ok: false, error: "SESSION_SECRET is not set." }, cookies: false };
+    }
+    if (ensured.ok) {
+        return { status: 200, body: { migration: migration === true, reauth: false, ok: true, email: ensured.email }, cookies: ensured.renewed === true };
+    }
+    if (migration === true) return { status: 200, body: { migration: true, reauth: true, ok: false }, cookies: false };
+    return { status: 200, body: { migration: false, reauth: false, ok: false }, cookies: false };
 }
 
 export function sessionStatus({ accessToken, refreshToken, env, now }) {
