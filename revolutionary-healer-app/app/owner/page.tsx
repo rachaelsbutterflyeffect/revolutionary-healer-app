@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./owner.module.css";
 
 type Report = {
@@ -36,6 +36,16 @@ export default function OwnerActivityPage() {
     const [report, setReport] = useState<Report | null>(null);
     const [error, setError] = useState("");
     const [reading, setReading] = useState(false);
+    const [signInHref, setSignInHref] = useState("");
+
+    useEffect(() => {
+        async function renew() {
+            try { await fetch("/api/auth/session", { credentials: "same-origin" }); } catch { /* the report request retries */ }
+        }
+        renew();
+        const timer = setInterval(renew, 10 * 60 * 1000);
+        return () => clearInterval(timer);
+    }, []);
 
     async function load() {
         setError("");
@@ -55,6 +65,12 @@ export default function OwnerActivityPage() {
                 const data = await res.json();
                 if (!res.ok) {
                     setReport(null);
+                    if (res.status === 401 && data.code === "owner_auth") {
+                        setSignInHref("/?next=/owner");
+                        setError("Owner sign-in required.");
+                        return;
+                    }
+                    setSignInHref("");
                     setError(data.error || "Could not load the report.");
                     return;
                 }
@@ -90,7 +106,7 @@ export default function OwnerActivityPage() {
                 <label><input type="checkbox" checked={unverified} onChange={(e) => setUnverified(e.target.checked)} /> Show a separate unverified tally. Totals stay verified members only.</label>
                 <button type="button" onClick={load} disabled={reading}>{reading ? "Reading…" : "Load"}</button>
             </div>
-            {error ? <p>{error} Use the normal sign-in page. This page does not sign anyone out.</p> : null}
+            {error ? <p>{error} {signInHref ? <a href={signInHref}>Sign in and return here</a> : "Use the sign-in page at /."} This page does not sign anyone out.</p> : null}
             {reading && report?.scan ? <p>Read {report.scan.rowsRead} rows so far. Metrics stay hidden until this range is complete.</p> : null}
             {ready && report?.coverage ? (
                 <>
