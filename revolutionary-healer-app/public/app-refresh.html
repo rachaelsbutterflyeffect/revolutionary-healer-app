@@ -939,8 +939,11 @@ body.rf #membership-management-page { display:none !important; }
 
 
 /* ---------- Reset and Restore series ---------- */
-/* Golden Dawn banner — full native photo + chrome below (home + Activations) */
-body.rf{padding-bottom:36px}
+/* Golden Dawn banner — full native photo + chrome below (home + Activations).
+   Bottom padding stays the nav clearance (118px + safe area). 36px let the
+   fixed #rf-nav cover the last Home and Activations cards. Desktop side nav
+   sets its own padding at min-width 820px. */
+body.rf{padding-bottom:calc(118px + env(safe-area-inset-bottom,0px))}
 #rr-home-sec{margin:18px -20px 10px;padding:0}
 #rr-lib-sec{margin:4px -20px 22px;padding:0}
 body.rf[data-rf-lib="cat"] #rr-lib-sec{display:none !important}
