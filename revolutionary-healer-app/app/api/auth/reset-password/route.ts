@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMemberByResetToken, setMemberPassword } from "@/lib/airtable";
 import { hashPassword } from "@/lib/auth";
+import { createAirtableSessionStore } from "@/lib/sessionAirtable";
 
 export async function POST(req: NextRequest) {
   try {
@@ -32,6 +33,8 @@ export async function POST(req: NextRequest) {
     }
 
     await setMemberPassword(member.id, hashPassword(password));
+    try { await createAirtableSessionStore().revokeEmail(String((member.fields as any).email || ""), Date.now()); }
+    catch (err) { console.error("reset revoke failed", err); }
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("POST /api/auth/reset-password failed", err);

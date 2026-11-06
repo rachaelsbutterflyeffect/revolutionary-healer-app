@@ -4,6 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { featureAllowed } from "@/lib/features";
 import { logEvent, normalizeEmail } from "@/lib/airtable";
 import { getEntitlementForEmail } from "@/lib/entitlements";
+import { stampActivity, validateActivityEvent } from "@/lib/activity";
+import { createAirtableActivityStore } from "@/lib/activityStore";
+import { ACCESS_COOKIE, readCookie, verifyAccessToken } from "@/lib/sessions";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
@@ -15,5 +19,13 @@ export async function POST(req: NextRequest) {
   const { record, entitlement } = await getEntitlementForEmail(email);
   if (!entitlement.canUseBase) return NextResponse.json({ error: "not entitled" }, { status: 403 });
   const ev: any = await logEvent("code_pull", { email, name, card, code }, record?.id);
+  const deviceId = String(body.deviceId || "");
+  const access = verifyAccessToken(readCookie(req.headers.get("cookie"), ACCESS_COOKIE), process.env, Date.now());
+  const parsed = validateActivityEvent({ eventId: crypto.randomUUID(), deviceId, event: "code_pull", code, name, card });
+  if (!parsed.error) {
+    try {
+      await createAirtableActivityStore().create(stampActivity(parsed.value, { now: Date.now(), email: access?.email, verified: !!access }));
+    } catch (err) { console.error("code pull activity was not stored", err); }
+  }
   return NextResponse.json({ id: ev.id });
 }

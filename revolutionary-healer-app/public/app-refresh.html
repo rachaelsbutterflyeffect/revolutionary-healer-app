@@ -1616,11 +1616,21 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
   // below, which only covers Kajabi access being revoked.
   var RH_LOGIN_AT = Number(localStorage.getItem('rh_member_login_at') || 0);
   var RH_FIVE_DAYS_MS = 5 * 24 * 60 * 60 * 1000;
-  if (RH_EMAIL && (!RH_LOGIN_AT || (Date.now() - RH_LOGIN_AT) >= RH_FIVE_DAYS_MS)) {
+  var RH_MIGRATION_ARMED = localStorage.getItem('rh_auth_migration') === 'on';
+  if (!RH_MIGRATION_ARMED && RH_EMAIL && (!RH_LOGIN_AT || (Date.now() - RH_LOGIN_AT) >= RH_FIVE_DAYS_MS)) {
     localStorage.removeItem('rh_member_email');
     localStorage.removeItem('rh_member_login_at');
     RH_EMAIL = null;
   }
+  fetch('/api/auth/session', { credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (data) {
+    if (!data || data.migration !== true) { try { localStorage.removeItem('rh_auth_migration'); } catch (e) {} return; }
+    try { localStorage.setItem('rh_auth_migration', 'on'); } catch (e) {}
+    if (data.reauth) {
+      localStorage.removeItem('rh_member_email');
+      localStorage.removeItem('rh_member_login_at');
+      window.location.href = '/';
+    }
+  }).catch(function () {});
   if (!RH_EMAIL) {
     window.location.href = '/';
   } else {
@@ -3250,6 +3260,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
       nowFav = false;
     }
     FAVORITE_ACTIVATION_SLUGS = favs;
+    if (window.rhActivity && typeof nowFav !== 'undefined') window.rhActivity.favorite(slug, nowFav);
     favoritesLoaded = true;
     try { localStorage.setItem('rh_favorites_' + RH_EMAIL, JSON.stringify(favs)); } catch (e) {}
     applyFavoriteBadges();
@@ -3474,7 +3485,8 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
         '</div>';
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+      if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else {
       playerEl.innerHTML =
         '<div style="padding:40px 20px;text-align:center;color:#c9b8a8;">Video coming soon.</div>';
@@ -3489,11 +3501,13 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
       playerEl.innerHTML =
         '<div class="audio-cover-player" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
         '<div class="audio-cover-overlay"><div class="audio-playing-badge" style="color:#F6F2E9;font-size:14px;letter-spacing:0.04em;">&#9654; Now Playing</div></div>' +
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
         '</div>';
+      if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+      if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else if (a.audioSrc) {
       playerEl.innerHTML =
         '<div class="audio-native-wrap" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
@@ -3562,6 +3576,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
       pct = Math.max(0, Math.min(1, pct));
       if (audio.duration) { audio.currentTime = pct * audio.duration; }
     });
+    if (window.rhActivity) window.rhActivity.watchAudio(audio, window.__rhCurrentActivationSlug);
     audio.play();
     setPlayIcon(true);
   }
@@ -3571,6 +3586,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
     if (!a) { return; }
     window.__rhCurrentActivation = a;
     window.__rhCurrentActivationSlug = slug;
+    if (window.rhActivity) window.rhActivity.open(slug, 'detail');
     if (typeof applyCompletionBadges === 'function') { applyCompletionBadges(); }
     var markBtn = document.getElementById('activation-detail-mark-listened-btn');
     if (markBtn) {
@@ -3645,6 +3661,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
     document.getElementById('my-revolution').style.display = 'none';
     hideAllPages();
     document.getElementById(pageId).classList.add('active');
+    if (window.rhActivity) window.rhActivity.nav(pageId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -3900,6 +3917,7 @@ function resetGapMethodState() {
 }
 
 function startGapMethodInChat() {
+        if (window.rhActivity) window.rhActivity.gap('gap_start', { surface: 'chat' });
         var embedWrap = document.getElementById('hero-gap-embed');
         window.__rhGapMethodActive = true;
         // The dialog is position:fixed, so scrolling it into view only moves the page behind it
@@ -3937,6 +3955,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
 });
 
   function signOutMember() {
+    try { if (navigator.sendBeacon) navigator.sendBeacon('/api/auth/logout'); } catch (e) {}
     localStorage.removeItem('rh_member_email');
     localStorage.removeItem('rh_member_login_at');
     window.location.href = '/';
@@ -7174,6 +7193,7 @@ if (forceComplete) { goDay(3); }
   }
 </script>
 
+<script src="/rh-activity.js" defer></script>
 <script src="/activation-covers.js" defer></script>
 <script src="/cover-fixes.js" defer></script>
 <!-- Gap Method pop-up modal shell (presentation only). Wraps the existing
@@ -8891,6 +8911,7 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     var id = row.getAttribute('data-rr');
     var slug = row.getAttribute('data-rr-slug');
     markDone(id);
+    if (window.rhActivity) window.rhActivity.resetDay(id);
     if (typeof window.handleActivationCardClick === 'function') {
       window.handleActivationCardClick(slug);
     } else if (typeof window.openActivationDetail === 'function') {

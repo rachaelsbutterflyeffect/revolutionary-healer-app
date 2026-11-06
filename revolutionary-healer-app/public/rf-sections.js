@@ -26,7 +26,7 @@
   // 1) every pull is saved
   document.addEventListener('rf:code-pulled', function (ev) {
     var cd = ev.detail, em = email(); if (!cd || !em) return;
-    fetch('/api/code-pulls', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em, name: cd.n, card: cd.f, code: cd.c }) })
+    fetch('/api/code-pulls', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: em, name: cd.n, card: cd.f, code: cd.c, deviceId: window.rhDeviceId || '' }) })
       .then(function (r) { window.__rfLastPullSaved = r.ok; return r.ok && data(true); }).catch(function () { window.__rfLastPullSaved = false; });
   });
   // 2) the sections (preview, Rachael Oct 15): My Most Recent Shifts (newest 3 real cards), My Shifting Cards (two

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getMemberByEmail, setMemberPassword, normalizeEmail } from "@/lib/airtable";
 import { deriveEntitlement } from "@/lib/entitlements";
 import { hashPassword, verifyPassword } from "@/lib/auth";
+import { createAirtableSessionStore } from "@/lib/sessionAirtable";
+import { accessCookie, issueLoginSession, refreshCookie, sessionSecret } from "@/lib/sessions";
 
 // Aug 13 (Rachael's Kajabi-linked landing page request): Kajabi doesn't
 // expose an API to verify a member's real Kajabi password, so this is a
@@ -48,7 +50,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
     }
 
-    return NextResponse.json({ ok: true, email });
+    const res = NextResponse.json({ ok: true, email });
+    if (sessionSecret(process.env)) {
+        try {
+            const tokens = await issueLoginSession(email, createAirtableSessionStore(), process.env);
+            if (tokens) {
+                res.headers.append("Set-Cookie", accessCookie(tokens.accessToken, process.env));
+                res.headers.append("Set-Cookie", refreshCookie(tokens.refreshToken, process.env));
+            }
+        } catch (err) {
+            console.error("login session was not stored", err);
+        }
+    }
+    return res;
   } catch (err) {
     console.error("POST /api/auth/login failed", err);
     return NextResponse.json({ error: "Something went wrong signing you in." }, { status: 500 });
