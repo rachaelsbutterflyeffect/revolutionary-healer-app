@@ -1,0 +1,83 @@
+/* Your codes — held Recode Deck cards. Charcoal, gold, white. Teal is only a faint accent. */
+#rf-your-codes {
+  --yc-bg: #06080b;
+  --yc-gold: #e8c873;
+  --yc-gold-dim: rgba(232, 200, 115, 0.35);
+  --yc-white: #fdfbf5;
+  --yc-teal: rgba(63, 214, 200, 0.45);
+  background: var(--yc-bg);
+  color: var(--yc-white);
+  border: 1px solid var(--yc-gold-dim);
+  border-radius: 18px;
+  padding: 16px 16px 8px;
+  margin: 22px 0 8px;
+}
+#rf-your-codes h3 {
+  margin: 0 0 4px;
+  color: var(--yc-gold);
+  font-family: Cinzel, Georgia, serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+#rf-your-codes .rf-yc-path {
+  margin: 0 0 12px;
+  color: var(--yc-white);
+  font-size: 13px;
+  opacity: 0.85;
+}
+#rf-your-codes .rf-yc-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: #0c0e12;
+  color: var(--yc-white);
+  border: 1px solid var(--yc-gold-dim);
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 0 0 10px;
+  cursor: pointer;
+  font: inherit;
+}
+#rf-your-codes .rf-yc-card.rf-yc-on {
+  box-shadow: 0 0 0 1px var(--yc-teal);
+}
+#rf-your-codes .rf-yc-name {
+  color: var(--yc-gold);
+  font-family: Cinzel, Georgia, serif;
+  font-size: 16px;
+}
+#rf-your-codes .rf-yc-num {
+  color: var(--yc-teal);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+#rf-your-codes .rf-yc-status {
+  color: var(--yc-white);
+  font-size: 13px;
+  margin-top: 4px;
+  opacity: 0.9;
+}
+#rf-your-codes .rf-yc-read {
+  color: var(--yc-white);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 10px 0 0;
+}
+#rf-your-codes .rf-yc-listen {
+  margin-top: 10px;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--yc-gold);
+  text-decoration: underline;
+  cursor: pointer;
+  font: inherit;
+}
+#rf-your-codes .rf-yc-empty {
+  color: var(--yc-white);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}

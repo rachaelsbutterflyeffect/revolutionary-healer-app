@@ -683,6 +683,9 @@
   var h = (location.hash || '').slice(1);
   var START = { focus: 'focus', chat: 'chat', activations: 'lib', revolution: 'rev', profile: 'profile' };
   if (h === 'favorites-page') { rhOpenFavorites(); }
+  else if (h === 'your-codes') { if (window.rhOpenYourCodes) window.rhOpenYourCodes(); else rfGo('rev'); }
+  else if (/^code-\d{4,6}$/.test(h)) { window.__rhPendingCode = h.slice(5); if (window.rhOpenCodeCard) window.rhOpenCodeCard(h.slice(5)); else rfGo('rev'); }
+  else if (/^activation-[a-z0-9-]{2,80}$/.test(h) && typeof handleActivationCardClick === 'function') { handleActivationCardClick(h.slice('activation-'.length)); }
   else if (START[h]) { var fake = document.createElement('span'); fake.setAttribute('data-rf-go', START[h]); B.appendChild(fake); fake.click(); fake.remove(); }
   else rfGo('home');
 })();
