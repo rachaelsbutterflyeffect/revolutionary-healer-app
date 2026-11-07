@@ -686,7 +686,8 @@
 })();
 
 // ---- Held-back features (Oct 15 2026): each one is its own file + its own server switch (lib/features.js).
-// Nothing is fetched or shown unless /api/features says true for THIS member.
+// Each file is fetched only when /api/features says true for THIS member.
+// The daily code door is in the Home markup (first paint). It is removed below only when codePull is off.
 (function () {
   var MAP = { codePull: 'rf-codes', homeCheckin: 'rf-checkin', codeShifts: 'rf-codeshift', saveSections: 'rf-sections', methodTracking: 'rf-tracking', featuredEvent: 'rf-event' };
   var tries = 0;
@@ -700,7 +701,16 @@
     if (!em) { if (++tries < 80) setTimeout(go, 250); return; }
     fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (f) { window.__rfFeatures = f || {}; Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); }); })
+      .then(function (f) {
+        window.__rfFeatures = f || {};
+        Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); });
+        // Daily code door is in the Home markup so it paints with the other two. Hide it only when
+        // CODE_PULL is explicitly off. A failed /api/features request leaves the door up.
+        if (f && f.codePull === false) {
+          var door = document.getElementById('rf-door-code');
+          if (door) { var box = door.parentNode; door.remove(); if (box) box.classList.remove('rf-doors3'); }
+        }
+      })
       .catch(function () {});
   }
   go();
