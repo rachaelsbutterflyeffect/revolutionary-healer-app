@@ -30,11 +30,6 @@ export const ACTIVATION_CLOSEST_LEAD_ENV = "ACTIVATION_CLOSEST_LEAD";
 export const ACTIVATION_CLOSEST_LEAD_DEFAULT =
   "I don't have an activation just for that yet, but this one is really close to what you're feeling. Want to try it?";
 
-export const SYMPTOM_GUARDRAIL_ENV = "SYMPTOM_GUARDRAIL";
-export const SYMPTOM_GUARDRAIL_SENTENCE_ENV = "SYMPTOM_GUARDRAIL_SENTENCE";
-export const SYMPTOM_GUARDRAIL_PLACEHOLDER =
-  "DRAFT — pending Rachael's approval: What you're feeling in your body matters on its own. I'm not going to treat dizziness, lightheadedness, or a symptom tied to a surgery or medical history as only a pattern.";
-
 const NEVER_LINK_SLUGS = new Set(["spirit-connection-activation"]);
 
 const CODE_CUE =
@@ -94,36 +89,6 @@ export function activationCatalog(activations = null) {
       description: a.description || "",
       categories: a.categories || [],
     }));
-}
-
-export function symptomGuardrailEnabled(env = process.env) {
-  return String(env[SYMPTOM_GUARDRAIL_ENV] || "off").trim().toLowerCase() === "on";
-}
-
-export function symptomSentence(env = process.env) {
-  const custom = env[SYMPTOM_GUARDRAIL_SENTENCE_ENV];
-  return custom && String(custom).trim() ? String(custom).trim() : SYMPTOM_GUARDRAIL_PLACEHOLDER;
-}
-
-export function symptomTriggered(message) {
-  const t = String(message || "");
-  if (/\b(dizz(?:y|iness)|light[-\s]?headed(?:ness)?|vertigo|faint(?:ing|ed)?)\b/i.test(t)) return true;
-  const symptom = /\b(pain|ache(?:s|ing)?|bleeding|swell(?:ing|ed)?|numb(?:ness)?|nausea|nauseous|short(?:ness)? of breath)\b/i.test(t);
-  const medical = /\b(surgery|post-?op|operation|incision|medical history|diagnos(?:is|ed)|doctor|hospital|condition|injury|scar)\b/i.test(t);
-  return symptom && medical;
-}
-
-export function applySymptomGuardrail(message, reply, env = process.env) {
-  const triggered = symptomTriggered(message);
-  if (!triggered || !symptomGuardrailEnabled(env)) {
-    return { triggered, memberFacing: false, reply: String(reply || "") };
-  }
-  const line = symptomSentence(env);
-  const note =
-    "This is a physical symptom, so I'm not going to treat it as only a pattern. Please check with a doctor or qualified professional if you're dizzy, lightheaded, or this is in the same area as a surgery or medical history. I can sit with what this brings up after you know you're safe.";
-  const base = String(reply || "").trim();
-  const withLine = base.includes(line) ? base : `${line}\n\n${note}${base ? `\n\n${base}` : ""}`;
-  return { triggered: true, memberFacing: true, reply: withLine };
 }
 
 export function closestLead(env = process.env) {
