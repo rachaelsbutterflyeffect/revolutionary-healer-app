@@ -61,13 +61,10 @@ import { loadRecodeDeck } from "@/lib/recodeDeck";
 import {
   resolveLookup,
   classifyIntent,
-  applySymptomGuardrail,
   appendActivationLinks,
-  symptomTriggered,
-  symptomGuardrailEnabled,
-  symptomSentence,
   stripInternalIds,
 } from "@/lib/codeChat";
+import { screenHealth, applyHealthSafety, stripSafetySales } from "@/lib/healthSafety";
 import { loadHeldCodes } from "@/lib/memberCodes";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
@@ -270,8 +267,13 @@ export async function POST(req: NextRequest) {
   // Bot pricing rules (Oct 15 2026, Rachael's verbatim copy): also static,
   // also before UPSELL, so it sits in the cached prefix after the CCM block.
   systemPrompt = withPricingRules(systemPrompt);
-  if (!isGapMethodProcess && symptomTriggered(message) && symptomGuardrailEnabled()) {
-    systemPrompt += `\n\nPHYSICAL SYMPTOM (required this turn): The member described a physical symptom. Do not stay in pattern-only mode. Do not explain this as only a Gap or a pattern. Start with this exact sentence, then tell them to check with a doctor or qualified professional:\n${symptomSentence()}\n`;
+  const safetyHistory = priorMessages.map((m: any) => ({
+    role: m.fields.role,
+    text: m.fields.message_text || "",
+  }));
+  const safety = isGapMethodProcess ? null : screenHealth({ message, history: safetyHistory });
+  if (safety && safety.instruction) {
+    systemPrompt += `\n\n${safety.instruction}\n`;
   }
   if (embodimentShift) {
     const f = embodimentShift.fields;
@@ -305,10 +307,20 @@ export async function POST(req: NextRequest) {
   // even if the model call itself fails.
   await createMessage({ chatId, email, role: "user", text: message });
 
+  // Health-safety screening runs before coaching and before activation or code
+  // recommendations. Emergency stops there. The switch defaults off.
+  if (safety && safety.blockCoaching && safety.reply) {
+    const replyText = stripInternalIds(stripSafetySales(safety.reply));
+    await createMessage({ chatId, email, role: "assistant", text: replyText });
+    const nowIso = new Date().toISOString();
+    await updateChatSession(chatId, { updated_at: nowIso, last_message_at: nowIso }).catch((err) => console.error("safety session update", err));
+    return NextResponse.json({ reply: replyText, chatId, openActivationSlug: null });
+  }
+
   // Recode Deck / activation lookup. Factual questions are answered from the
   // same card file and activation list the app uses, not from the model's memory.
-  // Guided processes stay on their own script.
-  if (!process) {
+  // Guided processes stay on their own script. A safety conversation is not a code lookup.
+  if (!process && !(safety && safety.memberFacing)) {
     let deck = null;
     let deckError = false;
     try { deck = loadRecodeDeck(); } catch (err) { deckError = true; console.error("recode deck unreadable", err); }
@@ -329,7 +341,7 @@ export async function POST(req: NextRequest) {
         codePull: featureAllowed("CODE_PULL", email),
       });
       if (found && found.reply) {
-        const replyText = stripInternalIds(applySymptomGuardrail(message, found.reply).reply);
+        const replyText = stripInternalIds(found.reply);
         await createMessage({ chatId, email, role: "assistant", text: replyText });
         const nowIso = new Date().toISOString();
         await updateChatSession(chatId, { updated_at: nowIso, last_message_at: nowIso }).catch((err) => console.error("lookup session update", err));
@@ -610,9 +622,11 @@ export async function POST(req: NextRequest) {
       }
     }
     replyText = stripInternalIds(replyText);
-    if (!isGapMethodProcess) replyText = appendActivationLinks(replyText);
-    const symptomLine = applySymptomGuardrail(message, replyText);
-    if (symptomLine.memberFacing) replyText = symptomLine.reply;
+    if (safety && safety.memberFacing) {
+      replyText = applyHealthSafety(message, replyText, undefined, safetyHistory).reply;
+    } else if (!isGapMethodProcess) {
+      replyText = appendActivationLinks(replyText);
+    }
 
     // Bug fix (Sept): everything below persists non-critical bookkeeping that
     // the RESPONSE PAYLOAD below does not depend on (reply text, chatId, and

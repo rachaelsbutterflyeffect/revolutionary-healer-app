@@ -31,7 +31,8 @@
     "test:bot-pricing": "node scripts/test-bot-pricing-rules.mjs",
     "test:member-voice": "node scripts/test-member-voice.mjs",
     "test:champagne-cards": "node scripts/test-champagne-cards.mjs",
-    "test:code-chat": "node scripts/test-code-chat.mjs"
+    "test:code-chat": "node scripts/test-code-chat.mjs",
+    "test:health-safety": "node scripts/test-health-safety.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",

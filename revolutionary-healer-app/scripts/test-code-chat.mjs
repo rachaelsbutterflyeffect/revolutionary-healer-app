@@ -14,12 +14,6 @@ import {
   resolveLookup,
   codeFacts,
   classifyIntent,
-  symptomTriggered,
-  symptomGuardrailEnabled,
-  applySymptomGuardrail,
-  SYMPTOM_GUARDRAIL_PLACEHOLDER,
-  SYMPTOM_GUARDRAIL_ENV,
-  SYMPTOM_GUARDRAIL_SENTENCE_ENV,
   ACTIVATION_CLOSEST_LEAD_DEFAULT,
   LOOKUP_UNAVAILABLE,
   AMBIGUOUS_ASK,
@@ -201,26 +195,6 @@ t("no raw internal ids in lookup answers", () => {
     assert.doesNotMatch(reply, /rec[A-Za-z0-9]{10,}/, message);
     assert.doesNotMatch(reply, /kajabiLessonId|wistiaId/, message);
   }
-});
-
-t("symptom guardrail is off unless enabled", () => {
-  assert.equal(symptomTriggered("I feel dizzy and lightheaded"), true);
-  assert.equal(symptomTriggered("I had shoulder surgery and that area still aches"), true);
-  assert.equal(symptomTriggered("I keep looping the same pattern at work"), false);
-  assert.equal(symptomGuardrailEnabled({}), false);
-  assert.equal(symptomGuardrailEnabled({ [SYMPTOM_GUARDRAIL_ENV]: "off" }), false);
-  const off = applySymptomGuardrail("I'm dizzy", "Let's look at the pattern underneath this.", {});
-  assert.equal(off.memberFacing, false);
-  assert.equal(off.reply, "Let's look at the pattern underneath this.");
-  const on = applySymptomGuardrail("I'm dizzy and lightheaded", "This is just a pattern.", { [SYMPTOM_GUARDRAIL_ENV]: "on" });
-  assert.equal(on.memberFacing, true);
-  assert.match(on.reply, new RegExp(SYMPTOM_GUARDRAIL_PLACEHOLDER.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
-  assert.match(on.reply, /not going to treat it as only a pattern/);
-  const custom = applySymptomGuardrail("I'm dizzy", "", {
-    [SYMPTOM_GUARDRAIL_ENV]: "on",
-    [SYMPTOM_GUARDRAIL_SENTENCE_ENV]: "CUSTOM SYMPTOM LINE",
-  });
-  assert.match(custom.reply, /CUSTOM SYMPTOM LINE/);
 });
 
 t("code upgrade card creation path is still in the app", () => {
