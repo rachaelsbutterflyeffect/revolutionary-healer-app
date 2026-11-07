@@ -19,11 +19,15 @@
   var observed = new WeakSet();
 
   function setCover(thumb, url) {
+    // A sharp <img> poster already fills the thumb. Don't paint a cropped background over it.
+    if (thumb.querySelector('img.media-poster')) { return; }
     var target = 'url("' + url + '")';
-    if (thumb.style.backgroundImage === target) { return; }
+    if (thumb.style.backgroundImage === target && thumb.style.backgroundSize === 'contain') { return; }
     thumb.style.backgroundImage = target;
-    thumb.style.backgroundSize = 'cover';
+    thumb.style.backgroundSize = 'contain';
+    thumb.style.backgroundRepeat = 'no-repeat';
     thumb.style.backgroundPosition = 'center';
+    thumb.style.backgroundColor = '#0c0e12';
   }
 
   function watch(thumb, url) {

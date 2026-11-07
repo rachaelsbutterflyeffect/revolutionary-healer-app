@@ -47,10 +47,58 @@
   });
   var titleToSlug = {};
   window.RH_TITLE_TO_SLUG = titleToSlug;
+  window.rhPosterFor = function (slug, cover) {
+    var table = window.RH_POSTERS || {};
+    if (slug && table[slug]) return table[slug];
+    var src = cover || '';
+    if (!src && slug && window.ACTIVATION_DETAILS && window.ACTIVATION_DETAILS[slug]) {
+      src = window.ACTIVATION_DETAILS[slug].cover || '';
+    }
+    if (src && src.indexOf('/images/') === 0) {
+      return { src: src, w: 1280, h: 720, srcset: src + ' 1280w' };
+    }
+    return null;
+  };
+  window.rhPosterHtml = function (slug, cover) {
+    var p = window.rhPosterFor(slug, cover);
+    if (!p) return '';
+    function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;'); }
+    var srcset = p.srcset ? ' srcset="' + esc(p.srcset) + '"' : '';
+    return '<img class="rh-player-poster" alt="" decoding="sync" fetchpriority="high" src="' + esc(p.src) + '"' + srcset + ' sizes="100vw" width="' + (p.w || 1280) + '" height="' + (p.h || 720) + '">';
+  };
   function setCover(thumb, url) {
-    thumb.style.backgroundImage = 'linear-gradient(rgba(10,8,6,0.28), rgba(10,8,6,0.28)), url(' + url + ')';
-    thumb.style.backgroundSize = 'cover';
-    thumb.style.backgroundPosition = 'center';
+    var card = thumb.closest('[data-activation-slug]') || thumb.closest('[onclick]');
+    var slug = '';
+    if (card) {
+      slug = card.getAttribute('data-activation-slug') || '';
+      if (!slug) {
+        var m = (card.getAttribute('onclick') || '').match(/handleActivationCardClick\('([^']+)'\)/);
+        if (m) slug = m[1];
+      }
+    }
+    var fileCover = (url && url.indexOf('/images/') === 0) ? url : '';
+    var poster = window.rhPosterFor(slug, fileCover);
+    // The embedded data URLs are 260px and look soft on a phone. Use them only
+    // when there is no full-size file for this activation.
+    if (!poster && url && url.indexOf('data:image') === 0) {
+      poster = { src: url, w: 260, h: 169 };
+    }
+    if (!poster) return;
+    var img = thumb.querySelector('img.media-poster');
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'media-poster';
+      img.alt = '';
+      img.decoding = 'async';
+      thumb.insertBefore(img, thumb.firstChild);
+    }
+    if (img.getAttribute('src') !== poster.src) img.setAttribute('src', poster.src);
+    if (poster.srcset) img.setAttribute('srcset', poster.srcset);
+    else img.removeAttribute('srcset');
+    img.setAttribute('sizes', '(max-width: 820px) 46vw, 300px');
+    if (poster.w) img.width = poster.w;
+    if (poster.h) img.height = poster.h;
+    thumb.style.backgroundColor = '#0c0e12';
   }
   function apply() {
     var cards = document.querySelectorAll('[onclick*="handleActivationCardClick"]');
@@ -60,11 +108,10 @@
       var slug = m[1];
       var h3 = el.querySelector('h3');
       if (h3) titleToSlug[h3.textContent.trim()] = slug;
-      var url = window.ACTIVATION_COVERS[slug];
-      if (!url) return;
+      var url = window.ACTIVATION_COVERS[slug] || '';
       var thumb = el.querySelector('.media-thumb, .fav-thumb');
       if (!thumb) return;
-      setCover(thumb, url);
+      if (url || (window.RH_POSTERS && window.RH_POSTERS[slug]) || (el.getAttribute('style') || '').indexOf('/images/') !== -1 || (thumb.getAttribute('style') || '').indexOf('/images/') !== -1) setCover(thumb, url);
     });
     document.querySelectorAll('.fav-thumb, .media-thumb').forEach(function(thumb) {
       if ((thumb.style.backgroundImage || '').indexOf('data:image') >= 0) return;
@@ -73,8 +120,8 @@
       var titleEl = container.querySelector('.fav-title, h3, .media-title');
       if (!titleEl) return;
       var slug = titleToSlug[titleEl.textContent.trim()];
-      var url = slug && window.ACTIVATION_COVERS[slug];
-      if (url) setCover(thumb, url);
+      var url = (slug && window.ACTIVATION_COVERS[slug]) || '';
+      if (url || (slug && window.RH_POSTERS && window.RH_POSTERS[slug])) setCover(thumb, url);
     });
     document.querySelectorAll('.fav-card').forEach(function(card) {
       if (card.__rhWired) return;
