@@ -390,7 +390,7 @@ body.rf .rf-lsec .arr { position:absolute; right:16px; bottom:16px; z-index:1; c
 body.rf .rf-allsecs { display:none; } body.rf[data-rf-lib="cat"] .rf-allsecs { display:inline-flex; margin:6px 0 10px; }
 body.rf[data-rf-lib="cat"] #activations-page > .wrap > .page-back { display:none !important; }
 body.rf .rf-sec-ttl { display:none; } body.rf[data-rf-lib="cat"] .rf-sec-ttl { display:block; font-family:Cinzel,serif; letter-spacing:.2em; text-transform:uppercase; font-size:13px; color:var(--rf-gold); margin:4px 0 12px; }
-body.rf[data-rf-lib="cat"] #rf-lib-sub .filter-chip[data-category="All"] { display:none !important; }
+/* All stays on the chip row. Search starts across every category; All is how a member comes back to that. */
 
 /* Sign out sits on the main profile page (round 2, item 14) */
 .rf-psignout { margin-top:22px; }
@@ -552,3 +552,27 @@ body.rf #rf-fit-door .rf-door {
 body.rf #rf-fit-door .rf-door:before { display:none; }
 body.rf #rf-fit-door .rf-door .txt { color:#241c0a; }
 body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
+
+/* Activations search, posters, player. Card fill stays the existing glass; posters sit on charcoal. */
+body.rf #rf-lib-sub .category-chips.filter-chips { display:flex; flex-wrap:wrap !important; overflow:visible !important; margin:12px 0 8px !important; padding:0 !important; width:100%; max-width:100%; }
+body.rf #rf-lib-sub .filter-chip { white-space:nowrap; }
+body.rf .rh-lib-hint { margin:0 0 8px; min-height:1.2em; font-size:12px; letter-spacing:.02em; color:rgba(253,251,245,.72); }
+body.rf .rh-lib-hint:empty { display:none; }
+body.rf .rh-lib-empty { margin:4px 0 12px; padding:18px 16px; border-radius:16px; border:1px solid rgba(232,200,115,.35); background:#12161c; color:#fdfbf5; font-size:14.5px; line-height:1.45; text-align:center; }
+body.rf .rh-lib-empty[hidden] { display:none !important; }
+body.rf[data-rf-libfav] #rh-lib-empty, body.rf[data-rf-libfav] #rh-lib-hint { display:none !important; }
+body.rf .rh-cat-label { display:none; margin:0 0 4px; font-size:10px; letter-spacing:.12em; text-transform:uppercase; color:rgba(63,214,200,.8); }
+body.rf.rh-searching .media-card .rh-cat-label { display:block; }
+body.rf .media-body { overflow:visible; min-width:0; }
+body.rf .media-body h3 { overflow:visible; white-space:normal; text-indent:0; overflow-wrap:break-word; }
+body.rf .media-thumb, body.rf .fav-thumb { aspect-ratio:16/9 !important; height:auto !important; background-color:#0c0e12 !important; background-size:contain !important; background-repeat:no-repeat !important; background-position:center !important; }
+body.rf .media-thumb > img.media-poster, body.rf .fav-thumb > img.media-poster { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; background:#0c0e12; z-index:0; pointer-events:none; }
+body.rf .media-thumb .play-dot { position:absolute; right:8px; bottom:8px; top:auto; left:auto; width:36px; height:36px; z-index:2; }
+body.rf .media-thumb .activation-lock-badge { z-index:2; }
+body.rf .activation-player, body.rf .rh-player-stage, body.rf .audio-cover-player, body.rf .audio-native-wrap { background:#0c0e12 !important; background-image:none !important; }
+body.rf .rh-player-stage { position:absolute; inset:0; }
+body.rf .rh-player-poster { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; background:#0c0e12; z-index:2; }
+body.rf .rh-player-poster.rh-poster-done { opacity:0; z-index:0; pointer-events:none; }
+body.rf .activation-player iframe { background:#0c0e12; z-index:1; }
+body.rf .audio-cover-overlay, body.rf .audio-native-overlay, body.rf .audio-custom-controls { z-index:3; }
+body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#0c0e12; color:#fdfbf5; }

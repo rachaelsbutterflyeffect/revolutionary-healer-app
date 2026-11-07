@@ -153,6 +153,8 @@
     noteLibFrom();
     var chip = document.querySelector('.category-chips .filter-chip[data-category="' + cat + '"]');
     window.__rhLibExpanded = false;
+    window.__rhLibChipTouched = false;
+    window.__rhLibSection = cat;
     var se = document.getElementById('rh-lib-search'); if (se) se.value = '';
     if (chip) { try { selectCategoryChip(chip); } catch (e) { chip.click(); } }
     var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + cat + '"] b'), tt = document.getElementById('rf-sec-ttl');

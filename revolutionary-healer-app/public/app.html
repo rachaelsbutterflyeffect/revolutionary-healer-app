@@ -325,7 +325,20 @@
   .media-body h3 { font-size: 15px; font-weight: 500; margin: 0 0 6px; color: var(--white); }
   .media-meta { font-size: 12.5px; color: var(--taupe); }
   .media-description { font-size: 12.5px; color: var(--taupe); margin: 0 0 6px; line-height: 1.4; }
-  .activation-player { position: relative; width: 100%; padding-top: 56.25%; background: #000; border-radius: 14px; overflow: hidden; margin: 20px 0; }
+  .activation-player { position: relative; width: 100%; padding-top: 56.25%; background: #0c0e12; border-radius: 14px; overflow: hidden; margin: 20px 0; }
+  .rh-player-stage, .audio-cover-player, .audio-native-wrap { background: #0c0e12; }
+  .rh-player-stage { position: absolute; inset: 0; }
+  .rh-player-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0c0e12; z-index: 2; }
+  .rh-player-poster.rh-poster-done { opacity: 0; z-index: 0; pointer-events: none; }
+  .activation-player iframe { background: #0c0e12; z-index: 1; }
+  .audio-cover-overlay, .audio-native-overlay, .audio-custom-controls { z-index: 3; }
+  .rh-lib-hint { margin: 0 0 8px; font-size: 12px; color: #d9d3c7; }
+  .rh-lib-hint:empty { display: none; }
+  .rh-lib-empty { margin: 8px 0 0; padding: 18px 16px; border-radius: 16px; border: 1px solid rgba(232,200,115,.35); background: #12161c; color: #fdfbf5; font-size: 14px; line-height: 1.45; text-align: center; }
+  .rh-lib-empty[hidden] { display: none; }
+  .rh-cat-label { margin: 0 0 4px; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(63,214,200,.85); }
+  .media-thumb { background-color: #0c0e12; }
+  .media-thumb > img.media-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; object-position: center; background: #0c0e12; z-index: 0; pointer-events: none; }
   .activation-player iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
   .audio-cover-player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; }
   .audio-cover-overlay { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.55)); display: flex; align-items: center; justify-content: center; }
@@ -1434,7 +1447,7 @@
         <button class="filter-chip" data-category="Gifts + Spirit" onclick="selectCategoryChip(this)">Gifts + Spirit</button>
         <button class="filter-chip" data-category="Energy + Frequency" onclick="selectCategoryChip(this)">Energy + Frequency</button>
       </div>
-      <div class="rh-lib-tools"><input type="search" id="rh-lib-search" class="rh-lib-search" placeholder="Search activations" aria-label="Search activations" oninput="rhLibApply()"><span class="rh-lib-count" id="rh-lib-count" aria-live="polite"></span></div>
+      <div class="rh-lib-tools"><input type="search" id="rh-lib-search" class="rh-lib-search" placeholder="Search all activations" aria-label="Search activations" oninput="rhLibApply()"><span class="rh-lib-count" id="rh-lib-count" aria-live="polite"></span></div>
       <div class="card-grid" id="activation-library-grid">
         <div class="media-card spookbound-card" onclick="handleActivationCardClick('spookbound-2026')" style="cursor: pointer;" data-activation-slug="spookbound-2026" data-category="Energy + Frequency">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
@@ -1568,7 +1581,7 @@
             <div class="listening-status">Not started</div>
           </div>
         </div>
-        <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration" data-category="Money + Receiving">
+        <div class="media-card" onclick="handleActivationCardClick('nervous-system-recalibration')" style="cursor: pointer;" data-activation-slug="nervous-system-recalibration" data-category="Mind + Body">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <div class="media-thumb glyph-roots"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
             <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
@@ -2567,36 +2580,125 @@
     btn.classList.add('selected');
   }
 
-  // Activation Library category chips -- unlike the status chips above,
-  // these actually filter the 29-card grid by data-category (real
-  // filtering, not just a visual toggle).
+  // Activation Library category chips. A typed search is global across every
+  // activation unless the member taps a chip to narrow it. The term stays
+  // in the field when they switch chips. Each match shows its category.
   function selectCategoryChip(btn) {
     var siblings = btn.parentElement.querySelectorAll('.filter-chip');
     siblings.forEach(function(chip) { chip.classList.remove('selected'); });
     btn.classList.add('selected');
     window.__rhLibExpanded = false;
+    var qEl = document.getElementById('rh-lib-search');
+    var typed = qEl ? qEl.value.trim() : '';
+    if (!window.__rhLibSyncing && typed) window.__rhLibChipTouched = true;
     rhLibApply();
   }
-  // QA Oct 14 (library was one long scroll): category chips + search + the
-  // first 12 matches, then "Show all". Cards stay in the DOM (Favorites and
-  // the activation player clone them), only their display changes.
   var RH_LIB_PAGE = 12;
+  function rhCardHay(card) {
+    if (card.__rhHay) return card.__rhHay;
+    var bits = [];
+    var h3 = card.querySelector('h3');
+    if (h3) bits.push(h3.textContent || '');
+    var desc = card.querySelector('.media-description');
+    if (desc) bits.push(desc.textContent || '');
+    var slug = card.getAttribute('data-activation-slug') || '';
+    var details = window.ACTIVATION_DETAILS || {};
+    var d = details[slug];
+    if (d) {
+      ['title', 'tagline', 'description', 'whatFor', 'whenToUseIntro', 'kajabiTitle'].forEach(function(k) {
+        if (d[k]) bits.push(String(d[k]));
+      });
+      if (d.whenToUse && d.whenToUse.join) bits.push(d.whenToUse.join(' '));
+      if (d.tags) bits.push(Array.isArray(d.tags) ? d.tags.join(' ') : String(d.tags));
+      if (d.keywords) bits.push(Array.isArray(d.keywords) ? d.keywords.join(' ') : String(d.keywords));
+    }
+    var hay = bits.join('\n').toLowerCase();
+    if (window.ACTIVATION_DETAILS) card.__rhHay = hay;
+    return hay;
+  }
+  function rhLibHintEl() {
+    var el = document.getElementById('rh-lib-hint');
+    if (el) return el;
+    var tools = document.querySelector('.rh-lib-tools');
+    if (!tools || !tools.parentNode) return null;
+    el = document.createElement('p');
+    el.id = 'rh-lib-hint';
+    el.className = 'rh-lib-hint';
+    el.setAttribute('aria-live', 'polite');
+    tools.parentNode.insertBefore(el, tools.nextSibling);
+    return el;
+  }
+  function rhLibEmptyEl(grid) {
+    var el = document.getElementById('rh-lib-empty');
+    if (el) return el;
+    el = document.createElement('p');
+    el.id = 'rh-lib-empty';
+    el.className = 'rh-lib-empty';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'assertive');
+    el.hidden = true;
+    if (grid && grid.parentNode) grid.parentNode.insertBefore(el, grid.nextSibling);
+    return el;
+  }
+  function rhSyncCatLabel(card, show) {
+    var body = card.querySelector('.media-body');
+    if (!body) return;
+    var el = body.querySelector('.rh-cat-label');
+    if (!show) { if (el) el.remove(); return; }
+    if (!el) {
+      el = document.createElement('p');
+      el.className = 'rh-cat-label';
+      var h3 = body.querySelector('h3');
+      if (h3) h3.insertAdjacentElement('afterend', el);
+      else body.insertBefore(el, body.firstChild);
+    }
+    var cats = (card.getAttribute('data-category') || '').split(',').map(function(c) { return c.trim(); }).filter(Boolean);
+    var label = window.rhCatLabel || function(c) { return c; };
+    el.textContent = cats.map(label).join(' · ');
+  }
+  function rhSelectChip(category) {
+    var chips = document.querySelectorAll('.category-chips .filter-chip');
+    var target = null;
+    chips.forEach(function(chip) {
+      if (chip.getAttribute('data-category') === category) target = chip;
+    });
+    if (!target) return;
+    window.__rhLibSyncing = true;
+    chips.forEach(function(chip) { chip.classList.remove('selected'); });
+    target.classList.add('selected');
+    window.__rhLibSyncing = false;
+  }
   function rhLibApply() {
     var grid = document.getElementById('activation-library-grid');
     if (!grid) return;
     var chip = document.querySelector('.category-chips .filter-chip.selected');
     var category = chip ? chip.getAttribute('data-category') : 'All';
     var qEl = document.getElementById('rh-lib-search');
-    var q = qEl ? qEl.value.trim().toLowerCase() : '';
+    var raw = qEl ? qEl.value.trim() : '';
+    var q = raw.toLowerCase();
+    if (!q) window.__rhLibChipTouched = false;
+    // Default while typing is every category. A chip tap after that narrows.
+    if (q && !window.__rhLibChipTouched) {
+      category = 'All';
+      if (!chip || chip.getAttribute('data-category') !== 'All') rhSelectChip('All');
+    }
+    if (!q && category === 'All' && window.__rhLibSection && window.__rhLibSection !== 'All') {
+      category = window.__rhLibSection;
+      rhSelectChip(category);
+    }
+    var hit = window.rhQueryHit || function(hay, term) { return !term || hay.indexOf(term) !== -1; };
+    var labelOf = window.rhCatLabel || function(c) { return c; };
     var matches = 0, shown = 0;
     grid.querySelectorAll('.media-card').forEach(function(card) {
       var cats = (card.getAttribute('data-category') || '').split(',').map(function(c) { return c.trim(); });
-      var ok = (category === 'All' || cats.indexOf(category) !== -1) && (!q || card.textContent.toLowerCase().indexOf(q) !== -1);
+      var ok = (category === 'All' || cats.indexOf(category) !== -1) && hit(rhCardHay(card), q);
       if (ok) matches++;
       var show = ok && (window.__rhLibExpanded || q || matches <= RH_LIB_PAGE);
       if (show) shown++;
       card.style.display = show ? '' : 'none';
+      rhSyncCatLabel(card, !!q && show);
     });
+    document.body.classList.toggle('rh-searching', !!q);
     var more = document.getElementById('rh-lib-more');
     if (!more) {
       more = document.createElement('div'); more.id = 'rh-lib-more'; more.className = 'center';
@@ -2607,7 +2709,37 @@
     var b = more.querySelector('button'); if (b) b.textContent = 'Show all ' + matches + ' activations';
     var cnt = document.getElementById('rh-lib-count');
     if (cnt) cnt.textContent = q ? (matches + (matches === 1 ? ' match' : ' matches')) : '';
+    var hint = rhLibHintEl();
+    if (hint) {
+      if (!q) hint.textContent = '';
+      else if (category === 'All') hint.textContent = 'Searching all categories';
+      else hint.textContent = 'Searching ' + labelOf(category);
+    }
+    var empty = rhLibEmptyEl(grid);
+    var fav = document.body.getAttribute('data-rf-libfav');
+    if (empty) {
+      if (!fav && matches === 0) {
+        var msg = q
+          ? ('No activations match “' + raw + '”' + (category !== 'All' ? ' in ' + labelOf(category) : '') + '.')
+          : ('No activations in ' + labelOf(category) + '.');
+        empty.textContent = msg;
+        empty.hidden = false;
+        empty.style.display = 'block';
+      } else {
+        empty.textContent = '';
+        empty.hidden = true;
+        empty.style.display = 'none';
+      }
+    }
+    var tt = document.getElementById('rf-sec-ttl');
+    if (tt && q && category === 'All') tt.textContent = 'All activations';
+    else if (tt && !q && window.__rhLibSection) {
+      var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + window.__rhLibSection + '"] b');
+      if (sec && category === window.__rhLibSection) tt.textContent = sec.textContent;
+    }
   }
+
+
   function rhToggleSection(btn, id) {
     var sec = document.getElementById(id); if (!sec) return;
     var grid = sec.querySelector('.card-grid'), copy = sec.querySelector('.subsection-copy');
@@ -2695,22 +2827,46 @@
 
   };
 
+  function rhPlayerPosterHtml(a) {
+    var slug = window.__rhCurrentActivationSlug || '';
+    if (window.rhPosterHtml) {
+      var html = window.rhPosterHtml(slug, a && a.cover);
+      if (html) return html;
+    }
+    var src = (a && a.cover) || '';
+    if (!src) return '';
+    return '<img class="rh-player-poster" alt="" decoding="sync" fetchpriority="high" src="' + String(src).replace(/"/g, '') + '">';
+  }
+  function rhRevealWistia(playerEl) {
+    var frame = playerEl.querySelector('iframe.rh-wistia');
+    if (!frame) return;
+    var show = function() {
+      frame.style.opacity = '1';
+      var poster = playerEl.querySelector('.rh-player-poster');
+      if (poster) poster.classList.add('rh-poster-done');
+    };
+    frame.addEventListener('load', function() { setTimeout(show, 400); });
+  }
   function renderRhActivationPlayer(a) {
     var playerEl = document.getElementById('activation-detail-player');
+    playerEl.style.background = '#0c0e12';
+    var poster = rhPlayerPosterHtml(a);
     if (a.cover && (a.audioSrc || a.audioOnly)) {
       playerEl.innerHTML =
-        '<div class="audio-cover-player" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
+        '<div class="audio-cover-player">' + poster +
           '<div class="audio-cover-overlay">' +
             '<button class="audio-cover-play" onclick="rhPlayAudioActivation()" aria-label="Play"><svg width="26" height="26" viewBox="0 0 24 24"><polygon points="7,4 21,12 7,20" fill="#fff"/></svg></button>' +
           '</div>' +
         '</div>';
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<div class="rh-player-stage">' + poster +
+        '<iframe class="wistia_embed rh-wistia" style="background:#0c0e12;opacity:0" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe></div>';
+      rhRevealWistia(playerEl);
       if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else {
       playerEl.innerHTML =
-        '<div style="padding:40px 20px;text-align:center;color:#c9b8a8;">Video coming soon.</div>';
+        '<div class="rh-player-fallback">Video coming soon.</div>';
     }
   }
 
@@ -2718,20 +2874,24 @@
     var a = window.__rhCurrentActivation;
     if (!a) { return; }
     var playerEl = document.getElementById('activation-detail-player');
+    playerEl.style.background = '#0c0e12';
+    var poster = rhPlayerPosterHtml(a);
     if (a.wistiaId && a.audioOnly) {
       playerEl.innerHTML =
-        '<div class="audio-cover-player" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
+        '<div class="audio-cover-player">' + poster +
         '<div class="audio-cover-overlay"><div class="audio-playing-badge" style="color:#F6F2E9;font-size:14px;letter-spacing:0.04em;">&#9654; Now Playing</div></div>' +
-        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;"></iframe>' +
+        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;border:0;background:#0c0e12;"></iframe>' +
         '</div>';
       if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else if (a.wistiaId) {
       playerEl.innerHTML =
-        '<iframe class="wistia_embed" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe>';
+        '<div class="rh-player-stage">' + poster +
+        '<iframe class="wistia_embed rh-wistia" style="background:#0c0e12;opacity:0" src="' + WISTIA_EMBED_BASE + a.wistiaId + '?playerColor=01676c&autoPlay=true" allow="autoplay; fullscreen" allowfullscreen title="' + a.title.replace(/"/g, '') + '"></iframe></div>';
+      rhRevealWistia(playerEl);
       if (window.rhActivity) window.rhActivity.watchWistia(a.wistiaId, window.__rhCurrentActivationSlug);
     } else if (a.audioSrc) {
       playerEl.innerHTML =
-        '<div class="audio-native-wrap" style="background-image:url(&quot;' + a.cover + '&quot;)">' +
+        '<div class="audio-native-wrap">' + poster +
           '<div class="audio-native-overlay"></div>' +
           '<audio id="rh-audio-el" src="' + a.audioSrc + '" preload="metadata"></audio>' +
           '<div class="audio-custom-controls">' +
@@ -2745,6 +2905,7 @@
       rhInitCustomAudioPlayer();
     }
   }
+
 
   function rhFormatTime(sec) {
     if (!isFinite(sec) || sec < 0) { sec = 0; }
@@ -6173,6 +6334,8 @@ if (forceComplete) { goDay(3); }
 </script>
 
 <script src="/rh-activity.js" defer></script>
+<script src="/lib-search.js" defer></script>
+<script src="/poster-srcset.js" defer></script>
 <script src="/activation-covers.js" defer></script>
 <script src="/cover-fixes.js" defer></script>
 <!-- Gap Method pop-up modal shell (presentation only). Wraps the existing
