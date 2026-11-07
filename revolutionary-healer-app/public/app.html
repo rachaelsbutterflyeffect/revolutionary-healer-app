@@ -3650,12 +3650,31 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
   // own site (e.g. the 1:1 booking link) into real, clickable links, built with
   // DOM nodes (never innerHTML), so nothing else about the bubble changes.
   // A markdown-style [label](url) for an allowed link shows just the label.
-  var RH_LINK_RE = /\[([^\]\n]{1,120})\]\((https:\/\/[^\s)]+)\)|(https:\/\/[^\s<>"')\]]+)/g;
+  var RH_LINK_RE = /\[([^\]\n]{1,160})\]\((https:\/\/[^\s)]+|#[a-z][a-z0-9-]*)\)|(https:\/\/[^\s<>"')\]]+)/g;
   function rhIsAllowedLink(url) {
     try {
       var u = new URL(url);
       return u.protocol === 'https:' && /(^|\.)rachaelsbutterflyeffect\.com$/i.test(u.hostname);
     } catch (e) { return false; }
+  }
+  function rhIsInAppLink(url) {
+    return url === '#your-codes' || /^#code-\d{4,6}$/.test(url) || /^#activation-[a-z0-9-]{2,80}$/.test(url);
+  }
+  function rhOpenInAppLink(url) {
+    var h = String(url || '').replace(/^#/, '');
+    if (h === 'your-codes') {
+      if (typeof window.rhOpenYourCodes === 'function') window.rhOpenYourCodes();
+      else location.hash = 'your-codes';
+      return;
+    }
+    if (h.indexOf('code-') === 0) {
+      if (typeof window.rhOpenCodeCard === 'function') window.rhOpenCodeCard(h.slice(5));
+      else location.hash = h;
+      return;
+    }
+    if (h.indexOf('activation-') === 0 && typeof handleActivationCardClick === 'function') {
+      handleActivationCardClick(h.slice('activation-'.length));
+    }
   }
   function rhSetTextWithLinks(el, text) {
     var s = String(text == null ? '' : text);
@@ -3666,14 +3685,24 @@ function rhThread() { return document.getElementById('rh-chat-thread'); }
       var url = m[2] || m[3];
       var trail = '';
       if (m[3]) { var tm = url.match(/[.,!?;:]+$/); if (tm) { trail = tm[0]; url = url.slice(0, -trail.length); } }
-      if (!rhIsAllowedLink(url)) continue;
+      var inApp = rhIsInAppLink(url);
+      if (!inApp && !rhIsAllowedLink(url)) continue;
       if (m.index > last) el.appendChild(document.createTextNode(s.slice(last, m.index)));
       var a = document.createElement('a');
       a.href = url;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
       a.className = 'rh-msg-link';
       a.textContent = m[1] || url;
+      if (inApp) {
+        (function (href) {
+          a.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            rhOpenInAppLink(href);
+          });
+        })(url);
+      } else {
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+      }
       el.appendChild(a);
       if (trail) el.appendChild(document.createTextNode(trail));
       last = m.index + m[0].length;
@@ -6973,5 +7002,7 @@ if (forceComplete) { goDay(3); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
 </script>
+<link rel="stylesheet" href="/rf-your-codes.css">
+<script src="/rf-your-codes.js"></script>
 </body>
 </html>

@@ -123,15 +123,20 @@ export function createSseChannel({ heartbeatMs = STREAM_HEARTBEAT_MS } = {}) {
   let controller = null;
   let closed = false;
   let heartbeat = null;
+  const pending = [];
   const stopHeartbeat = () => { if (heartbeat) { clearInterval(heartbeat); heartbeat = null; } };
   const write = (s) => {
-    if (closed || !controller) return false;
+    if (closed) return false;
+    if (!controller) { pending.push(s); return true; }
     try { controller.enqueue(encoder.encode(s)); return true; } catch (e) { closed = true; stopHeartbeat(); return false; }
   };
   const readable = new ReadableStream({
     start(c) {
       controller = c;
-      if (heartbeatMs > 0) heartbeat = setInterval(() => write(": ping\n\n"), heartbeatMs);
+      while (pending.length && !closed) {
+        try { controller.enqueue(encoder.encode(pending.shift())); } catch (e) { closed = true; stopHeartbeat(); break; }
+      }
+      if (heartbeatMs > 0 && !closed) heartbeat = setInterval(() => write(": ping\n\n"), heartbeatMs);
     },
     cancel() {
       // The member disconnected. The job keeps running (waitUntil) and saves.
