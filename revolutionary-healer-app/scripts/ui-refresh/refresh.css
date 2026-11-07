@@ -92,6 +92,15 @@ body.rf:not([data-rf="home"]) #rf-pass-banner { display:none !important; }
 .rf-door .txt > span { display:block; min-width:0; }
 .rf-door .txt small { display:block; margin-top:2px; font-family:"Cormorant Garamond",Georgia,serif; font-size:16px; line-height:1.25; font-weight:500; color:#fdfbf5; }
 .rf-door .arr { margin-left:auto; color:var(--rf-gold); font-size:20px; }
+/* Home: three doors, all the same size. Phones (and narrow tablets) stack; wide screens get a row of three equal cards. */
+body.rf .rf-doors3 > .rf-door .txt { min-height:3.45em; display:flex; align-items:center; }
+@media (min-width:1100px) {
+  body.rf .rf-doors3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:16px; align-items:stretch; }
+  body.rf .rf-doors3 > h3 { grid-column:1 / -1; }
+  body.rf .rf-doors3 > .rf-door { margin-bottom:0; flex-direction:column; align-items:flex-start; gap:14px; padding:22px 20px; min-height:200px; }
+  body.rf .rf-doors3 > .rf-door .arr { margin:auto 0 0 0; }
+  body.rf .rf-doors3 > .rf-door .txt { align-items:flex-start; min-height:0; }
+}
 .rf-lanes { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; margin:0 -20px; padding:4px 20px 10px; scrollbar-width:none; }
 .rf-lanes::-webkit-scrollbar { display:none; }
 .rf-tile { all:unset; box-sizing:border-box; flex:none; width:150px; height:170px; scroll-snap-align:start; border-radius:22px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; position:relative; overflow:hidden; background:linear-gradient(160deg,rgba(63,214,200,.22),rgba(255,255,255,.04) 60%); border:1px solid rgba(160,255,245,.3); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); transition:transform .2s; }

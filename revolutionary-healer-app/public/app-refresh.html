@@ -1153,6 +1153,15 @@ body.rf:not([data-rf="home"]) #rf-pass-banner { display:none !important; }
 .rf-door .txt > span { display:block; min-width:0; }
 .rf-door .txt small { display:block; margin-top:2px; font-family:"Cormorant Garamond",Georgia,serif; font-size:16px; line-height:1.25; font-weight:500; color:#fdfbf5; }
 .rf-door .arr { margin-left:auto; color:var(--rf-gold); font-size:20px; }
+/* Home: three doors, all the same size. Phones (and narrow tablets) stack; wide screens get a row of three equal cards. */
+body.rf .rf-doors3 > .rf-door .txt { min-height:3.45em; display:flex; align-items:center; }
+@media (min-width:1100px) {
+  body.rf .rf-doors3 { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); column-gap:16px; align-items:stretch; }
+  body.rf .rf-doors3 > h3 { grid-column:1 / -1; }
+  body.rf .rf-doors3 > .rf-door { margin-bottom:0; flex-direction:column; align-items:flex-start; gap:14px; padding:22px 20px; min-height:200px; }
+  body.rf .rf-doors3 > .rf-door .arr { margin:auto 0 0 0; }
+  body.rf .rf-doors3 > .rf-door .txt { align-items:flex-start; min-height:0; }
+}
 .rf-lanes { display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; margin:0 -20px; padding:4px 20px 10px; scrollbar-width:none; }
 .rf-lanes::-webkit-scrollbar { display:none; }
 .rf-tile { all:unset; box-sizing:border-box; flex:none; width:150px; height:170px; scroll-snap-align:start; border-radius:22px; padding:16px; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; position:relative; overflow:hidden; background:linear-gradient(160deg,rgba(63,214,200,.22),rgba(255,255,255,.04) 60%); border:1px solid rgba(160,255,245,.3); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); transition:transform .2s; }
@@ -1788,7 +1797,8 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
  <div class="rf-welcome"><h1 class="rf-shine rf-big">Welcome back</h1><div class="rf-divider"></div><p><b>Pick your focus.</b></p></div>
- <div class="rf-sec rf-reveal"><h3>Your Doors</h3>
+ <div class="rf-sec rf-reveal rf-doors3"><h3>Your Doors</h3>
+  <button type="button" class="rf-door" id="rf-door-code" data-rf-go="focus"><span class="rf-orb" aria-hidden="true">✧</span><span class="txt"><span><b>Pull your daily code</b><br><small>See your energy reading and activation for today</small></span></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt"><span><b>Find your Gap</b><br><small>Stop the patterns that are keeping you stuck</small></span></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt"><span><b>Chat with Rachael</b><br><small>Talk through what's coming up for you</small></span></span><span class="arr" aria-hidden="true">→</span></button>
  </div>
@@ -8917,7 +8927,8 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
 })();
 
 // ---- Held-back features (Oct 15 2026): each one is its own file + its own server switch (lib/features.js).
-// Nothing is fetched or shown unless /api/features says true for THIS member.
+// Each file is fetched only when /api/features says true for THIS member.
+// The daily code door is in the Home markup (first paint). It is removed below only when codePull is off.
 (function () {
   var MAP = { codePull: 'rf-codes', homeCheckin: 'rf-checkin', codeShifts: 'rf-codeshift', saveSections: 'rf-sections', methodTracking: 'rf-tracking', featuredEvent: 'rf-event' };
   var tries = 0;
@@ -8931,7 +8942,16 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     if (!em) { if (++tries < 80) setTimeout(go, 250); return; }
     fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (f) { window.__rfFeatures = f || {}; Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); }); })
+      .then(function (f) {
+        window.__rfFeatures = f || {};
+        Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); });
+        // Daily code door is in the Home markup so it paints with the other two. Hide it only when
+        // CODE_PULL is explicitly off. A failed /api/features request leaves the door up.
+        if (f && f.codePull === false) {
+          var door = document.getElementById('rf-door-code');
+          if (door) { var box = door.parentNode; door.remove(); if (box) box.classList.remove('rf-doors3'); }
+        }
+      })
       .catch(function () {});
   }
   go();
