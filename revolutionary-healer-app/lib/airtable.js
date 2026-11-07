@@ -665,6 +665,44 @@ export async function listWebhookEventsDueForRetry() {
     .all();
 }
 
+// Offer ids already on record for this email. WebhookEvents is the purchase
+// log. GapMethodResults.purchase_offer_id is the other stored purchase.
+// ok false means the lookup failed or the email is not safe to query: callers
+// hide the five-day upgrade line.
+export async function listPurchaseOfferIdsByEmail(email) {
+    const normalized = normalizeEmail(email);
+    const empty = { ok: false, webhookOfferIds: [], otherOfferIds: [] };
+    if (!normalized || /["'\\]/.test(normalized)) return empty;
+    const webhookOfferIds = [];
+    try {
+        const selectOffers = (formula) => base(Tables.WebhookEvents).select({
+            filterByFormula: formula,
+            fields: ["offer_id"],
+        }).all();
+        let events;
+        try {
+            events = await selectOffers(`LOWER({email}&"")="${normalized}"`);
+        } catch (err) {
+            console.error("listPurchaseOfferIdsByEmail retrying exact email", err?.message || err);
+            events = await selectOffers(`{email}="${normalized}"`);
+        }
+        for (const row of events) webhookOfferIds.push(row?.fields?.offer_id ?? "");
+    } catch (err) {
+        console.error("listPurchaseOfferIdsByEmail webhooks failed", err?.message || err);
+        return empty;
+    }
+    const otherOfferIds = [];
+    try {
+        const gap = await getGapMethodResultByEmail(normalized);
+        const gapOffer = gap?.fields?.purchase_offer_id;
+        if (gapOffer != null && String(gapOffer).trim()) otherOfferIds.push(gapOffer);
+    } catch (err) {
+        console.error("listPurchaseOfferIdsByEmail gap failed", err?.message || err);
+        return { ok: false, webhookOfferIds, otherOfferIds: [] };
+    }
+    return { ok: true, webhookOfferIds, otherOfferIds };
+}
+
 export async function processKajabiPurchase(input = {}) {
     const { email, firstName, offerId, eventType, purchasedAt = "", purchaseId = "", env = process.env, store = undefined } = input;
     const normalizedEmail = normalizeEmail(email);

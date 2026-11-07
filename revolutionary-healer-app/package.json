@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test:entitlements": "node scripts/test-entitlements.mjs",
     "test:five-day-pass": "node scripts/test-five-day-pass.mjs",
+    "test:five-day-upgrade-banner": "node scripts/test-five-day-upgrade-banner.mjs",
     "test:kajabi-purchase": "node scripts/test-kajabi-purchase.mjs",
     "test:chat-speed": "node scripts/test-chat-speed.mjs",
     "test:chat-streaming": "node scripts/test-chat-streaming.mjs",

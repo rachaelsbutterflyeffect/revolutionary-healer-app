@@ -96,6 +96,7 @@ s = s[:_m.start()] + _xp + _m.group(3) + _m.group(1) + s[_m.end():]
 # ---- Home + Chat header, before the live hero/chat section ----
 HOME = """
 <section class="rf-screen" id="rf-home" aria-label="Home">
+ <p class="rf-pass-banner" id="rf-pass-banner" hidden><span class="rf-pass-gold">Full access, <span id="rf-pass-banner-count">3 days left</span> · </span><a class="rf-pass-link" href="https://www.rachaelsbutterflyeffect.com/offers/rkwoQv2s/checkout" target="_blank" rel="noopener">Upgrade today, $30 a month</a></p>
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
  <div class="rf-welcome"><h1 class="rf-shine rf-big">Welcome back</h1><div class="rf-divider"></div><p><b>Pick your focus.</b></p></div>

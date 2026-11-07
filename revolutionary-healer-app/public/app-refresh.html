@@ -1120,6 +1120,14 @@ body.rf .btn-primary:active, body.rf .btn-secondary:active, body.rf .btn-outline
 
 /* ---------- Home ---------- */
 .rf-top { display:flex; justify-content:space-between; align-items:center; }
+/* Five-day pass upgrade line: one gold line on charcoal, above the title and profile. Hidden unless /api/access says so. */
+#rf-pass-banner { box-sizing:border-box; margin:-22px -20px 8px; width:calc(100% + 40px); padding:7px 8px; background:#06080b; color:#e8c873; font-family:Inter,system-ui,-apple-system,sans-serif; font-size:12px; font-weight:500; letter-spacing:-0.02em; line-height:1.2; text-align:center; white-space:nowrap; }
+#rf-pass-banner[hidden] { display:none !important; }
+body.rf:not([data-rf="home"]) #rf-pass-banner { display:none !important; }
+#rf-pass-banner .rf-pass-gold { color:#e8c873; }
+#rf-pass-banner a.rf-pass-link { color:#fff1c4; text-decoration:underline; text-decoration-color:#b8913f; text-underline-offset:2px; font-weight:600; }
+@media (max-width:600px) { #rf-home > #rf-pass-banner { margin-top:-12px; } }
+@media (min-width:820px) { #rf-home > #rf-pass-banner { margin-top:-48px; } }
 .rf-mark { font-family:"Cormorant SC",serif; font-weight:600; font-size:clamp(15px,4.6vw,18px); letter-spacing:.16em; line-height:1.1; white-space:nowrap; }
 .rf-avatar { all:unset; cursor:pointer; width:38px; height:38px; border-radius:50%; border:1px solid var(--rf-line); display:grid; place-items:center; background:var(--rf-glass); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); color:var(--rf-gold); }
 .rf-hero { all:unset; display:grid; place-items:center; position:relative; width:100%; height:300px; margin-top:6px; cursor:pointer; }
@@ -1670,6 +1678,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
       }
       window.__RH_MEMBER_SINCE__ = data.memberSince || null;
       populateMemberSinceIfReady();
+      rhApplyPassBanner(data);
     }).catch(function () {});
   }
   function populateMemberSinceIfReady() {
@@ -1678,6 +1687,27 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
     if (!msEl || !window.__RH_MEMBER_SINCE__) return;
     var d = new Date(window.__RH_MEMBER_SINCE__);
     if (!isNaN(d)) msEl.textContent = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  }
+  // Five-day pass upgrade line. /api/access decides; days 5, 4, and 0 stay hidden.
+  function rhApplyPassBanner(data) {
+    var el = document.getElementById('rf-pass-banner');
+    if (!el) return;
+    var days = Number(data && data.fiveDayPassDaysRemaining);
+    var show = !!(data && data.showFiveDayUpgradeBanner === true && (days === 1 || days === 2 || days === 3));
+    var count = document.getElementById('rf-pass-banner-count');
+    if (show && count) count.textContent = days === 1 ? '1 day left' : (days + ' days left');
+    el.setAttribute('data-eligible', show ? '1' : '0');
+    var hero = document.getElementById('hero-section');
+    var onHome = true;
+    if (hero && !document.body.classList.contains('rf')) onHome = hero.style.display !== 'none' && !document.querySelector('.page-view.active');
+    el.hidden = !(show && onHome);
+  }
+  function rhSyncPassBanner(onHome) {
+    var el = document.getElementById('rf-pass-banner');
+    if (!el) return;
+    var show = el.getAttribute('data-eligible') === '1';
+    if (document.body.classList.contains('rf')) { el.hidden = !show; return; }
+    el.hidden = !(show && onHome);
   }
 </script>
 
@@ -1754,6 +1784,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
 
 
 <section class="rf-screen" id="rf-home" aria-label="Home">
+ <p class="rf-pass-banner" id="rf-pass-banner" hidden><span class="rf-pass-gold">Full access, <span id="rf-pass-banner-count">3 days left</span> · </span><a class="rf-pass-link" href="https://www.rachaelsbutterflyeffect.com/offers/rkwoQv2s/checkout" target="_blank" rel="noopener">Upgrade today, $30 a month</a></p>
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
  <div class="rf-welcome"><h1 class="rf-shine rf-big">Welcome back</h1><div class="rf-divider"></div><p><b>Pick your focus.</b></p></div>
@@ -3649,6 +3680,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
     hideAllPages();
     document.getElementById('hero-section').style.display = '';
     document.getElementById('my-revolution').style.display = '';
+    if (typeof rhSyncPassBanner === 'function') rhSyncPassBanner(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   function goToMyRevolution() {
@@ -3672,6 +3704,7 @@ body.rf #rf-fit-door .rf-door .arr { color:#6e5318; }
     document.getElementById('my-revolution').style.display = 'none';
     hideAllPages();
     document.getElementById(pageId).classList.add('active');
+    if (typeof rhSyncPassBanner === 'function') rhSyncPassBanner(false);
     if (window.rhActivity) window.rhActivity.nav(pageId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
