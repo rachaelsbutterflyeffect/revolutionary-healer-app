@@ -56,6 +56,19 @@ import {
   noteMainChatReplyStop,
   thinkingTokensFromUsage,
 } from "@/lib/mainChatReply";
+import { featureAllowed } from "@/lib/features";
+import { loadRecodeDeck } from "@/lib/recodeDeck";
+import {
+  resolveLookup,
+  classifyIntent,
+  applySymptomGuardrail,
+  appendActivationLinks,
+  symptomTriggered,
+  symptomGuardrailEnabled,
+  symptomSentence,
+  stripInternalIds,
+} from "@/lib/codeChat";
+import { loadHeldCodes } from "@/lib/memberCodes";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
@@ -257,6 +270,9 @@ export async function POST(req: NextRequest) {
   // Bot pricing rules (Oct 15 2026, Rachael's verbatim copy): also static,
   // also before UPSELL, so it sits in the cached prefix after the CCM block.
   systemPrompt = withPricingRules(systemPrompt);
+  if (!isGapMethodProcess && symptomTriggered(message) && symptomGuardrailEnabled()) {
+    systemPrompt += `\n\nPHYSICAL SYMPTOM (required this turn): The member described a physical symptom. Do not stay in pattern-only mode. Do not explain this as only a Gap or a pattern. Start with this exact sentence, then tell them to check with a doctor or qualified professional:\n${symptomSentence()}\n`;
+  }
   if (embodimentShift) {
     const f = embodimentShift.fields;
     systemPrompt += `\n\n=== SHIFT PROGRESS CHECK-IN (Update Progress button) ===\nThe member clicked "Update Progress" on this Shift: ${f.divine_identity_name || "their Shift"} / ${f.current_frequency || ""}. GAP: ${f.gap_explanation || ""}. Recommended Activation: ${f.recommended_activation || ""}.\n\nThey were just greeted with: "You're ready to make this shift embodied — tell me, what's your main shift, and what's making you feel like this is fully embodied?" Continue that conversation.\n\nNever mark a Shift Embodied simply because the member listened to an activation. Watch for meaningful evidence the contradiction is no longer driving the same behavior -- e.g. responding differently to the old trigger, taking the action they previously avoided, no longer reopening the same decision, speaking or showing up differently, a change in the repeated pattern, or feeling the old thought/emotion without automatically following the old behavior.\n\nThen ask them directly: "Do you feel like this shift is complete?"\n\nIf they say yes: tell them plainly, using almost exactly this phrase -- "I've updated your card to mark this as Embodied" -- and then celebrate them thoroughly, reflecting back where they started and how far they've come.\n\nIf they say no, or the pattern still feels active: don't say anything about updating their card -- keep supporting them, and let them know it's okay to keep working with this Shift.`;
@@ -288,6 +304,59 @@ export async function POST(req: NextRequest) {
   // Persist the member's message before calling Claude so it's never lost
   // even if the model call itself fails.
   await createMessage({ chatId, email, role: "user", text: message });
+
+  // Recode Deck / activation lookup. Factual questions are answered from the
+  // same card file and activation list the app uses, not from the model's memory.
+  // Guided processes stay on their own script.
+  if (!process) {
+    let deck = null;
+    let deckError = false;
+    try { deck = loadRecodeDeck(); } catch (err) { deckError = true; console.error("recode deck unreadable", err); }
+    const intent = classifyIntent(message, deck || []);
+    if (intent) {
+      let held: any[] = [];
+      let historyUnavailable = false;
+      if (intent === "code") {
+        try { held = await loadHeldCodes(email); } catch (err) { historyUnavailable = true; console.error("held codes unreadable", err); }
+      }
+      const found = resolveLookup({
+        message,
+        deck,
+        deckError,
+        held,
+        historyUnavailable,
+        entitlement,
+        codePull: featureAllowed("CODE_PULL", email),
+      });
+      if (found && found.reply) {
+        const replyText = stripInternalIds(applySymptomGuardrail(message, found.reply).reply);
+        await createMessage({ chatId, email, role: "assistant", text: replyText });
+        const nowIso = new Date().toISOString();
+        await updateChatSession(chatId, { updated_at: nowIso, last_message_at: nowIso }).catch((err) => console.error("lookup session update", err));
+        if (chatStreamingAllowed({ ...streamingSwitch(), email, processSlug, requested: streamRequested })) {
+          const channel = createSseChannel({ heartbeatMs: 0 });
+          waitUntil((async () => {
+            channel.send({ type: "meta", chatId });
+            const parts = replyText.split(/(\s+)/);
+            let buf = "";
+            for (const part of parts) {
+              buf += part;
+              if (buf.length >= 18) {
+                channel.send({ type: "delta", text: buf });
+                buf = "";
+                await new Promise((r) => setTimeout(r, 18));
+              }
+            }
+            if (buf) channel.send({ type: "delta", text: buf });
+            channel.send({ type: "done", reply: replyText, chatId, openActivationSlug: null });
+            channel.close();
+          })());
+          return new Response(channel.readable, { headers: SSE_HEADERS });
+        }
+        return NextResponse.json({ reply: replyText, chatId, openActivationSlug: null });
+      }
+    }
+  }
 
   // Prompt caching (Oct 8 2026, see lib/promptCache.js): same model,
   // max_tokens, messages, timeout and system prompt TEXT as before. The only
@@ -540,6 +609,11 @@ export async function POST(req: NextRequest) {
         console.error("Failed to auto-update Shift to Embodied", err);
       }
     }
+    replyText = stripInternalIds(replyText);
+    if (!isGapMethodProcess) replyText = appendActivationLinks(replyText);
+    const symptomLine = applySymptomGuardrail(message, replyText);
+    if (symptomLine.memberFacing) replyText = symptomLine.reply;
+
     // Bug fix (Sept): everything below persists non-critical bookkeeping that
     // the RESPONSE PAYLOAD below does not depend on (reply text, chatId, and
     // openActivationSlug are all already finalized above). None of it should
