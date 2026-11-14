@@ -558,6 +558,7 @@ const ASKED_FACT_KINDS = new Set(["code", "activation", "unknown-number", "fallb
  * Canned lookup replies are only for a clear lookup that opens the conversation.
  * Inside a conversation, or when the canned text would repeat the previous
  * bot reply, the model answers and is given the real code or activation facts.
+ * @param {{ message?: string, deck?: any[]|null, deckError?: boolean, held?: any[], entitlement?: any, codePull?: boolean, historyUnavailable?: boolean, env?: any, activations?: any[]|null, priorMessageCount?: number, previousAssistant?: string }} [opts]
  */
 export function planLookupDelivery({
   message,
