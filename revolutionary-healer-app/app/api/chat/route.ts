@@ -59,8 +59,8 @@ import {
 import { featureAllowed } from "@/lib/features";
 import { loadRecodeDeck } from "@/lib/recodeDeck";
 import {
-  resolveLookup,
   classifyIntent,
+  planLookupDelivery,
   applySymptomGuardrail,
   appendActivationLinks,
   symptomTriggered,
@@ -305,57 +305,62 @@ export async function POST(req: NextRequest) {
   // even if the model call itself fails.
   await createMessage({ chatId, email, role: "user", text: message });
 
-  // Recode Deck / activation lookup. Factual questions are answered from the
-  // same card file and activation list the app uses, not from the model's memory.
-  // Guided processes stay on their own script.
+  // Recode Deck / activation lookup. A clear lookup that opens the chat is
+  // answered from the card file. The same lookup inside a conversation, or a
+  // second copy of the previous canned reply, is given to the model as facts
+  // so the member's actual question is still answered. Guided processes stay
+  // on their own script.
   if (!process) {
     let deck = null;
     let deckError = false;
     try { deck = loadRecodeDeck(); } catch (err) { deckError = true; console.error("recode deck unreadable", err); }
     const intent = classifyIntent(message, deck || []);
-    if (intent) {
-      let held: any[] = [];
-      let historyUnavailable = false;
-      if (intent === "code") {
-        try { held = await loadHeldCodes(email); } catch (err) { historyUnavailable = true; console.error("held codes unreadable", err); }
-      }
-      const found = resolveLookup({
-        message,
-        deck,
-        deckError,
-        held,
-        historyUnavailable,
-        entitlement,
-        codePull: featureAllowed("CODE_PULL", email),
-      });
-      if (found && found.reply) {
-        const replyText = stripInternalIds(applySymptomGuardrail(message, found.reply).reply);
-        await createMessage({ chatId, email, role: "assistant", text: replyText });
-        const nowIso = new Date().toISOString();
-        await updateChatSession(chatId, { updated_at: nowIso, last_message_at: nowIso }).catch((err) => console.error("lookup session update", err));
-        if (chatStreamingAllowed({ ...streamingSwitch(), email, processSlug, requested: streamRequested })) {
-          const channel = createSseChannel({ heartbeatMs: 0 });
-          waitUntil((async () => {
-            channel.send({ type: "meta", chatId });
-            const parts = replyText.split(/(\s+)/);
-            let buf = "";
-            for (const part of parts) {
-              buf += part;
-              if (buf.length >= 18) {
-                channel.send({ type: "delta", text: buf });
-                buf = "";
-                await new Promise((r) => setTimeout(r, 18));
-              }
-            }
-            if (buf) channel.send({ type: "delta", text: buf });
-            channel.send({ type: "done", reply: replyText, chatId, openActivationSlug: null });
-            channel.close();
-          })());
-          return new Response(channel.readable, { headers: SSE_HEADERS });
-        }
-        return NextResponse.json({ reply: replyText, chatId, openActivationSlug: null });
-      }
+    const numberInMessage = /(?<!\d)\d{4,6}(?!\d)/.test(String(message || ""));
+    let held: any[] = [];
+    let historyUnavailable = false;
+    if ((intent === "code" || numberInMessage) && deck && !deckError) {
+      try { held = await loadHeldCodes(email); } catch (err) { historyUnavailable = true; console.error("held codes unreadable", err); }
     }
+    const previousAssistant = [...priorMessages].reverse().find((m: any) => m.fields?.role === "assistant")?.fields?.message_text || "";
+    const plan = planLookupDelivery({
+      message,
+      deck,
+      deckError,
+      held,
+      historyUnavailable,
+      entitlement,
+      codePull: featureAllowed("CODE_PULL", email),
+      priorMessageCount,
+      previousAssistant,
+    });
+    if (plan.delivery === "canned" && plan.reply) {
+      const replyText = stripInternalIds(applySymptomGuardrail(message, plan.reply).reply);
+      await createMessage({ chatId, email, role: "assistant", text: replyText });
+      const nowIso = new Date().toISOString();
+      await updateChatSession(chatId, { updated_at: nowIso, last_message_at: nowIso }).catch((err) => console.error("lookup session update", err));
+      if (chatStreamingAllowed({ ...streamingSwitch(), email, processSlug, requested: streamRequested })) {
+        const channel = createSseChannel({ heartbeatMs: 0 });
+        waitUntil((async () => {
+          channel.send({ type: "meta", chatId });
+          const parts = replyText.split(/(\s+)/);
+          let buf = "";
+          for (const part of parts) {
+            buf += part;
+            if (buf.length >= 18) {
+              channel.send({ type: "delta", text: buf });
+              buf = "";
+              await new Promise((r) => setTimeout(r, 18));
+            }
+          }
+          if (buf) channel.send({ type: "delta", text: buf });
+          channel.send({ type: "done", reply: replyText, chatId, openActivationSlug: null });
+          channel.close();
+        })());
+        return new Response(channel.readable, { headers: SSE_HEADERS });
+      }
+      return NextResponse.json({ reply: replyText, chatId, openActivationSlug: null });
+    }
+    if (plan.note) systemPrompt += stripInternalIds(plan.note);
   }
 
   // Prompt caching (Oct 8 2026, see lib/promptCache.js): same model,
