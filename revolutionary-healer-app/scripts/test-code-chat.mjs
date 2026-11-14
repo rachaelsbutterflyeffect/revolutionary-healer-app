@@ -14,6 +14,9 @@ import {
   resolveLookup,
   codeFacts,
   classifyIntent,
+  scoreActivations,
+  planLookupDelivery,
+  isSameCannedReply,
   symptomTriggered,
   symptomGuardrailEnabled,
   applySymptomGuardrail,
@@ -244,6 +247,123 @@ t("chat scroll and typewriter hooks are still in the page", () => {
   assert.match(page, /function rhSetTextWithLinks/);
   assert.match(page, /#your-codes/);
   assert.match(page, /rf-your-codes.js/);
+});
+
+const NOT_LOOKUPS = [
+  "Can you log this into the same Shift? I'll do the Confidence Activation… Which client should I send it to?",
+  "Thanks — I'll listen to the Confidence Activation. But which client should I start with?",
+  "Let's set the activation aside… what is the GAP Method for?",
+  "The activation I just did",
+  "More yawns than I've had in an activation, my body felt heavy",
+  "I keep using my phone at night and experiencing anxiety",
+  "My numbers this month were terrible",
+];
+
+t("ordinary sentences are not lookups", () => {
+  for (const message of NOT_LOOKUPS) {
+    assert.equal(classifyIntent(message, deck), null, message);
+    assert.equal(resolveLookup({ message, deck, entitlement: full, codePull: true }), null, message);
+    const plan = planLookupDelivery({ message, deck, entitlement: full, codePull: true, priorMessageCount: 4 });
+    assert.equal(plan.delivery, "ai", message);
+    assert.equal(plan.reply, null, message);
+  }
+});
+
+t("short words and internal names are not a title match", () => {
+  const catalog = activationCatalog();
+  const more = scoreActivations(NOT_LOOKUPS[4], catalog);
+  assert.equal(more.some((s) => s.exact && s.activation.slug === "more-than-enough-activation"), false);
+  const method = scoreActivations(NOT_LOOKUPS[2], catalog);
+  assert.equal(method.some((s) => s.exact && /gap-method/.test(s.activation.slug)), false);
+  const gap = scoreActivations("what is the GAP Method for?", catalog);
+  assert.equal(gap.some((s) => s.exact && /gap-method/.test(s.activation.slug)), false);
+  assert.equal(gap.some((s) => s.exact && s.activation.slug === "activating-your-gifts"), false);
+});
+
+t("a mentioned activation inside a sentence is background, not the reply", () => {
+  for (const message of [NOT_LOOKUPS[0], NOT_LOOKUPS[1]]) {
+    const plan = planLookupDelivery({ message, deck, entitlement: full, codePull: true, priorMessageCount: 4 });
+    assert.equal(plan.delivery, "ai", message);
+    assert.match(plan.note, /background only/, message);
+    assert.match(plan.note, /#activation-confidence-activation/, message);
+    assert.match(plan.note, /53778/, message);
+    assert.doesNotMatch(plan.note, /#activation-gap-method/, message);
+  }
+  for (const message of NOT_LOOKUPS.slice(2)) {
+    const plan = planLookupDelivery({ message, deck, entitlement: full, codePull: true, priorMessageCount: 4 });
+    assert.equal(plan.note, "", message);
+  }
+});
+
+t("clear lookups still answer from the deck", () => {
+  const wealth = ask("what's code 88118?");
+  assert.match(wealth, /Wealth/);
+  assert.match(wealth, /88118/);
+  assert.match(wealth, /#code-88118/);
+  assert.equal(forbiddenLookupLanguage(wealth), false);
+
+  const where = ask("where is the Confidence Activation?");
+  assert.match(where, /Confidence Activation/);
+  assert.match(where, /#activation-confidence-activation/);
+  assert.doesNotMatch(where, /#activation-gap-method/);
+
+  const open = ask("open my Embody code");
+  assert.match(open, /Embody/);
+  assert.match(open, /98321/);
+  assert.match(open, /#code-98321/);
+  assert.doesNotMatch(open, /61374/);
+  assert.doesNotMatch(open, /#code-61374/);
+
+  const have = ask("do I have the Confidence Activation?");
+  assert.match(have, /Confidence Activation/);
+  assert.match(have, /#activation-confidence-activation/);
+});
+
+t("a lookup inside a conversation goes to the model with the real facts", () => {
+  const plan = planLookupDelivery({
+    message: "what's code 88118?",
+    deck,
+    entitlement: full,
+    codePull: true,
+    priorMessageCount: 3,
+  });
+  assert.equal(plan.delivery, "ai");
+  assert.match(plan.note, /88118/);
+  assert.match(plan.note, /Wealth/);
+  assert.match(plan.note, /#code-88118/);
+  assert.match(plan.note, /Do not invent a code/);
+  const opening = planLookupDelivery({
+    message: "where is the Confidence Activation?",
+    deck,
+    entitlement: full,
+    codePull: true,
+    priorMessageCount: 0,
+  });
+  assert.equal(opening.delivery, "canned");
+  assert.match(opening.reply, /#activation-confidence-activation/);
+});
+
+t("the same canned reply is never sent twice", () => {
+  const first = planLookupDelivery({
+    message: "what's code 88118?",
+    deck,
+    entitlement: full,
+    codePull: true,
+    priorMessageCount: 0,
+  });
+  assert.equal(first.delivery, "canned");
+  assert.equal(isSameCannedReply(first.reply, first.reply), true);
+  const again = planLookupDelivery({
+    message: "what's code 88118?",
+    deck,
+    entitlement: full,
+    codePull: true,
+    priorMessageCount: 0,
+    previousAssistant: first.reply,
+  });
+  assert.equal(again.delivery, "ai");
+  assert.match(again.note, /88118/);
+  assert.match(again.note, /#code-88118/);
 });
 
 t("codes list path is My Revolution", () => {

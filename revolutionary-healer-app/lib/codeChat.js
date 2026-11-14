@@ -37,12 +37,21 @@ export const SYMPTOM_GUARDRAIL_PLACEHOLDER =
 
 const NEVER_LINK_SLUGS = new Set(["spirit-connection-activation"]);
 
-const CODE_CUE =
-  /\b(draw|drew|drawn|pull(?:ed|ing)?|deck|cards?|numbers?|digits?|codes?)\b/i;
-const ACTIVATION_CUE =
-  /\b(listen(?:ing)?|experience|experiencing|use|using|play(?:ing)?|activation|hear it)\b/i;
+// A lookup is a request to open or identify a code or activation.
+// Mentioning "activation", "listen", "using", "numbers", or "method" in an
+// ordinary sentence is not a request. Those stay on the coaching path.
+const CODE_NUMBER = /(?<!\d)\d{4,6}(?!\d)/;
+const CODE_REQUEST =
+  /\b(?:where(?:'s| is)|what(?:'s| is)|which|open|show me|do i have|tell me about|can you (?:open|show|find|pull))\b[\s\S]{0,80}\b(?:codes?|cards?|numbers?)\b|\b(?:show me|open)\b[\s\S]{0,40}\b(?:that|the|my)\s+(?:code|card)\b|\b(?:i\s+)?(?:drew|pulled|drawn|draw)\b[\s\S]{0,80}\b(?:codes?|cards?)\b|\b(?:codes?|cards?)\b[\s\S]{0,40}\b(?:i\s+)?(?:drew|pulled|drawn)\b/i;
+const ACTIVATION_REQUEST =
+  /\b(?:where(?:'s| is)|what(?:'s| is)|which|open|show me|do i have|do you have)\b[\s\S]{0,80}\bactivations?\b|\b(?:can|could|may)\s+i\s+(?:listen|play|hear)\b|\b(?:where|how)\s+(?:can|do)\s+i\s+(?:listen|play|hear)\b|\b(?:i\s+want\s+to|i'?d\s+like\s+to|let\s+me)\s+(?:listen|play|hear)\b|\bdo you have an activation\b/i;
 const ANAPHORA =
   /\b(that|this|the)\s+(card|one|code)\b/i;
+// Words that show up inside real titles but are not a title on their own.
+const WEAK_TITLE_WORDS = new Set([
+  "more", "than", "your", "with", "from", "into", "this", "that", "have", "been",
+  "just", "like", "when", "what", "only", "over", "under", "above", "method", "gap",
+]);
 const PROGRAMMING =
   /\b(code|coding)\b[^.\n]{0,40}\b(site|website|web\s?page|app|html|css|javascript)\b|\b(site|website|html|css|javascript)\b[^.\n]{0,40}\b(code|coding)\b/i;
 
@@ -143,6 +152,7 @@ const GENERIC_WORDS = new Set([
   "the", "and", "for", "you", "your", "this", "that", "with", "have", "what", "where", "can", "now",
   "one", "thing", "just", "about", "activation", "activations", "listen", "listening", "experience",
   "experiencing", "play", "playing", "using", "use", "code", "codes", "card", "cards", "number", "deck",
+  "more", "than", "method", "gap",
 ]);
 
 function words(text) {
@@ -153,23 +163,59 @@ function words(text) {
     .filter((w) => w.length > 3 && !GENERIC_WORDS.has(w));
 }
 
-export function classifyIntent(message, deck) {
-  const text = String(message || "");
-  if (!text.trim() || PROGRAMMING.test(text)) return null;
-  const codeCue = CODE_CUE.test(text) || /(?<!\d)\d{4,6}(?!\d)/.test(text);
-  const activationCue = ACTIVATION_CUE.test(text);
-  if (codeCue && activationCue) return "ambiguous";
-  if (codeCue) return "code";
-  if (activationCue) return "activation";
-  // A bare name ("embody", "wealth") is a lookup only when the message is short.
-  // Longer notes stay on the normal coaching path.
-  if (String(text).trim().length > 80) return null;
-  const codeHit = mentionedCodes(text, deck).some((c) => c.card || c.retired);
-  const actHit = scoreActivations(text, activationCatalog()).some((s) => s.exact);
+function isJustCodeNumbers(text) {
+  if (!CODE_NUMBER.test(text)) return false;
+  const rest = String(text)
+    .replace(/(?<!\d)\d{4,6}(?!\d)/g, " ")
+    .replace(/\b(and|or|the|a|an|code|codes|card|cards|number|numbers|please|my)\b/gi, " ")
+    .replace(/[^a-z0-9]+/gi, " ")
+    .trim();
+  return rest.length === 0;
+}
+
+function isBareCodeReference(text) {
+  return /^\s*(?:(?:the|that|this|my)\s+)?(?:number|numbers|code|card|deck)(?:\s+(?:thing|one))?\s*\??\s*$/i.test(String(text || "").trim());
+}
+
+function isCodeLookup(text) {
+  if (isJustCodeNumbers(text) || isBareCodeReference(text) || CODE_REQUEST.test(text)) return true;
+  return CODE_NUMBER.test(text) && /\b(tell me about|what(?:'s| is)|where(?:'s| is)|which|open|show me|do i have|is this)\b/i.test(text);
+}
+
+function isActivationLookup(text) {
+  return ACTIVATION_REQUEST.test(text);
+}
+
+function bareNameIntent(text, deck) {
+  const trimmed = String(text || "").trim();
+  // A bare name ("embody", "wealth"), not a sentence that happens to contain one.
+  if (trimmed.length > 40) return null;
+  const tokens = words(trimmed).filter((t) => !WEAK_TITLE_WORDS.has(t));
+  if (!tokens.length || tokens.length > 3) return null;
+  const codeHit = mentionedCodes(trimmed, deck).some((hit) => {
+    const name = hit.card?.name || hit.retired?.name || "";
+    const nameTokens = words(name);
+    return nameTokens.length > 0 && tokens.every((t) => nameTokens.includes(t) || stemHit(t, { title: name }));
+  });
+  const actHit = scoreActivations(trimmed, activationCatalog()).some((scored) => {
+    if (!scored.exact) return false;
+    return tokens.every((t) => words(scored.activation.title).includes(t) || stemHit(t, scored.activation));
+  });
   if (codeHit && actHit) return "ambiguous";
   if (codeHit) return "code";
   if (actHit) return "activation";
   return null;
+}
+
+export function classifyIntent(message, deck) {
+  const text = String(message || "");
+  if (!text.trim() || PROGRAMMING.test(text)) return null;
+  const codeLookup = isCodeLookup(text);
+  const activationLookup = isActivationLookup(text);
+  if (codeLookup && activationLookup) return "ambiguous";
+  if (codeLookup) return "code";
+  if (activationLookup) return "activation";
+  return bareNameIntent(text, deck);
 }
 
 function mentionedCodes(message, deck) {
@@ -203,8 +249,32 @@ function mentionedCodes(message, deck) {
   return out;
 }
 
+function normalizeMatchText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// A title match is the activation's name, not its internal slug and not one
+// short word taken from a longer title ("more", "method", "gap").
+export function fullTitleMatch(message, activation) {
+  const msg = normalizeMatchText(message);
+  const title = normalizeMatchText(activation && activation.title);
+  if (!msg || !title || title.length < 4) return false;
+  if (title.length >= 8 && msg.includes(title)) return true;
+  const core = title.replace(/\bactivations?\b/g, " ").replace(/\s+/g, " ").trim();
+  if (!core) return false;
+  if (core.includes(" ")) return core.length >= 8 && msg.includes(core);
+  if (core.length < 5 || WEAK_TITLE_WORDS.has(core)) return false;
+  const near = new RegExp(`\\b${core}\\b(?:\\s+\\w+){0,3}\\s+activations?\\b|\\bactivations?\\b(?:\\s+\\w+){0,3}\\s+${core}\\b`);
+  return near.test(msg);
+}
+
 function stemHit(token, activation) {
-  const blob = `${activation.title} ${activation.slug}`.toLowerCase();
+  if (!token || token.length < 5 || WEAK_TITLE_WORDS.has(token)) return false;
+  const blob = String(activation && activation.title || "").toLowerCase();
   const roots = [token];
   if (token.endsWith("y") && token.length > 4) roots.push(token.slice(0, -1));
   return roots.some((t) => t.length >= 4 && blob.includes(t));
@@ -215,17 +285,20 @@ export function scoreActivations(message, catalog) {
   return catalog
     .map((a) => {
       const titleTokens = words(a.title);
-      const blob = words(`${a.title} ${a.description} ${a.categories.join(" ")}`);
+      const blob = words(`${a.title} ${a.description} ${(a.categories || []).join(" ")}`);
       let score = 0;
       let exact = false;
+      if (fullTitleMatch(message, a)) {
+        score += 12;
+        exact = true;
+      }
       for (const t of tokens) {
+        if (WEAK_TITLE_WORDS.has(t)) continue;
         if (titleTokens.includes(t) || stemHit(t, a)) {
           score += 5;
-          exact = true;
+          if (t.length >= 5) exact = true;
         } else if (blob.includes(t)) score += 2;
       }
-      const title = a.title.toLowerCase();
-      if (tokens.length && tokens.every((t) => title.includes(t) || stemHit(t, a))) exact = true;
       return { activation: a, score, exact };
     })
     .sort((a, b) => b.score - a.score || a.activation.title.localeCompare(b.activation.title));
@@ -414,6 +487,115 @@ export function resolveLookup({
     return built;
   }
   return buildActivationReply(message, { catalog, env, deck });
+}
+
+export function normalizeReplyText(text) {
+  return String(text || "").replace(/\s+/g, " ").trim();
+}
+
+export function isSameCannedReply(reply, previousAssistant) {
+  const next = normalizeReplyText(reply);
+  const prev = normalizeReplyText(previousAssistant);
+  return !!next && next === prev;
+}
+
+function incidentalFacts(message, deck) {
+  const parts = [];
+  const seenCode = new Set();
+  if (CODE_NUMBER.test(String(message || ""))) {
+    for (const hit of mentionedCodes(message, deck)) {
+      if (hit.retired) {
+        parts.push(`${RETIRED_EMBODY_CODE} is a retired Embody code. The current Embody code is ${CURRENT_EMBODY_CODE}. Link: ${codeCardHref(CURRENT_EMBODY_CODE)}.`);
+        seenCode.add(hit.code);
+      } else if (hit.card) {
+        const href = codeCardHref(hit.card.code);
+        parts.push(`${hit.card.name} is code ${hit.card.code}.${href ? ` Link: ${href}.` : ""}`);
+        seenCode.add(hit.card.code);
+      }
+    }
+  }
+  const seenSlug = new Set();
+  for (const activation of activationCatalog()) {
+    if (!fullTitleMatch(message, activation) || seenSlug.has(activation.slug)) continue;
+    seenSlug.add(activation.slug);
+    const href = activationHref(activation.slug);
+    const card = (deck || []).find((c) => c.activationSlug === activation.slug);
+    const codeBit = card && !seenCode.has(card.code)
+      ? ` Paired code: ${card.name} ${card.code}${codeCardHref(card.code) ? ` (${codeCardHref(card.code)})` : ""}.`
+      : "";
+    parts.push(`${activation.title} is in the app.${href ? ` Link: ${href}.` : ""}${codeBit}`);
+  }
+  return parts.join("\n");
+}
+
+function groundingBody({ message, deck, found, held, entitlement, codePull, historyUnavailable, env, activations }) {
+  if (found && (found.kind === "code" || found.kind === "activation" || found.kind === "unknown-number" || found.kind === "fallback")) {
+    return found.reply;
+  }
+  if (found && found.kind === "ambiguous") {
+    const catalog = activationCatalog(activations);
+    const code = deck ? buildCodeReply(message, { deck, held, entitlement, codePull, historyUnavailable }) : null;
+    const act = buildActivationReply(message, { catalog, env, deck });
+    return [code && code.kind === "code" ? code.reply : "", act && act.kind === "activation" ? act.reply : ""]
+      .filter(Boolean)
+      .join("\n\n");
+  }
+  return incidentalFacts(message, deck);
+}
+
+export function formatGroundingNote(body, { asked = false } = {}) {
+  const facts = String(body || "").trim();
+  if (!facts) return "";
+  if (asked) {
+    return `\n\nCODE / ACTIVATION FACTS: The member asked about a code or activation during an ongoing conversation. Answer inside that conversation. Use only these facts for the number, the name, and the link. Do not invent a code. Do not drop the rest of what they asked.\n${facts}\n`;
+  }
+  return `\n\nCODE / ACTIVATION FACTS (background only — do not make this the reply): A real code or activation was mentioned. Answer what the member actually asked. Do not send an activation card or a code card as your reply. If you name it, use only this:\n${facts}\n`;
+}
+
+const ASKED_FACT_KINDS = new Set(["code", "activation", "unknown-number", "fallback", "ambiguous"]);
+
+/**
+ * Canned lookup replies are only for a clear lookup that opens the conversation.
+ * Inside a conversation, or when the canned text would repeat the previous
+ * bot reply, the model answers and is given the real code or activation facts.
+ */
+export function planLookupDelivery({
+  message,
+  deck = null,
+  deckError = false,
+  held = [],
+  entitlement = null,
+  codePull = false,
+  historyUnavailable = false,
+  env = process.env,
+  activations = null,
+  priorMessageCount = 0,
+  previousAssistant = "",
+} = {}) {
+  const found = resolveLookup({
+    message,
+    deck,
+    deckError,
+    held,
+    entitlement,
+    codePull,
+    historyUnavailable,
+    env,
+    activations,
+  });
+  const repeat = !!(found && found.reply && isSameCannedReply(found.reply, previousAssistant));
+  const inConversation = Number(priorMessageCount) > 0;
+  if (found && found.reply && !inConversation && !repeat) {
+    return { delivery: "canned", reply: found.reply, kind: found.kind, note: "" };
+  }
+  const body = groundingBody({ message, deck, found, held, entitlement, codePull, historyUnavailable, env, activations });
+  const asked = !!(found && ASKED_FACT_KINDS.has(found.kind));
+  return {
+    delivery: "ai",
+    reply: null,
+    kind: found ? found.kind : null,
+    note: formatGroundingNote(body, { asked }),
+  };
 }
 
 export function forbiddenLookupLanguage(text) {
