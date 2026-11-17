@@ -69,6 +69,13 @@ import {
   stripInternalIds,
 } from "@/lib/codeChat";
 import { loadHeldCodes } from "@/lib/memberCodes";
+import {
+  currentRecommendation,
+  finalizeMemberReply,
+  listenDebriefReply,
+  recommendationPromptNote,
+  starterChipReply,
+} from "@/lib/memberChat";
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-5";
@@ -247,7 +254,7 @@ export async function POST(req: NextRequest) {
     .map((s: any) => {
           const f = s.fields || {};
           const gapPreview = (f.gap_explanation || "").slice(0, 300);
-          return `- id: ${s.id} | focus: ${f.focus_area || "(none)"} | Divine Identity: ${f.divine_identity_name || "(none)"} | Current Frequency: ${f.current_frequency || "(none)"} | status: ${f.progress_status || "shifting"} | Gap: ${gapPreview}`;
+          return `- id: ${s.id} | focus: ${f.focus_area || "(none)"} | Divine Identity: ${f.divine_identity_name || "(none)"} | Current Frequency: ${f.current_frequency || "(none)"} | status: ${f.progress_status || "shifting"} | Recommended activation: ${f.recommended_activation || "(none)"} | Gap: ${gapPreview}`;
     })
     .join("\n");
 
@@ -273,6 +280,9 @@ export async function POST(req: NextRequest) {
   if (!isGapMethodProcess && symptomTriggered(message) && symptomGuardrailEnabled()) {
     systemPrompt += `\n\nPHYSICAL SYMPTOM (required this turn): The member described a physical symptom. Do not stay in pattern-only mode. Do not explain this as only a Gap or a pattern. Start with this exact sentence, then tell them to check with a doctor or qualified professional:\n${symptomSentence()}\n`;
   }
+  const savedTitle = currentRecommendation(existingShiftRecords);
+  if (!isGapMethodProcess) systemPrompt += recommendationPromptNote(existingShiftRecords);
+
   if (embodimentShift) {
     const f = embodimentShift.fields;
     systemPrompt += `\n\n=== SHIFT PROGRESS CHECK-IN (Update Progress button) ===\nThe member clicked "Update Progress" on this Shift: ${f.divine_identity_name || "their Shift"} / ${f.current_frequency || ""}. GAP: ${f.gap_explanation || ""}. Recommended Activation: ${f.recommended_activation || ""}.\n\nThey were just greeted with: "You're ready to make this shift embodied — tell me, what's your main shift, and what's making you feel like this is fully embodied?" Continue that conversation.\n\nNever mark a Shift Embodied simply because the member listened to an activation. Watch for meaningful evidence the contradiction is no longer driving the same behavior -- e.g. responding differently to the old trigger, taking the action they previously avoided, no longer reopening the same decision, speaking or showing up differently, a change in the repeated pattern, or feeling the old thought/emotion without automatically following the old behavior.\n\nThen ask them directly: "Do you feel like this shift is complete?"\n\nIf they say yes: tell them plainly, using almost exactly this phrase -- "I've updated your card to mark this as Embodied" -- and then celebrate them thoroughly, reflecting back where they started and how far they've come.\n\nIf they say no, or the pattern still feels active: don't say anything about updating their card -- keep supporting them, and let them know it's okay to keep working with this Shift.`;
@@ -310,31 +320,13 @@ export async function POST(req: NextRequest) {
   // second copy of the previous canned reply, is given to the model as facts
   // so the member's actual question is still answered. Guided processes stay
   // on their own script.
+  // A listen debrief and a starter chip are also answered here, in full,
+  // so the model cannot skip the activation or pitch the next card.
+  let lookupReplyForRepair = "";
+  let deckForReply: any[] | null = null;
   if (!process) {
-    let deck = null;
-    let deckError = false;
-    try { deck = loadRecodeDeck(); } catch (err) { deckError = true; console.error("recode deck unreadable", err); }
-    const intent = classifyIntent(message, deck || []);
-    const numberInMessage = /(?<!\d)\d{4,6}(?!\d)/.test(String(message || ""));
-    let held: any[] = [];
-    let historyUnavailable = false;
-    if ((intent === "code" || numberInMessage) && deck && !deckError) {
-      try { held = await loadHeldCodes(email); } catch (err) { historyUnavailable = true; console.error("held codes unreadable", err); }
-    }
-    const previousAssistant = [...priorMessages].reverse().find((m: any) => m.fields?.role === "assistant")?.fields?.message_text || "";
-    const plan = planLookupDelivery({
-      message,
-      deck,
-      deckError,
-      held,
-      historyUnavailable,
-      entitlement,
-      codePull: featureAllowed("CODE_PULL", email),
-      priorMessageCount,
-      previousAssistant,
-    });
-    if (plan.delivery === "canned" && plan.reply) {
-      const replyText = stripInternalIds(applySymptomGuardrail(message, plan.reply).reply);
+    const sendCanned = async (body: string) => {
+      const replyText = stripInternalIds(applySymptomGuardrail(message, body).reply);
       await createMessage({ chatId, email, role: "assistant", text: replyText });
       const nowIso = new Date().toISOString();
       await updateChatSession(chatId, { updated_at: nowIso, last_message_at: nowIso }).catch((err) => console.error("lookup session update", err));
@@ -359,7 +351,35 @@ export async function POST(req: NextRequest) {
         return new Response(channel.readable, { headers: SSE_HEADERS });
       }
       return NextResponse.json({ reply: replyText, chatId, openActivationSlug: null });
+    };
+    const direct = listenDebriefReply(message) || starterChipReply(message, { savedTitle });
+    if (direct) return await sendCanned(direct);
+
+    let deck = null;
+    let deckError = false;
+    try { deck = loadRecodeDeck(); } catch (err) { deckError = true; console.error("recode deck unreadable", err); }
+    deckForReply = deck;
+    const intent = classifyIntent(message, deck || []);
+    const numberInMessage = /(?<!\d)\d{4,6}(?!\d)/.test(String(message || ""));
+    let held: any[] = [];
+    let historyUnavailable = false;
+    if ((intent === "code" || numberInMessage) && deck && !deckError) {
+      try { held = await loadHeldCodes(email); } catch (err) { historyUnavailable = true; console.error("held codes unreadable", err); }
     }
+    const previousAssistant = [...priorMessages].reverse().find((m: any) => m.fields?.role === "assistant")?.fields?.message_text || "";
+    const plan = planLookupDelivery({
+      message,
+      deck,
+      deckError,
+      held,
+      historyUnavailable,
+      entitlement,
+      codePull: featureAllowed("CODE_PULL", email),
+      priorMessageCount,
+      previousAssistant,
+    });
+    if (plan.delivery === "canned" && plan.reply) return await sendCanned(plan.reply);
+    lookupReplyForRepair = plan.factualReply || "";
     if (plan.note) systemPrompt += stripInternalIds(plan.note);
   }
 
@@ -613,6 +633,14 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.error("Failed to auto-update Shift to Embodied", err);
       }
+    }
+    if (!isGapMethodProcess && !distortionRoutingErrorOccurred) {
+      replyText = finalizeMemberReply(replyText, {
+        message,
+        savedTitle,
+        lookupReply: lookupReplyForRepair,
+        deck: deckForReply,
+      });
     }
     replyText = stripInternalIds(replyText);
     if (!isGapMethodProcess) replyText = appendActivationLinks(replyText);

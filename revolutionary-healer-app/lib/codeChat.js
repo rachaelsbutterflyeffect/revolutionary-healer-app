@@ -42,9 +42,9 @@ const NEVER_LINK_SLUGS = new Set(["spirit-connection-activation"]);
 // ordinary sentence is not a request. Those stay on the coaching path.
 const CODE_NUMBER = /(?<!\d)\d{4,6}(?!\d)/;
 const CODE_REQUEST =
-  /\b(?:where(?:'s| is)|what(?:'s| is)|which|open|show me|do i have|tell me about|can you (?:open|show|find|pull))\b[\s\S]{0,80}\b(?:codes?|cards?|numbers?)\b|\b(?:show me|open)\b[\s\S]{0,40}\b(?:that|the|my)\s+(?:code|card)\b|\b(?:i\s+)?(?:drew|pulled|drawn|draw)\b[\s\S]{0,80}\b(?:codes?|cards?)\b|\b(?:codes?|cards?)\b[\s\S]{0,40}\b(?:i\s+)?(?:drew|pulled|drawn)\b/i;
+  /\b(?:where(?:'s| is)|what(?:'s| is)|which|open|show me|do i have|tell me about|can you (?:open|show|find|pull))\b[\s\S]{0,80}\b(?:codes?|cards?|numbers?)\b|\bwhere\s+(?:can|do|should)\s+i\s+find\b[\s\S]{0,60}\b(?:codes?|cards?)\b|\b(?:show me|open)\b[\s\S]{0,40}\b(?:that|the|my)\s+(?:code|card)\b|\b(?:i\s+)?(?:drew|pulled|drawn|draw)\b[\s\S]{0,80}\b(?:codes?|cards?)\b|\b(?:codes?|cards?)\b[\s\S]{0,40}\b(?:i\s+)?(?:drew|pulled|drawn)\b/i;
 const ACTIVATION_REQUEST =
-  /\b(?:where(?:'s| is)|what(?:'s| is)|which|open|show me|do i have|do you have)\b[\s\S]{0,80}\bactivations?\b|\b(?:can|could|may)\s+i\s+(?:listen|play|hear)\b|\b(?:where|how)\s+(?:can|do)\s+i\s+(?:listen|play|hear)\b|\b(?:i\s+want\s+to|i'?d\s+like\s+to|let\s+me)\s+(?:listen|play|hear)\b|\bdo you have an activation\b/i;
+  /\b(?:where(?:'s| is)|where\s+(?:can|do|should)\s+i\s+find|what(?:'s| is)|which|open|show me|do i have|do you have|how do i find)\b[\s\S]{0,80}\bactivations?\b|\b(?:can|could|may)\s+i\s+(?:listen|play|hear)\b|\b(?:where|how)\s+(?:can|do)\s+i\s+(?:listen|play|hear)\b|\b(?:i\s+want\s+to|i'?d\s+like\s+to|let\s+me)\s+(?:listen|play|hear)\b|\bdo you have an activation\b/i;
 const ANAPHORA =
   /\b(that|this|the)\s+(card|one|code)\b/i;
 // Words that show up inside real titles but are not a title on their own.
@@ -177,8 +177,16 @@ function isBareCodeReference(text) {
   return /^\s*(?:(?:the|that|this|my)\s+)?(?:number|numbers|code|card|deck)(?:\s+(?:thing|one))?\s*\??\s*$/i.test(String(text || "").trim());
 }
 
+// "Its a code 98321" / "code 98321" — a number the member is pointing at,
+// not a sentence that happens to contain digits.
+function isCodePointer(text) {
+  return /^\s*(?:it(?:'?s|s)?|it is|this is|that(?:'?s| is)?|i mean)?\s*(?:a\s+)?(?:code|card|number)\s*(?:is\s+)?#?\s*\d{4,6}\s*[.!]?\s*$/i.test(
+    String(text || "").trim()
+  );
+}
+
 function isCodeLookup(text) {
-  if (isJustCodeNumbers(text) || isBareCodeReference(text) || CODE_REQUEST.test(text)) return true;
+  if (isJustCodeNumbers(text) || isBareCodeReference(text) || isCodePointer(text) || CODE_REQUEST.test(text)) return true;
   return CODE_NUMBER.test(text) && /\b(tell me about|what(?:'s| is)|where(?:'s| is)|which|open|show me|do i have|is this)\b/i.test(text);
 }
 
@@ -547,7 +555,7 @@ export function formatGroundingNote(body, { asked = false } = {}) {
   const facts = String(body || "").trim();
   if (!facts) return "";
   if (asked) {
-    return `\n\nCODE / ACTIVATION FACTS: The member asked about a code or activation during an ongoing conversation. Answer inside that conversation. Use only these facts for the number, the name, and the link. Do not invent a code. Do not drop the rest of what they asked.\n${facts}\n`;
+    return `\n\nCODE / ACTIVATION FACTS: The member asked about a code or activation during an ongoing conversation. Answer inside that conversation. Use only these facts for the number, the name, and the link. Point them to that link in the app. Do not invent a code. Do not say there is no record. Do not tell them to email anyone. Do not drop the rest of what they asked.\n${facts}\n`;
   }
   return `\n\nCODE / ACTIVATION FACTS (background only — do not make this the reply): A real code or activation was mentioned. Answer what the member actually asked. Do not send an activation card or a code card as your reply. If you name it, use only this:\n${facts}\n`;
 }
@@ -596,9 +604,24 @@ export function planLookupDelivery({
     reply: null,
     kind: found ? found.kind : null,
     note: formatGroundingNote(body, { asked }),
+    factualReply: found?.reply || "",
   };
 }
 
 export function forbiddenLookupLanguage(text) {
-  return /\b(no record|may not exist|does(?:n'?t| not) exist|email support|does not exist)\b/i.test(String(text || ""));
+  return /\b(no record|may not exist|does(?:n'?t| not) exist|email support|email rachael|email me|does not exist)\b|rachaelsbutterflyeffect@gmail\.com/i.test(String(text || ""));
+}
+
+/**
+ * If the model answered a real lookup by saying there is no record or by
+ * sending the member to email, use the deck answer instead.
+ * @param {string} modelReply
+ * @param {string} lookupReply
+ */
+export function repairLookupMiss(modelReply, lookupReply) {
+  const factual = String(lookupReply || "").trim();
+  if (!factual) return String(modelReply || "");
+  const model = String(modelReply || "");
+  if (!forbiddenLookupLanguage(model)) return model;
+  return factual;
 }
