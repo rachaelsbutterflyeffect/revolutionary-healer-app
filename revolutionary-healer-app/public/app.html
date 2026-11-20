@@ -3366,9 +3366,20 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
   async function loadMemberRevolutionData() {
     if (!RH_EMAIL) return;
     try {
-      var res = await fetch('/api/shifts?email=' + encodeURIComponent(RH_EMAIL));
+      var res = null;
+      var data = null;
+      var pre = window.__rhRevPrefetch;
+      // The refresh page starts this fetch in the document head. Use it once, then always hit the network
+      // (a new Shift, a delete, or a failed prefetch must not reuse the first response).
+      if (pre && pre.email === RH_EMAIL && pre.shifts && !pre.shiftsConsumed) {
+        pre.shiftsConsumed = true;
+        try { data = await pre.shifts; res = pre.shiftsResponse || null; } catch (err) { data = null; }
+      }
+      if (!data || !Array.isArray(data.shifts)) {
+        res = await fetch('/api/shifts?email=' + encodeURIComponent(RH_EMAIL));
+        data = await res.json();
+      }
       if (typeof gapNoteFastReading === 'function') gapNoteFastReading(res); // GAP reading restructure: switch on -> unified Shift card labels
-      var data = await res.json();
       var records = data.shifts || [];
       SHIFTS.length = 0;
       records.forEach(function(r) {
@@ -3388,9 +3399,16 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
           todaysFocus: r.todaysFocus || '',
         });
       });
+      window.__rfShiftsReady = true;
       renderFocusAndShifts(SHIFTS);
     } catch (e) {
       console.error('Failed to load My Revolution data', e);
+      try {
+        document.querySelectorAll('#rf-recent-sec [aria-busy], #rf-stats[aria-busy], #rf-your-codes[aria-busy]').forEach(function (n) {
+          n.setAttribute('aria-busy', 'false');
+          n.classList.add('rf-skel-idle');
+        });
+      } catch (err) {}
     }
   }
 

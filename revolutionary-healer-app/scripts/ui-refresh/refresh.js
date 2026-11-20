@@ -28,6 +28,12 @@
   addEventListener('wheel', function () { busy(180); }, { passive: true });
   function rfGo(s, opts) {
     opts = opts || {};
+    // Revolution data and feature flags start in the head. A tap before that (or a head miss) starts them here.
+    if (s === 'rev') {
+      var em = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || '';
+      if (em && typeof window.__rhStartRevPrefetch === 'function') window.__rhStartRevPrefetch(em);
+      if (em && typeof window.__rhStartFeaturesPrefetch === 'function') window.__rhStartFeaturesPrefetch(em);
+    }
     busy(450);
     B.setAttribute('data-rf', s);
     var k = navKey(s);
@@ -492,8 +498,17 @@
     var done = function () { if (m.classList.contains('active')) { try { closeShiftModal(); } catch (e) {} } m.classList.remove('rf-silent'); var l = (window.SHIFTS || []).some(function (x) { return String(x.id) === String(openId); }); if (!l) openId = null; renderFocusAndShifts(window.SHIFTS || []); };
     Promise.resolve(rhDeleteShift(String(id))).then(done, done);
   }
+  function shiftKind(s) { return !s ? '' : s.method === 'GAP Method' ? 'gap' : s.method === 'Code Upgrade' ? 'code' : 'other'; }
+  // The recent list is born as the final 3-card layout. Never paint every Shift there and then hide them.
+  function cardsFor(list, shifts) {
+    var f = list.getAttribute('data-rf-filter');
+    if (f === 'recent') return shifts.slice(0, 3);
+    if (f === 'gap' || f === 'code') return shifts.filter(function (s) { return shiftKind(s) === f; });
+    return shifts;
+  }
   function bubbles(shifts) {
     if (fingerDown) { pending = shifts; return; }
+    shifts = shifts || [];
     document.querySelectorAll('[data-role="shifts-list"]').forEach(function (list) {
       if (!list.__rfWired) {
         list.__rfWired = true;
@@ -501,8 +516,9 @@
         var up = function () { if (!fingerDown) return; fingerDown = false; if (pending) { var p = pending; pending = null; setTimeout(function () { bubbles(p); }, 350); } };
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { list.addEventListener(ev, up); });
       }
-      list.querySelectorAll('.rf-sbub').forEach(function (n) { n.remove(); });
-      shifts.forEach(function (s) {
+      list.querySelectorAll('.rf-sbub, .rf-skel-card').forEach(function (n) { n.remove(); });
+      list.removeAttribute('aria-busy');
+      cardsFor(list, shifts).forEach(function (s) {
         var d = document.createElement('div');
         d.className = 'rf-sbub' + (String(openId) === String(s.id) ? ' open' : ''); d.setAttribute('role', 'button'); d.tabIndex = 0;
         d.setAttribute('aria-expanded', String(String(openId) === String(s.id))); d.setAttribute('data-shift-id', String(s.id));
@@ -572,6 +588,22 @@
   try { var pin = localStorage.getItem(FK); if (pin && !sessionStorage.getItem('rhFocusShiftId')) sessionStorage.setItem('rhFocusShiftId', pin); } catch (e) {}
   var _rfs = window.renderFocusAndShifts;
   renderFocusAndShifts = window.renderFocusAndShifts = function (shifts) { var r = _rfs.apply(this, arguments); try { bubbles(shifts || []); } catch (e) {} return r; };
+  // Shifts can resolve while this script is still parsing, before the wrap above exists. Paint those cards now
+  // (3 in My Most Recent Shifts) so the tab is never the hidden shift-row markup with nothing visible.
+  if (window.__rfShiftsReady && (window.SHIFTS || []).length) {
+    var earlyList = document.querySelector('#my-revolution [data-role="shifts-list"]');
+    if (earlyList && !earlyList.querySelector('.rf-sbub')) { try { bubbles(window.SHIFTS); } catch (e) {} }
+  }
+  // Shifting Cards dropdowns are in the first paint. This toggle is the same one rf-sections.js would add.
+  if (!window.__rfAccWired) {
+    window.__rfAccWired = 1;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.rf-acc-btn'); if (!b) return;
+      var panel = document.getElementById(b.getAttribute('aria-controls')); if (!panel) return;
+      var open = panel.hidden; panel.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.parentNode.classList.toggle('open', open);
+      if (open) { var l = panel.querySelector('[data-rf-filter]'); if (l && typeof window.__rfFilterList === 'function') window.__rfFilterList(l); }
+    });
+  }
   document.addEventListener('click', function (e) {
     var p = e.target.closest && e.target.closest('[data-rf-emb]');
     if (p && !p.closest('.rf-sbub')) { e.stopPropagation(); e.preventDefault(); embody(p.getAttribute('data-rf-emb'), p); }
@@ -701,22 +733,42 @@
     var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/' + n + '.css'; l.id = 'rf-feat-' + n; document.head.appendChild(l);
     var s = document.createElement('script'); s.src = '/' + n + '.js'; document.body.appendChild(s);
   }
+  // The Revolution tab is born as the flag-on layout (stats, 3 recent cards, Shifting Cards, Your codes).
+  // When a flag is off, drop only that piece. A failed /api/features leaves the classic Shifts list.
+  function dropStats() { var s = document.getElementById('rf-stats'); if (s && s.getAttribute('data-rf-skel') === '1') s.remove(); }
+  function revertRecentLayout() {
+    var sec = document.getElementById('rf-recent-sec');
+    if (sec) {
+      var h = sec.querySelector('.subsection-head h3');
+      if (h) h.innerHTML = '<img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts';
+      var list = sec.querySelector('[data-role="shifts-list"]');
+      if (list) list.removeAttribute('data-rf-filter');
+    }
+    var cards = document.getElementById('rf-sec-cards');
+    if (cards && cards.getAttribute('data-rf-skel') === '1') cards.remove();
+    if (window.__rfShiftsReady && typeof window.renderFocusAndShifts === 'function') {
+      try { window.renderFocusAndShifts(window.SHIFTS || []); } catch (e) {}
+    }
+  }
+  function applyFeatures(f) {
+    if (!f) { window.__rfFeatures = {}; dropStats(); revertRecentLayout(); return; }
+    window.__rfFeatures = f;
+    if (f.methodTracking !== true) dropStats();
+    if (f.saveSections !== true) revertRecentLayout();
+    Object.keys(MAP).forEach(function (k) { if (f[k] === true) load(MAP[k]); });
+    // Daily code door is in the Home markup so it paints with the other two. Hide it only when
+    // CODE_PULL is explicitly off. A failed /api/features request leaves the door up.
+    if (f.codePull === false) {
+      var door = document.getElementById('rf-door-code');
+      if (door) { var box = door.parentNode; door.remove(); if (box) box.classList.remove('rf-doors3'); }
+    }
+  }
   function go() {
     var em = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || '';
     if (!em) { if (++tries < 80) setTimeout(go, 250); return; }
-    fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (f) {
-        window.__rfFeatures = f || {};
-        Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); });
-        // Daily code door is in the Home markup so it paints with the other two. Hide it only when
-        // CODE_PULL is explicitly off. A failed /api/features request leaves the door up.
-        if (f && f.codePull === false) {
-          var door = document.getElementById('rf-door-code');
-          if (door) { var box = door.parentNode; door.remove(); if (box) box.classList.remove('rf-doors3'); }
-        }
-      })
-      .catch(function () {});
+    var pending = window.__rhFeaturesPromise && window.__rhFeaturesPromise.email === em ? window.__rhFeaturesPromise.promise : null;
+    var req = pending || fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return null; });
+    Promise.resolve(req).then(applyFeatures).catch(function () { applyFeatures(null); });
   }
   go();
 })();

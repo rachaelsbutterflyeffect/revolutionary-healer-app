@@ -59,7 +59,40 @@ GUARD = """<style id="rf-critical">html.rf-html{background:#06080b}html.rf-html 
   try {
     var e = localStorage.getItem('rh_member_email');
     if (!e) return; // the page's own sign-in check sends them to '/'
+    // Revolution data starts with the first bytes of the page, in parallel with the UI-refresh check and the
+    // rest of the HTML. Feature scripts later consume these promises instead of waiting on their own fetches.
+    function rhJson(url, box, key) {
+      return fetch(url, { cache: 'no-store', credentials: 'same-origin' }).then(function (r) {
+        if (box && key) box[key] = r;
+        return r.ok ? r.json() : null;
+      }).catch(function () { return null; });
+    }
+    window.__rhStartRevPrefetch = function (email) {
+      email = String(email || '');
+      if (!email || email.indexOf('@') < 0) return null;
+      var cur = window.__rhRevPrefetch;
+      if (cur && cur.email === email) return cur;
+      var q = encodeURIComponent(email);
+      var pre = { email: email, at: Date.now(), shiftsConsumed: false, sectionsConsumed: false, codesConsumed: false };
+      pre.shifts = rhJson('/api/shifts?email=' + q, pre, 'shiftsResponse');
+      pre.sections = rhJson('/api/revolution-sections?email=' + q);
+      pre.codes = rhJson('/api/recode-codes?email=' + q);
+      window.__rhRevPrefetch = pre;
+      return pre;
+    };
+    window.__rhStartFeaturesPrefetch = function (email) {
+      email = String(email || '');
+      if (!email) return null;
+      var cur = window.__rhFeaturesPromise;
+      if (cur && cur.email === email) return cur.promise;
+      var promise = fetch('/api/features?email=' + encodeURIComponent(email), { cache: 'no-store', credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .catch(function () { return null; });
+      window.__rhFeaturesPromise = { email: email, promise: promise };
+      return promise;
+    };
     var K = 'rh_ui_refresh', de = document.documentElement, yes = (localStorage.getItem(K) || sessionStorage.getItem(K)) === '1:' + e;
+    if (yes) { window.__rhStartRevPrefetch(e); window.__rhStartFeaturesPrefetch(e); }
     var st = null;
     if (!yes) { st = document.createElement('style'); st.id = 'rf-guard-hold'; st.textContent = 'body{visibility:hidden!important}'; de.appendChild(st); }
     var back = function () { location.replace('/app.html' + location.search + location.hash); };
@@ -71,6 +104,7 @@ GUARD = """<style id="rf-critical">html.rf-html{background:#06080b}html.rf-html 
         if (!d) { if (st) back(); return; }
         try { localStorage.setItem(K, (d.refresh ? '1:' : '0:') + e); } catch (x) {}
         if (!d.refresh) { back(); return; }
+        window.__rhStartRevPrefetch(e); window.__rhStartFeaturesPrefetch(e);
         if (st) st.remove();
         window.__RF_FIRST = d.firstName || '';
         var fire = function () { document.dispatchEvent(new Event('rf:name')); };
@@ -123,9 +157,37 @@ once('<section class="hero" id="hero-section">', HOME + '<section class="hero" i
 
 # ---- Today's Focus + My Revolution headers ----
 HEADS = """<div class="rf-screen" id="rf-focus-head"><button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="rf-ttl">Today's Focus</h2><p class="rf-sub">Your newest Shift, ready when you are.</p></div>
-<div class="rf-screen" id="rf-rev-head"><button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="rf-ttl">My Revolution</h2><p class="rf-sub">Every Gap seen. Every Shift made.</p></div>
+<div class="rf-screen" id="rf-rev-head"><button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="rf-ttl">My Revolution</h2><p class="rf-sub">Every Gap seen. Every Shift made.</p><div class="rf-stats" id="rf-stats" data-rf-skel="1" role="list" aria-busy="true" aria-label="Your Revolution counts"><div class="rf-stat" role="listitem" data-k="gapScans"><b class="rf-stat-hold" aria-hidden="true"><span></span></b><small>GAP Scans</small><i class="rf-stat-start" hidden>first one waiting</i></div><div class="rf-stat" role="listitem" data-k="shifts"><b class="rf-stat-hold" aria-hidden="true"><span></span></b><small>Shifts</small><i class="rf-stat-start" hidden>first one waiting</i></div><div class="rf-stat" role="listitem" data-k="codes"><b class="rf-stat-hold" aria-hidden="true"><span></span></b><small>Codes</small><i class="rf-stat-start" hidden>first one waiting</i></div></div></div>
 """
 once('<section class="block" id="my-revolution">', HEADS + '<section class="block" id="my-revolution">', 'heads')
+# My Revolution first paint: the final 3-card layout, Shifting Cards, and Your codes, with skeletons in the holes.
+# Classic app.html keeps the empty "My Shifts" list. A full rebuild still drops later hand edits (Reset and Restore).
+REV_SKEL = '''    <div class="revolution-subsection rf-recent" id="rf-recent-sec">
+      <div class="subsection-head">
+        <h3 data-orig="My Shifts"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Most Recent Shifts</h3>
+      </div>
+      <div class="shifts-list" data-role="shifts-list" data-rf-filter="recent" aria-busy="true">
+        <div class="rf-skel-card" aria-hidden="true"><span class="rf-skel-orb"></span><span class="rf-skel-copy"><i></i><i></i><i></i></span></div>
+        <div class="rf-skel-card" aria-hidden="true"><span class="rf-skel-orb"></span><span class="rf-skel-copy"><i></i><i></i><i></i></span></div>
+        <div class="rf-skel-card" aria-hidden="true"><span class="rf-skel-orb"></span><span class="rf-skel-copy"><i></i><i></i><i></i></span></div>
+      </div>
+    </div>
+    <div class="revolution-subsection rf-rsec" id="rf-sec-cards" data-rf-skel="1">
+      <div class="subsection-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifting Cards</h3></div>
+      <div class="rf-acc" data-acc="gap"><button type="button" class="rf-acc-btn" aria-expanded="false" aria-controls="rf-acc-gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">GAP Method™ Shifts <span class="rf-acc-n"></span></span><span class="rf-chev" aria-hidden="true"></span></button><div class="rf-acc-panel" id="rf-acc-gap" hidden><div class="shifts-list rf-acc-list" data-role="shifts-list" data-rf-filter="gap"></div><p class="rf-rempty" hidden>Your GAP Method™ Shifts will gather here.</p></div></div>
+      <div class="rf-acc" data-acc="code"><button type="button" class="rf-acc-btn" aria-expanded="false" aria-controls="rf-acc-code"><span class="rf-orb" aria-hidden="true">✧</span><span class="txt">Code Upgrade Shifts <span class="rf-acc-n"></span></span><span class="rf-chev" aria-hidden="true"></span></button><div class="rf-acc-panel" id="rf-acc-code" hidden><div class="shifts-list rf-acc-list" data-role="shifts-list" data-rf-filter="code"></div><p class="rf-rempty" hidden>Codes you save as Shifting cards will gather here.</p></div></div>
+    </div>
+    <section class="revolution-subsection" id="rf-your-codes" aria-label="Your codes" aria-busy="true">
+      <h3>Your codes</h3>
+      <p class="rf-yc-path">My Revolution → Your codes</p>
+      <div id="rf-yc-list"><div class="rf-yc-card rf-yc-skel" aria-hidden="true"><i></i><i></i></div></div>
+    </section>'''
+once('''    <div class="revolution-subsection">
+      <div class="subsection-head">
+        <h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
+      </div>
+      <div class="shifts-list" data-role="shifts-list"></div>
+    </div>''', REV_SKEL, 'rev skeletons')
 
 # ---- Profile (same IDs + onclicks), Account, Support ----
 a = s.index('<section class="block page-view" id="profile-page"')

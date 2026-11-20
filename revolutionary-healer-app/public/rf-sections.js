@@ -3,13 +3,24 @@
   if (window.rfRevData) return;
   var cur = null, at = 0;
   function email() { return (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || ''; }
+  function publish(d) { window.__rfRevData = d; try { document.dispatchEvent(new CustomEvent('rf:rev-data', { detail: d })); } catch (e) {} return d; }
+  function fetchFresh(em) {
+    return fetch('/api/revolution-sections?email=' + encodeURIComponent(em), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (d) { if (d) publish(d); return d; });
+  }
   window.rfRevData = function (force) {
     if (cur && !force && Date.now() - at < 30000) return cur;
     var em = email(); if (!em) return Promise.resolve(null);
+    var pre = window.__rhRevPrefetch;
+    if (!force && pre && pre.email === em && pre.sections && !pre.sectionsConsumed) {
+      pre.sectionsConsumed = true;
+      at = pre.at || Date.now();
+      cur = Promise.resolve(pre.sections).then(function (d) { if (d) return publish(d); at = Date.now(); return fetchFresh(em); });
+      return cur;
+    }
     at = Date.now();
-    cur = fetch('/api/revolution-sections?email=' + encodeURIComponent(em), { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-      .then(function (d) { if (d) { window.__rfRevData = d; try { document.dispatchEvent(new CustomEvent('rf:rev-data', { detail: d })); } catch (e) {} } return d; });
+    cur = fetchFresh(em);
     return cur;
   };
 })();
@@ -50,9 +61,12 @@
       if (closed) { el.classList.remove('open'); el.setAttribute('aria-expanded', 'false'); el.classList.add('rf-xclosed'); var bt = el.querySelector('.bt'); if (bt && !bt.querySelector('.ac') && s && s.activation) { var ac = document.createElement('div'); ac.className = 'ac'; ac.textContent = s.activation; bt.appendChild(ac); } if (bt && !bt.querySelector('.rf-cue')) { var cu = document.createElement('div'); cu.className = 'rf-cue'; cu.textContent = '▶ Tap to open your activation'; bt.appendChild(cu); } }
     });
     if (f !== 'recent') {
-      var acc = list.closest('.rf-acc'); if (acc) { acc.querySelector('.rf-acc-n').textContent = '(' + n + ')'; var em = acc.querySelector('.rf-rempty'); if (em) em.hidden = n > 0; }
+      var acc = list.closest('.rf-acc');
+      // Leave the count blank until Shifts have loaded, so "(0)" doesn't flash ahead of the real number.
+      if (acc && window.__rfShiftsReady) { acc.querySelector('.rf-acc-n').textContent = '(' + n + ')'; var em = acc.querySelector('.rf-rempty'); if (em) em.hidden = n > 0; }
     }
   }
+  window.__rfFilterList = filter;
   function watch(list) {
     if (list.__rfF) return; list.__rfF = true;
     new MutationObserver(function () { filter(list); }).observe(list, { childList: true });
@@ -68,7 +82,10 @@
   }
   var needPaint = false;
   function ensure() {
-    var list = document.querySelector('#my-revolution .revolution-subsection [data-role="shifts-list"]:not([data-rf-filter])'); if (!list) return null;
+    var list = document.querySelector('#my-revolution [data-role="shifts-list"][data-rf-filter="recent"]')
+      || document.querySelector('#my-revolution .revolution-subsection [data-role="shifts-list"]:not([data-rf-filter])');
+    if (!list) return null;
+    if (!list.getAttribute('data-rf-filter')) list.setAttribute('data-rf-filter', 'recent');
     var sub = list.closest('.revolution-subsection'); if (!sub) return null;
     var h = sub.querySelector('.subsection-head h3'); if (h && !h.hasAttribute('data-orig')) { h.setAttribute('data-orig', h.textContent); h.innerHTML = STAR + ' My Most Recent Shifts'; }
     sub.classList.add('rf-recent'); watch(list);
@@ -80,20 +97,24 @@
           '<div class="rf-acc-panel" id="rf-acc-' + a[0] + '" hidden><div class="shifts-list rf-acc-list" data-role="shifts-list" data-rf-filter="' + a[0] + '"></div>' + (a[3] ? '<p class="rf-rempty" hidden>' + a[3] + '</p>' : '') + '</div></div>';
       }).join('');
       sub.parentNode.insertBefore(cards, sub.nextSibling);
-      cards.querySelectorAll('[data-rf-filter]').forEach(watch);
       needPaint = true;
     }
+    cards.querySelectorAll('[data-rf-filter]').forEach(watch);
     // the new lists fill on the next render; ask for one as soon as the Shifts are loaded
     if (needPaint && shiftsArr().length && typeof window.renderFocusAndShifts === 'function') { needPaint = false; try { window.renderFocusAndShifts(shiftsArr()); } catch (e) {} }
     return {};
   }
-  // accordion: expands in place, collapsed by default, chevron turns
-  document.addEventListener('click', function (e) {
-    var b = e.target.closest && e.target.closest('.rf-acc-btn'); if (!b) return;
-    var panel = document.getElementById(b.getAttribute('aria-controls')); if (!panel) return;
-    var open = panel.hidden; panel.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.parentNode.classList.toggle('open', open);
-    if (open) { var l = panel.querySelector('[data-rf-filter]'); if (l) filter(l); }
-  });
+  // accordion: expands in place, collapsed by default, chevron turns.
+  // refresh.js wires the same toggle for the first paint; don't add a second one (they would cancel).
+  if (!window.__rfAccWired) {
+    window.__rfAccWired = 1;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.rf-acc-btn'); if (!b) return;
+      var panel = document.getElementById(b.getAttribute('aria-controls')); if (!panel) return;
+      var open = panel.hidden; panel.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.parentNode.classList.toggle('open', open);
+      if (open) { var l = panel.querySelector('[data-rf-filter]'); if (l) filter(l); }
+    });
+  }
   function render() { ensure(); }
   document.addEventListener('rf:rev-data', function (ev) { render(ev.detail); });
   // re-read when the Shifts change (a GAP run completed, a card saved or deleted)

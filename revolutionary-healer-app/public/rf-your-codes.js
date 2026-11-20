@@ -75,6 +75,7 @@
   function paint(data, focus) {
     var sec = ensure();
     if (!sec) return;
+    sec.removeAttribute("aria-busy");
     var list = document.getElementById("rf-yc-list");
     if (!list) return;
     list.textContent = "";
@@ -97,8 +98,15 @@
   function load(focus) {
     var em = email();
     var url = "/api/recode-codes?email=" + encodeURIComponent(em) + (focus ? "&focus=" + encodeURIComponent(focus) : "");
-    return fetch(url, { cache: "no-store", credentials: "same-origin" })
-      .then(function (r) { return r.ok ? r.json() : { held: [], message: "" }; })
+    function pull() {
+      return fetch(url, { cache: "no-store", credentials: "same-origin" })
+        .then(function (r) { return r.ok ? r.json() : { held: [], message: "" }; });
+    }
+    var pre = window.__rhRevPrefetch;
+    var usePre = !focus && pre && pre.email === em && pre.codes && !pre.codesConsumed;
+    if (usePre) pre.codesConsumed = true;
+    var req = usePre ? Promise.resolve(pre.codes).then(function (d) { return d || pull(); }) : pull();
+    return req
       .then(function (d) { paint(d, focus || ""); return d; })
       .catch(function () { paint({ held: [], message: "I can’t verify that code from chat yet, but that does not mean it isn’t valid. Check your codes in the app first. If it still isn’t showing there, support can check your account directly." }, focus || ""); });
   }
