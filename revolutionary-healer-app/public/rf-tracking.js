@@ -3,13 +3,24 @@
   if (window.rfRevData) return;
   var cur = null, at = 0;
   function email() { return (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || ''; }
+  function publish(d) { window.__rfRevData = d; try { document.dispatchEvent(new CustomEvent('rf:rev-data', { detail: d })); } catch (e) {} return d; }
+  function fetchFresh(em) {
+    return fetch('/api/revolution-sections?email=' + encodeURIComponent(em), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (d) { if (d) publish(d); return d; });
+  }
   window.rfRevData = function (force) {
     if (cur && !force && Date.now() - at < 30000) return cur;
     var em = email(); if (!em) return Promise.resolve(null);
+    var pre = window.__rhRevPrefetch;
+    if (!force && pre && pre.email === em && pre.sections && !pre.sectionsConsumed) {
+      pre.sectionsConsumed = true;
+      at = pre.at || Date.now();
+      cur = Promise.resolve(pre.sections).then(function (d) { if (d) return publish(d); at = Date.now(); return fetchFresh(em); });
+      return cur;
+    }
     at = Date.now();
-    cur = fetch('/api/revolution-sections?email=' + encodeURIComponent(em), { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-      .then(function (d) { if (d) { window.__rfRevData = d; try { document.dispatchEvent(new CustomEvent('rf:rev-data', { detail: d })); } catch (e) {} } return d; });
+    cur = fetchFresh(em);
     return cur;
   };
 })();
@@ -32,9 +43,12 @@
   }
   function draw(d) {
     var r = mount(); if (!r || !d || !d.counts) return;
+    r.removeAttribute('aria-busy');
     ROW.forEach(function (x) {
-      var el = r.querySelector('[data-k="' + x[0] + '"]'), n = +d.counts[x[0]] || 0;
-      el.querySelector('b').textContent = n > 0 ? String(n) : '✧'; el.classList.toggle('zero', n === 0);
+      var el = r.querySelector('[data-k="' + x[0] + '"]'); if (!el) return;
+      var n = +d.counts[x[0]] || 0, b = el.querySelector('b');
+      b.classList.remove('rf-stat-hold'); b.removeAttribute('aria-hidden');
+      b.textContent = n > 0 ? String(n) : '✧'; el.classList.toggle('zero', n === 0);
       el.querySelector('.rf-stat-start').hidden = n > 0;
       el.querySelector('small').textContent = n === 1 ? x[2] : x[1];
       el.setAttribute('aria-label', n > 0 ? n + ' ' + (n === 1 ? x[4] : x[3]) : 'No ' + x[3] + ' yet');

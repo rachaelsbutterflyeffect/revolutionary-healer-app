@@ -22,7 +22,40 @@
   try {
     var e = localStorage.getItem('rh_member_email');
     if (!e) return; // the page's own sign-in check sends them to '/'
+    // Revolution data starts with the first bytes of the page, in parallel with the UI-refresh check and the
+    // rest of the HTML. Feature scripts later consume these promises instead of waiting on their own fetches.
+    function rhJson(url, box, key) {
+      return fetch(url, { cache: 'no-store', credentials: 'same-origin' }).then(function (r) {
+        if (box && key) box[key] = r;
+        return r.ok ? r.json() : null;
+      }).catch(function () { return null; });
+    }
+    window.__rhStartRevPrefetch = function (email) {
+      email = String(email || '');
+      if (!email || email.indexOf('@') < 0) return null;
+      var cur = window.__rhRevPrefetch;
+      if (cur && cur.email === email) return cur;
+      var q = encodeURIComponent(email);
+      var pre = { email: email, at: Date.now(), shiftsConsumed: false, sectionsConsumed: false, codesConsumed: false };
+      pre.shifts = rhJson('/api/shifts?email=' + q, pre, 'shiftsResponse');
+      pre.sections = rhJson('/api/revolution-sections?email=' + q);
+      pre.codes = rhJson('/api/recode-codes?email=' + q);
+      window.__rhRevPrefetch = pre;
+      return pre;
+    };
+    window.__rhStartFeaturesPrefetch = function (email) {
+      email = String(email || '');
+      if (!email) return null;
+      var cur = window.__rhFeaturesPromise;
+      if (cur && cur.email === email) return cur.promise;
+      var promise = fetch('/api/features?email=' + encodeURIComponent(email), { cache: 'no-store', credentials: 'same-origin' })
+        .then(function (r) { return r.ok ? r.json() : {}; })
+        .catch(function () { return null; });
+      window.__rhFeaturesPromise = { email: email, promise: promise };
+      return promise;
+    };
     var K = 'rh_ui_refresh', de = document.documentElement, yes = (localStorage.getItem(K) || sessionStorage.getItem(K)) === '1:' + e;
+    if (yes) { window.__rhStartRevPrefetch(e); window.__rhStartFeaturesPrefetch(e); }
     var st = null;
     if (!yes) { st = document.createElement('style'); st.id = 'rf-guard-hold'; st.textContent = 'body{visibility:hidden!important}'; de.appendChild(st); }
     var back = function () { location.replace('/app.html' + location.search + location.hash); };
@@ -34,6 +67,7 @@
         if (!d) { if (st) back(); return; }
         try { localStorage.setItem(K, (d.refresh ? '1:' : '0:') + e); } catch (x) {}
         if (!d.refresh) { back(); return; }
+        window.__rhStartRevPrefetch(e); window.__rhStartFeaturesPrefetch(e);
         if (st) st.remove();
         window.__RF_FIRST = d.firstName || '';
         var fire = function () { document.dispatchEvent(new Event('rf:name')); };
@@ -1227,6 +1261,57 @@ body.rf .shifts-list .shift-row { display:none !important; }
 .rf-pill[aria-busy="true"] { opacity:.6; }
 body.rf .shifts-list .card.center { border-radius:24px; padding:20px; background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.02)); border:1px solid var(--rf-line); text-align:center; }
 
+/* My Revolution first paint: fixed stat row + 3 card skeletons + Shifting Cards. Charcoal/gold shimmer, no purple.
+   Same sizes as the loaded layout so numbers and cards replace the placeholders without the page jumping. */
+body.rf .rf-stats { display:flex; gap:10px; margin:22px auto 0; max-width:520px; }
+body.rf .rf-stat { flex:1; box-sizing:border-box; min-height:96px; text-align:center; padding:16px 8px 14px; border-radius:20px; border:1px solid rgba(255,236,190,.22); background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035)); box-shadow:0 10px 30px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.18); }
+body.rf .rf-stat b { display:flex; align-items:center; justify-content:center; min-height:31px; font-family:Cinzel,serif; font-size:28px; line-height:1.1; color:var(--rf-gold); font-weight:600; }
+body.rf .rf-stat small { display:block; min-height:1.2em; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#fffc; margin-top:4px; }
+body.rf .rf-stat.zero b { font-size:24px; color:var(--rf-gold2,#fff1c4); text-shadow:0 0 14px rgba(255,214,130,.55); }
+body.rf .rf-stat-start { display:block; font-style:normal; font-size:10.5px; color:var(--rf-teal); margin-top:3px; }
+body.rf .rf-stat-start[hidden] { display:none; }
+body.rf .rf-stat b.rf-stat-hold { color:transparent; }
+body.rf .rf-stat b.rf-stat-hold span { display:block; width:1.5em; height:0.62em; border-radius:6px; background:linear-gradient(90deg,#14110c 0%,#2a2416 40%,rgba(232,200,115,.65) 50%,#2a2416 60%,#14110c 100%); background-size:220% 100%; animation:rf-skel 1.5s ease-in-out infinite; }
+body.rf .rf-skel-card { display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; padding:16px; margin:0 0 12px; min-height:182px; border-radius:30px; border:1px solid rgba(255,236,190,.2); background:linear-gradient(135deg,rgba(20,17,12,.92),rgba(12,11,10,.78)); position:relative; overflow:hidden; pointer-events:none; }
+body.rf .rf-skel-orb { flex:none; width:50px; height:50px; border-radius:50%; background:linear-gradient(90deg,#14110c,#3a3018,#14110c); background-size:220% 100%; animation:rf-skel 1.5s ease-in-out infinite; }
+body.rf .rf-skel-copy { flex:1; min-width:0; }
+body.rf .rf-skel-copy i { display:block; height:10px; border-radius:6px; margin:0 0 8px; background:linear-gradient(90deg,#14110c 0%,#2c2618 40%,rgba(232,200,115,.5) 50%,#2c2618 60%,#14110c 100%); background-size:220% 100%; animation:rf-skel 1.5s ease-in-out infinite; }
+body.rf .rf-skel-copy i:nth-child(1) { width:38%; height:8px; }
+body.rf .rf-skel-copy i:nth-child(2) { width:72%; height:16px; }
+body.rf .rf-skel-copy i:nth-child(3) { width:54%; margin-bottom:0; }
+body.rf .rf-skel-card::after { content:""; position:absolute; inset:0; background:linear-gradient(105deg,transparent 36%,rgba(232,200,115,.14) 50%,transparent 64%); transform:translateX(-120%); animation:rf-skel-sweep 1.7s ease-in-out infinite; pointer-events:none; }
+@keyframes rf-skel { 0% { background-position:120% 0; } 100% { background-position:-120% 0; } }
+@keyframes rf-skel-sweep { 0% { transform:translateX(-120%); } 100% { transform:translateX(120%); } }
+body.rf .rf-skel-idle .rf-skel-card::after, body.rf .rf-skel-idle .rf-skel-orb, body.rf .rf-skel-idle .rf-skel-copy i, body.rf .rf-skel-idle .rf-stat-hold span, body.rf #rf-your-codes.rf-skel-idle .rf-yc-skel i { animation:none; }
+/* Shifting Cards accordions (same metrics as rf-sections.css) so they don't restyle when that file arrives. */
+body.rf .rf-acc { margin-bottom:12px; }
+body.rf .rf-acc-btn { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:14px; width:100%; min-height:74px; padding:16px 18px; border-radius:22px; cursor:pointer; -webkit-tap-highlight-color:transparent; border:1px solid rgba(255,236,190,.22); background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04)); box-shadow:0 10px 30px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.18); }
+body.rf .rf-acc-btn:active { transform:scale(.985); }
+body.rf .rf-acc-btn:focus-visible { outline:1px solid var(--rf-gold2,#fff1c4); outline-offset:3px; }
+body.rf .rf-acc-btn .rf-orb { width:42px; height:42px; font-size:17px; flex:none; }
+body.rf .rf-acc-btn .txt { font-family:"Cormorant Garamond",Georgia,serif; font-size:21px; font-weight:600; line-height:1.15; color:#fdfbf5; flex:1; }
+body.rf .rf-acc-n { color:var(--rf-gold); font-size:17px; }
+body.rf .rf-chev { flex:none; width:10px; height:10px; margin:0 6px 4px 0; border-right:2px solid var(--rf-gold); border-bottom:2px solid var(--rf-gold); transform:rotate(45deg); transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+body.rf .rf-acc.open .rf-chev { transform:rotate(225deg); margin-bottom:-4px; }
+body.rf .rf-acc.open .rf-acc-btn { border-color:rgba(255,236,190,.45); }
+body.rf .rf-acc-panel { padding:12px 0 4px; }
+body.rf .rf-acc-panel[hidden] { display:none; }
+body.rf .rf-xhide { display:none !important; }
+body.rf .rf-rempty { font-family:"Cormorant Garamond",Georgia,serif; font-size:18px; color:#fffc; margin:0; padding:4px 2px; }
+/* Your codes placeholder, same footprint as a held-code card. */
+body.rf #rf-your-codes { background:#06080b; color:#fdfbf5; border:1px solid rgba(232,200,115,.35); border-radius:18px; padding:16px 16px 8px; margin:22px 0 8px; }
+body.rf #rf-your-codes h3 { margin:0 0 4px; color:#e8c873; font-family:Cinzel,Georgia,serif; font-size:18px; font-weight:600; letter-spacing:.04em; text-transform:none; }
+body.rf #rf-your-codes .rf-yc-path { margin:0 0 12px; color:#fdfbf5; font-size:13px; opacity:.85; }
+body.rf #rf-your-codes .rf-yc-card { display:block; width:100%; box-sizing:border-box; text-align:left; background:#0c0e12; color:#fdfbf5; border:1px solid rgba(232,200,115,.35); border-radius:14px; padding:12px 14px; margin:0 0 10px; }
+body.rf #rf-your-codes .rf-yc-skel { min-height:102px; pointer-events:none; }
+body.rf #rf-your-codes .rf-yc-skel i { display:block; height:12px; border-radius:6px; margin:8px 0; background:linear-gradient(90deg,#14110c 0%,#2a2416 42%,rgba(232,200,115,.45) 50%,#2a2416 58%,#14110c 100%); background-size:220% 100%; animation:rf-skel 1.5s ease-in-out infinite; }
+body.rf #rf-your-codes .rf-yc-skel i:first-child { width:46%; }
+body.rf #rf-your-codes .rf-yc-skel i:last-child { width:72%; }
+@media (prefers-reduced-motion:reduce) {
+  body.rf .rf-skel-card::after, body.rf .rf-skel-orb, body.rf .rf-skel-copy i, body.rf .rf-stat b.rf-stat-hold span, body.rf #rf-your-codes .rf-yc-skel i, body.rf .rf-chev { animation:none; transition:none; }
+}
+
+
 /* favorites row */
 body.rf .favorites-row { display:flex; gap:12px; overflow-x:auto; margin:0 -20px; padding:4px 20px 10px; scrollbar-width:none; }
 body.rf .favorites-row::-webkit-scrollbar { display:none; }
@@ -2085,7 +2170,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
 </section>
 
 <div class="rf-screen" id="rf-focus-head"><button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="rf-ttl">Today's Focus</h2><p class="rf-sub">Your newest Shift, ready when you are.</p></div>
-<div class="rf-screen" id="rf-rev-head"><button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="rf-ttl">My Revolution</h2><p class="rf-sub">Every Gap seen. Every Shift made.</p></div>
+<div class="rf-screen" id="rf-rev-head"><button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="rf-ttl">My Revolution</h2><p class="rf-sub">Every Gap seen. Every Shift made.</p><div class="rf-stats" id="rf-stats" data-rf-skel="1" role="list" aria-busy="true" aria-label="Your Revolution counts"><div class="rf-stat" role="listitem" data-k="gapScans"><b class="rf-stat-hold" aria-hidden="true"><span></span></b><small>GAP Scans</small><i class="rf-stat-start" hidden>first one waiting</i></div><div class="rf-stat" role="listitem" data-k="shifts"><b class="rf-stat-hold" aria-hidden="true"><span></span></b><small>Shifts</small><i class="rf-stat-start" hidden>first one waiting</i></div><div class="rf-stat" role="listitem" data-k="codes"><b class="rf-stat-hold" aria-hidden="true"><span></span></b><small>Codes</small><i class="rf-stat-start" hidden>first one waiting</i></div></div></div>
 <section class="block" id="my-revolution">
   <div class="wrap">
     <div class="section-head">
@@ -2121,12 +2206,26 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
       <button class="btn-primary focus-empty-cta">Start the GAP Method →</button>
     </div>
 
-    <div class="revolution-subsection">
+    <div class="revolution-subsection rf-recent" id="rf-recent-sec">
       <div class="subsection-head">
-        <h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts</h3>
+        <h3 data-orig="My Shifts"><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Most Recent Shifts</h3>
       </div>
-      <div class="shifts-list" data-role="shifts-list"></div>
+      <div class="shifts-list" data-role="shifts-list" data-rf-filter="recent" aria-busy="true">
+        <div class="rf-skel-card" aria-hidden="true"><span class="rf-skel-orb"></span><span class="rf-skel-copy"><i></i><i></i><i></i></span></div>
+        <div class="rf-skel-card" aria-hidden="true"><span class="rf-skel-orb"></span><span class="rf-skel-copy"><i></i><i></i><i></i></span></div>
+        <div class="rf-skel-card" aria-hidden="true"><span class="rf-skel-orb"></span><span class="rf-skel-copy"><i></i><i></i><i></i></span></div>
+      </div>
     </div>
+    <div class="revolution-subsection rf-rsec" id="rf-sec-cards" data-rf-skel="1">
+      <div class="subsection-head"><h3><img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifting Cards</h3></div>
+      <div class="rf-acc" data-acc="gap"><button type="button" class="rf-acc-btn" aria-expanded="false" aria-controls="rf-acc-gap"><span class="rf-orb" aria-hidden="true">◈</span><span class="txt">GAP Method™ Shifts <span class="rf-acc-n"></span></span><span class="rf-chev" aria-hidden="true"></span></button><div class="rf-acc-panel" id="rf-acc-gap" hidden><div class="shifts-list rf-acc-list" data-role="shifts-list" data-rf-filter="gap"></div><p class="rf-rempty" hidden>Your GAP Method™ Shifts will gather here.</p></div></div>
+      <div class="rf-acc" data-acc="code"><button type="button" class="rf-acc-btn" aria-expanded="false" aria-controls="rf-acc-code"><span class="rf-orb" aria-hidden="true">✧</span><span class="txt">Code Upgrade Shifts <span class="rf-acc-n"></span></span><span class="rf-chev" aria-hidden="true"></span></button><div class="rf-acc-panel" id="rf-acc-code" hidden><div class="shifts-list rf-acc-list" data-role="shifts-list" data-rf-filter="code"></div><p class="rf-rempty" hidden>Codes you save as Shifting cards will gather here.</p></div></div>
+    </div>
+    <section class="revolution-subsection" id="rf-your-codes" aria-label="Your codes" aria-busy="true">
+      <h3>Your codes</h3>
+      <p class="rf-yc-path">My Revolution → Your codes</p>
+      <div id="rf-yc-list"><div class="rf-yc-card rf-yc-skel" aria-hidden="true"><i></i><i></i></div></div>
+    </section>
 
     <div class="revolution-subsection" data-role="demo-activity" style="display:none;">
       <div class="subsection-head">
@@ -4212,9 +4311,20 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
   async function loadMemberRevolutionData() {
     if (!RH_EMAIL) return;
     try {
-      var res = await fetch('/api/shifts?email=' + encodeURIComponent(RH_EMAIL));
+      var res = null;
+      var data = null;
+      var pre = window.__rhRevPrefetch;
+      // The refresh page starts this fetch in the document head. Use it once, then always hit the network
+      // (a new Shift, a delete, or a failed prefetch must not reuse the first response).
+      if (pre && pre.email === RH_EMAIL && pre.shifts && !pre.shiftsConsumed) {
+        pre.shiftsConsumed = true;
+        try { data = await pre.shifts; res = pre.shiftsResponse || null; } catch (err) { data = null; }
+      }
+      if (!data || !Array.isArray(data.shifts)) {
+        res = await fetch('/api/shifts?email=' + encodeURIComponent(RH_EMAIL));
+        data = await res.json();
+      }
       if (typeof gapNoteFastReading === 'function') gapNoteFastReading(res); // GAP reading restructure: switch on -> unified Shift card labels
-      var data = await res.json();
       var records = data.shifts || [];
       SHIFTS.length = 0;
       // QA Oct 15 (Ray: "the same Shift appears twice"): a card is shown once per Shift id, and a reading
@@ -4250,9 +4360,16 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
           todaysFocus: r.todaysFocus || '',
         });
       });
+      window.__rfShiftsReady = true;
       renderFocusAndShifts(SHIFTS);
     } catch (e) {
       console.error('Failed to load My Revolution data', e);
+      try {
+        document.querySelectorAll('#rf-recent-sec [aria-busy], #rf-stats[aria-busy], #rf-your-codes[aria-busy]').forEach(function (n) {
+          n.setAttribute('aria-busy', 'false');
+          n.classList.add('rf-skel-idle');
+        });
+      } catch (err) {}
     }
   }
 
@@ -8472,6 +8589,12 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
   addEventListener('wheel', function () { busy(180); }, { passive: true });
   function rfGo(s, opts) {
     opts = opts || {};
+    // Revolution data and feature flags start in the head. A tap before that (or a head miss) starts them here.
+    if (s === 'rev') {
+      var em = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || '';
+      if (em && typeof window.__rhStartRevPrefetch === 'function') window.__rhStartRevPrefetch(em);
+      if (em && typeof window.__rhStartFeaturesPrefetch === 'function') window.__rhStartFeaturesPrefetch(em);
+    }
     busy(450);
     B.setAttribute('data-rf', s);
     var k = navKey(s);
@@ -8936,8 +9059,17 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     var done = function () { if (m.classList.contains('active')) { try { closeShiftModal(); } catch (e) {} } m.classList.remove('rf-silent'); var l = (window.SHIFTS || []).some(function (x) { return String(x.id) === String(openId); }); if (!l) openId = null; renderFocusAndShifts(window.SHIFTS || []); };
     Promise.resolve(rhDeleteShift(String(id))).then(done, done);
   }
+  function shiftKind(s) { return !s ? '' : s.method === 'GAP Method' ? 'gap' : s.method === 'Code Upgrade' ? 'code' : 'other'; }
+  // The recent list is born as the final 3-card layout. Never paint every Shift there and then hide them.
+  function cardsFor(list, shifts) {
+    var f = list.getAttribute('data-rf-filter');
+    if (f === 'recent') return shifts.slice(0, 3);
+    if (f === 'gap' || f === 'code') return shifts.filter(function (s) { return shiftKind(s) === f; });
+    return shifts;
+  }
   function bubbles(shifts) {
     if (fingerDown) { pending = shifts; return; }
+    shifts = shifts || [];
     document.querySelectorAll('[data-role="shifts-list"]').forEach(function (list) {
       if (!list.__rfWired) {
         list.__rfWired = true;
@@ -8945,8 +9077,9 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
         var up = function () { if (!fingerDown) return; fingerDown = false; if (pending) { var p = pending; pending = null; setTimeout(function () { bubbles(p); }, 350); } };
         ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { list.addEventListener(ev, up); });
       }
-      list.querySelectorAll('.rf-sbub').forEach(function (n) { n.remove(); });
-      shifts.forEach(function (s) {
+      list.querySelectorAll('.rf-sbub, .rf-skel-card').forEach(function (n) { n.remove(); });
+      list.removeAttribute('aria-busy');
+      cardsFor(list, shifts).forEach(function (s) {
         var d = document.createElement('div');
         d.className = 'rf-sbub' + (String(openId) === String(s.id) ? ' open' : ''); d.setAttribute('role', 'button'); d.tabIndex = 0;
         d.setAttribute('aria-expanded', String(String(openId) === String(s.id))); d.setAttribute('data-shift-id', String(s.id));
@@ -9016,6 +9149,22 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
   try { var pin = localStorage.getItem(FK); if (pin && !sessionStorage.getItem('rhFocusShiftId')) sessionStorage.setItem('rhFocusShiftId', pin); } catch (e) {}
   var _rfs = window.renderFocusAndShifts;
   renderFocusAndShifts = window.renderFocusAndShifts = function (shifts) { var r = _rfs.apply(this, arguments); try { bubbles(shifts || []); } catch (e) {} return r; };
+  // Shifts can resolve while this script is still parsing, before the wrap above exists. Paint those cards now
+  // (3 in My Most Recent Shifts) so the tab is never the hidden shift-row markup with nothing visible.
+  if (window.__rfShiftsReady && (window.SHIFTS || []).length) {
+    var earlyList = document.querySelector('#my-revolution [data-role="shifts-list"]');
+    if (earlyList && !earlyList.querySelector('.rf-sbub')) { try { bubbles(window.SHIFTS); } catch (e) {} }
+  }
+  // Shifting Cards dropdowns are in the first paint. This toggle is the same one rf-sections.js would add.
+  if (!window.__rfAccWired) {
+    window.__rfAccWired = 1;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('.rf-acc-btn'); if (!b) return;
+      var panel = document.getElementById(b.getAttribute('aria-controls')); if (!panel) return;
+      var open = panel.hidden; panel.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.parentNode.classList.toggle('open', open);
+      if (open) { var l = panel.querySelector('[data-rf-filter]'); if (l && typeof window.__rfFilterList === 'function') window.__rfFilterList(l); }
+    });
+  }
   document.addEventListener('click', function (e) {
     var p = e.target.closest && e.target.closest('[data-rf-emb]');
     if (p && !p.closest('.rf-sbub')) { e.stopPropagation(); e.preventDefault(); embody(p.getAttribute('data-rf-emb'), p); }
@@ -9145,26 +9294,45 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = '/' + n + '.css'; l.id = 'rf-feat-' + n; document.head.appendChild(l);
     var s = document.createElement('script'); s.src = '/' + n + '.js'; document.body.appendChild(s);
   }
+  // The Revolution tab is born as the flag-on layout (stats, 3 recent cards, Shifting Cards, Your codes).
+  // When a flag is off, drop only that piece. A failed /api/features leaves the classic Shifts list.
+  function dropStats() { var s = document.getElementById('rf-stats'); if (s && s.getAttribute('data-rf-skel') === '1') s.remove(); }
+  function revertRecentLayout() {
+    var sec = document.getElementById('rf-recent-sec');
+    if (sec) {
+      var h = sec.querySelector('.subsection-head h3');
+      if (h) h.innerHTML = '<img src="/images/icons/app-emoji-star.png" class="app-emoji-icon" alt=""> My Shifts';
+      var list = sec.querySelector('[data-role="shifts-list"]');
+      if (list) list.removeAttribute('data-rf-filter');
+    }
+    var cards = document.getElementById('rf-sec-cards');
+    if (cards && cards.getAttribute('data-rf-skel') === '1') cards.remove();
+    if (window.__rfShiftsReady && typeof window.renderFocusAndShifts === 'function') {
+      try { window.renderFocusAndShifts(window.SHIFTS || []); } catch (e) {}
+    }
+  }
+  function applyFeatures(f) {
+    if (!f) { window.__rfFeatures = {}; dropStats(); revertRecentLayout(); return; }
+    window.__rfFeatures = f;
+    if (f.methodTracking !== true) dropStats();
+    if (f.saveSections !== true) revertRecentLayout();
+    Object.keys(MAP).forEach(function (k) { if (f[k] === true) load(MAP[k]); });
+    // Daily code door is in the Home markup so it paints with the other two. Hide it only when
+    // CODE_PULL is explicitly off. A failed /api/features request leaves the door up.
+    if (f.codePull === false) {
+      var door = document.getElementById('rf-door-code');
+      if (door) { var box = door.parentNode; door.remove(); if (box) box.classList.remove('rf-doors3'); }
+    }
+  }
   function go() {
     var em = (typeof RH_EMAIL !== 'undefined' && RH_EMAIL) || '';
     if (!em) { if (++tries < 80) setTimeout(go, 250); return; }
-    fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : {}; })
-      .then(function (f) {
-        window.__rfFeatures = f || {};
-        Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); });
-        // Daily code door is in the Home markup so it paints with the other two. Hide it only when
-        // CODE_PULL is explicitly off. A failed /api/features request leaves the door up.
-        if (f && f.codePull === false) {
-          var door = document.getElementById('rf-door-code');
-          if (door) { var box = door.parentNode; door.remove(); if (box) box.classList.remove('rf-doors3'); }
-        }
-      })
-      .catch(function () {});
+    var pending = window.__rhFeaturesPromise && window.__rhFeaturesPromise.email === em ? window.__rhFeaturesPromise.promise : null;
+    var req = pending || fetch('/api/features?email=' + encodeURIComponent(em), { cache: 'no-store', credentials: 'same-origin' }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return null; });
+    Promise.resolve(req).then(applyFeatures).catch(function () { applyFeatures(null); });
   }
   go();
 })();
-
 </script>
 
 <script>

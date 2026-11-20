@@ -166,6 +166,56 @@ body.rf .shifts-list .shift-row { display:none !important; }
 .rf-pill[aria-busy="true"] { opacity:.6; }
 body.rf .shifts-list .card.center { border-radius:24px; padding:20px; background:linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.02)); border:1px solid var(--rf-line); text-align:center; }
 
+/* My Revolution first paint: fixed stat row + 3 card skeletons + Shifting Cards. Charcoal/gold shimmer, no purple.
+   Same sizes as the loaded layout so numbers and cards replace the placeholders without the page jumping. */
+body.rf .rf-stats { display:flex; gap:10px; margin:22px auto 0; max-width:520px; }
+body.rf .rf-stat { flex:1; box-sizing:border-box; min-height:96px; text-align:center; padding:16px 8px 14px; border-radius:20px; border:1px solid rgba(255,236,190,.22); background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(255,255,255,.035)); box-shadow:0 10px 30px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.18); }
+body.rf .rf-stat b { display:flex; align-items:center; justify-content:center; min-height:31px; font-family:Cinzel,serif; font-size:28px; line-height:1.1; color:var(--rf-gold); font-weight:600; }
+body.rf .rf-stat small { display:block; min-height:1.2em; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#fffc; margin-top:4px; }
+body.rf .rf-stat.zero b { font-size:24px; color:var(--rf-gold2,#fff1c4); text-shadow:0 0 14px rgba(255,214,130,.55); }
+body.rf .rf-stat-start { display:block; font-style:normal; font-size:10.5px; color:var(--rf-teal); margin-top:3px; }
+body.rf .rf-stat-start[hidden] { display:none; }
+body.rf .rf-stat b.rf-stat-hold { color:transparent; }
+body.rf .rf-stat b.rf-stat-hold span { display:block; width:1.5em; height:0.62em; border-radius:6px; background:linear-gradient(90deg,#14110c 0%,#2a2416 40%,rgba(232,200,115,.65) 50%,#2a2416 60%,#14110c 100%); background-size:220% 100%; animation:rf-skel 1.5s ease-in-out infinite; }
+body.rf .rf-skel-card { display:flex; align-items:center; gap:14px; width:100%; box-sizing:border-box; padding:16px; margin:0 0 12px; min-height:182px; border-radius:30px; border:1px solid rgba(255,236,190,.2); background:linear-gradient(135deg,rgba(20,17,12,.92),rgba(12,11,10,.78)); position:relative; overflow:hidden; pointer-events:none; }
+body.rf .rf-skel-orb { flex:none; width:50px; height:50px; border-radius:50%; background:linear-gradient(90deg,#14110c,#3a3018,#14110c); background-size:220% 100%; animation:rf-skel 1.5s ease-in-out infinite; }
+body.rf .rf-skel-copy { flex:1; min-width:0; }
+body.rf .rf-skel-copy i { display:block; height:10px; border-radius:6px; margin:0 0 8px; background:linear-gradient(90deg,#14110c 0%,#2c2618 40%,rgba(232,200,115,.5) 50%,#2c2618 60%,#14110c 100%); background-size:220% 100%; animation:rf-skel 1.5s ease-in-out infinite; }
+body.rf .rf-skel-copy i:nth-child(1) { width:38%; height:8px; }
+body.rf .rf-skel-copy i:nth-child(2) { width:72%; height:16px; }
+body.rf .rf-skel-copy i:nth-child(3) { width:54%; margin-bottom:0; }
+body.rf .rf-skel-card::after { content:""; position:absolute; inset:0; background:linear-gradient(105deg,transparent 36%,rgba(232,200,115,.14) 50%,transparent 64%); transform:translateX(-120%); animation:rf-skel-sweep 1.7s ease-in-out infinite; pointer-events:none; }
+@keyframes rf-skel { 0% { background-position:120% 0; } 100% { background-position:-120% 0; } }
+@keyframes rf-skel-sweep { 0% { transform:translateX(-120%); } 100% { transform:translateX(120%); } }
+body.rf .rf-skel-idle .rf-skel-card::after, body.rf .rf-skel-idle .rf-skel-orb, body.rf .rf-skel-idle .rf-skel-copy i, body.rf .rf-skel-idle .rf-stat-hold span, body.rf #rf-your-codes.rf-skel-idle .rf-yc-skel i { animation:none; }
+/* Shifting Cards accordions (same metrics as rf-sections.css) so they don't restyle when that file arrives. */
+body.rf .rf-acc { margin-bottom:12px; }
+body.rf .rf-acc-btn { all:unset; box-sizing:border-box; display:flex; align-items:center; gap:14px; width:100%; min-height:74px; padding:16px 18px; border-radius:22px; cursor:pointer; -webkit-tap-highlight-color:transparent; border:1px solid rgba(255,236,190,.22); background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04)); box-shadow:0 10px 30px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.18); }
+body.rf .rf-acc-btn:active { transform:scale(.985); }
+body.rf .rf-acc-btn:focus-visible { outline:1px solid var(--rf-gold2,#fff1c4); outline-offset:3px; }
+body.rf .rf-acc-btn .rf-orb { width:42px; height:42px; font-size:17px; flex:none; }
+body.rf .rf-acc-btn .txt { font-family:"Cormorant Garamond",Georgia,serif; font-size:21px; font-weight:600; line-height:1.15; color:#fdfbf5; flex:1; }
+body.rf .rf-acc-n { color:var(--rf-gold); font-size:17px; }
+body.rf .rf-chev { flex:none; width:10px; height:10px; margin:0 6px 4px 0; border-right:2px solid var(--rf-gold); border-bottom:2px solid var(--rf-gold); transform:rotate(45deg); transition:transform .3s cubic-bezier(.2,.8,.2,1); }
+body.rf .rf-acc.open .rf-chev { transform:rotate(225deg); margin-bottom:-4px; }
+body.rf .rf-acc.open .rf-acc-btn { border-color:rgba(255,236,190,.45); }
+body.rf .rf-acc-panel { padding:12px 0 4px; }
+body.rf .rf-acc-panel[hidden] { display:none; }
+body.rf .rf-xhide { display:none !important; }
+body.rf .rf-rempty { font-family:"Cormorant Garamond",Georgia,serif; font-size:18px; color:#fffc; margin:0; padding:4px 2px; }
+/* Your codes placeholder, same footprint as a held-code card. */
+body.rf #rf-your-codes { background:#06080b; color:#fdfbf5; border:1px solid rgba(232,200,115,.35); border-radius:18px; padding:16px 16px 8px; margin:22px 0 8px; }
+body.rf #rf-your-codes h3 { margin:0 0 4px; color:#e8c873; font-family:Cinzel,Georgia,serif; font-size:18px; font-weight:600; letter-spacing:.04em; text-transform:none; }
+body.rf #rf-your-codes .rf-yc-path { margin:0 0 12px; color:#fdfbf5; font-size:13px; opacity:.85; }
+body.rf #rf-your-codes .rf-yc-card { display:block; width:100%; box-sizing:border-box; text-align:left; background:#0c0e12; color:#fdfbf5; border:1px solid rgba(232,200,115,.35); border-radius:14px; padding:12px 14px; margin:0 0 10px; }
+body.rf #rf-your-codes .rf-yc-skel { min-height:102px; pointer-events:none; }
+body.rf #rf-your-codes .rf-yc-skel i { display:block; height:12px; border-radius:6px; margin:8px 0; background:linear-gradient(90deg,#14110c 0%,#2a2416 42%,rgba(232,200,115,.45) 50%,#2a2416 58%,#14110c 100%); background-size:220% 100%; animation:rf-skel 1.5s ease-in-out infinite; }
+body.rf #rf-your-codes .rf-yc-skel i:first-child { width:46%; }
+body.rf #rf-your-codes .rf-yc-skel i:last-child { width:72%; }
+@media (prefers-reduced-motion:reduce) {
+  body.rf .rf-skel-card::after, body.rf .rf-skel-orb, body.rf .rf-skel-copy i, body.rf .rf-stat b.rf-stat-hold span, body.rf #rf-your-codes .rf-yc-skel i, body.rf .rf-chev { animation:none; transition:none; }
+}
+
 /* favorites row */
 body.rf .favorites-row { display:flex; gap:12px; overflow-x:auto; margin:0 -20px; padding:4px 20px 10px; scrollbar-width:none; }
 body.rf .favorites-row::-webkit-scrollbar { display:none; }
