@@ -33,7 +33,8 @@
     "test:member-voice": "node scripts/test-member-voice.mjs",
     "test:champagne-cards": "node scripts/test-champagne-cards.mjs",
     "test:code-chat": "node scripts/test-code-chat.mjs",
-    "test:member-chat": "node scripts/test-member-chat.mjs"
+    "test:member-chat": "node scripts/test-member-chat.mjs",
+    "test:bf26-banner": "node scripts/test-bf26-banner.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
