@@ -919,6 +919,18 @@
 }
 </style>
   <link rel="stylesheet" href="/bg.css">
+<script id="bf26-early">
+(function () {
+  var KILL = false;
+  var UNTIL = Date.parse("2026-12-01T04:59:00Z");
+  if (KILL || !(Date.now() < UNTIL)) return;
+  var s = document.createElement("style");
+  s.id = "bf26-hide";
+  s.textContent = "html.bf26-on #rf-home>.rf-hero,html.bf26-on #rf-home>.rf-welcome{display:none!important}";
+  document.head.appendChild(s);
+  document.documentElement.classList.add("bf26-on");
+})();
+</script>
 </head>
 <body>
 
@@ -7167,5 +7179,6 @@ if (forceComplete) { goDay(3); }
 </script>
 <link rel="stylesheet" href="/rf-your-codes.css">
 <script src="/rf-your-codes.js"></script>
+<script src="/bf26.js"></script>
 </body>
 </html>

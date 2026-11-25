@@ -1639,6 +1639,18 @@ body.rf .activation-player iframe { background:#0c0e12; z-index:1; }
 body.rf .audio-cover-overlay, body.rf .audio-native-overlay, body.rf .audio-custom-controls { z-index:3; }
 body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#0c0e12; color:#fdfbf5; }
 </style>
+<script id="bf26-early">
+(function () {
+  var KILL = false;
+  var UNTIL = Date.parse("2026-12-01T04:59:00Z");
+  if (KILL || !(Date.now() < UNTIL)) return;
+  var s = document.createElement("style");
+  s.id = "bf26-hide";
+  s.textContent = "html.bf26-on #rf-home>.rf-hero,html.bf26-on #rf-home>.rf-welcome{display:none!important}";
+  document.head.appendChild(s);
+  document.documentElement.classList.add("bf26-on");
+})();
+</script>
 </head>
 <body class="rf" data-rf="home">
 <canvas id="rf-sky" aria-hidden="true"></canvas><div class="rf-aurora" aria-hidden="true"></div>
@@ -9227,6 +9239,6 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
 </script>
 <link rel="stylesheet" href="/rf-your-codes.css">
 <script src="/rf-your-codes.js"></script>
-
+<script src="/bf26.js"></script>
 </body>
 </html>
