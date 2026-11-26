@@ -11,6 +11,15 @@ body.mlv5 {
     radial-gradient(120% 70% at 50% 0%, #15615E 0%, #0E4A47 30%, #0C3A38 58%, #0B2E2C 100%) !important;
 }
 body:not(.mlv5) .mlv5-only { display: none !important; }
+/* The chatbot screen stays the pre-v5 charcoal page. v5 paint does not restyle its header, chips, or input. */
+html.mlv5:has(body[data-rf="chat"]) { background: #06080b !important; }
+body.mlv5[data-rf="chat"] {
+  background: transparent !important;
+  --rf-gold: #e8c873;
+  --rf-gold2: #fff1c4;
+  --rf-goldd: #b8913f;
+  --rf-teal: #3fd6c8;
+}
 
 /* Home column. The Black Friday slot is inserted after .rf-top; order puts the wordmark above it. */
 body.mlv5[data-rf="home"] #rf-home {

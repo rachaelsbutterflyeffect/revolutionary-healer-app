@@ -7,9 +7,9 @@
    - The finder door #rf-fit-door is moved to the top of Activations. Its back control is
      retargeted from data-rf-go="home" to data-rf-go="lib" so Back returns to the library.
      Questions, the recommender, the result card, and Listen now are untouched.
-   - The home chat card is one control. It logs chat_card_tap and opens a new chat
-     with the existing entry (showMain, rfGo('chat'), rhStartNewChat). The four topic
-     lanes and startLane stay in refresh.js, unchanged, for the flag-off home. */
+   - The home chat card logs chat_card_tap, then uses the same home chat control
+     as before this layout (data-rf-go="chat" on the card). It does not start a
+     new chat or focus the message box. */
 (function () {
   if (window.__mlv5) return;
   if (!window.__rfFeatures || window.__rfFeatures.memberLayoutV5 !== true) return;
@@ -90,14 +90,9 @@
     if (!document.body.classList.contains('mlv5')) return;
     var card = e.target.closest && e.target.closest('[data-mlv5-open-chat]');
     if (!card) return;
-    e.preventDefault();
-    e.stopPropagation();
     try {
       if (window.rhActivity && typeof window.rhActivity.chatCard === 'function') window.rhActivity.chatCard('Open chat');
     } catch (err) {}
-    try { if (typeof showMain === 'function') showMain(); } catch (err2) {}
-    try { if (typeof rfGo === 'function') rfGo('chat'); } catch (err3) {}
-    try { if (typeof rhStartNewChat === 'function') rhStartNewChat(); } catch (err4) {}
   }, true);
 
   document.addEventListener('click', function (e) {
