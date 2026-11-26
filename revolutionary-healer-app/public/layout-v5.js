@@ -163,7 +163,7 @@
     var el = e.target.closest && e.target.closest('a, button, [role="button"], [data-rf-go], [data-rf-nav], [data-rf-sec], .rf-lsec, .rf-sbub, .mlv5-chat-card, .mlv5-feature, .mlv5-gd-card');
     if (!el) return;
     if (el.closest('#chat-input, #rh-chat-thread, #hero-gap-embed')) return;
-    if (el.hasAttribute('data-mlv5-open-chat') || el.hasAttribute('data-mlv5-book') || el.hasAttribute('data-mlv5-track') || el.hasAttribute('data-rf-lane') || el.classList.contains('rf-acc-btn')) return;
+    if (el.hasAttribute('data-mlv5-open-chat') || el.hasAttribute('data-mlv5-book') || el.hasAttribute('data-program-source') || el.hasAttribute('data-mlv5-track') || el.hasAttribute('data-rf-lane') || el.classList.contains('rf-acc-btn')) return;
     var name = labelOf(el);
     if (name) tap(name);
   }, true);

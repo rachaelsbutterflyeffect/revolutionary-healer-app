@@ -235,7 +235,7 @@
             var a = e.target && e.target.closest && e.target.closest("a[href]");
             if (!a || a.hasAttribute("data-mlv5-book")) return;
             var href = a.getAttribute("href") || "";
-            if (href.indexOf("activation-quiz") !== -1) client.programFinder(a.closest("#bf26-banner") ? "bf-banner" : "program-finder", "tap");
+            if (href.indexOf("activation-quiz") !== -1) client.programFinder(a.getAttribute("data-program-source") || (a.closest("#bf26-banner") ? "bf-banner" : "program-finder"), "tap");
             else if (/\/offers\/tcwMWNz4|\/offers\/2a7o8kec/i.test(href)) client.goDeeperBook(a.getAttribute("data-book-source") || "book-1-1");
         }, true);
         client.setHidden(win.document.visibilityState === "hidden");
