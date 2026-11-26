@@ -22,6 +22,7 @@
     "test:testers": "node scripts/test-testers.mjs",
     "test:activity": "node scripts/test-activity.mjs",
     "test:rev-tracking": "node scripts/test-rev-tracking.mjs",
+    "test:usage-trackers": "node scripts/test-usage-trackers.mjs",
     "test:activity-http": "node scripts/test-activity-http.mjs",
     "test:sessions": "node scripts/test-sessions.mjs",
     "test:chat-ccm": "node scripts/test-chat-ccm.mjs",
