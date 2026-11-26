@@ -39,6 +39,11 @@
 // ~110-125s; even at a slow ~65 tokens/s it's ~155s).
 export const MAIN_CHAT_MAX_TOKENS = 10000;
 
+// Later turns were spending 60-90s in hidden thinking as the thread, memories
+// and Shift list grew. Medium effort keeps a full reply and cuts that thinking.
+// The page still types the reply out and scrolls the same way.
+export const MAIN_CHAT_EFFORT = "medium";
+
 // One overall deadline for the reply call, including SDK retries.
 // 160s + the dormant GAP marker retry (12s) + Airtable (~5s) = ~177s, still
 // under the page's 180s cap; Vercel's limit is 300s.

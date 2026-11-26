@@ -3492,6 +3492,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
     var siblings = btn.parentElement.querySelectorAll('.filter-chip');
     siblings.forEach(function(chip) { chip.classList.remove('selected'); });
     btn.classList.add('selected');
+    window.__rhLibSection = btn.getAttribute('data-category') || 'All';
     window.__rhLibExpanded = false;
     var qEl = document.getElementById('rh-lib-search');
     var typed = qEl ? qEl.value.trim() : '';
@@ -3591,6 +3592,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
       category = window.__rhLibSection;
       rhSelectChip(category);
     }
+    if (!q && category === 'All') window.__rhLibExpanded = true;
     var hit = window.rhQueryHit || function(hay, term) { return !term || hay.indexOf(term) !== -1; };
     var labelOf = window.rhCatLabel || function(c) { return c; };
     var matches = 0, shown = 0;
@@ -3637,7 +3639,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
       }
     }
     var tt = document.getElementById('rf-sec-ttl');
-    if (tt && q && category === 'All') tt.textContent = 'All activations';
+    if (tt && category === 'All') tt.textContent = 'All activations';
     else if (tt && !q && window.__rhLibSection) {
       var sec = document.querySelector('#rf-lsecs [data-rf-sec="' + window.__rhLibSection + '"] b');
       if (sec && category === window.__rhLibSection) tt.textContent = sec.textContent;
@@ -4335,6 +4337,7 @@ if (drawer && drawer.classList.contains('rh-open')) { rhCloseDrawer(); return; }
           gap: r.gapExplanation,
           maintaining: r.whatWeNoticed,
           activation: r.recommendedActivation,
+          focusArea: r.focusArea || '',
           undercurrent: r.undercurrent ? { frequency: r.undercurrent, activation: r.nextSuggestedActivation } : null,
           readyForEmbodied: !!r.readyForEmbodied,
           todaysFocus: r.todaysFocus || '',
@@ -7299,13 +7302,23 @@ if (forceComplete) { goDay(3); }
   function gapScrollToActivation() {
     var v = document.getElementById('view-day3'); var row = v && v.querySelector('.card'); var act = document.getElementById('d3-activation-card');
     if (!row || !act) return;
-    var smooth = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'smooth' : 'auto';
+    try { if (window.rhActivity) window.rhActivity.gap('gap_next_tap'); } catch (e) {}
+    // Instant, not smooth. iPhone drops scrollTo({behavior:'smooth'}) on this overflow row, so the
+    // Primary Activation card stayed off-screen and the tap looked like it did nothing.
     if (row.scrollWidth > row.clientWidth + 2) {
       var pad = parseFloat(getComputedStyle(row).scrollPaddingLeft) || parseFloat(getComputedStyle(row).paddingLeft) || 0;
-      row.scrollTo({ left: row.scrollLeft + act.getBoundingClientRect().left - row.getBoundingClientRect().left - pad, behavior: smooth });
-    } else {
-      act.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: smooth }); // desktop: all three cards are visible
+      row.scrollLeft = Math.max(0, row.scrollLeft + act.getBoundingClientRect().left - row.getBoundingClientRect().left - pad);
     }
+    try { act.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'auto' }); } catch (e2) {}
+    var note = document.getElementById('d3-next-note');
+    if (!note) {
+      note = document.createElement('p');
+      note.id = 'd3-next-note';
+      note.className = 'gap-next-note';
+      act.insertBefore(note, act.firstChild);
+    }
+    note.textContent = 'Your Shift is saved. This is your next step.';
+    note.hidden = false;
     act.classList.remove('gap-v2-flash'); void act.offsetWidth; act.classList.add('gap-v2-flash');
     setTimeout(function () { act.classList.remove('gap-v2-flash'); }, 1400);
   }
@@ -7376,6 +7389,7 @@ if (forceComplete) { goDay(3); }
   var gapListenBusy = false;
   function gapListenNow(btn) {
     if (gapListenBusy) return;
+    try { if (window.rhActivity) window.rhActivity.gap('gap_next_listen'); } catch (e) {}
     gapListenBusy = true;
     var label = btn.textContent;
     var status = document.getElementById('d3-listen-status');
@@ -7994,6 +8008,7 @@ if (forceComplete) { goDay(3); }
   #view-day3.gap-v2 .gap-to-activation .gap-to-arrow { display: inline-block; font-style: normal; font-size: 12px; margin-left: 4px; }
   #view-day3.gap-v2 .gap-to-activation:hover, #view-day3.gap-v2 .gap-to-activation:focus-visible { color: #F1D58A; }
   #view-day3.gap-v2 #d3-activation-card.gap-v2-flash { box-shadow: 0 0 0 1px rgba(226,190,104,.75), 0 0 26px rgba(226,190,104,.28); transition: box-shadow .4s ease; }
+  #view-day3.gap-v2 .gap-next-note { display: block !important; margin: 0 0 10px !important; font-family: "Cormorant Garamond", Georgia, serif; font-style: italic; font-size: 15px !important; line-height: 1.35 !important; color: #F1D58A !important; }
   #view-day3.gap-v2 #d3-activation-card #a-teaser { margin-bottom: 4px !important; }
   #view-day3.gap-v2 #d3-listen-now { display: block !important; width: 100%; box-sizing: border-box; margin: clamp(12px, 1.8vh, 18px) 0 0 !important; text-align: center; cursor: pointer; position: relative; z-index: 3; touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-appearance: none; appearance: none; }
   #view-day3.gap-v2 #d3-listen-status:not([hidden]) { display: block !important; margin: 10px 0 0 !important; font-size: 13px !important; color: #F8E7B0; text-align: center; }

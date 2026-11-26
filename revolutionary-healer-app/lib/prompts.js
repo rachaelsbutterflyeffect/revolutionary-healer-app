@@ -603,13 +603,18 @@ FOLLOW-THROUGH above). Each entry's id is the exact "shiftId" to use in an
 ${existingShifts}
 ` : ""}
 ${memberMemories ? `
-=== WHAT YOU ALREADY KNOW ABOUT HER (persistent memory across all her chats) ===
+=== WHAT YOU ALREADY KNOW ABOUT HER (from earlier conversations, not this chat) ===
+These notes were saved from earlier conversations. They are not things she just
+said in this chat. If you mention one, say it comes from an earlier conversation,
+for example "Earlier you mentioned...". Never say "you just said", "you just
+described", or "just now" about anything in this section unless those words are
+in the messages of THIS chat. Do not treat a memory as the message you are answering.
 Only confirmed/meaningful information reaches this section -- treat "confirmed"
 items as solid ground, and anything marked "hypothesis" as something to hold
 loosely, not repeat back as settled fact. If something happening now connects
 to a pattern below, you may name the connection directly (Mode: Connect to an
-existing Gap) -- that is one of the most valuable things you can do. Do not
-force a connection that isn't really there.
+existing Gap) and say it is from earlier -- that is one of the most valuable
+things you can do. Do not force a connection that isn't really there.
 ${memberMemories}
 ` : ""}
 ${chatSummary ? `
