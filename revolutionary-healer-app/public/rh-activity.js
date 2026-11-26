@@ -120,6 +120,31 @@
                 } catch (e) {}
                 return safeFlush();
             },
+            goDeeperBook: function (source) {
+                try {
+                    var where = clip(source) || "book-1-1";
+                    if (!once("go_deeper_book_tap\n" + where)) return Promise.resolve();
+                    push({ event: "go_deeper_book_tap", source: where });
+                } catch (e) {}
+                return safeFlush();
+            },
+            programFinder: function (source, kind) {
+                try {
+                    var where = clip(source) || "program-finder";
+                    var event = kind === "offer" ? "program_finder_offer" : "program_finder_tap";
+                    if (!once(event + "\n" + where)) return Promise.resolve();
+                    push({ event: event, source: where });
+                } catch (e) {}
+                return safeFlush();
+            },
+            sectionOpen: function (which) {
+                try {
+                    var event = which === "codes" ? "my_codes_open" : "my_gaps_open";
+                    if (!once(event)) return Promise.resolve();
+                    push({ event: event, source: "my-revolution" });
+                } catch (e) {}
+                return safeFlush();
+            },
             finderStart: function () {
                 try {
                     if (!once("activation_finder_start")) return Promise.resolve();
@@ -206,6 +231,13 @@
                     .then(function (res) { if (res.status === 429 || res.status >= 500) throw new Error("retry"); return res; });
             },
         });
+        win.document.addEventListener("click", function (e) {
+            var a = e.target && e.target.closest && e.target.closest("a[href]");
+            if (!a || a.hasAttribute("data-mlv5-book")) return;
+            var href = a.getAttribute("href") || "";
+            if (href.indexOf("activation-quiz") !== -1) client.programFinder(a.closest("#bf26-banner") ? "bf-banner" : "program-finder", "tap");
+            else if (/\/offers\/tcwMWNz4|\/offers\/2a7o8kec/i.test(href)) client.goDeeperBook(a.getAttribute("data-book-source") || "book-1-1");
+        }, true);
         client.setHidden(win.document.visibilityState === "hidden");
         win.document.addEventListener("visibilitychange", function () {
             var hiddenNow = win.document.visibilityState === "hidden";

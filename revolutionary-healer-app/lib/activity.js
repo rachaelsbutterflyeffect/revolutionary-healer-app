@@ -28,7 +28,8 @@ const EVENTS = new Set([
     "gap_start", "gap_step", "gap_complete", "presence", "nav",
     "favorite_add", "favorite_remove", "code_pull", "chat_turn", "gap_reading", "gap_shift",
     "chat_card_tap", "activation_finder_start", "activation_finder_complete",
-    "layout_tap",
+    "layout_tap", "go_deeper_book_tap", "program_finder_tap", "program_finder_offer",
+    "my_gaps_open", "my_codes_open",
 ]);
 const PLAY_STATES = new Set(["start", "pause", "ended", "hidden"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -136,6 +137,12 @@ export function validateActivityEvent(input) {
         const target = clipActivityText(input.target, 80);
         if (!target) return { error: "Invalid target." };
         return { value: { ...base, target } };
+    }
+    if (input.event === "go_deeper_book_tap" || input.event === "program_finder_tap" || input.event === "program_finder_offer" || input.event === "my_gaps_open" || input.event === "my_codes_open") {
+        const value = { ...base };
+        const source = clipActivityText(input.source, 80);
+        if (source) value.source = source;
+        return { value };
     }
     if (input.event === "activation_finder_start") return { value: { ...base } };
     if (input.event === "activation_finder_complete") {
@@ -298,9 +305,35 @@ export function buildOwnerReport(rows, { from = "", to = "", now = Date.now(), i
         cohorts,
         lastScreens: lastScreens(scoped),
         lastScreenNote: "Last observed screen in the range. This is not a claim that the member abandoned there.",
+        offerClicks: offerClicks(verified.filter((row) => inRange(row, from, to))),
+        offerClicksNote: "1-1 booking and Program Finder clicks. Includes owner and tester rows, marked isTest, because those are the people who can reach the tester layout. Identity is the verified sign-in email. A browser-typed email is not stored. Rows without a server session stay unverified and are not in this list.",
         unverifiedSummary: includeUnverified ? summarize(unverifiedScoped) : { events: unverified.length, shown: false },
         idempotency: IDEMPOTENCY_NOTE,
     };
+}
+
+const OFFER_EVENTS = new Set(["go_deeper_book_tap", "program_finder_tap", "program_finder_offer"]);
+
+function offerClicks(rows) {
+    const people = new Set();
+    const clicks = rows.filter((row) => OFFER_EVENTS.has(row.event)).map((row) => {
+        const email = row.memberEmail || "";
+        if (email) people.add(email);
+        return {
+            event: row.event,
+            source: row.source || "",
+            memberEmail: email,
+            at: row.at,
+            isTest: row.isTest === true,
+        };
+    }).sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    const byEvent = {};
+    for (const name of OFFER_EVENTS) {
+        const list = clicks.filter((row) => row.event === name);
+        const who = new Set(list.map((row) => row.memberEmail).filter(Boolean));
+        byEvent[name] = { clicks: list.length, people: who.size };
+    }
+    return { clicks, byEvent, people: people.size };
 }
 
 function lastScreens(rows) {

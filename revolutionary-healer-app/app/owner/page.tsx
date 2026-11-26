@@ -12,6 +12,12 @@ type Report = {
     top5?: { rank: number; slug: string; starts: number; listenedSeconds: number; finishes: number }[] | null;
     cohorts?: { day: string; starts: number; returnedNextDay: number }[] | null;
     lastScreens?: { memberEmail: string; screen: string; at: string }[];
+    offerClicks?: {
+        clicks: { event: string; source: string; memberEmail: string; at: string; isTest: boolean }[];
+        byEvent: Record<string, { clicks: number; people: number }>;
+        people: number;
+    };
+    offerClicksNote?: string;
     lastScreenNote?: string;
     timeline?: { at: string; event: string; slug?: string; code?: string; screen?: string }[];
     scan?: { complete: boolean; rowsRead: number; nextCursor?: string | null };
@@ -126,6 +132,10 @@ export default function OwnerActivityPage() {
                     <ul>{(report.cohorts || []).map((row) => <li key={row.day}>{row.day}: {row.starts} starters, {row.returnedNextDay} back the next day</li>)}</ul>
                     <p>{report.lastScreenNote}</p>
                     <ul>{(report.lastScreens || []).map((row) => <li key={row.memberEmail}>{row.memberEmail}: {row.screen}</li>)}</ul>
+                    <h2>1-1 booking and Program Finder</h2>
+                    <p>{report.offerClicksNote}</p>
+                    <p>{report.offerClicks?.people ?? 0} people. Booking clicks: {report.offerClicks?.byEvent?.go_deeper_book_tap?.clicks ?? 0} from {report.offerClicks?.byEvent?.go_deeper_book_tap?.people ?? 0} people. Program Finder opens: {report.offerClicks?.byEvent?.program_finder_tap?.clicks ?? 0} from {report.offerClicks?.byEvent?.program_finder_tap?.people ?? 0} people. Program Finder offer links: {report.offerClicks?.byEvent?.program_finder_offer?.clicks ?? 0} from {report.offerClicks?.byEvent?.program_finder_offer?.people ?? 0} people.</p>
+                    <ul>{(report.offerClicks?.clicks || []).map((row, index) => <li key={index}>{row.at} — {row.memberEmail || "no verified email"} — {row.event} — {row.source}{row.isTest ? " — tester" : ""}</li>)}</ul>
                     <h2>Member timeline</h2>
                     <ul>{(report.timeline || []).map((row, index) => <li key={index}>{row.at} {row.event} {row.slug || row.code || row.screen || ""}</li>)}</ul>
                 </>
