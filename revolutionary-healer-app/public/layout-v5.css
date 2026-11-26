@@ -347,6 +347,7 @@ body.mlv5 .mlv5-gd-card {
   background: rgba(255,255,255,.06);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
 }
+body.mlv5 .mlv5-gd-card + .mlv5-gd-card { margin-top: 10px; }
 body.mlv5 .mlv5-gd-card:active { transform: scale(.98); }
 body.mlv5 .mlv5-gd-copy { flex: 1; min-width: 0; }
 body.mlv5 .mlv5-gd-card .ttl {
