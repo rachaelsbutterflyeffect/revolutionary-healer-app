@@ -236,6 +236,17 @@
       row.innerHTML = '<div class="rf-xl">' + esc(s.activation || 'Listen') + '</div><button type="button" class="rf-xlisten" data-rf-listen="' + esc(id) + '">▶ Listen</button>';
       card.appendChild(row);
     });
+    function keepKind(panel, kind) {
+      if (!panel) return;
+      panel.querySelectorAll('.rf-sbub').forEach(function (el) {
+        var s = (window.SHIFTS || []).filter(function (x) { return String(x.id) === el.getAttribute('data-shift-id'); })[0];
+        var method = s && s.method;
+        var show = kind === 'code' ? method === 'Code Upgrade' : method === 'GAP Method';
+        if (el.hidden === show) el.hidden = !show;
+      });
+    }
+    keepKind(document.getElementById('rf-acc-gap'), 'gap');
+    keepKind(document.getElementById('rf-acc-code'), 'code');
     var codePanel = document.getElementById('rf-acc-code');
     var pulls = window.__rfRevData && window.__rfRevData.codes;
     if (codePanel && pulls) {
