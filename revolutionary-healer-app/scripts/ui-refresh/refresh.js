@@ -700,7 +700,7 @@
 // Each file is fetched only when /api/features says true for THIS member.
 // The daily code door is in the Home markup (first paint). It is removed below only when codePull is off.
 (function () {
-  var MAP = { codePull: 'rf-codes', homeCheckin: 'rf-checkin', codeShifts: 'rf-codeshift', saveSections: 'rf-sections', methodTracking: 'rf-tracking', featuredEvent: 'rf-event' };
+  var MAP = { codePull: 'rf-codes', homeCheckin: 'rf-checkin', codeShifts: 'rf-codeshift', saveSections: 'rf-sections', methodTracking: 'rf-tracking', featuredEvent: 'rf-event', memberLayoutV5: 'layout-v5' };
   var tries = 0;
   function load(n) {
     if (document.getElementById('rf-feat-' + n)) return;

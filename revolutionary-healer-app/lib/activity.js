@@ -28,6 +28,7 @@ const EVENTS = new Set([
     "gap_start", "gap_step", "gap_complete", "presence", "nav",
     "favorite_add", "favorite_remove", "code_pull", "chat_turn", "gap_reading", "gap_shift",
     "chat_card_tap", "activation_finder_start", "activation_finder_complete",
+    "layout_tap",
 ]);
 const PLAY_STATES = new Set(["start", "pause", "ended", "hidden"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -130,6 +131,11 @@ export function validateActivityEvent(input) {
         const card = clipActivityText(input.card, 80);
         if (!card) return { error: "Invalid card." };
         return { value: { ...base, card } };
+    }
+    if (input.event === "layout_tap") {
+        const target = clipActivityText(input.target, 80);
+        if (!target) return { error: "Invalid target." };
+        return { value: { ...base, target } };
     }
     if (input.event === "activation_finder_start") return { value: { ...base } };
     if (input.event === "activation_finder_complete") {

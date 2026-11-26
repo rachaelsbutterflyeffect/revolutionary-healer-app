@@ -37,6 +37,19 @@ function client(send, clock) {
     });
 }
 
+test("a layout tap is an activity row and does not replace a chat card tap", () => {
+    const parsed = validateActivityEvent({ eventId, deviceId: device, event: "layout_tap", target: " rr-library " });
+    assert.equal(parsed.error, undefined);
+    assert.equal(parsed.value.target, "rr-library");
+    const row = stampActivity(parsed.value, { now: Date.parse("2026-11-26T03:00:00Z"), email: "member@example.com", verified: true });
+    const meta = JSON.parse(activityMeta(row).meta);
+    assert.equal(meta.event, "layout_tap");
+    assert.equal(meta.target, "rr-library");
+    assert.equal(read("public/layout-v5.js").includes("layoutTap"), true);
+    assert.equal(read("public/rf-codes.js").includes("layout_tap"), false);
+    assert.equal(read("public/rf-checkin.js").includes("layoutTap"), false);
+});
+
 test("a chat card tap is an activity row with the card label", () => {
     const parsed = validateActivityEvent({ eventId, deviceId: device, event: "chat_card_tap", card: "  Money & Prosperity  " });
     assert.equal(parsed.error, undefined);

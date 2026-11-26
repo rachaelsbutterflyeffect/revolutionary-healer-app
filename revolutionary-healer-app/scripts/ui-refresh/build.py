@@ -98,6 +98,39 @@ HOME = """
 <section class="rf-screen" id="rf-home" aria-label="Home">
  <p class="rf-pass-banner" id="rf-pass-banner" hidden><span class="rf-pass-gold">Full access, <span id="rf-pass-banner-count">3 days left</span> · </span><a class="rf-pass-link" href="https://www.rachaelsbutterflyeffect.com/offers/rkwoQv2s/checkout" target="_blank" rel="noopener">Upgrade today, $30 a month</a></p>
  <div class="rf-top"><div class="rf-mark rf-shine">REVOLUTIONARY HEALER</div><button type="button" class="rf-avatar" data-rf-go="profile" aria-label="Your profile"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.8 20c.9-3.6 3.8-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg></button></div>
+ <div class="mlv5-hero mlv5-only" hidden>
+  <h1 class="mlv5-mark" data-mlv5-track="hero"><span class="rf-shine">Revolutionary<br></span><span class="mlv5-line2"><span class="rf-shine">Healer</span><svg class="mlv5-bf" viewBox="0 0 100 80" aria-hidden="true" focusable="false"><g fill="none" stroke="#E8C873" stroke-width="2"><path d="M50 40C40 10 10 0 6 18s20 26 44 22M50 40C60 10 90 0 94 18S74 44 50 40M50 40C38 50 18 70 26 76s20-14 24-36M50 40C62 50 82 70 74 76S54 62 50 40"/><path d="M50 26v34M48 24l-6-10M52 24l6-10"/></g></svg></span></h1>
+ </div>
+ <section class="mlv5-chat mlv5-only" hidden aria-label="Chat with Rachael">
+  <div class="mlv5-chat-card">
+   <p class="mlv5-who">Chat with Rachael</p>
+   <p class="mlv5-line">Hey, what are we looking at today?</p>
+   <div class="mlv5-chiprow">
+    <div id="mlv5-chips"></div>
+    <button type="button" class="mlv5-own" data-mlv5-own="1">Tell Rachael in your own words</button>
+   </div>
+  </div>
+ </section>
+ <section class="mlv5-code-sec mlv5-only" id="mlv5-code-sec" hidden aria-label="Your daily code">
+  <h2>Your daily code</h2>
+  <p class="mlv5-decksub">One code today. Just for you.</p>
+  <div id="mlv5-code"></div>
+ </section>
+ <section class="mlv5-new mlv5-only" hidden aria-label="New">
+  <h2>New</h2>
+  <button type="button" class="mlv5-feature" data-rf-go="rr" data-mlv5-track="rr-home" aria-label="Open Reset and Restore">
+   <img src="/images/covers/reset-and-restore-banner.jpg" alt="Reset and Restore">
+   <span class="mlv5-nf">
+    <span class="mlv5-nt">Reset and Restore</span>
+    <span class="mlv5-nline">Five days to come back to yourself.</span>
+    <span class="mlv5-pill">Start here</span>
+   </span>
+  </button>
+ </section>
+ <section class="mlv5-doors-sec mlv5-only" hidden aria-label="Your doors">
+  <h2>Your doors</h2>
+  <div id="mlv5-doors"></div>
+ </section>
  <button type="button" class="rf-hero" data-rf-go="focus" aria-label="Open Today's Focus"><span class="rf-halo"></span><canvas id="rf-fly" aria-hidden="true"></canvas></button>
  <div class="rf-welcome"><h1 class="rf-shine rf-big">Welcome back</h1><div class="rf-divider"></div><p><b>Pick your focus.</b></p></div>
  <div class="rf-sec rf-reveal rf-doors3"><h3>Your Doors</h3>
