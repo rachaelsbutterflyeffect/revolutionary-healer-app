@@ -17,7 +17,7 @@ const codes = read("public/rf-codes.js");
 const checkin = read("public/rf-checkin.js");
 const bf = read("public/bf26.js");
 
-assert.match(page, /data-mlv5-open-chat="1"/);
+assert.match(page, /data-mlv5-open-chat="1" data-rf-go="chat"/);
 assert.match(page, /Hey, what are we looking at today\?/);
 assert.match(page, /Open chat →/);
 assert.equal(page.includes("Tell Rachael in your own words"), false);
@@ -39,9 +39,14 @@ assert.equal(refresh.includes("mlv5"), false);
 
 assert.match(js, /slot\.appendChild\(codes\)/);
 assert.match(js, /data-rf-go', 'lib'/);
-assert.match(js, /rhStartNewChat/);
+assert.equal(js.includes("rhStartNewChat"), false);
 assert.match(js, /chatCard\('Open chat'\)/);
-assert.match(js, /rfGo\('chat'\)/);
+assert.equal(js.includes("rfGo('chat')"), false);
+assert.match(refresh, /g === 'chat'\) \{ showMain\(\); rfGo\('chat'\); toBottom\(\); \}/);
+assert.match(css, /body\.mlv5\[data-rf="chat"\]/);
+assert.equal(css.includes("#chat-input"), false);
+assert.equal(css.includes(".rf-chip"), false);
+assert.equal(css.includes(".rh-chat"), false);
 assert.equal(js.includes("appendChild(tile)"), false);
 assert.match(css, /#rf-lsecs \.rf-favtile \{ display: none !important/);
 assert.match(css, /#rf-fit-door \.rf-door \.txt/);
