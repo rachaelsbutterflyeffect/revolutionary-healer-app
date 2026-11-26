@@ -403,6 +403,8 @@ body.mlv5[data-rf="rev"] .subsection-head h3 {
 }
 body.mlv5[data-rf="rev"] .rf-sbub .rf-orb,
 body.mlv5[data-rf="rev"] .rf-acc-btn .rf-orb,
+body.mlv5 .rf-recent .rf-sbub.rf-xhide,
+body.mlv5 [data-rf-filter="recent"] .rf-sbub.rf-xhide { display: none !important; }
 body.mlv5[data-rf="rev"] .rf-recent .rf-cue,
 body.mlv5[data-rf="rev"] [data-rf-filter="recent"] .rf-cue,
 body.mlv5[data-rf="rev"] [data-rf-filter="recent"] .ac,

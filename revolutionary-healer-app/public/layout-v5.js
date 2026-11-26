@@ -207,15 +207,7 @@
     }
     retitle(cards, 'gap', 'My GAPs');
     retitle(cards, 'code', 'My Codes');
-    var shifts = window.SHIFTS || [];
-    var recentList = document.querySelector('#my-revolution [data-rf-filter="recent"]');
-    if (recentList && shifts.length) {
-      var top = shifts.slice(0, 3).map(function (s) { return String(s.id); });
-      recentList.querySelectorAll('.rf-sbub').forEach(function (el) {
-        var show = top.indexOf(el.getAttribute('data-shift-id')) >= 0;
-        if (el.hidden === show) el.hidden = !show;
-      });
-    }
+    capRecent();
     var revData = window.__rfRevData;
     if (revData && revData.counts) {
       ['gapScans', 'shifts', 'codes'].forEach(function (key) {
@@ -278,12 +270,44 @@
     if (deeper && wrap && deeper.parentNode !== wrap) wrap.appendChild(deeper);
     else if (deeper && wrap && deeper !== wrap.lastElementChild) wrap.appendChild(deeper);
   }
+  function recentListEl() {
+    return document.querySelector('#my-revolution .rf-recent [data-role="shifts-list"]')
+      || document.querySelector('#my-revolution [data-rf-filter="recent"]')
+      || document.querySelector('#my-revolution .revolution-subsection:not(.rf-rsec) [data-role="shifts-list"]');
+  }
+  // SHIFTS arrives newest first, the same order the current tab already uses.
+  // Only the recent list is capped. My GAPs and My Codes keep their own counts.
+  function capRecent() {
+    var list = recentListEl();
+    var shifts = window.SHIFTS || [];
+    if (!list || !shifts.length) return;
+    var top = {};
+    shifts.slice(0, 3).forEach(function (s) { top[String(s.id)] = 1; });
+    list.querySelectorAll('.rf-sbub').forEach(function (el) {
+      el.classList.toggle('rf-xhide', !top[el.getAttribute('data-shift-id')]);
+    });
+  }
+  var capping = false;
+  function watchRecent() {
+    var list = recentListEl();
+    if (!list || list.__mlv5cap) return;
+    list.__mlv5cap = true;
+    new MutationObserver(function () {
+      if (capping) return;
+      capping = true;
+      try { capRecent(); } catch (e) {}
+      capping = false;
+    }).observe(list, { childList: true });
+    capRecent();
+  }
   dressRevolution();
-  document.addEventListener('rf:rev-data', dressRevolution);
+  watchRecent();
+  document.addEventListener('rf:rev-data', function () { dressRevolution(); watchRecent(); });
   var revTicks = 0;
   var revTimer = setInterval(function () {
     revTicks += 1;
     dressRevolution();
+    watchRecent();
     var ready = (window.SHIFTS || []).length > 0 || (window.__rfRevData && window.__rfRevData.counts);
     if (ready || revTicks > 20) clearInterval(revTimer);
   }, 500);
