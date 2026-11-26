@@ -116,7 +116,10 @@ export function validateActivityEvent(input) {
     if (input.event === "nav") {
         const screen = String(input.screen || "").slice(0, 60);
         if (!screen) return { error: "Invalid screen." };
-        return { value: { ...base, screen } };
+        const section = String(input.section || "").replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+        const value = { ...base, screen };
+        if (section) value.section = section;
+        return { value };
     }
     return { error: "Unknown event." };
 }

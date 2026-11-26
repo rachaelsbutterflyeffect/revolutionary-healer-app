@@ -15,7 +15,8 @@
         return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
     }
     function createClient(opts) {
-        var now = opts.now, send = opts.send, queue = [], play = null, lastNav = "", foregroundSince = 0, backgroundSince = 0, hidden = false, audioOn = false, lastFlush = 0, retryTimer = 0;
+        var now = opts.now, send = opts.send, queue = [], play = null, lastNav = "", foregroundSince = 0, backgroundSince = 0, hidden = false, audioOn = false, lastFlush = 0, retryTimer = 0, revKey = "\u0000", revAt = 0;
+        var REV_DEDUPE_MS = 300;
         function deviceId() { return opts.deviceId; }
         function push(event) {
             event.eventId = uuid();
@@ -62,10 +63,33 @@
             deviceId: deviceId,
             open: function (slug, entry) { return push({ event: "activation_open", slug: slug, entry: entry || "" }); },
             favorite: function (slug, on) { return push({ event: on ? "favorite_add" : "favorite_remove", slug: slug }); },
-            nav: function (screen) {
-                if (screen && screen !== lastNav) { lastNav = screen; push({ event: "nav", screen: screen }); }
-                if (play) return checkpoint(play.media);
-                return flush(true);
+            nav: function (screen, section) {
+                try {
+                    var name = "";
+                    if (typeof section === "string") name = section.replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+                    if (screen === "my-revolution") {
+                        var t = now();
+                        if (!(name === revKey && t - revAt < REV_DEDUPE_MS)) {
+                            revKey = name;
+                            revAt = t;
+                            lastNav = screen;
+                            var row = { event: "nav", screen: screen };
+                            if (name) row.section = name;
+                            push(row);
+                        }
+                    } else if (screen && screen !== lastNav) {
+                        lastNav = screen;
+                        revKey = "\u0000";
+                        revAt = 0;
+                        push({ event: "nav", screen: screen });
+                    }
+                } catch (e) {}
+                try {
+                    if (play) return checkpoint(play.media);
+                    return flush(true);
+                } catch (e2) {
+                    return Promise.resolve();
+                }
             },
             finder: function (result) { return push({ event: "finder_complete", slug: result.slug, scores: result.scores, bodyOrMind: result.bm, pace: result.sm }); },
             resetDay: function (dayId) { return push({ event: "reset_day", dayId: dayId }); },
