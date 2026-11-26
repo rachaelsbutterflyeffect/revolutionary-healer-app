@@ -236,7 +236,7 @@
       }
       var html = pulls.filter(function (c) { return c && c.from === 'pull'; }).map(function (c) {
         var when = c.at ? new Date(c.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
-        return '<div class="rf-sbub mlv5-pull"><div class="bt"><div class="src">Code</div><div class="nm">' + esc(c.name) + '</div>' +
+        return '<div class="mlv5-pull"><div class="bt"><div class="src">Code</div><div class="nm">' + esc(c.name) + '</div>' +
           (c.code ? '<div class="cn">' + esc(c.code) + '</div>' : '') +
           '<div class="dt">' + esc(when) + '</div></div></div>';
       }).join('');
@@ -245,7 +245,7 @@
         host.setAttribute('data-html', String(html.length));
       }
       var count = codePanel.parentNode && codePanel.parentNode.querySelector('.rf-acc-n');
-      var shown = 0;
+      var shown = codePanel.querySelectorAll('.mlv5-pull').length;
       codePanel.querySelectorAll('.rf-sbub').forEach(function (el) {
         if (!el.hidden && !el.classList.contains('rf-xhide')) shown++;
       });
