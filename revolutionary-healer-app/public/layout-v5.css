@@ -306,6 +306,132 @@ body.mlv5 #rf-fit-door { margin: 0 !important; padding: 0 !important; }
 body.mlv5 #rf-fit-door > h3 { display: none !important; }
 body.mlv5 .mlv5-lib-heading { margin: 0 0 10px; }
 body.mlv5 #rf-lsecs .rf-favtile { display: none !important; }
+
+/* Revolution booking card. Testers only. No price on the card. */
+body.mlv5 #mlv5-deeper { margin: 28px 0 8px; }
+body.mlv5 .mlv5-gd-frame {
+  position: relative;
+  border-radius: 24px;
+  border: 1.75px solid #e8c873;
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(63,214,200,.16), transparent 55%),
+    linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.04));
+  box-shadow:
+    0 12px 40px rgba(0,0,0,.28),
+    0 0 14px rgba(232,200,115,.38),
+    0 0 34px rgba(255,214,130,.22),
+    inset 0 0 0 0.5px rgba(255,241,196,.45),
+    inset 0 1px 0 rgba(255,250,230,.28);
+  padding: 22px 16px 16px;
+}
+body.mlv5 .mlv5-gd-eye {
+  margin: 0 0 10px; text-align: center;
+  font-family: Cinzel, serif; font-size: 11px; font-weight: 600;
+  letter-spacing: .28em; text-transform: uppercase; color: #e8c873;
+}
+body.mlv5 .mlv5-gd-title {
+  margin: 0 0 8px; text-align: center;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 32px; font-weight: 600; line-height: 1.15; color: #fdfbf5;
+}
+body.mlv5 .mlv5-gd-sub {
+  margin: 0 0 18px; text-align: center;
+  font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+  color: rgba(253,251,245,.62);
+}
+body.mlv5 .mlv5-gd-card {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; margin: 0; border-radius: 18px;
+  text-decoration: none; color: inherit;
+  border: 1px solid rgba(232,200,115,.42);
+  background: rgba(255,255,255,.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+}
+body.mlv5 .mlv5-gd-card:active { transform: scale(.98); }
+body.mlv5 .mlv5-gd-copy { flex: 1; min-width: 0; }
+body.mlv5 .mlv5-gd-card .ttl {
+  display: block;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 22px; font-weight: 600; line-height: 1.2; color: #fdfbf5;
+}
+body.mlv5 .mlv5-gd-card .line {
+  display: block; margin-top: 4px;
+  font-size: 13px; line-height: 1.35; color: rgba(253,251,245,.72);
+}
+body.mlv5 .mlv5-gd-card .act {
+  flex: none; margin-left: 4px;
+  font-family: Cinzel, serif; font-size: 13px; font-weight: 600;
+  letter-spacing: .06em; color: #e8c873; white-space: nowrap;
+}
+
+/* My Revolution. Testers only. The counter markup stays; this is paint. */
+html.mlv5:has(body[data-rf="rev"]) { background: #031211 !important; }
+body.mlv5[data-rf="rev"] {
+  --rev-gold: #F0D58A;
+  --rev-gold2: #FFF4D0;
+  background:
+    radial-gradient(110% 62% at 50% 0%, #0C2F2C 0%, #08211F 34%, #041615 64%, #02110F 100%) !important;
+}
+body.mlv5[data-rf="rev"] #rf-rev-head .rf-ttl,
+body.mlv5[data-rf="rev"] #rf-rev-head .rf-sub { color: #F7F4EC; }
+body.mlv5[data-rf="rev"] #rf-rev-head .rf-ttl { color: var(--rev-gold); }
+body.mlv5[data-rf="rev"] #my-revolution .section-head,
+body.mlv5[data-rf="rev"] #my-revolution [data-role="focus-card"],
+body.mlv5[data-rf="rev"] #my-revolution [data-role="focus-empty"],
+body.mlv5[data-rf="rev"] #my-revolution [data-role="demo-activity"],
+body.mlv5[data-rf="rev"] #my-revolution .rf-fx { display: none !important; }
+body.mlv5[data-rf="rev"] .rf-stats { display: flex; gap: 10px; margin: 10px 0 8px; }
+body.mlv5[data-rf="rev"] .rf-stat {
+  flex: 1; text-align: center; padding: 16px 8px 14px; border-radius: 20px;
+  border: 1px solid rgba(186, 228, 220, .32);
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(63,214,200,.20), transparent 60%),
+    linear-gradient(160deg, rgba(44, 124, 120, .72), rgba(18, 70, 68, .82));
+  box-shadow: 0 12px 32px rgba(0,0,0,.45), inset 0 1px 0 rgba(210, 245, 240, .22);
+}
+body.mlv5[data-rf="rev"] .rf-stat b {
+  display: block; font-family: Cinzel, serif; font-size: 28px; line-height: 1.1;
+  color: var(--rev-gold); font-weight: 600;
+}
+body.mlv5[data-rf="rev"] .rf-stat small {
+  display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+  color: #F7F4EC; margin-top: 4px;
+}
+body.mlv5[data-rf="rev"] .subsection-head h3 {
+  font-family: Cinzel, serif; font-weight: 600; font-size: 12px;
+  letter-spacing: .28em; text-transform: uppercase; color: var(--rev-gold);
+}
+body.mlv5[data-rf="rev"] .rf-sbub .rf-orb,
+body.mlv5[data-rf="rev"] .rf-acc-btn .rf-orb,
+body.mlv5[data-rf="rev"] .rf-recent .rf-cue,
+body.mlv5[data-rf="rev"] [data-rf-filter="recent"] .rf-cue,
+body.mlv5[data-rf="rev"] [data-rf-filter="recent"] .ac,
+body.mlv5[data-rf="rev"] #rf-your-codes { display: none !important; }
+body.mlv5[data-rf="rev"] .rf-sbub {
+  align-items: flex-start; color: #F7F4EC; border-radius: 30px;
+  background:
+    radial-gradient(120% 140% at 0% 50%, rgba(63,214,200,.22), transparent 58%),
+    linear-gradient(160deg, rgba(44, 124, 120, .74), rgba(18, 70, 68, .84));
+  border: 1px solid rgba(186, 228, 220, .38);
+  box-shadow: 0 12px 32px rgba(0,0,0,.45), inset 0 1px 0 rgba(210, 245, 240, .22);
+}
+body.mlv5[data-rf="rev"] .rf-sbub .src { color: #3FD6C8; letter-spacing: .24em; }
+body.mlv5[data-rf="rev"] .rf-sbub .nm { color: var(--rev-gold); }
+body.mlv5[data-rf="rev"] .rf-sbub .cn { color: #3FD6C8; font-family: Cinzel, serif; letter-spacing: .3em; }
+body.mlv5[data-rf="rev"] .rf-sbub .fr,
+body.mlv5[data-rf="rev"] .rf-sbub .rf-xl { color: #F7F4EC; }
+body.mlv5[data-rf="rev"] .rf-sbub .dt { color: rgba(247,244,236,.82); }
+body.mlv5[data-rf="rev"] .mlv5-open-row { display: flex !important; }
+body.mlv5[data-rf="rev"] .rf-acc-btn {
+  border: 1px solid rgba(186, 228, 220, .38); border-radius: 22px; color: #F7F4EC;
+  background:
+    radial-gradient(120% 140% at 0% 50%, rgba(63,214,200,.20), transparent 58%),
+    linear-gradient(160deg, rgba(44, 124, 120, .74), rgba(18, 70, 68, .84));
+}
+body.mlv5[data-rf="rev"] .rf-acc-btn .txt { color: #F7F4EC; font-family: "Cormorant Garamond", Georgia, serif; font-size: 21px; }
+body.mlv5[data-rf="rev"] .rf-acc-n { color: var(--rev-gold); }
+body.mlv5[data-rf="rev"] .rf-chev { border-right: 2px solid var(--rev-gold); border-bottom: 2px solid var(--rev-gold); }
+body.mlv5[data-rf="rev"] .mlv5-pulls .mlv5-pull { display: flex !important; }
 body.mlv5[data-rf-lib="cat"] #mlv5-act-top,
 body.mlv5[data-rf-libfav] #mlv5-act-top { display: none !important; }
 body.mlv5 #activations-page > .wrap > .section-head { display: none !important; }
