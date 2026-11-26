@@ -109,8 +109,11 @@ body.mlv5 .bf26-bf-b { right: 3%; bottom: 8%; width: 20px !important; }
 
 body.mlv5 .mlv5-chat { margin: 18px 0 4px; }
 body.mlv5 .mlv5-chat-card {
+  all: unset;
+  box-sizing: border-box;
   display: block;
   width: 100%;
+  cursor: pointer;
   padding: 16px 18px 14px;
   border-radius: 22px;
   text-align: left;
@@ -120,6 +123,7 @@ body.mlv5 .mlv5-chat-card {
   border: 1px solid rgba(63, 214, 200, .38);
   box-shadow: 0 10px 36px rgba(0, 0, 0, .22), 0 0 24px rgba(63, 214, 200, .16), inset 0 1px 0 rgba(255, 255, 255, .22);
 }
+body.mlv5 .mlv5-chat-card:active { transform: scale(.98); }
 body.mlv5 .mlv5-who {
   font-family: Cinzel, serif;
   font-size: 11px;
@@ -133,49 +137,15 @@ body.mlv5 .mlv5-line {
   font-size: 22px;
   line-height: 1.3;
   color: #fdfbf5;
-  margin: 0 0 12px;
+  margin: 0 0 10px;
 }
-body.mlv5 .mlv5-chiprow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-body.mlv5 #mlv5-chips { display: contents; }
-body.mlv5 #mlv5-chips .rf-tile {
-  all: unset;
-  box-sizing: border-box;
-  cursor: pointer;
-  display: inline-flex;
-  width: auto;
-  height: auto;
-  min-height: 0;
-  padding: 9px 13px;
-  border-radius: 999px;
-  border: 1px solid rgba(63, 214, 200, .5);
-  background: rgba(63, 214, 200, .12);
-  color: #fdfbf5;
-  font-size: 13px;
-  line-height: 1.3;
-  flex: none;
-  contain: none;
-}
-body.mlv5 #mlv5-chips .rf-tile .ic,
-body.mlv5 #mlv5-chips .rf-tile small,
-body.mlv5 #mlv5-chips .rf-tile br { display: none !important; }
-body.mlv5 #mlv5-chips .rf-tile b {
+body.mlv5 .mlv5-open {
+  margin: 0;
   font-family: Inter, system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: none;
-}
-body.mlv5 .mlv5-own {
-  all: unset;
-  box-sizing: border-box;
-  cursor: pointer;
-  font-size: 13px;
+  font-size: 12.5px;
   line-height: 1.3;
-  color: var(--rf-gold2);
-  border: 1px solid rgba(232, 200, 115, .5);
-  background: rgba(232, 200, 115, .1);
-  border-radius: 999px;
-  padding: 9px 13px;
+  letter-spacing: .02em;
+  color: #3FD6C8;
 }
 
 body.mlv5 #rf-home > .mlv5-code-sec,
@@ -290,7 +260,23 @@ body.mlv5 #mlv5-fit .rf-orb {
   box-shadow: 0 0 26px rgba(255, 214, 130, .7);
 }
 body.mlv5 #mlv5-doors .rf-door .arr,
-body.mlv5 #mlv5-fit .rf-door .arr { color: var(--rf-gold); }
+body.mlv5 #mlv5-fit .rf-door .arr,
+body.mlv5 #rf-fit-door .rf-door .arr { color: var(--rf-gold) !important; }
+/* The live champagne rule paints this door dark brown. On v5 it is a glass bubble with light text. */
+body.mlv5 #rf-fit-door .rf-door,
+body.mlv5 #mlv5-fit .rf-door {
+  color: #fdfbf5 !important;
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(63, 214, 200, .20), transparent 55%),
+    linear-gradient(135deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .05)) !important;
+  border: 1px solid rgba(63, 214, 200, .32) !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, .28), 0 0 28px rgba(63, 214, 200, .16), inset 0 1px 0 rgba(255, 255, 255, .28) !important;
+}
+body.mlv5 #rf-fit-door .rf-door .txt,
+body.mlv5 #mlv5-fit .rf-door .txt {
+  color: #fdfbf5 !important;
+  -webkit-text-fill-color: #fdfbf5;
+}
 
 /* Four nav items. Focus and the desktop "ask" foot stay in the DOM for the flag-off app. */
 body.mlv5 #rf-nav [data-rf-nav="focus"],
@@ -300,13 +286,17 @@ body.mlv5 #rf-nav {
   background: linear-gradient(180deg, rgba(63, 214, 200, .92), rgba(30, 170, 160, .92));
 }
 
-/* Activations: finder, then the library heading, then short bubbles. */
-body.mlv5 #activations-page.block { padding-top: 0; }
-body.mlv5 #mlv5-act-top { margin: 24px 0 0; }
-body.mlv5 #mlv5-fit { margin: 0 0 32px; }
-body.mlv5 #rf-fit-door { margin: 0 !important; }
+/* Activations: finder, then the library heading, then short bubbles.
+   The landing's back link and old title are hidden so they don't leave a bar above the finder. */
+body.mlv5 #activations-page.block { padding-top: 12px !important; }
+body.mlv5 #activations-page > .wrap > .page-back,
+body.mlv5 #activations-page > .wrap > .section-head { display: none !important; }
+body.mlv5 #mlv5-act-top { margin: 0; }
+body.mlv5 #mlv5-fit { margin: 0 0 20px; }
+body.mlv5 #rf-fit-door { margin: 0 !important; padding: 0 !important; }
 body.mlv5 #rf-fit-door > h3 { display: none !important; }
 body.mlv5 .mlv5-lib-heading { margin: 0 0 10px; }
+body.mlv5 #rf-lsecs .rf-favtile { display: none !important; }
 body.mlv5[data-rf-lib="cat"] #mlv5-act-top,
 body.mlv5[data-rf-libfav] #mlv5-act-top { display: none !important; }
 body.mlv5 #activations-page > .wrap > .section-head { display: none !important; }

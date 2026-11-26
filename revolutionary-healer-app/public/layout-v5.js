@@ -7,9 +7,9 @@
    - The finder door #rf-fit-door is moved to the top of Activations. Its back control is
      retargeted from data-rf-go="home" to data-rf-go="lib" so Back returns to the library.
      Questions, the recommender, the result card, and Listen now are untouched.
-   - The four chat chips keep data-rf-lane, so the existing listener still calls
-     rhActivity.chatCard and startLane. "Tell Rachael in your own words" calls the existing
-     entry showMain + rfGo('chat') + rhStartNewChat and does not send a message. */
+   - The home chat card is one control. It logs chat_card_tap and opens a new chat
+     with the existing entry (showMain, rfGo('chat'), rhStartNewChat). The four topic
+     lanes and startLane stay in refresh.js, unchanged, for the flag-off home. */
 (function () {
   if (window.__mlv5) return;
   if (!window.__rfFeatures || window.__rfFeatures.memberLayoutV5 !== true) return;
@@ -43,10 +43,6 @@
   var avatar = document.querySelector('#rf-home .rf-avatar');
   if (avatar && !avatar.getAttribute('data-mlv5-track')) avatar.setAttribute('data-mlv5-track', 'profile');
 
-  var chips = document.getElementById('mlv5-chips');
-  if (chips) {
-    document.querySelectorAll('#rf-home [data-rf-lane]').forEach(function (tile) { chips.appendChild(tile); });
-  }
   var doors = document.getElementById('mlv5-doors');
   if (doors) {
     ['gap', 'chat'].forEach(function (name) {
@@ -92,20 +88,22 @@
 
   document.addEventListener('click', function (e) {
     if (!document.body.classList.contains('mlv5')) return;
-    var own = e.target.closest && e.target.closest('[data-mlv5-own]');
-    if (!own) return;
+    var card = e.target.closest && e.target.closest('[data-mlv5-open-chat]');
+    if (!card) return;
     e.preventDefault();
     e.stopPropagation();
-    tap('own-words');
-    try { if (typeof showMain === 'function') showMain(); } catch (err) {}
-    try { if (typeof rfGo === 'function') rfGo('chat'); } catch (err2) {}
-    try { if (typeof rhStartNewChat === 'function') rhStartNewChat(); } catch (err3) {}
+    try {
+      if (window.rhActivity && typeof window.rhActivity.chatCard === 'function') window.rhActivity.chatCard('Open chat');
+    } catch (err) {}
+    try { if (typeof showMain === 'function') showMain(); } catch (err2) {}
+    try { if (typeof rfGo === 'function') rfGo('chat'); } catch (err3) {}
+    try { if (typeof rhStartNewChat === 'function') rhStartNewChat(); } catch (err4) {}
   }, true);
 
   document.addEventListener('click', function (e) {
     if (!document.body.classList.contains('mlv5')) return;
     var t = e.target.closest && e.target.closest('[data-mlv5-track]');
-    if (!t || t.hasAttribute('data-mlv5-own')) return;
+    if (!t || t.hasAttribute('data-mlv5-open-chat')) return;
     var name = t.getAttribute('data-mlv5-track');
     if (name) tap(name);
   });
