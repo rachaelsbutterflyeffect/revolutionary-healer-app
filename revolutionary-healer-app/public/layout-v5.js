@@ -260,7 +260,7 @@
       codePanel.querySelectorAll('.rf-sbub').forEach(function (el) {
         if (!el.hidden && !el.classList.contains('rf-xhide')) shown++;
       });
-      if (count) count.textContent = '(' + shown + ')';
+      setTimeout(function () { if (count) count.textContent = '(' + shown + ')'; }, 0);
     }
     var deeper = document.getElementById('mlv5-deeper');
     var wrap = document.querySelector('#my-revolution .wrap');
