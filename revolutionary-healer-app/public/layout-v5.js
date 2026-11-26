@@ -202,17 +202,28 @@
         sub.classList.add('rf-recent');
         recent.setAttribute('data-rf-filter', 'recent');
         var h = sub.querySelector('h3');
-        if (h) h.textContent = 'My Most Recent Shifts';
-        if (typeof window.renderFocusAndShifts === 'function') { try { window.renderFocusAndShifts(window.SHIFTS || []); } catch (e) {} }
+        if (h && h.textContent.indexOf('Most Recent') < 0) h.textContent = 'My Most Recent Shifts';
       }
     }
     retitle(cards, 'gap', 'My GAPs');
     retitle(cards, 'code', 'My Codes');
+    var shifts = window.SHIFTS || [];
     var recentList = document.querySelector('#my-revolution [data-rf-filter="recent"]');
-    if (recentList) {
-      var top = (window.SHIFTS || []).slice(0, 3).map(function (s) { return String(s.id); });
+    if (recentList && shifts.length) {
+      var top = shifts.slice(0, 3).map(function (s) { return String(s.id); });
       recentList.querySelectorAll('.rf-sbub').forEach(function (el) {
-        el.hidden = top.indexOf(el.getAttribute('data-shift-id')) < 0;
+        var show = top.indexOf(el.getAttribute('data-shift-id')) >= 0;
+        if (el.hidden === show) el.hidden = !show;
+      });
+    }
+    var revData = window.__rfRevData;
+    if (revData && revData.counts) {
+      ['gapScans', 'shifts', 'codes'].forEach(function (key) {
+        var el = document.querySelector('#rf-stats [data-k="' + key + '"] b');
+        if (!el) return;
+        var n = +revData.counts[key] || 0;
+        var next = n > 0 ? String(n) : '\u2727';
+        if (el.textContent !== next) el.textContent = next;
       });
     }
     document.querySelectorAll('#my-revolution [data-rf-filter="recent"] .rf-sbub, #my-revolution .rf-recent .rf-sbub').forEach(function (card) {
@@ -258,6 +269,11 @@
   }
   dressRevolution();
   document.addEventListener('rf:rev-data', dressRevolution);
-  var revWatch = document.getElementById('my-revolution');
-  if (revWatch && window.MutationObserver) new MutationObserver(function () { dressRevolution(); }).observe(revWatch, { childList: true, subtree: true });
+  var revTicks = 0;
+  var revTimer = setInterval(function () {
+    revTicks += 1;
+    dressRevolution();
+    var ready = (window.SHIFTS || []).length > 0 || (window.__rfRevData && window.__rfRevData.counts);
+    if (ready || revTicks > 20) clearInterval(revTimer);
+  }, 500);
 })();
