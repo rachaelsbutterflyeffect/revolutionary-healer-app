@@ -42,6 +42,56 @@
   } catch (x) {}
 })();
 </script>
+<script id="mlv5-gate">
+// MEMBER_LAYOUT_V5 is decided by /api/features, which used to run after the
+// old home had already painted. Hold the shell until that answer is applied.
+// Flag off or not on the list: the hold drops and the old layout is first.
+// Flag on: v5's stylesheet and script finish, then the shell is shown.
+// 2.5s cap so a failed request never leaves a blank page.
+(function () {
+  try {
+    var e = localStorage.getItem('rh_member_email');
+    if (!e || e.indexOf('@') < 0) return;
+    window.__layoutGate = 1;
+    var de = document.documentElement;
+    de.classList.add('mlv5-hold');
+    var st = document.createElement('style');
+    st.id = 'mlv5-hold-css';
+    st.textContent = 'html.mlv5-hold{background:#06080b!important}html.mlv5-hold body{visibility:hidden!important}';
+    de.appendChild(st);
+    var shown = false;
+    function reveal() { if (shown) return; shown = true; de.classList.remove('mlv5-hold'); }
+    var timer = setTimeout(reveal, 2500);
+    function paint() {
+      var left = 2;
+      function done() { if (--left <= 0) { clearTimeout(timer); reveal(); } }
+      if (!document.getElementById('rf-feat-layout-v5')) {
+        var l = document.createElement('link');
+        l.rel = 'stylesheet'; l.href = '/layout-v5.css'; l.id = 'rf-feat-layout-v5';
+        l.onload = done; l.onerror = done;
+        document.head.appendChild(l);
+      } else done();
+      function addJs() {
+        if (document.getElementById('rf-js-layout-v5')) { done(); return; }
+        var s = document.createElement('script');
+        s.src = '/layout-v5.js'; s.id = 'rf-js-layout-v5';
+        s.onload = done; s.onerror = done;
+        document.body.appendChild(s);
+      }
+      if (document.body) addJs(); else document.addEventListener('DOMContentLoaded', addJs);
+    }
+    fetch('/api/features?email=' + encodeURIComponent(e), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (f) {
+        window.__rfFeatures = f || {};
+        window.__rfFeaturesReady = true;
+        if (f && f.memberLayoutV5 === true) paint();
+        else { clearTimeout(timer); reveal(); }
+      })
+      .catch(function () { clearTimeout(timer); reveal(); });
+  } catch (x) {}
+})();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:wght@400;500;600&family=Cormorant+SC:wght@500;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 
 <style>
@@ -9263,7 +9313,7 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
       .then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (f) {
         window.__rfFeatures = f || {};
-        Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); });
+        Object.keys(MAP).forEach(function (k) { if (k === 'memberLayoutV5' && window.__layoutGate) return; if (f && f[k] === true) load(MAP[k]); });
         // Daily code door is in the Home markup so it paints with the other two. Hide it only when
         // CODE_PULL is explicitly off. A failed /api/features request leaves the door up.
         if (f && f.codePull === false) {
