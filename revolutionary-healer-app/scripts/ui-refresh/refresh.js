@@ -36,6 +36,7 @@
     if (s === 'chat') { sizeChat(); setTimeout(sizeChat, 60); }
     if (s === 'home') revealHome();
     if (s === 'account') fillAccount();
+    if (s === 'rev') { try { if (typeof rhTrackMyRevolution === 'function') rhTrackMyRevolution(); } catch (e) {} }
     booted = true;
   }
   window.rfGo = rfGo;

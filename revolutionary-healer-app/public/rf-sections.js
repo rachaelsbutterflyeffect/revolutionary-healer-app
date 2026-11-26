@@ -87,12 +87,28 @@
     if (needPaint && shiftsArr().length && typeof window.renderFocusAndShifts === 'function') { needPaint = false; try { window.renderFocusAndShifts(shiftsArr()); } catch (e) {} }
     return {};
   }
+  function accName(btn) {
+    try {
+      var txt = btn && btn.querySelector ? btn.querySelector('.txt') : null;
+      if (!txt) return '';
+      var copy = txt.cloneNode(true);
+      var n = copy.querySelector('.rf-acc-n');
+      if (n) n.remove();
+      return String(copy.textContent || '').replace(/\s+/g, ' ').trim();
+    } catch (e) { return ''; }
+  }
   // accordion: expands in place, collapsed by default, chevron turns
   document.addEventListener('click', function (e) {
     var b = e.target.closest && e.target.closest('.rf-acc-btn'); if (!b) return;
     var panel = document.getElementById(b.getAttribute('aria-controls')); if (!panel) return;
     var open = panel.hidden; panel.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.parentNode.classList.toggle('open', open);
-    if (open) { var l = panel.querySelector('[data-rf-filter]'); if (l) filter(l); }
+    if (open) {
+      var l = panel.querySelector('[data-rf-filter]'); if (l) filter(l);
+      try {
+        var sectionName = accName(b);
+        if (sectionName && window.rhActivity && typeof window.rhActivity.nav === 'function') window.rhActivity.nav('my-revolution', sectionName);
+      } catch (err) {}
+    }
   });
   function render() { ensure(); }
   document.addEventListener('rf:rev-data', function (ev) { render(ev.detail); });

@@ -3877,6 +3877,25 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
     if (typeof rhSyncPassBanner === 'function') rhSyncPassBanner(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+  // One My Revolution open. The refresh app also calls this on the way to
+  // Today's Focus, then leaves in the same turn, so that hop must not log.
+  function rhTrackMyRevolution() {
+    try {
+      var refresh = !!(document.body && document.body.classList && document.body.classList.contains('rf'));
+      var fire = function () {
+        try {
+          if (refresh && (!document.body || document.body.getAttribute('data-rf') !== 'rev')) return;
+          if (window.rhActivity && typeof window.rhActivity.nav === 'function') window.rhActivity.nav('my-revolution');
+        } catch (e) {}
+      };
+      if (refresh) {
+        clearTimeout(window.__rhRevTrackTimer);
+        window.__rhRevTrackTimer = setTimeout(fire, 0);
+        return;
+      }
+      fire();
+    } catch (e) {}
+  }
   function goToMyRevolution() {
     hideAllPages();
     document.getElementById('hero-section').style.display = '';
@@ -3885,6 +3904,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
       el.style.display = '';
       el.scrollIntoView({ behavior: 'smooth' });
     }
+    rhTrackMyRevolution();
   }
 
   // QA Oct 14: 'See all' re-renders the full list first, so it never opens onto
@@ -8492,6 +8512,7 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
     if (s === 'chat') { sizeChat(); setTimeout(sizeChat, 60); }
     if (s === 'home') revealHome();
     if (s === 'account') fillAccount();
+    if (s === 'rev') { try { if (typeof rhTrackMyRevolution === 'function') rhTrackMyRevolution(); } catch (e) {} }
     booted = true;
   }
   window.rfGo = rfGo;
