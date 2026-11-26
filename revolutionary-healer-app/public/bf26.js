@@ -101,7 +101,6 @@
           '<div class="bf26-headline">Skip the random discounts. Find what your energy needs this season.</div>' +
           '<a class="bf26-btn" href="' + QUIZ + '"><span class="bf26-sheen" aria-hidden="true"></span><span class="bf26-btn-text">Find the program that\'s best for you</span></a>' +
           '<div class="bf26-sub">Two-minute quiz, hundreds in savings</div>' +
-          '<div class="bf26-fine">Available until Monday, November 30th.</div>' +
         '</div>' +
       '</div>';
     return slot;

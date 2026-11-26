@@ -714,7 +714,7 @@
       .then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (f) {
         window.__rfFeatures = f || {};
-        Object.keys(MAP).forEach(function (k) { if (f && f[k] === true) load(MAP[k]); });
+        Object.keys(MAP).forEach(function (k) { if (k === 'memberLayoutV5' && window.__layoutGate) return; if (f && f[k] === true) load(MAP[k]); });
         // Daily code door is in the Home markup so it paints with the other two. Hide it only when
         // CODE_PULL is explicitly off. A failed /api/features request leaves the door up.
         if (f && f.codePull === false) {

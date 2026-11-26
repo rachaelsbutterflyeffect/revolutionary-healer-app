@@ -72,6 +72,11 @@ for (const html of [refresh, classic]) {
   assert.match(html, /Date\.parse\("2026-12-01T04:59:00Z"\)/);
   assert.match(html, /var KILL = false/);
 }
+assert.equal(js.includes("Available until"), false);
+assert.equal(js.includes("November 30"), false);
+assert.equal(js.includes("bf26-fine"), false);
+assert.match(js, /Two-minute quiz, hundreds in savings/);
+assert.match(js, /Skip the random discounts/);
 assert.equal(js.includes("target="), false, "quiz link stays in the same window so a webview can open it");
 assert.equal(js.includes("rh-chat"), false);
 assert.equal(js.includes("chat-input"), false);
