@@ -15,8 +15,21 @@
         return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-" + hex.slice(12, 16) + "-" + hex.slice(16, 20) + "-" + hex.slice(20);
     }
     function createClient(opts) {
-        var now = opts.now, send = opts.send, queue = [], play = null, lastNav = "", foregroundSince = 0, backgroundSince = 0, hidden = false, audioOn = false, lastFlush = 0, retryTimer = 0, revKey = "\u0000", revAt = 0;
+        var now = opts.now, send = opts.send, queue = [], play = null, lastNav = "", foregroundSince = 0, backgroundSince = 0, hidden = false, audioOn = false, lastFlush = 0, retryTimer = 0, revKey = "\u0000", revAt = 0, usageKey = "\u0000", usageAt = 0;
         var REV_DEDUPE_MS = 300;
+        function clip(value) {
+            return String(value == null ? "" : value).replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
+        }
+        function once(key) {
+            var t = now();
+            if (key === usageKey && t - usageAt < REV_DEDUPE_MS) return false;
+            usageKey = key;
+            usageAt = t;
+            return true;
+        }
+        function safeFlush() {
+            try { return flush(true); } catch (e) { return Promise.resolve(); }
+        }
         function deviceId() { return opts.deviceId; }
         function push(event) {
             event.eventId = uuid();
@@ -90,6 +103,32 @@
                 } catch (e2) {
                     return Promise.resolve();
                 }
+            },
+            chatCard: function (card) {
+                try {
+                    var label = clip(card);
+                    if (!label || !once("chat\n" + label)) return Promise.resolve();
+                    push({ event: "chat_card_tap", card: label });
+                } catch (e) {}
+                return safeFlush();
+            },
+            finderStart: function () {
+                try {
+                    if (!once("activation_finder_start")) return Promise.resolve();
+                    push({ event: "activation_finder_start" });
+                } catch (e) {}
+                return safeFlush();
+            },
+            finderDone: function (activation, deferFlush) {
+                try {
+                    var name = clip(activation);
+                    if (!once("activation_finder_complete\n" + name)) return Promise.resolve();
+                    var row = { event: "activation_finder_complete" };
+                    if (name) row.activation = name;
+                    push(row);
+                } catch (e) {}
+                if (deferFlush) return Promise.resolve();
+                return safeFlush();
             },
             finder: function (result) { return push({ event: "finder_complete", slug: result.slug, scores: result.scores, bodyOrMind: result.bm, pace: result.sm }); },
             resetDay: function (dayId) { return push({ event: "reset_day", dayId: dayId }); },

@@ -27,6 +27,7 @@ const EVENTS = new Set([
     "activation_open", "activation_play", "finder_complete", "reset_day",
     "gap_start", "gap_step", "gap_complete", "presence", "nav",
     "favorite_add", "favorite_remove", "code_pull", "chat_turn", "gap_reading", "gap_shift",
+    "chat_card_tap", "activation_finder_start", "activation_finder_complete",
 ]);
 const PLAY_STATES = new Set(["start", "pause", "ended", "hidden"]);
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -58,6 +59,10 @@ export function isTestIdentity(email, deviceId, env = process.env) {
 
 function num(value, max) {
     return typeof value === "number" && Number.isFinite(value) && value >= 0 && value <= max;
+}
+
+function clipActivityText(value, max) {
+    return String(value || "").replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
 }
 
 export function validateActivityEvent(input) {
@@ -119,6 +124,18 @@ export function validateActivityEvent(input) {
         const section = String(input.section || "").replace(/[\u0000-\u001f]/g, " ").replace(/\s+/g, " ").trim().slice(0, 80);
         const value = { ...base, screen };
         if (section) value.section = section;
+        return { value };
+    }
+    if (input.event === "chat_card_tap") {
+        const card = clipActivityText(input.card, 80);
+        if (!card) return { error: "Invalid card." };
+        return { value: { ...base, card } };
+    }
+    if (input.event === "activation_finder_start") return { value: { ...base } };
+    if (input.event === "activation_finder_complete") {
+        const activation = clipActivityText(input.activation, 80);
+        const value = { ...base };
+        if (activation) value.activation = activation;
         return { value };
     }
     return { error: "Unknown event." };

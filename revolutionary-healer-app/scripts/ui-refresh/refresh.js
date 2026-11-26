@@ -241,6 +241,11 @@
   document.addEventListener('click', function (e) {
     var t = e.target.closest && e.target.closest('[data-rf-lane]'); if (!t) return;
     var lane = LANES[t.getAttribute('data-rf-lane')]; if (!lane) return;
+    try {
+      var labelEl = t.querySelector('b');
+      var label = labelEl ? String(labelEl.textContent || '') : String(lane[0] || '');
+      if (window.rhActivity && typeof window.rhActivity.chatCard === 'function') window.rhActivity.chatCard(label);
+    } catch (err) {}
     e.preventDefault();
     var a = document.activeElement; if (a && a.blur) a.blur();
     showMain(); rfGo('chat');

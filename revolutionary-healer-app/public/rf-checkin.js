@@ -45,12 +45,17 @@
     var lead = need === 'high' ? 'All three scores came in high today (' + e + ', ' + c + ', ' + g + '), so this is about ' + DNEED.high + '.' : ({ energy: 'Energy', connection: 'Connection', grounded: 'Grounded' }[need]) + ' came in lowest (' + m + '/10), so today is about ' + DNEED[need] + '.';
     var why = lead + ' You said your ' + dp.bm + ' is pulling at you most and you want to ' + (dp.sm === 'slow' ? 'slow down' : 'get moving') + ', so this one meets you there.';
     window.__rfCheckinResult = { need: need, bm: dp.bm, sm: dp.sm, slug: slug, scores: [e, c, g] };
+    try {
+      var finderName = a && a.t && a.t !== slug ? a.t : '';
+      if (!finderName && window.ACTIVATION_DETAILS && window.ACTIVATION_DETAILS[slug] && window.ACTIVATION_DETAILS[slug].title) finderName = String(window.ACTIVATION_DETAILS[slug].title).split(':')[0];
+      if (window.rhActivity && typeof window.rhActivity.finderDone === 'function') window.rhActivity.finderDone(finderName, true);
+    } catch (err) {}
     if (window.rhActivity) window.rhActivity.finder(window.__rfCheckinResult);
     d.innerHTML = '<div><div class="q-label" style="text-align:center">YOUR ACTIVATION</div><div class="qn" style="font-size:26px">Here\'s the activation that best fits you today, based on your energy</div><div class="acard"><div class="cv"></div><div class="bd"><h2></h2><p class="ad"></p><p class="why"></p><button type="button" class="btn-g" id="d-play">▶ Listen now</button></div></div><div style="text-align:center;margin-top:14px"><button type="button" class="btn-t" id="d-again">↺ Retake</button></div></div>';
     if (a.bg) d.querySelector('.acard .cv').style.backgroundImage = a.bg; else d.querySelector('.acard .cv').style.display = 'none';
     d.querySelector('.acard h2').textContent = a.t; d.querySelector('.acard .ad').textContent = a.d; d.querySelector('.acard .why').textContent = '✦ ' + why;
     $('#d-play').onclick = function () { buzz(); if (typeof window.handleActivationCardClick === 'function') window.handleActivationCardClick(slug); };
-    $('#d-again').onclick = function () { dv = []; dp = {}; dStep(0); };
+    $('#d-again').onclick = function () { dv = []; dp = {}; dStep(0); try { if (window.rhActivity && typeof window.rhActivity.finderStart === 'function') window.rhActivity.finderStart(); } catch (err) {} };
   }
   function swirl() { // ported verbatim (logic) from mock-up r12/r17
     var c = $('#fitc'); if (!c) return; var x = c.getContext('2d'); var S = 0, vis = true;
@@ -76,7 +81,7 @@
     var scr = document.createElement('section'); scr.className = 'rf-screen'; scr.id = 'rf-fit'; scr.setAttribute('aria-label', 'Your activation today');
     scr.innerHTML = '<button type="button" class="rf-back" data-rf-go="home">← Home</button><h2 class="ttl shine">Your Activation</h2><p class="sub">Five quick taps. Then the activation that best fits you today.</p><div class="small-orb fit-ring" id="dorb"><canvas id="fitc" aria-hidden="true"></canvas></div><div id="diag"></div>';
     home.parentNode.insertBefore(scr, home.nextSibling);
-    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-rf-go="fit"]')) { dv = []; dp = {}; dStep(0); } }, true);
+    document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('[data-rf-go="fit"]')) { dv = []; dp = {}; dStep(0); try { if (window.rhActivity && typeof window.rhActivity.finderStart === 'function') window.rhActivity.finderStart(); } catch (err) {} } }, true);
     dStep(0); swirl();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount); else mount();
