@@ -15,6 +15,7 @@ export const FEATURES = {
   methodTracking: "METHOD_TRACKING", // My Revolution stat row: GAP SCANS / SHIFTS / CODES
   codeShifts: "CODE_SHIFTS", // Shift the codes: save a pulled code as a Code Upgrade Shift
   featuredEvent: "FEATURED_EVENT", // Activations page: this month's Featured Activation event (public/rf-event.js config)
+  memberLayoutV5: "MEMBER_LAYOUT_V5", // Refresh home + activations layout (public/layout-v5.js). Off = today's app.
 };
 
 export function featureAllowed(key, email, env = process.env) {

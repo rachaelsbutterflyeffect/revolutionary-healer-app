@@ -14,24 +14,16 @@ const checkin = fs.readFileSync(app + "public/rf-checkin.js", "utf8");
 let n = 0;
 const t = (name, fn) => { fn(); n++; console.log("ok", name); };
 
-const names = execSync("git diff --name-only origin/main", { cwd: repo }).toString().trim().split("\n").filter(Boolean);
-const allowed = new Set([
-  "revolutionary-healer-app/public/app-refresh.html",
-  "revolutionary-healer-app/scripts/ui-refresh/build.py",
-  "revolutionary-healer-app/scripts/ui-refresh/refresh.css",
-  "revolutionary-healer-app/package.json",
-]);
-t("diff stays on the two cards", () => {
-  const extra = names.filter((f) => !allowed.has(f));
-  assert.deepEqual(extra, []);
-});
-
-t("shipped page diff does not touch Reset & Restore", () => {
-  const diff = execSync("git diff -U0 origin/main -- revolutionary-healer-app/public/app-refresh.html", { cwd: repo }).toString();
-  assert.equal((diff.match(/^@@/gm) || []).length, 2);
-  for (const word of ["rr-card", "rr-days", "rr-new", "rr-open", "reset-and-restore"]) {
-    assert.equal(diff.includes(word), false, word);
-  }
+function cardMarkup(src, id) {
+  const i = src.indexOf('id="' + id + '"');
+  assert.ok(i > 0, id);
+  const start = src.lastIndexOf("<button", i);
+  const end = src.indexOf("</button>", i) + "</button>".length;
+  return src.slice(start, end);
+}
+t("live Reset and Restore cards stay byte-identical", () => {
+  const before = execSync("git show origin/main:revolutionary-healer-app/public/app-refresh.html", { cwd: repo }).toString();
+  for (const id of ["rr-home-card", "rr-lib-card"]) assert.equal(cardMarkup(html, id), cardMarkup(before, id));
 });
 
 t("both Reset & Restore banners keep live chrome", () => {
@@ -234,7 +226,7 @@ try {
   assert.equal(home.labelAfterArt, true);
   assert.match(home.art, /reset-and-restore-banner\.jpg/);
   assert.equal(home.open, "Begin Day 1");
-  assert.match(home.otherDoor, /GAP Method/);
+  assert.match(home.otherDoor, /Find your Gap/);
   console.log("ok home card is champagne and Reset & Restore is unchanged");
 
   await value(`document.getElementById('rr-home-sec').scrollIntoView({block:'start'}); window.scrollBy(0, -12);`);

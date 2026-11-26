@@ -36,7 +36,8 @@
     "test:champagne-cards": "node scripts/test-champagne-cards.mjs",
     "test:code-chat": "node scripts/test-code-chat.mjs",
     "test:member-chat": "node scripts/test-member-chat.mjs",
-    "test:bf26-banner": "node scripts/test-bf26-banner.mjs"
+    "test:bf26-banner": "node scripts/test-bf26-banner.mjs",
+    "test:layout-v5": "node scripts/test-layout-v5.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.0",

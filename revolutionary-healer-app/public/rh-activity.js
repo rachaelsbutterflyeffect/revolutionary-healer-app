@@ -112,6 +112,14 @@
                 } catch (e) {}
                 return safeFlush();
             },
+            layoutTap: function (target) {
+                try {
+                    var label = clip(target);
+                    if (!label || !once("layout\n" + label)) return Promise.resolve();
+                    push({ event: "layout_tap", target: label });
+                } catch (e) {}
+                return safeFlush();
+            },
             finderStart: function () {
                 try {
                     if (!once("activation_finder_start")) return Promise.resolve();
