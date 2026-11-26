@@ -27,6 +27,7 @@ const EVENTS = new Set([
     "activation_open", "activation_play", "finder_complete", "reset_day",
     "gap_start", "gap_step", "gap_complete", "presence", "nav",
     "favorite_add", "favorite_remove", "code_pull", "chat_turn", "gap_reading", "gap_shift",
+    "gap_next_tap", "gap_next_listen",
     "chat_card_tap", "activation_finder_start", "activation_finder_complete",
     "layout_tap", "go_deeper_book_tap", "program_finder_tap", "program_finder_offer",
     "my_gaps_open", "my_codes_open",
@@ -119,7 +120,7 @@ export function validateActivityEvent(input) {
         if (!chatId) return { error: "Invalid chat." };
         return { value: { ...base, chatId, processSlug: String(input.processSlug || "").slice(0, 40) } };
     }
-    if (input.event === "gap_reading" || input.event === "gap_shift") return { value: { ...base } };
+    if (input.event === "gap_reading" || input.event === "gap_shift" || input.event === "gap_next_tap" || input.event === "gap_next_listen") return { value: { ...base } };
     if (input.event === "nav") {
         const screen = String(input.screen || "").slice(0, 60);
         if (!screen) return { error: "Invalid screen." };

@@ -43,7 +43,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.resolve(here, "..");
 const read = (f) => fs.readFileSync(path.join(appRoot, f), "utf8");
 const settings = await import(pathToFileURL(path.join(appRoot, "lib", "mainChatReply.js")).href);
-const { MAIN_CHAT_MAX_TOKENS, MAIN_CHAT_REPLY_DEADLINE_MS, mainChatReplyRequestOptions, noteMainChatReplyStop, thinkingTokensFromUsage } = settings;
+const { MAIN_CHAT_MAX_TOKENS, MAIN_CHAT_EFFORT, MAIN_CHAT_REPLY_DEADLINE_MS, mainChatReplyRequestOptions, noteMainChatReplyStop, thinkingTokensFromUsage } = settings;
 const Anthropic = (await import("@anthropic-ai/sdk")).default;
 
 let passed = 0, failed = 0;
@@ -123,7 +123,7 @@ const client = new Anthropic({ apiKey: "test-not-a-real-key", baseURL: `http://1
 
 // ---------------------------------------------------------------------------
 console.log("\n# B. Request on the wire");
-await test("same model / system / messages / headers as before; only max_tokens differs; no thinking/effort params added", async () => {
+await test("same model / system / messages / headers as before; max_tokens differs; effort is medium; no thinking param", async () => {
   const base = {
     model: "claude-sonnet-5",
     system: [{ type: "text", text: "fixed", cache_control: { type: "ephemeral" } }, { type: "text", text: "member" }],
@@ -131,13 +131,16 @@ await test("same model / system / messages / headers as before; only max_tokens 
   };
   requests = []; attempt = 0; behaviour = () => ({});
   await client.messages.create({ ...base, max_tokens: OLD_MAX_TOKENS }, { timeout: 45000 }); // the old call
-  await client.messages.create({ ...base, max_tokens: MAIN_CHAT_MAX_TOKENS }, mainChatReplyRequestOptions()); // the new call
+  await client.messages.create({ ...base, max_tokens: MAIN_CHAT_MAX_TOKENS, output_config: { effort: MAIN_CHAT_EFFORT } }, mainChatReplyRequestOptions()); // the new call
   const [before, after] = requests;
-  assert.deepEqual(Object.keys(after.body).sort(), Object.keys(before.body).sort(), "no new request fields");
+  assert.equal(MAIN_CHAT_EFFORT, "medium");
+  assert.deepEqual(after.body.output_config, { effort: "medium" });
+  const afterKeys = Object.keys(after.body).filter((k) => k !== "output_config").sort();
+  assert.deepEqual(afterKeys, Object.keys(before.body).sort(), "no new request fields besides output_config");
   for (const k of Object.keys(before.body)) if (k !== "max_tokens") assert.deepEqual(after.body[k], before.body[k], `${k} differs`);
   assert.equal(before.body.max_tokens, 4096);
   assert.equal(after.body.max_tokens, MAIN_CHAT_MAX_TOKENS);
-  for (const k of ["thinking", "output_config", "temperature", "stream"]) assert.ok(!(k in after.body), `${k} must not be sent`);
+  for (const k of ["thinking", "temperature", "stream"]) assert.ok(!(k in after.body), `${k} must not be sent`);
   for (const h of ["anthropic-version", "anthropic-beta", "content-type"]) assert.equal(after.headers[h], before.headers[h], `header ${h} differs`);
 });
 
@@ -201,6 +204,7 @@ console.log("\n# E. Scope");
 const route = read("app/api/chat/route.ts");
 await test("main reply call uses MAIN_CHAT_MAX_TOKENS + mainChatReplyRequestOptions(); no 4096 left in the main chat route", () => {
   assert.match(route, /max_tokens:\s*MAIN_CHAT_MAX_TOKENS/);
+  assert.match(route, /output_config:\s*\{\s*effort:\s*MAIN_CHAT_EFFORT\s*\}/);
   assert.match(route, /mainChatReplyRequestOptions\(\)/);
   assert.ok(!/max_tokens:\s*4096/.test(route));
   assert.match(route, /noteMainChatReplyStop\(response\)/);

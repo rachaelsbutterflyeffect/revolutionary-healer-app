@@ -52,6 +52,7 @@ import {
 } from "@/lib/chatStreaming";
 import {
   MAIN_CHAT_MAX_TOKENS,
+  MAIN_CHAT_EFFORT,
   mainChatReplyRequestOptions,
   noteMainChatReplyStop,
   thinkingTokensFromUsage,
@@ -250,13 +251,16 @@ export async function POST(req: NextRequest) {
   // new discovery continues one of them (see lib/prompts.js) instead of
   // creating a duplicate card for the same contradiction. Each line's id is
   // what the AI must copy exactly into an [[UPDATE_SHIFT: ...]] marker.
-  const existingShifts = (existingShiftRecords || [])
+  const SHIFT_PROMPT_LIMIT = 12;
+  const sortedShiftRecords = [...(existingShiftRecords || [])].sort((a: any, b: any) => String(b?.fields?.created_at || "").localeCompare(String(a?.fields?.created_at || "")));
+  const existingShifts = sortedShiftRecords
+    .slice(0, SHIFT_PROMPT_LIMIT)
     .map((s: any) => {
           const f = s.fields || {};
-          const gapPreview = (f.gap_explanation || "").slice(0, 300);
+          const gapPreview = (f.gap_explanation || "").slice(0, 180);
           return `- id: ${s.id} | focus: ${f.focus_area || "(none)"} | Divine Identity: ${f.divine_identity_name || "(none)"} | Current Frequency: ${f.current_frequency || "(none)"} | status: ${f.progress_status || "shifting"} | Recommended activation: ${f.recommended_activation || "(none)"} | Gap: ${gapPreview}`;
     })
-    .join("\n");
+    .join("\n") + (sortedShiftRecords.length > SHIFT_PROMPT_LIMIT ? "\n- Older shifts exist and are not listed here." : "");
 
   const chatSummary = isGapMethodProcess ? "" : (session.fields.summary || "");
   let systemPrompt = buildSystemPrompt(focusArea, {
@@ -395,6 +399,7 @@ export async function POST(req: NextRequest) {
   const claudeParams = {
     model: MODEL,
     max_tokens: MAIN_CHAT_MAX_TOKENS,
+    output_config: { effort: MAIN_CHAT_EFFORT },
     system: toCachedSystemBlocks(systemPrompt),
     messages: [...historyForClaude, { role: "user", content: message }],
   };

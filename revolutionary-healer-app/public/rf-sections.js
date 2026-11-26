@@ -50,7 +50,10 @@
       if (closed) { el.classList.remove('open'); el.setAttribute('aria-expanded', 'false'); el.classList.add('rf-xclosed'); var bt = el.querySelector('.bt'); if (bt && !bt.querySelector('.ac') && s && s.activation) { var ac = document.createElement('div'); ac.className = 'ac'; ac.textContent = s.activation; bt.appendChild(ac); } if (bt && !bt.querySelector('.rf-cue')) { var cu = document.createElement('div'); cu.className = 'rf-cue'; cu.textContent = '▶ Tap to open your activation'; bt.appendChild(cu); } }
     });
     if (f !== 'recent') {
-      var acc = list.closest('.rf-acc'); if (acc) { acc.querySelector('.rf-acc-n').textContent = '(' + n + ')'; var em = acc.querySelector('.rf-rempty'); if (em) em.hidden = n > 0; }
+      var acc = list.closest('.rf-acc');
+      var v5Codes = document.body.classList.contains('mlv5') && f === 'code' && window.__rfRevData && window.__rfRevData.codes;
+      if (acc && !v5Codes) { acc.querySelector('.rf-acc-n').textContent = '(' + n + ')'; var em = acc.querySelector('.rf-rempty'); if (em) em.hidden = n > 0; }
+      else if (acc && v5Codes) { acc.querySelector('.rf-acc-n').textContent = '(' + window.__rfRevData.codes.length + ')'; }
     }
   }
   function watch(list) {

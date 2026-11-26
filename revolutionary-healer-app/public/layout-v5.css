@@ -447,6 +447,7 @@ body.mlv5[data-rf="rev"] .mlv5-pull .src { color: #3FD6C8; letter-spacing: .24em
 body.mlv5[data-rf="rev"] .mlv5-pull .nm { color: #F0D58A; font-family: "Cormorant Garamond", Georgia, serif; font-size: 21px; font-weight: 600; }
 body.mlv5[data-rf="rev"] .mlv5-pull .cn { color: #3FD6C8; font-family: Cinzel, serif; letter-spacing: .3em; }
 body.mlv5[data-rf="rev"] .mlv5-pull .dt { color: rgba(247,244,236,.82); font-size: 11px; }
+body.mlv5 #rf-acc-code .rf-sbub.mlv5-code-dup { display: none !important; }
 body.mlv5[data-rf-lib="cat"] #mlv5-act-top,
 body.mlv5[data-rf-libfav] #mlv5-act-top { display: none !important; }
 body.mlv5 #activations-page > .wrap > .section-head { display: none !important; }

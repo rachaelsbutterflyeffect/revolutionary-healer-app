@@ -240,15 +240,34 @@
     keepKind(document.getElementById('rf-acc-gap'), 'gap');
     keepKind(document.getElementById('rf-acc-code'), 'code');
     var codePanel = document.getElementById('rf-acc-code');
-    var pulls = window.__rfRevData && window.__rfRevData.codes;
-    if (codePanel && pulls) {
+    var codeRows = window.__rfRevData && window.__rfRevData.codes;
+    if (codePanel && codeRows) {
       var host = codePanel.querySelector('.mlv5-pulls');
       if (!host) {
         host = document.createElement('div');
         host.className = 'mlv5-pulls shifts-list';
         codePanel.appendChild(host);
       }
-      var html = pulls.filter(function (c) { return c && c.from === 'pull'; }).map(function (c) {
+      var pullCodes = {}, savedCodes = {}, savedBlank = 0;
+      codeRows.forEach(function (c) {
+        if (!c) return;
+        if (c.from === 'pull' && c.code) pullCodes[String(c.code)] = 1;
+        else if (c.from === 'saved') { if (c.code) savedCodes[String(c.code)] = 1; else savedBlank++; }
+      });
+      var blankLeft = savedBlank;
+      codePanel.querySelectorAll('.rf-sbub').forEach(function (el) {
+        var s = (window.SHIFTS || []).filter(function (x) { return String(x.id) === el.getAttribute('data-shift-id'); })[0];
+        if (!s || s.method !== 'Code Upgrade') return;
+        var card = String(s.focusArea || '').replace(/^code-upgrade:/, '');
+        var m = card.match(/-(\d+)$/);
+        var key = m ? m[1] : '';
+        var show = false;
+        if (key && pullCodes[key]) show = false;
+        else if (key && savedCodes[key]) show = true;
+        else if (!key && blankLeft > 0) { show = true; blankLeft--; }
+        el.classList.toggle('mlv5-code-dup', !show);
+      });
+      var html = codeRows.filter(function (c) { return c && c.from === 'pull'; }).map(function (c) {
         var when = c.at ? new Date(c.at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
         return '<div class="mlv5-pull"><div class="bt"><div class="src">Code</div><div class="nm">' + esc(c.name) + '</div>' +
           (c.code ? '<div class="cn">' + esc(c.code) + '</div>' : '') +
@@ -259,11 +278,7 @@
         host.setAttribute('data-html', String(html.length));
       }
       var count = codePanel.parentNode && codePanel.parentNode.querySelector('.rf-acc-n');
-      var shown = codePanel.querySelectorAll('.mlv5-pull').length;
-      codePanel.querySelectorAll('.rf-sbub').forEach(function (el) {
-        if (!el.hidden && !el.classList.contains('rf-xhide')) shown++;
-      });
-      setTimeout(function () { if (count) count.textContent = '(' + shown + ')'; }, 0);
+      if (count) count.textContent = '(' + codeRows.length + ')';
     }
     var deeper = document.getElementById('mlv5-deeper');
     var wrap = document.querySelector('#my-revolution .wrap');
