@@ -121,6 +121,13 @@ const CHIP_WRAP = /^(.*?)\s+\(Rachael asked:\s*"([^"]*)"\)\s+(.+)$/s;
 
 const TOPIC_RULES = [
   {
+    id: "nervous-expansion",
+    strength: "strong",
+    slug: "nervous-system-expansion",
+    test: /\b(nervous system|fight\s*\/?\s*flight|fight or flight|freeze|fawn|shut\s*down|overwhelm(?:ed)?|anxiet(?:y|ies)|can'?t relax|cannot relax|unsafe in (?:my |the )?body|don'?t feel safe in (?:my )?body|not feeling present|can'?t feel present|not present|not feeling grounded|don'?t feel grounded|expand without (?:feeling )?scar)/i,
+    line: (title) => `${title} is the listen for this. It brings your body, your emotions and your mind back to right now, where it is safe to stop bracing and expand.`,
+  },
+  {
     id: "boundary",
     strength: "strong",
     slug: "protection-shielding",
@@ -338,7 +345,12 @@ function applyTopicHonesty(text, message, catalog, { inventedRemoved = false } =
     }
     return text;
   }
-  if (!named.length && !inventedRemoved) return text;
+  if (!named.length && !inventedRemoved) {
+    if (match.id === "nervous-expansion" && match.strength === "strong") {
+      return `${text}\n\n${match.line}${listenLink(match.activation)}`.trim();
+    }
+    return text;
+  }
   const wrong = named.filter((item) => item.slug !== match.activation.slug);
   const hasRight = named.some((item) => item.slug === match.activation.slug);
   const pitch = `${match.line}${listenLink(match.activation)}`;

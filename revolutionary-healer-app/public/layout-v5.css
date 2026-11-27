@@ -201,6 +201,7 @@ body.mlv5 #mlv5-code-sec #rf-codes > .rf-cu-h { display: none !important; }
 
 body.mlv5 .mlv5-feature {
   all: unset;
+  position: relative;
   box-sizing: border-box;
   cursor: pointer;
   display: block;
@@ -218,6 +219,70 @@ body.mlv5 .mlv5-feature img {
   object-fit: cover;
   object-position: center 30%;
   display: block;
+}
+body.mlv5 .mlv5-feature + .mlv5-feature { margin-top: 12px; }
+body.mlv5 .mlv5-feature .new-badge { top: 12px; left: 12px; }
+/* Home New rows only: square cover on the left, full name beside it. */
+body.mlv5 .mlv5-new .mlv5-feature {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px 14px 8px 8px;
+  border-radius: 16px;
+}
+body.mlv5 .mlv5-new .mlv5-feature + .mlv5-feature { margin-top: 8px; }
+body.mlv5 .mlv5-new .mlv5-thumb {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+body.mlv5 .mlv5-new .mlv5-thumb img {
+  position: absolute;
+  top: 50%;
+  width: 168px;
+  height: 94px;
+  max-width: none;
+  object-fit: cover;
+  transform: translateY(-50%);
+}
+body.mlv5 .mlv5-new .mlv5-thumb img[src*="nervous-system-expansion"] { right: -8px; object-position: right center; }
+body.mlv5 .mlv5-new .mlv5-thumb img[src*="reset-and-restore"] { left: -6px; object-position: left center; }
+body.mlv5 .mlv5-new .mlv5-feature .mlv5-nf {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+}
+body.mlv5 .mlv5-new .mlv5-feature .mlv5-tag,
+body.mlv5 .mlv5-new .mlv5-feature .mlv5-nline,
+body.mlv5 .mlv5-new .mlv5-feature .mlv5-pill { display: none; }
+body.mlv5 .mlv5-new .mlv5-feature .mlv5-nt {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.15;
+  white-space: normal;
+  overflow: visible;
+}
+body.mlv5 .mlv5-new .mlv5-feature .new-badge {
+  top: 4px;
+  left: 4px;
+  font-size: 8px;
+  letter-spacing: .08em;
+  padding: 3px 6px;
+}
+body.mlv5 .mlv5-tag {
+  display: block;
+  margin: 0 0 4px;
+  font-family: Cinzel, serif;
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #e8c873;
 }
 body.mlv5 .mlv5-nf { display: block; padding: 12px 14px 14px; }
 body.mlv5 .mlv5-nt {

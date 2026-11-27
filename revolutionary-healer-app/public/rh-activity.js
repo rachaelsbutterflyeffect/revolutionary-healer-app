@@ -75,6 +75,20 @@
         return {
             deviceId: deviceId,
             open: function (slug, entry) { return push({ event: "activation_open", slug: slug, entry: entry || "" }); },
+            recommendShown: function (slug) {
+                try {
+                    if (!slug) return Promise.resolve();
+                    push({ event: "activation_recommend_shown", slug: slug, entry: "chat" });
+                } catch (e) {}
+                return safeFlush();
+            },
+            recommendClick: function (slug) {
+                try {
+                    if (!slug) return Promise.resolve();
+                    push({ event: "activation_recommend_click", slug: slug, entry: "chat" });
+                } catch (e) {}
+                return safeFlush();
+            },
             favorite: function (slug, on) { return push({ event: on ? "favorite_add" : "favorite_remove", slug: slug }); },
             nav: function (screen, section) {
                 try {
