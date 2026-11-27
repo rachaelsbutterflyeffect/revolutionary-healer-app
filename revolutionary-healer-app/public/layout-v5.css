@@ -371,6 +371,22 @@ body.mlv5 #activations-page > .wrap > .section-head { display: none !important; 
 body.mlv5 #mlv5-act-top { margin: 0; }
 body.mlv5 .mlv5-lib-new { margin: 0 0 18px; }
 body.mlv5 .mlv5-lib-new[hidden] { display: none !important; }
+body.rf #mlv5-lib-new .card-grid {
+  display: flex !important;
+  flex-wrap: nowrap;
+  gap: 12px !important;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 6px;
+  scrollbar-width: none;
+}
+body.rf #mlv5-lib-new .card-grid::-webkit-scrollbar { display: none; }
+body.rf #mlv5-lib-new .media-card {
+  flex: 0 0 78%;
+  scroll-snap-align: start;
+  margin: 0;
+}
 body.mlv5 #mlv5-fit { margin: 0 0 20px; }
 body.mlv5 #rf-fit-door { margin: 0 !important; padding: 0 !important; }
 body.mlv5 #rf-fit-door > h3 { display: none !important; }

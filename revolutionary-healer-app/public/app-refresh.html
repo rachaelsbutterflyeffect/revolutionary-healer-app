@@ -3222,23 +3222,82 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
     });
     rhFillLibraryNew(t);
   }
+  function rhNewSlug(el) {
+    var slug = el.getAttribute('data-activation-slug') || '';
+    if (!slug && el.getAttribute('data-rf-go') === 'rr') slug = 'reset-and-restore';
+    if (!slug) {
+      var oc = el.getAttribute('onclick') || '';
+      var m = oc.match(/handleActivationCardClick\('([^']+)'\)/);
+      if (m) slug = m[1];
+    }
+    return slug;
+  }
+  function rhNewTagged(el, now) {
+    var until = el.getAttribute('data-new-until');
+    if (until) return rhNewUntilOn(until, now);
+    var badge = el.querySelector('.new-badge, .rr-new');
+    return !!(badge && !badge.hidden && /NEW/i.test(badge.textContent || ''));
+  }
+  function rhLibraryNewCard(el, slug) {
+    if (el.classList.contains('media-card')) {
+      var copy = el.cloneNode(true);
+      copy.setAttribute('data-lib-new', '1');
+      return copy;
+    }
+    var card = document.createElement('div');
+    card.className = 'media-card';
+    card.setAttribute('data-lib-new', '1');
+    card.setAttribute('data-activation-slug', slug);
+    card.style.cursor = 'pointer';
+    if (el.getAttribute('data-rf-go') === 'rr') card.setAttribute('data-rf-go', 'rr');
+    var art = '';
+    var img = el.querySelector('img');
+    var bg = el.querySelector('[style*="background-image"]');
+    if (img && img.getAttribute('src')) art = img.getAttribute('src');
+    else if (bg) {
+      var mm = (bg.getAttribute('style') || '').match(/url\((['"]?)([^'")]+)\1\)/);
+      if (mm) art = mm[2];
+    }
+    var title = 'Reset and Restore';
+    var h = el.querySelector('h3, .mlv5-nt, b');
+    if (h && h.textContent) title = h.textContent.trim();
+    var line = el.querySelector('.media-description, .mlv5-nline, .rr-card-up');
+    var desc = line ? line.textContent.replace(/\s+/g, ' ').trim() : '';
+    card.innerHTML = '<span class="new-badge" data-new-badge>NEW</span>' +
+      '<div class="media-thumb" style="background-image:url(\'' + art + '\');background-size:cover;background-position:center;">' +
+      '<div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>' +
+      '<div class="media-body"><h3></h3><p class="media-description"></p></div>';
+    card.querySelector('h3').textContent = title;
+    card.querySelector('.media-description').textContent = desc;
+    return card;
+  }
   function rhFillLibraryNew(now) {
     var t = typeof now === 'number' ? now : Date.now();
     var host = document.getElementById('mlv5-lib-new');
     var grid = document.getElementById('mlv5-lib-new-grid');
-    var lib = document.getElementById('activation-library-grid');
     if (!host || !grid) return;
+    var best = {};
+    var n = 0;
+    document.querySelectorAll('#activation-library-grid .media-card, #rr-home-card, #rr-lib-card, .mlv5-new .mlv5-feature').forEach(function (el) {
+      var index = n++;
+      if (!rhNewTagged(el, t)) return;
+      var slug = rhNewSlug(el);
+      if (!slug) return;
+      var until = el.getAttribute('data-new-until');
+      var rank = until ? Date.parse(until + 'T23:59:59Z') : 0;
+      if (isNaN(rank)) rank = 0;
+      var isCard = el.classList.contains('media-card');
+      var prev = best[slug];
+      if (!prev || (isCard && !prev.isCard)) best[slug] = { el: el, slug: slug, rank: rank, index: index, isCard: isCard };
+    });
+    var rows = Object.keys(best).map(function (k) { return best[k]; });
+    rows.sort(function (a, b) {
+      if (b.rank !== a.rank) return b.rank - a.rank;
+      if (a.rank > 0) return a.index - b.index;
+      return b.index - a.index;
+    });
     grid.textContent = '';
-    if (lib) {
-      lib.querySelectorAll('[data-new-until]').forEach(function (card) {
-        if (!rhNewUntilOn(card.getAttribute('data-new-until'), t)) return;
-        var slug = card.getAttribute('data-activation-slug') || '';
-        if (!slug || grid.querySelector('[data-activation-slug="' + slug + '"]')) return;
-        var copy = card.cloneNode(true);
-        copy.setAttribute('data-lib-new', '1');
-        grid.appendChild(copy);
-      });
-    }
+    rows.forEach(function (row) { grid.appendChild(rhLibraryNewCard(row.el, row.slug)); });
     host.hidden = grid.children.length === 0;
   }
   window.rhFillLibraryNew = rhFillLibraryNew;
