@@ -38,6 +38,15 @@ assert.match(page, /else \{ clearTimeout\(timer\); reveal\(\); \}/);
 assert.match(page, /function deckHome\(\)/);
 assert.match(page, /codePull === true && !deckHome\(\)/);
 assert.match(page, /slot\.contains\(codes\)/);
+assert.match(page, /id="mlv5-lib-new"/);
+assert.match(page, /id="mlv5-lib-new-grid"/);
+assert.match(page, /function rhFillLibraryNew/);
+assert.match(page, /#activation-library-grid/);
+assert.match(page, /host\.hidden = grid\.children\.length === 0/);
+assert.match(page, /rhNoteLibraryNew/);
+assert.match(page, /libNewTap/);
+assert.match(page, /data-lib-new/);
+assert.equal(page.includes('id="mlv5-lib-new" class="mlv5-lib-new" hidden'), true);
 assert.match(page, /id="bf26-bar"/);
 assert.match(page, /\.bf26-banner a\.bf26-btn\{[^}]*text-decoration:none/);
 assert.match(page, /k === 'memberLayoutV5' && window\.__layoutGate/);
@@ -120,6 +129,13 @@ assert.equal(parsed.error, undefined);
 assert.equal(parsed.value.target, "rr-home");
 const blank = validateActivityEvent({ eventId, deviceId: device, event: "layout_tap", target: " " });
 assert.equal(blank.error, "Invalid target.");
+const seen = validateActivityEvent({ eventId, deviceId: device, event: "lib_new_view" });
+assert.equal(seen.error, undefined);
+assert.equal(seen.value.event, "lib_new_view");
+const tapped = validateActivityEvent({ eventId, deviceId: device, event: "lib_new_tap", slug: "worthiness" });
+assert.equal(tapped.value.slug, "worthiness");
+const bare = validateActivityEvent({ eventId, deviceId: device, event: "lib_new_tap", slug: "" });
+assert.equal(bare.error, "Invalid activation.");
 
 const sent = [];
 const clock = { t: 3_000_000 };
@@ -134,5 +150,19 @@ await api.layoutTap("gap-door");
 clock.t += 400;
 await api.layoutTap("nav-rev");
 assert.deepEqual(sent.flat(), ["gap-door", "nav-rev"]);
+
+const newRows = [];
+const newer = createClient({
+  deviceId: device,
+  now: () => clock.t,
+  schedule: () => 1,
+  send: async (batch) => { newRows.push(...batch); return { ok: true }; },
+});
+clock.t += 400;
+await newer.libNewView();
+await newer.libNewTap("worthiness");
+clock.t += 400;
+await newer.libNewTap("nervous-system-expansion");
+assert.deepEqual(newRows.map((row) => row.event + (row.slug ? ":" + row.slug : "")), ["lib_new_view", "lib_new_tap:worthiness", "lib_new_tap:nervous-system-expansion"]);
 
 console.log("layout v5 ok");

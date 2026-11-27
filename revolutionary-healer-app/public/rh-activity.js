@@ -134,6 +134,21 @@
                 } catch (e) {}
                 return safeFlush();
             },
+            libNewView: function () {
+                try {
+                    if (!once("lib_new_view")) return Promise.resolve();
+                    push({ event: "lib_new_view" });
+                } catch (e) {}
+                return safeFlush();
+            },
+            libNewTap: function (slug) {
+                try {
+                    var name = clip(slug).toLowerCase();
+                    if (!name || !once("lib_new_tap\n" + name)) return Promise.resolve();
+                    push({ event: "lib_new_tap", slug: name });
+                } catch (e) {}
+                return safeFlush();
+            },
             goDeeperBook: function (source) {
                 try {
                     var where = clip(source) || "book-1-1";

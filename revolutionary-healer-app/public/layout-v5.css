@@ -163,6 +163,7 @@ body.mlv5 #rf-home > .mlv5-doors-sec { margin-top: 28px; }
 body.mlv5 .mlv5-code-sec > h2,
 body.mlv5 .mlv5-new > h2,
 body.mlv5 .mlv5-doors-sec > h2,
+body.mlv5 .mlv5-lib-new > h2,
 body.mlv5 .mlv5-lib-heading {
   font-family: Cinzel, serif;
   font-weight: 600;
@@ -178,6 +179,7 @@ body.mlv5 .mlv5-lib-heading {
 body.mlv5 .mlv5-code-sec > h2::after,
 body.mlv5 .mlv5-new > h2::after,
 body.mlv5 .mlv5-doors-sec > h2::after,
+body.mlv5 .mlv5-lib-new > h2::after,
 body.mlv5 .mlv5-lib-heading::after {
   content: "";
   flex: 1;
@@ -367,6 +369,8 @@ body.mlv5 #activations-page.block { padding-top: 12px !important; }
 body.mlv5 #activations-page > .wrap > .page-back,
 body.mlv5 #activations-page > .wrap > .section-head { display: none !important; }
 body.mlv5 #mlv5-act-top { margin: 0; }
+body.mlv5 .mlv5-lib-new { margin: 0 0 18px; }
+body.mlv5 .mlv5-lib-new[hidden] { display: none !important; }
 body.mlv5 #mlv5-fit { margin: 0 0 20px; }
 body.mlv5 #rf-fit-door { margin: 0 !important; padding: 0 !important; }
 body.mlv5 #rf-fit-door > h3 { display: none !important; }

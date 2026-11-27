@@ -2330,6 +2330,10 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
     </div>
 
 <div id="mlv5-act-top" class="mlv5-only" hidden>
+  <section id="mlv5-lib-new" class="mlv5-lib-new" hidden aria-label="New">
+    <h2>New</h2>
+    <div class="card-grid" id="mlv5-lib-new-grid"></div>
+  </section>
   <div id="mlv5-fit"></div>
   <h3 id="mlv5-lib-heading" class="mlv5-lib-heading">Your Activation Library</h3>
 </div>
@@ -3206,14 +3210,51 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
   applyDemoEntitlementLocks();
   // NEW badges expire on data-new-until (end of that UTC day). Future weekly
   // drops reuse the same attribute and the same badge.
+  function rhNewUntilOn(until, now) {
+    var end = Date.parse(String(until || '') + 'T23:59:59Z');
+    return !isNaN(end) && now <= end;
+  }
   function rhPaintNewBadges(now) {
     var t = now ? new Date(now).getTime() : Date.now();
-    document.querySelectorAll('[data-new-until]').forEach(function (card) {
-      var until = Date.parse(card.getAttribute('data-new-until') + 'T23:59:59Z');
-      var on = !isNaN(until) && t <= until;
+    document.querySelectorAll('#activation-library-grid [data-new-until], .mlv5-new [data-new-until]').forEach(function (card) {
+      var on = rhNewUntilOn(card.getAttribute('data-new-until'), t);
       card.querySelectorAll('[data-new-badge]').forEach(function (badge) { badge.hidden = !on; });
     });
+    rhFillLibraryNew(t);
   }
+  function rhFillLibraryNew(now) {
+    var t = typeof now === 'number' ? now : Date.now();
+    var host = document.getElementById('mlv5-lib-new');
+    var grid = document.getElementById('mlv5-lib-new-grid');
+    var lib = document.getElementById('activation-library-grid');
+    if (!host || !grid) return;
+    grid.textContent = '';
+    if (lib) {
+      lib.querySelectorAll('[data-new-until]').forEach(function (card) {
+        if (!rhNewUntilOn(card.getAttribute('data-new-until'), t)) return;
+        var slug = card.getAttribute('data-activation-slug') || '';
+        if (!slug || grid.querySelector('[data-activation-slug="' + slug + '"]')) return;
+        var copy = card.cloneNode(true);
+        copy.setAttribute('data-lib-new', '1');
+        grid.appendChild(copy);
+      });
+    }
+    host.hidden = grid.children.length === 0;
+  }
+  window.rhFillLibraryNew = rhFillLibraryNew;
+  window.rhNoteLibraryNew = function () {
+    var host = document.getElementById('mlv5-lib-new');
+    if (!host || host.hidden) return;
+    if (document.body.getAttribute('data-rf-lib') !== 'sections') return;
+    try { if (window.rhActivity && window.rhActivity.libNewView) window.rhActivity.libNewView(); } catch (e) {}
+  };
+  var newGrid = document.getElementById('mlv5-lib-new-grid');
+  if (newGrid) newGrid.addEventListener('click', function (e) {
+    var card = e.target.closest && e.target.closest('[data-lib-new]');
+    if (!card || (e.target.closest && e.target.closest('.heart-btn'))) return;
+    var slug = card.getAttribute('data-activation-slug') || '';
+    try { if (slug && window.rhActivity && window.rhActivity.libNewTap) window.rhActivity.libNewTap(slug); } catch (err) {}
+  });
   rhPaintNewBadges();
 
   document.querySelectorAll('[data-prompt]').forEach(function(el) {
@@ -8803,6 +8844,7 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
       var el = b.querySelector('[data-rf-count]'); if (el) el.textContent = n;
     });
     paintActBack();
+    try { if (window.rhNoteLibraryNew) window.rhNoteLibraryNew(); } catch (e) {}
   }
   // ---------- Activations: Favourites tile (Rachael Oct 15) ----------
   // One category tile, first in the grid, hidden with no favourites. Tapping it opens the category view (same back
