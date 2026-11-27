@@ -264,7 +264,9 @@ function mentionsRecalibration(text) {
 }
 
 /** Completions (marked listened or the player finishing) or a finished play. */
-export function recalibrationIsComplete({ completedSlugs = [], finishedSlugs = [] } = {}) {
+export function recalibrationIsComplete(input) {
+  const completedSlugs = (input && input.completedSlugs) || [];
+  const finishedSlugs = (input && input.finishedSlugs) || [];
   return [...completedSlugs, ...finishedSlugs].map((slug) => String(slug || "")).includes(RECALIBRATION_SLUG);
 }
 
@@ -482,7 +484,7 @@ export function alignRecommendation(reply, { message = "", savedTitle = "", cata
  * Last pass on a model reply: real lookup facts, no invented names,
  * honest topic matches, then the saved recommendation.
  * @param {string} reply
- * @param {{ message?: string, catalog?: any[]|null, deck?: any[]|null, savedTitle?: string, lookupReply?: string }} [opts]
+ * @param {{ message?: string, catalog?: any[]|null, deck?: any[]|null, savedTitle?: string, lookupReply?: string, recalibrationDone?: boolean }} [opts]
  */
 export function finalizeMemberReply(reply, {
   message = "",
