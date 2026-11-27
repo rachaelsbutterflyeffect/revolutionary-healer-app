@@ -1,10 +1,10 @@
 /* Black Friday 2026 banner. Home screen only.
-   Shows while now < 2026-12-01T04:59:00Z (Nov 30 2026, 11:59 PM America/Toronto).
+   Shows while now < 2027-01-01T04:59:00Z (11:59 PM America/Toronto on the last night of 2026).
    After that instant the original home returns on the next render, with no deploy.
    Kill switch: set BF26_KILL to true and redeploy. Nothing else has to change. */
 (function (root) {
   var BF26_KILL = false;
-  var BF26_UNTIL_ISO = "2026-12-01T04:59:00Z";
+  var BF26_UNTIL_ISO = "2027-01-01T04:59:00Z";
   var BF26_UNTIL = Date.parse(BF26_UNTIL_ISO);
   var QUIZ = "https://activation-quiz-mockup.vercel.app";
   var PROD_HOSTS = {

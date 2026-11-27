@@ -60,11 +60,27 @@
     st.textContent = 'html.mlv5-hold{background:#06080b!important}html.mlv5-hold body{visibility:hidden!important}';
     de.appendChild(st);
     var shown = false;
-    function reveal() { if (shown) return; shown = true; de.classList.remove('mlv5-hold'); }
+    function reveal() { if (shown) return; shown = true; clearTimeout(timer); de.classList.remove('mlv5-hold'); }
     var timer = setTimeout(reveal, 2500);
+    function deckHome() {
+      var codes = document.getElementById('rf-codes');
+      var slot = document.getElementById('mlv5-code');
+      return !!(codes && slot && slot.contains(codes));
+    }
     function paint() {
       var left = 2;
-      function done() { if (--left <= 0) { clearTimeout(timer); reveal(); } }
+      function done() {
+        if (--left > 0) return;
+        if (window.__rfFeatures && window.__rfFeatures.codePull === true && !deckHome()) {
+          var waits = 0;
+          var iv = setInterval(function () {
+            if (shown) { clearInterval(iv); return; }
+            if (deckHome() || ++waits > 40) { clearInterval(iv); reveal(); }
+          }, 50);
+          return;
+        }
+        reveal();
+      }
       if (!document.getElementById('rf-feat-layout-v5')) {
         var l = document.createElement('link');
         l.rel = 'stylesheet'; l.href = '/layout-v5.css'; l.id = 'rf-feat-layout-v5';
@@ -1690,10 +1706,20 @@ body.rf .activation-player iframe { background:#0c0e12; z-index:1; }
 body.rf .audio-cover-overlay, body.rf .audio-native-overlay, body.rf .audio-custom-controls { z-index:3; }
 body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#0c0e12; color:#fdfbf5; }
 </style>
+<style id="bf26-bar">
+.bf26-slot{box-sizing:border-box;position:relative;z-index:2;margin:8px 0 10px;max-width:100vw}
+.bf26-banner{position:relative;overflow:hidden;display:block;box-sizing:border-box;width:100%;text-align:center;color:#141414;line-height:1.35;padding:16px 18px 14px;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(165deg,#fffdf8 0%,#f6eec4 68%,#e8d48c 100%)}
+.bf26-foil,.bf26-vignette,.bf26-shine,.bf26-halo,.bf26-bf,.bf26-spark,.bf26-sheen{position:absolute;pointer-events:none}
+.bf26-copy{position:relative;z-index:6;text-align:center}
+.bf26-label{display:inline-block;font-family:Cinzel,Georgia,serif;font-weight:700;font-size:11px;letter-spacing:.28em;color:#141414;text-transform:uppercase;padding:4px 12px;margin:0 0 6px;border-radius:999px;background:linear-gradient(180deg,#fff8dc,#e2c47a)}
+.bf26-headline{font-family:Cinzel,Georgia,serif;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:15px;line-height:1.3;color:#141414;margin:0 0 8px}
+.bf26-banner a.bf26-btn{display:inline-block;text-decoration:none;color:#e2c47a;background:#141414;border-radius:999px;padding:10px 16px;font-weight:700;font-size:13.5px}
+.bf26-sub{color:#141414;font-size:14px;font-weight:700;margin:8px 0 0}
+</style>
 <script id="bf26-early">
 (function () {
   var KILL = false;
-  var UNTIL = Date.parse("2026-12-01T04:59:00Z");
+  var UNTIL = Date.parse("2027-01-01T04:59:00Z");
   if (KILL || !(Date.now() < UNTIL)) return;
   var s = document.createElement("style");
   s.id = "bf26-hide";

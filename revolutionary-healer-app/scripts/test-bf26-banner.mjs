@@ -1,5 +1,5 @@
 // Date gate for the Black Friday home banner.
-// Before 2026-12-01T04:59:00Z the banner is on and the home greeting is hidden.
+// Before 2027-01-01T04:59:00Z the banner is on and the home greeting is hidden.
 // At and after that instant the banner is absent and the greeting is present.
 import assert from "node:assert/strict";
 import fs from "node:fs";
@@ -21,21 +21,22 @@ const BF = context.BF26;
 assert.ok(BF, "bf26.js exports BF26 before touching the DOM");
 assert.equal(typeof context.document, "undefined");
 
-const UNTIL = Date.parse("2026-12-01T04:59:00Z");
+const UNTIL = Date.parse("2027-01-01T04:59:00Z");
 assert.equal(BF.UNTIL, UNTIL);
-assert.equal(BF.UNTIL_ISO, "2026-12-01T04:59:00Z");
+assert.equal(BF.UNTIL_ISO, "2027-01-01T04:59:00Z");
 assert.equal(BF.KILL, false);
 assert.equal(BF.QUIZ, "https://activation-quiz-mockup.vercel.app");
 
-const before = Date.parse("2026-11-30T23:58:59-05:00");
-const atCutoff = Date.parse("2026-11-30T23:59:00-05:00");
+const before = Date.parse("2026-12-31T23:58:59-05:00");
+const atCutoff = Date.parse("2026-12-31T23:59:00-05:00");
 assert.equal(before, UNTIL - 1000);
 assert.equal(atCutoff, UNTIL);
 
 assert.equal(BF.bannerOn(before, false), true, "before cutoff: banner on");
 assert.equal(BF.bannerOn(UNTIL - 1, false), true, "1ms before cutoff: banner on");
 assert.equal(BF.bannerOn(UNTIL, false), false, "at cutoff: banner off");
-assert.equal(BF.bannerOn(Date.parse("2026-12-01T05:00:00Z"), false), false, "after cutoff: banner off");
+assert.equal(BF.bannerOn(Date.parse("2026-12-15T17:00:00Z"), false), true, "mid December: banner still on");
+assert.equal(BF.bannerOn(Date.parse("2027-01-01T05:00:00Z"), false), false, "after cutoff: banner off");
 assert.equal(BF.bannerOn(before, true), false, "kill switch hides the banner before the cutoff");
 
 assert.equal(BF.productionHost("www.therevolutionaryhealer.com"), true);
@@ -55,7 +56,7 @@ assert.equal(BF.resolveNow(realNow, "localhost", "?bfnow=2026-12-02T00:00:00Z"),
 assert.equal(BF.resolveNow(realNow, "127.0.0.1", "?bfnow=off"), UNTIL);
 assert.equal(BF.resolveNow(after, "localhost", "?bfnow=on"), UNTIL - 1);
 assert.equal(BF.bannerOn(BF.resolveNow(realNow, "localhost", "?bfnow=2026-11-25T12:00:00Z"), false), true);
-assert.equal(BF.bannerOn(BF.resolveNow(realNow, "localhost", "?bfnow=2026-12-01T04:59:00Z"), false), false);
+assert.equal(BF.bannerOn(BF.resolveNow(realNow, "localhost", "?bfnow=2027-01-01T04:59:00Z"), false), false);
 assert.equal(BF.bannerOn(BF.resolveNow(realNow, "www.therevolutionaryhealer.com", "?bfnow=2026-12-02T00:00:00Z"), false), true);
 
 for (const html of [refresh, classic]) {
@@ -69,11 +70,12 @@ assert.match(css, /html\.bf26-on #rf-home > \.rf-hero/);
 assert.match(css, /html\.bf26-on #rf-home > \.rf-welcome/);
 for (const html of [refresh, classic]) {
   assert.match(html, /id="bf26-early"/);
-  assert.match(html, /Date\.parse\("2026-12-01T04:59:00Z"\)/);
+  assert.match(html, /Date\.parse\("2027-01-01T04:59:00Z"\)/);
   assert.match(html, /var KILL = false/);
 }
 assert.equal(js.includes("Available until"), false);
 assert.equal(js.includes("November 30"), false);
+assert.equal(js.includes("December 31"), false);
 assert.equal(js.includes("bf26-fine"), false);
 assert.match(js, /Two-minute quiz, hundreds in savings/);
 assert.match(js, /Skip the random discounts/);

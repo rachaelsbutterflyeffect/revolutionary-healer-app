@@ -35,6 +35,11 @@ assert.match(page, /id="mlv5-gate"/);
 assert.match(page, /html\.mlv5-hold body\{visibility:hidden!important\}/);
 assert.match(page, /if \(f && f\.memberLayoutV5 === true\) paint\(\)/);
 assert.match(page, /else \{ clearTimeout\(timer\); reveal\(\); \}/);
+assert.match(page, /function deckHome\(\)/);
+assert.match(page, /codePull === true && !deckHome\(\)/);
+assert.match(page, /slot\.contains\(codes\)/);
+assert.match(page, /id="bf26-bar"/);
+assert.match(page, /\.bf26-banner a\.bf26-btn\{[^}]*text-decoration:none/);
 assert.match(page, /k === 'memberLayoutV5' && window\.__layoutGate/);
 assert.match(refresh, /k === 'memberLayoutV5' && window\.__layoutGate/);
 assert.equal(refresh.includes("memberLayoutV5: 'layout-v5'"), true);
@@ -103,7 +108,7 @@ for (const file of [
   assert.equal(text.includes("layout_tap"), false, file);
 }
 assert.match(bf, /BF26_KILL = false/);
-assert.match(bf, /2026-12-01T04:59:00Z/);
+assert.match(bf, /2027-01-01T04:59:00Z/);
 assert.match(codes, /function pull\(c\)/);
 assert.match(checkin, /finderStart/);
 assert.match(page, /id="bf26-early"/);
