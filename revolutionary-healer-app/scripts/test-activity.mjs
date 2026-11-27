@@ -339,6 +339,23 @@ test("migration flag is not armed in the pages and logout is explicit", () => {
     assert.doesNotMatch(fs.readFileSync("lib/sessions.js", "utf8"), /90 \* 24|180 \* 24/);
 });
 
+test("chat recommendations are stored and counted, and members never see the tracker", () => {
+    const shown = validateActivityEvent({ eventId, deviceId: device, event: "activation_recommend_shown", slug: "nervous-system-expansion", entry: "chat" });
+    const click = validateActivityEvent({ eventId: "00000000-0000-4000-8000-000000000014", deviceId: device, event: "activation_recommend_click", slug: "nervous-system-expansion", entry: "chat" });
+    assert.equal(shown.error, undefined);
+    assert.equal(click.value.slug, "nervous-system-expansion");
+    const rows = [shown.value, click.value].map((value, i) => stampActivity(value, { now: Date.parse("2026-11-27T15:00:00Z") + i, email: "member@example.com", verified: true }));
+    const report = buildOwnerReport(rows, { now: Date.parse("2026-11-28T15:00:00Z") });
+    assert.equal(report.totals.recommendShown, 1);
+    assert.equal(report.totals.recommendClicks, 1);
+    const page = fs.readFileSync("public/app-refresh.html", "utf8");
+    const client = fs.readFileSync("public/rh-activity.js", "utf8");
+    assert.match(page, /recommendShown\(/);
+    assert.match(page, /recommendClick\(/);
+    assert.match(client, /activation_recommend_shown/);
+    assert.match(client, /activation_recommend_click/);
+});
+
 await Promise.all(tests);
 if (process.exitCode) console.error("activity tests failed");
 else console.log(`\n${passed} passed`);

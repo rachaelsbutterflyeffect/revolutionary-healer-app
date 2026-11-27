@@ -24,7 +24,7 @@ export const RESET_SLUGS = {
 };
 
 const EVENTS = new Set([
-    "activation_open", "activation_play", "finder_complete", "reset_day",
+    "activation_open", "activation_play", "activation_recommend_shown", "activation_recommend_click", "finder_complete", "reset_day",
     "gap_start", "gap_step", "gap_complete", "presence", "nav",
     "favorite_add", "favorite_remove", "code_pull", "chat_turn", "gap_reading", "gap_shift",
     "gap_next_tap", "gap_next_listen",
@@ -75,7 +75,7 @@ export function validateActivityEvent(input) {
     if (!UUID.test(eventId) || !UUID.test(deviceId)) return { error: "Invalid event id." };
     if (!EVENTS.has(input.event)) return { error: "Unknown event." };
     const base = { eventId, deviceId, event: input.event };
-    if (input.event === "activation_open" || input.event === "favorite_add" || input.event === "favorite_remove") {
+    if (input.event === "activation_open" || input.event === "favorite_add" || input.event === "favorite_remove" || input.event === "activation_recommend_shown" || input.event === "activation_recommend_click") {
         if (!SLUG.test(input.slug || "")) return { error: "Invalid activation." };
         return { value: { ...base, slug: input.slug, entry: String(input.entry || "").slice(0, 40) } };
     }
@@ -211,6 +211,8 @@ function summarize(rows) {
         shown: true,
         separateFromVerifiedTotals: true,
         activationOpens: rows.filter((row) => row.event === "activation_open").length,
+        recommendShown: rows.filter((row) => row.event === "activation_recommend_shown").length,
+        recommendClicks: rows.filter((row) => row.event === "activation_recommend_click").length,
         playStarts: new Set(rows.filter((row) => row.event === "activation_play").map((row) => row.playId)).size,
         chatTurns: rows.filter((row) => row.event === "chat_turn").length,
         finderCompletes: rows.filter((row) => row.event === "finder_complete").length,
@@ -288,6 +290,8 @@ export function buildOwnerReport(rows, { from = "", to = "", now = Date.now(), i
         },
         totals: {
             activationOpens: opens,
+            recommendShown: scoped.filter((row) => row.event === "activation_recommend_shown").length,
+            recommendClicks: scoped.filter((row) => row.event === "activation_recommend_click").length,
             playStarts: playRows.length,
             naturalFinishes: playRows.filter((play) => play.finished).length,
             finderCompletes: finder.length,

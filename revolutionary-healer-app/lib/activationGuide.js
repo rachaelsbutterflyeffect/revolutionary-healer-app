@@ -489,6 +489,24 @@ says they want faster results.
 
 THE GAP / DIVINE IDENTITY ACTIVATIONS
 
+Nervous System Expansion
+What this activation is for: Your body is braced, even when nothing is
+wrong. Your mind is back in an old moment, or running ahead to what might
+happen next. You can't fully relax, so you can't fully grow. This listen
+brings you back to right now: you look around and say "I am safe," then
+body, emotions and mind are called back one at a time with "you are safe /
+you are finally safe." It expands the emotional field, calls back power
+and life force, and anchors presence, safety and coherence. About 9
+minutes. Daily, or several times a day. Even two minutes starts the shift.
+When to use this: Nervous system. Feeling unsafe in the body. Anxiety.
+Overwhelm. Fight, flight, freeze or fawn. Shutdown. Can't relax. Not
+feeling present or grounded. Wanting to expand without feeling scared.
+AI recommendation notes: Recommend Nervous System Expansion by that exact
+title for those themes. It is not Nervous System Recalibration, which is
+for over-responsibility and not being able to stop working. Do not use
+this one as a generic answer for money, visibility, or grief. The member
+can do it in a chair, in the car, or in bed.
+
 Nervous System Recalibration Activation
 What this activation is for: Use this when you have been living in
 constant doing, taking responsibility, solving, carrying, producing and

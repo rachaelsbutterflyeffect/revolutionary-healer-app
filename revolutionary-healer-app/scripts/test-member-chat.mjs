@@ -278,6 +278,50 @@ t("5. a saved recommendation still gets a why when the topic is different", () =
   assert.match(reply, /because/i);
 });
 
+t("6. nervous system expansion is the listen for safety, anxiety, and fight or flight", () => {
+  const phrases = [
+    "My nervous system is braced",
+    "I feel unsafe in my body",
+    "I have so much anxiety",
+    "I am overwhelmed and I can't relax",
+    "I am in fight or flight",
+    "I freeze and then I fawn",
+    "I go into shutdown",
+    "I am not feeling present",
+    "I am not feeling grounded",
+    "I want to expand without feeling scared",
+  ];
+  for (const phrase of phrases) {
+    const match = matchRecommendationTopic(phrase, catalog);
+    assert.equal(match.activation.slug, "nervous-system-expansion", phrase);
+    assert.equal(match.strength, "strong", phrase);
+  }
+  const chip = starterChipReply("Calm my nervous system", { catalog });
+  assert.match(chip, /#activation-nervous-system-recalibration/);
+  assert.doesNotMatch(chip, /nervous-system-expansion/);
+
+  const quiet = finalizeMemberReply("Take a breath.", {
+    message: "I can't relax and I don't feel safe in my body",
+    catalog,
+    deck,
+    savedTitle: "",
+  });
+  assert.match(quiet, /Nervous System Expansion/);
+  assert.match(quiet, /#activation-nervous-system-expansion/);
+
+  const code = classifyIntent("I can't relax. Show me code 98321", deck);
+  assert.equal(code, "code");
+  const looked = finalizeMemberReply("Here is the card.", {
+    message: "I can't relax. Show me code 98321",
+    catalog,
+    deck,
+    savedTitle: "",
+    lookupReply: "Code 98321 is a real code.",
+  });
+  assert.equal(looked, "Here is the card.");
+  assert.doesNotMatch(looked, /nervous-system-expansion/);
+});
+
 t("chat scroll and typewriter hooks are untouched", () => {
   const page = fs.readFileSync(new URL("../public/app.html", import.meta.url), "utf8");
   assert.match(page, /function rhScrollToBottom/);
