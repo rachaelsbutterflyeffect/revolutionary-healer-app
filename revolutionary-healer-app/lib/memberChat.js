@@ -264,7 +264,9 @@ function mentionsRecalibration(text) {
 }
 
 /** Completions (marked listened or the player finishing) or a finished play. */
-export function recalibrationIsComplete({ completedSlugs = [], finishedSlugs = [] } = {}) {
+export function recalibrationIsComplete(input) {
+  const completedSlugs = (input && input.completedSlugs) || [];
+  const finishedSlugs = (input && input.finishedSlugs) || [];
   return [...completedSlugs, ...finishedSlugs].map((slug) => String(slug || "")).includes(RECALIBRATION_SLUG);
 }
 
