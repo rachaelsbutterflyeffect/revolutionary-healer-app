@@ -34,8 +34,8 @@ body.mlv5 #rf-home > .mlv5-hero { order: 2; }
 body.mlv5 #rf-home > #bf26-slot { order: 3; }
 body.mlv5 #rf-home > .mlv5-chat { order: 4; }
 body.mlv5 #rf-home > #mlv5-code-sec { order: 5; }
-body.mlv5 #rf-home > .mlv5-new { order: 6; }
-body.mlv5 #rf-home > .mlv5-doors-sec { order: 7; }
+body.mlv5 #rf-home > .mlv5-doors-sec { order: 6; }
+body.mlv5 #rf-home > .mlv5-new { order: 8; }
 
 /* Today's greeting, butterfly hero (Focus), old doors, old series banner, lanes, and Go Deeper. */
 body.mlv5 #rf-home > .rf-hero,
