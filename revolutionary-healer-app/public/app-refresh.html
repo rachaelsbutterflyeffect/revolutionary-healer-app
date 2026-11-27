@@ -3259,10 +3259,8 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
       if (mm) art = mm[2];
     }
     var title = 'Reset and Restore';
-    var h = el.querySelector('h3, .mlv5-nt, b');
-    if (h && h.textContent) title = h.textContent.trim();
-    var line = el.querySelector('.media-description, .mlv5-nline, .rr-card-up');
-    var desc = line ? line.textContent.replace(/\s+/g, ' ').trim() : '';
+    var desc = 'Five days to come back to yourself.';
+    if (!art) art = '/images/covers/reset-and-restore-banner.jpg';
     card.innerHTML = '<span class="new-badge" data-new-badge>NEW</span>' +
       '<div class="media-thumb" style="background-image:url(\'' + art + '\');background-size:cover;background-position:center;">' +
       '<div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>' +
