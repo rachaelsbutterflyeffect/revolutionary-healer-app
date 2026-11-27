@@ -366,6 +366,20 @@ t("the same canned reply is never sent twice", () => {
   assert.match(again.note, /#code-88118/);
 });
 
+t("Worth 36911 is the 42nd code and opens Worthiness", () => {
+  assert.equal(deck.length, 42);
+  const card = deck.find((c) => c.code === "36911");
+  assert.equal(card.name, "Worth");
+  assert.equal(card.activationSlug, "worthiness");
+  assert.equal(card.missingActivation, false);
+  assert.match(card.reading, /you've been trying to prove a worth you already have/);
+  const reply = ask("36911");
+  assert.match(reply, /Worth/);
+  assert.match(reply, /36911/);
+  assert.match(reply, /Worthiness/);
+  assert.match(reply, /#code-36911/);
+});
+
 t("codes list path is My Revolution", () => {
   assert.equal(CODES_LIST_PATH, "My Revolution → Your codes");
   assert.match(DAILY_CODE_PATH, /Today's Focus/);

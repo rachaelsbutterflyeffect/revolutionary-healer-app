@@ -395,6 +395,55 @@ t("7. a finished Recalibration offers Expansion next, and an unfinished one does
   assert.doesNotMatch(otherListen, /Nervous System Expansion/);
 });
 
+t("8. worthiness is the listen for proving worth, and it does not steal money or confidence", () => {
+  const phrases = [
+    "I never feel good enough, like I have to prove myself",
+    "I feel unworthy",
+    "I don't deserve this love",
+    "I have to prove my worth",
+    "I have to earn love",
+    "I'm not enough",
+    "I have to fix myself first",
+    "I have to heal before I'm worthy",
+    "my mother's voice about worth",
+    "I don't honor my own worth",
+    "I people please to earn love",
+  ];
+  for (const phrase of phrases) {
+    const match = matchRecommendationTopic(phrase, catalog);
+    assert.equal(match?.activation?.slug, "worthiness", phrase);
+    assert.equal(match.strength, "strong", phrase);
+  }
+  const reply = finalizeMemberReply("I hear you.", {
+    message: "I never feel good enough, like I have to prove myself",
+    catalog,
+    deck,
+    savedTitle: "",
+  });
+  assert.match(reply, /Worthiness/);
+  assert.match(reply, /#activation-worthiness/);
+  assert.match(reply, /You've been trying to prove a worth you already have/);
+
+  const chip = starterChipReply("Charging my worth", { catalog });
+  assert.match(chip, /#activation-confidence-activation/);
+  assert.doesNotMatch(chip, /worthiness/);
+
+  for (const phrase of [
+    "I want to charge my worth",
+    "I am raising my price",
+    "I want to hold more money",
+    "I want more than enough",
+    "I want to receive more clients",
+    "I feel braced and I can't relax",
+    "I feel anxious",
+    "I people please and then I shrink",
+  ]) {
+    const match = matchRecommendationTopic(phrase, catalog);
+    assert.notEqual(match?.activation?.slug, "worthiness", phrase);
+  }
+  assert.equal(matchRecommendationTopic("I feel braced and I can't relax", catalog).activation.slug, "nervous-system-expansion");
+});
+
 t("chat scroll and typewriter hooks are untouched", () => {
   const page = fs.readFileSync(new URL("../public/app.html", import.meta.url), "utf8");
   assert.match(page, /function rhScrollToBottom/);

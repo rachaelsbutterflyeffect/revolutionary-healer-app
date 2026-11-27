@@ -250,6 +250,7 @@ body.mlv5 .mlv5-new .mlv5-thumb img {
   object-fit: cover;
   transform: translateY(-50%);
 }
+body.mlv5 .mlv5-new .mlv5-thumb img[src*="worthiness"] { left: 0; object-position: left center; }
 body.mlv5 .mlv5-new .mlv5-thumb img[src*="nervous-system-expansion"] { right: -8px; object-position: right center; }
 body.mlv5 .mlv5-new .mlv5-thumb img[src*="reset-and-restore"] { left: -6px; object-position: left center; }
 body.mlv5 .mlv5-new .mlv5-feature .mlv5-nf {
