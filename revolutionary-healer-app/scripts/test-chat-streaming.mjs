@@ -55,6 +55,7 @@ export const normalizeEmail = (e) => String(e || "").trim().toLowerCase();
 export async function logEvent(type, meta, memberRecordId) { rec("logEvent", { type, meta, memberRecordId }); return { id: "recEvt" }; }
 export async function getShiftById(id) { return fx().shifts.find((s) => s.id === id) || null; }
 export async function getShiftsByEmail() { return fx().shifts; }
+export async function getCompletedActivationSlugsByEmail() { return fx().completedSlugs || []; }
 export async function updateShiftFields(id, fields) { rec("updateShiftFields", { id, fields }); return { id }; }
 export async function createShiftFromChat(args) { rec("createShiftFromChat", args); return { id: "recShiftNew" }; }
 export async function createChatSession(args) { rec("createChatSession", args); return { id: "recChatNew", fields: { title: args.title, title_is_auto: true } }; }
