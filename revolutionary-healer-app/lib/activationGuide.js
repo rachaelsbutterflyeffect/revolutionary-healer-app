@@ -507,6 +507,35 @@ for over-responsibility and not being able to stop working. Do not use
 this one as a generic answer for money, visibility, or grief. The member
 can do it in a chair, in the car, or in bed.
 
+Worthiness
+What this activation is for: You've been trying to prove you're worthy.
+To other people. To yourself. Maybe in a voice you picked up from your
+mom, the one that says you have to do more, be more, fix more, or heal
+more before you get to feel enough. In this activation she puts a hand on
+her heart. Worth and value come from her. She is already worthy. Other
+people's ideas of who she has to be, and the pressure to keep proving,
+lift off. She does not have to do, be, fix, heal, or change. About 11
+minutes.
+When to use this: Not good enough. Unworthy. Undeserving. She has to
+prove herself, her worth, or her value. She has to earn love or earn her
+worth. She is not enough. She does not feel worthy of love, or cannot
+love herself. She has to fix herself first, or heal before she is worthy.
+A mother's voice about worth. She feels she has to do something to be
+worthy. She does not honor her own worth. People-pleasing only when it is
+about earning worth or love.
+AI recommendation notes: Recommend Worthiness by that exact title for
+those themes. Do not use it for pricing, charging her worth, invoices,
+raising a price, shrinking when it is time to speak, going live, fear of
+judgment, or visibility. Those stay with Confidence. Do not use it for
+money, income, wealth, or a bank account. That stays with Wealth
+Frequency. Do not use it for receiving more money, support, clients, or
+opportunity. That stays with Prosperity Flow. Do not use it for overflow,
+more than enough, or bracing when something good arrives. That stays with
+More Than Enough. Do not use it for braced, unsafe, anxious, presence,
+grounding, expand, or the nervous system. That stays with Nervous System
+Expansion. The under-player line is: You've been trying to prove a worth
+you already have.
+
 Nervous System Recalibration Activation
 What this activation is for: Use this when you have been living in
 constant doing, taking responsibility, solving, carrying, producing and

@@ -128,6 +128,16 @@ const NSE_BROAD = /\b(?:presence|be present|feel safe|safety|grounding|ground my
 const NSE_OFF_TOPIC = /\b(?:money|income|business|clients?|visibility|codes?)\b/i;
 const NSE_CORE = /\b(?:nervous system|fight\s*\/?\s*flight|fight or flight|fawn|shut\s*down|overwhelm(?:ed)?|anxiet(?:y|ies)|anxious|on edge|can'?t relax|cannot relax|unsafe(?: in (?:my |the )?body)?|don'?t feel safe(?: in (?:my |the )?body)?|do not feel safe|not feeling present|can'?t feel present|not present|come back to (?:the )?present|come back to now|here and now|not feeling grounded|don'?t feel grounded|brac(?:ed|ing)|freeze)\b/i;
 
+const WORTH_OFF = /\b(?:pric(?:e|es|ing)|rates?|invoice|charg(?:e|ing)|go(?:ing)? live|fear of judgment|visibility|money|income|wealth|bank account|clients?|opportunit(?:y|ies)|overflow|more than enough|brac(?:ed|ing)|unsafe|anxious|anxiet(?:y|ies)|presence|ground(?:ing|ed)?|nervous system|expand(?:ing|ed)?|expansion)\b/i;
+const WORTH_CORE = /\b(?:not good enough|(?:never|don'?t|do not) (?:feel |be )?good enough|unworthy|undeserving|(?:don'?t|do not|can'?t|cannot) deserve|prove (?:myself|my worth|my value)|proving my worth|earn (?:love|my worth|my value)|not enough|(?:don'?t|do not) feel worthy|can'?t love myself|cannot love myself|fix myself|heal myself|heal before|mom'?s voice|mother'?s voice|from my mom|to be worthy|(?:don'?t|do not) honor my (?:own )?worth)\b/i;
+
+function matchesWorthiness(text) {
+  const value = String(text || "");
+  if (WORTH_OFF.test(value)) return false;
+  if (WORTH_CORE.test(value)) return true;
+  return /\bpeople[- ]pleas/i.test(value) && /\b(?:worth|love|earn)\b/i.test(value);
+}
+
 function matchesNervousExpansion(text) {
   const value = String(text || "");
   if (GRIEF_TOPIC.test(value)) return false;
@@ -142,6 +152,13 @@ const TOPIC_RULES = [
     slug: EXPANSION_SLUG,
     test: { test: matchesNervousExpansion },
     line: (title) => `${title} is the listen for this. It brings your body, your emotions and your mind back to right now, where it is safe to stop bracing and expand.`,
+  },
+  {
+    id: "worthiness",
+    strength: "strong",
+    slug: "worthiness",
+    test: { test: matchesWorthiness },
+    line: (title) => `${title} is the listen for this. You've been trying to prove a worth you already have.`,
   },
   {
     id: "boundary",
@@ -398,7 +415,7 @@ function applyTopicHonesty(text, message, catalog, { inventedRemoved = false, re
     return text;
   }
   if (!named.length && !inventedRemoved) {
-    if (match.id === "nervous-expansion" && match.strength === "strong") {
+    if ((match.id === "nervous-expansion" || match.id === "worthiness") && match.strength === "strong") {
       return `${text}\n\n${match.line}${listenLink(match.activation)}`.trim();
     }
     return text;

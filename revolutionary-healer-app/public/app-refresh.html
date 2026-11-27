@@ -1899,6 +1899,16 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
  </section>
  <section class="mlv5-new mlv5-only" hidden aria-label="New">
   <h2>New</h2>
+  <button type="button" class="mlv5-feature" data-new-until="2026-12-04" data-mlv5-track="new-worthiness" onclick="handleActivationCardClick('worthiness')" aria-label="Open Worthiness">
+   <span class="new-badge" data-new-badge>NEW</span>
+   <span class="mlv5-thumb"><img src="/images/covers/worthiness.jpg" alt=""></span>
+   <span class="mlv5-nf">
+    <span class="mlv5-tag">Self-Worth</span>
+    <span class="mlv5-nt">Worthiness</span>
+    <span class="mlv5-nline">You've been trying to prove a worth you already have.</span>
+    <span class="mlv5-pill">Listen</span>
+   </span>
+  </button>
   <button type="button" class="mlv5-feature" data-new-until="2026-12-04" data-mlv5-track="new-nervous-system-expansion" onclick="handleActivationCardClick('nervous-system-expansion')" aria-label="Open Nervous System Expansion">
    <span class="new-badge" data-new-badge>NEW</span>
    <span class="mlv5-thumb"><img src="/images/covers/nervous-system-expansion.jpg" alt=""></span>
@@ -2397,6 +2407,19 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
       <div class="rh-lib-tools"><input type="search" id="rh-lib-search" class="rh-lib-search" placeholder="Search all activations" aria-label="Search activations" oninput="rhLibApply()"><span class="rh-lib-count" id="rh-lib-count" aria-live="polite"></span></div>
       <div class="card-grid rf-favgrid" id="rf-favgrid"></div>
       <div class="card-grid" id="activation-library-grid">
+<div class="media-card" onclick="handleActivationCardClick('worthiness')" style="cursor: pointer;" data-activation-slug="worthiness" data-category="Mind + Body" data-new-until="2026-12-04">
+          <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
+          <span class="new-badge" data-new-badge>NEW</span>
+          <div class="media-thumb" style="background-image:url('/images/covers/worthiness.jpg'); background-size:cover; background-position:center 30%;"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+            <div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div>
+          </div>
+          <div class="media-body">
+            <p class="rh-drop-tag">Self-Worth</p>
+            <h3>Worthiness</h3>
+          <p class="media-description">You've been trying to prove a worth you already have.</p>
+            <div class="listening-status">Not started</div>
+          </div>
+        </div>
 <div class="media-card" onclick="handleActivationCardClick('nervous-system-expansion')" style="cursor: pointer;" data-activation-slug="nervous-system-expansion" data-category="Mind + Body" data-new-until="2026-12-04">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <span class="new-badge" data-new-badge>NEW</span>
@@ -3818,6 +3841,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
     'wealth-frequency-activation': { title: 'Wealth Frequency Activation', description: 'Works with your relationship to money itself -- the fear, forcing, or discounting that shows up when wealth increases or slows down -- so you can hold and receive more without unconsciously blocking it.', wistiaId: '7j51yzmbnl', whatFor: 'Use this when money itself starts changing the way you think or behave -- for example, money increases and you immediately become afraid it will disappear, or money slows down and you start forcing, discounting, creating or questioning everything.', whenToUse: ['Fear immediately after receiving more money.', 'Difficulty allowing money to remain without instantly spending/redirecting it.', 'Panicked business decisions after a quiet period.', 'Repeated patterns around receiving larger amounts.', 'When wealth brings up specific behavioral or energetic reactions.'] },
     /* Reset and Restore series */
     'rr-intro': { title: '5 Days of Reset and Restore', description: 'A short welcome into your Reset and Restore series. Start here, then move through one day at a time.', audioSrc: '/audio/rr/rr-intro.mp3', cover: '/images/covers/rr-intro.png', whatFor: 'Listen once at the start of the series to set the container for the five days ahead.', whenToUse: ['Before Day 1 of Reset and Restore.', 'Whenever you want to remember why you started the series.'] },
+    'worthiness': { title: 'Worthiness', tag: 'Self-Worth', description: 'You\'ve been trying to prove a worth you already have.', audioSrc: '/audio/worthiness.mp3', cover: '/images/covers/worthiness.jpg', tags: ['Self-Worth'], whatFor: 'You\'ve been trying to prove you\'re worthy. To other people. To yourself. Maybe in a voice you picked up from your mom, the one that says you have to do more, be more, fix more, or heal more before you get to feel enough.\n\nIn this activation, I have you put a hand on your heart and feel it beating. Your heart gives you life every day, not because you proved you deserved it, but because you are loved. Simply by being here, you are worthy. You are valued. We say it together: "My worth and value come from me. I am already worthy."\n\nThen we lift off other people\'s ideas of who you have to be, and that old pressure to keep proving your value. We send love to the hurt that came from not honoring your own worth, and we open you to receive the truth: you don\'t have to do, be, fix, heal, or change.\n\nIt\'s about 11 minutes. Come back to it any time you need to remember you are already worthy of this love.' },
     'nervous-system-expansion': { title: 'Nervous System Expansion', tag: 'Safety & Presence', description: 'Brings you back to right now, so your body stops bracing and you can expand.', audioSrc: '/audio/nervous-system-expansion.mp3', cover: '/images/covers/nervous-system-expansion.jpg', tags: ['Safety & Presence'], whatFor: 'Your body is braced, even when nothing is wrong. Your mind is back in an old moment, or running ahead to what might happen next. You can\'t fully relax, so you can\'t fully grow.\n\nIn this activation, I bring you back to right now. Wherever you are, in a chair, in the car before school pickup, or in bed at night, you look around and say, "I am safe." Then we bring your body, your emotions and your mind back, one at a time, and tell each one it\'s finally safe to be here.\n\nWhen you\'re here, your body stops bracing. That\'s when you can expand.\n\nIt\'s about 9 minutes. Do it every day, or a few times a day. Even two minutes in this feeling starts to shift things fast.' },
     'slowing-the-mind': { title: 'Slowing the Mind', description: 'Slows the racing thoughts so your mind can settle, and your body can feel safe enough to rest.', audioSrc: '/audio/rr/slowing-the-mind.mp3', cover: '/images/covers/slowing-the-mind.jpg', whatFor: 'Use this when your mind will not stop spinning and you need a softer pace before sleep or before the next activation.', whenToUse: ['Your thoughts are racing and you cannot settle.', 'Before bed when your mind is still working.', 'Day 1 of Reset and Restore.'] },
     'lifting-emotional-anxiety': { title: 'Lifting Emotional Anxiety', description: 'A bedtime body scan with light language that lifts emotional anxiety from the body so you can rest.', audioSrc: '/audio/rr/lifting-emotional-anxiety.mp3', cover: '/images/covers/lifting-emotional-anxiety.jpg', whatFor: 'Use this when anxiety is sitting in your body and you want it lifted gently before sleep.', whenToUse: ['Emotional anxiety is loud in your chest or stomach.', 'Before bed as Day 2 of Reset and Restore.', 'After a heavy emotional day.'] },
