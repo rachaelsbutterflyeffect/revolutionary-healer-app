@@ -19,6 +19,7 @@ import {
   finalizeMemberReply,
   listenDebriefReply,
   matchRecommendationTopic,
+  recalibrationIsComplete,
   parseStarterChip,
   recommendationPromptNote,
   starterChipReply,
@@ -290,6 +291,22 @@ t("6. nervous system expansion is the listen for safety, anxiety, and fight or f
     "I am not feeling present",
     "I am not feeling grounded",
     "I want to expand without feeling scared",
+    "I feel so braced",
+    "I'm bracing for the next thing",
+    "I'm anxious all the time",
+    "I am on edge",
+    "I don't feel safe",
+    "I feel safe when I come back",
+    "I need more safety",
+    "I need to come back to the present",
+    "I want to come back to now",
+    "I want to be here and now",
+    "I want to be present",
+    "I am looking for presence",
+    "I want to feel more grounded",
+    "Help me with grounding",
+    "I want to ground myself",
+    "I'm ready to expand",
   ];
   for (const phrase of phrases) {
     const match = matchRecommendationTopic(phrase, catalog);
@@ -320,6 +337,62 @@ t("6. nervous system expansion is the listen for safety, anxiety, and fight or f
   });
   assert.equal(looked, "Here is the card.");
   assert.doesNotMatch(looked, /nervous-system-expansion/);
+
+  for (const phrase of ["I want to expand my business", "help me expand my income", "I want to expand my visibility", "expand my client list"]) {
+    const blocked = matchRecommendationTopic(phrase, catalog);
+    assert.notEqual(blocked?.activation?.slug, "nervous-system-expansion", phrase);
+  }
+  const griefStill = matchRecommendationTopic("I am grieving and I want to expand", catalog);
+  assert.equal(griefStill.activation.slug, "soul-retrieval");
+});
+
+t("7. a finished Recalibration offers Expansion next, and an unfinished one does not", () => {
+  assert.equal(recalibrationIsComplete({ completedSlugs: ["nervous-system-recalibration"] }), true);
+  assert.equal(recalibrationIsComplete({ finishedSlugs: ["nervous-system-recalibration"] }), true);
+  assert.equal(recalibrationIsComplete({ completedSlugs: ["grounding"] }), false);
+
+  const waiting = starterChipReply("Calm my nervous system", { catalog, recalibrationDone: false });
+  assert.match(waiting, /#activation-nervous-system-recalibration/);
+  assert.doesNotMatch(waiting, /nervous-system-expansion/);
+
+  const ready = starterChipReply("Calm my nervous system", { catalog, recalibrationDone: true });
+  assert.match(ready, /You've already done Nervous System Recalibration/);
+  assert.match(ready, /Your next step is Nervous System Expansion/);
+  assert.match(ready, /#activation-nervous-system-expansion/);
+  assert.doesNotMatch(ready, /#activation-nervous-system-recalibration/);
+
+  const next = finalizeMemberReply("Take a breath.", {
+    message: "I feel so braced",
+    catalog,
+    deck,
+    savedTitle: "",
+    recalibrationDone: true,
+  });
+  assert.match(next, /You've already done Nervous System Recalibration/);
+  assert.match(next, /#activation-nervous-system-expansion/);
+
+  const first = finalizeMemberReply("Take a breath.", {
+    message: "I feel so braced",
+    catalog,
+    deck,
+    savedTitle: "",
+    recalibrationDone: false,
+  });
+  assert.doesNotMatch(first, /already done Nervous System Recalibration/i);
+  assert.match(first, /#activation-nervous-system-expansion/);
+
+  const debrief = listenDebriefReply("I felt calmer", {
+    previousAssistant: "You just did Nervous System Recalibration — tell me what shifted for you and how you feel...",
+  });
+  assert.match(debrief, /What did you notice\?/);
+  assert.match(debrief, /Your next listen is Nervous System Expansion/);
+  assert.match(debrief, /#activation-nervous-system-expansion/);
+
+  const otherListen = listenDebriefReply("I felt calmer", {
+    previousAssistant: "You just did Slowing the Mind — tell me what shifted for you and how you feel...",
+  });
+  assert.match(otherListen, /What did you notice\?/);
+  assert.doesNotMatch(otherListen, /Nervous System Expansion/);
 });
 
 t("chat scroll and typewriter hooks are untouched", () => {
@@ -332,8 +405,9 @@ t("chat scroll and typewriter hooks are untouched", () => {
 
 t("the route uses the debrief, the chip, the saved recommendation, and the final pass", () => {
   const route = fs.readFileSync(new URL("../app/api/chat/route.ts", import.meta.url), "utf8");
-  assert.match(route, /listenDebriefReply\(message\)/);
-  assert.match(route, /starterChipReply\(message/);
+  assert.match(route, /listenDebriefReply\(message, \{ previousAssistant \}\)/);
+  assert.match(route, /starterChipReply\(message, \{ savedTitle, recalibrationDone \}\)/);
+  assert.match(route, /recalibrationDone/);
   assert.match(route, /recommendationPromptNote\(existingShiftRecords\)/);
   assert.match(route, /finalizeMemberReply\(/);
   assert.match(route, /Recommended activation: \$\{f\.recommended_activation/);

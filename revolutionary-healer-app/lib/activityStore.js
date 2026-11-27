@@ -147,6 +147,24 @@ export function createAirtableActivityStore(env = process.env) {
     return store;
 }
 
+/** A verified play that reached the end, for one activation. */
+export async function finishedActivationSlugs(email, slugs, env = process.env) {
+    const normalized = String(email || "").trim().toLowerCase().replace(/["\\]/g, "");
+    if (!normalized || !Array.isArray(slugs) || !slugs.length) return [];
+    const found = [];
+    for (const slug of slugs) {
+        if (!/^[a-z0-9-]{2,80}$/.test(slug)) continue;
+        const formula = `AND({type}="${ACTIVITY_TYPE}", FIND("${normalized}", {meta}), FIND("${slug}", {meta}), OR(FIND('"state":"ended"', {meta}), FIND('"finished":true', {meta})))`;
+        const page = await base(env)("Events").select({
+            filterByFormula: formula,
+            maxRecords: 1,
+            fields: ["type", "meta"],
+        }).firstPage();
+        if (page.length) found.push(slug);
+    }
+    return found;
+}
+
 export async function legacySample(env = process.env) {
     const chats = await base(env)("ChatSessions").select({ fields: ["member_email"], pageSize: 50 }).firstPage();
     const favorites = await base(env)("Favorites").select({ fields: ["member_email", "activation_slug"], pageSize: 50 }).firstPage();

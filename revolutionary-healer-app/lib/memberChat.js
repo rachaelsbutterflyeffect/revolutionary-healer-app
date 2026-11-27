@@ -119,12 +119,28 @@ const STARTER_CHIPS = {
 
 const CHIP_WRAP = /^(.*?)\s+\(Rachael asked:\s*"([^"]*)"\)\s+(.+)$/s;
 
+const RECALIBRATION_SLUG = "nervous-system-recalibration";
+const EXPANSION_SLUG = "nervous-system-expansion";
+const GRIEF_TOPIC = /\b(grief|grieving|bereave\w*|mourning|stacked loss|someone died|passed away)\b/i;
+// Broad words Rachael asked for. They do not steal money, business, clients,
+// visibility, or a code. Grief stays with the grief rule.
+const NSE_BROAD = /\b(?:presence|be present|feel safe|safety|grounding|ground myself|grounded|expand(?:ing|ed)?|expansion)\b/i;
+const NSE_OFF_TOPIC = /\b(?:money|income|business|clients?|visibility|codes?)\b/i;
+const NSE_CORE = /\b(?:nervous system|fight\s*\/?\s*flight|fight or flight|fawn|shut\s*down|overwhelm(?:ed)?|anxiet(?:y|ies)|anxious|on edge|can'?t relax|cannot relax|unsafe(?: in (?:my |the )?body)?|don'?t feel safe(?: in (?:my |the )?body)?|do not feel safe|not feeling present|can'?t feel present|not present|come back to (?:the )?present|come back to now|here and now|not feeling grounded|don'?t feel grounded|brac(?:ed|ing)|freeze)\b/i;
+
+function matchesNervousExpansion(text) {
+  const value = String(text || "");
+  if (GRIEF_TOPIC.test(value)) return false;
+  if (NSE_CORE.test(value)) return true;
+  return NSE_BROAD.test(value) && !NSE_OFF_TOPIC.test(value);
+}
+
 const TOPIC_RULES = [
   {
     id: "nervous-expansion",
     strength: "strong",
-    slug: "nervous-system-expansion",
-    test: /\b(nervous system|fight\s*\/?\s*flight|fight or flight|freeze|fawn|shut\s*down|overwhelm(?:ed)?|anxiet(?:y|ies)|can'?t relax|cannot relax|unsafe in (?:my |the )?body|don'?t feel safe in (?:my )?body|not feeling present|can'?t feel present|not present|not feeling grounded|don'?t feel grounded|expand without (?:feeling )?scar)/i,
+    slug: EXPANSION_SLUG,
+    test: { test: matchesNervousExpansion },
     line: (title) => `${title} is the listen for this. It brings your body, your emotions and your mind back to right now, where it is safe to stop bracing and expand.`,
   },
   {
@@ -237,13 +253,40 @@ function reflectFeeling(feeling) {
  * what she noticed. It does not offer the next card.
  * Returns null when this message should stay on the normal path.
  */
-export function listenDebriefReply(message) {
+const JUST_DID = /\b(?:i|you) just (?:did|listened(?: to)?|finished|played|heard)\b/i;
+
+function recentListen(text) {
+  return RECENT_LISTEN.test(text) || JUST_DID.test(text);
+}
+
+function mentionsRecalibration(text) {
+  return /\b(?:nervous system recalibrat\w*|recalibration|calibration)\b/i.test(String(text || ""));
+}
+
+/** Completions (marked listened or the player finishing) or a finished play. */
+export function recalibrationIsComplete({ completedSlugs = [], finishedSlugs = [] } = {}) {
+  return [...completedSlugs, ...finishedSlugs].map((slug) => String(slug || "")).includes(RECALIBRATION_SLUG);
+}
+
+function expansionFollowOn(catalog) {
+  const activation = catalogOf(catalog).find((item) => item.slug === EXPANSION_SLUG);
+  if (!activation?.title) return "";
+  return `You've already done Nervous System Recalibration. Your next step is ${activation.title}.${listenLink(activation)}`;
+}
+
+export function listenDebriefReply(message, { previousAssistant = "" } = {}) {
   const text = String(message || "").trim();
-  if (!text || ASKING_NEXT.test(text) || !RECENT_LISTEN.test(text) || !FEELING_SIGNAL.test(text)) return null;
+  const earlier = String(previousAssistant || "");
+  const recent = recentListen(text) || recentListen(earlier);
+  if (!text || ASKING_NEXT.test(text) || !recent || !FEELING_SIGNAL.test(text)) return null;
   const feeling = feelingWord(text);
   const reflected = reflectFeeling(feeling);
   const head = feeling && feeling !== "yawny" ? `${reflected} after that listen.` : `${reflected}.`;
-  return `${head} What did you notice?`;
+  const reply = `${head} What did you notice?`;
+  if (!mentionsRecalibration(`${earlier}\n${text}`)) return reply;
+  const href = activationHref(EXPANSION_SLUG);
+  const link = href ? `\n\nIf you want to try it, [click here](${href}).` : "";
+  return `${reply}\n\nYour next listen is Nervous System Expansion.${link}`;
 }
 
 export function parseStarterChip(message) {
@@ -257,11 +300,15 @@ export function parseStarterChip(message) {
   return { topic: wrapped ? wrapped[1].trim() : "", text, key };
 }
 
-export function starterChipReply(message, { catalog, savedTitle = "" } = {}) {
+export function starterChipReply(message, { catalog, savedTitle = "", recalibrationDone = false } = {}) {
   const chip = parseStarterChip(message);
   if (!chip) return null;
   const spec = STARTER_CHIPS[chip.key];
   const list = catalogOf(catalog);
+  if (chip.key === "calm my nervous system" && recalibrationDone) {
+    const next = expansionFollowOn(list);
+    if (next) return next;
+  }
   const activation = list.find((item) => item.slug === spec.slug);
   if (!activation?.title) return null;
   const saved = String(savedTitle || "").trim();
@@ -275,7 +322,7 @@ export function starterChipReply(message, { catalog, savedTitle = "" } = {}) {
   return `${why}Try the ${title} now. ${spec.line}${link}\n\n${spec.question}`;
 }
 
-export function matchRecommendationTopic(message, catalog) {
+export function matchRecommendationTopic(message, catalog, { recalibrationDone = false } = {}) {
   const text = String(message || "");
   const list = catalogOf(catalog);
   const hits = TOPIC_RULES.filter((rule) => rule.test.test(text));
@@ -283,11 +330,14 @@ export function matchRecommendationTopic(message, catalog) {
   if (!rule) return null;
   const activation = list.find((item) => item.slug === rule.slug);
   if (!activation?.title) return null;
+  const followOn = recalibrationDone && rule.id === "nervous-expansion";
   return {
     id: rule.id,
     strength: rule.strength,
     activation,
-    line: rule.line(activation.title),
+    line: followOn
+      ? `You've already done Nervous System Recalibration. Your next step is ${activation.title}.`
+      : rule.line(activation.title),
   };
 }
 
@@ -336,8 +386,8 @@ function withoutTitles(text, activations) {
     .trim();
 }
 
-function applyTopicHonesty(text, message, catalog, { inventedRemoved = false } = {}) {
-  const match = matchRecommendationTopic(message, catalog);
+function applyTopicHonesty(text, message, catalog, { inventedRemoved = false, recalibrationDone = false } = {}) {
+  const match = matchRecommendationTopic(message, catalog, { recalibrationDone });
   const named = activationsNamedIn(text, catalog);
   if (!match) {
     if (inventedRemoved && !/don't have an activation by that name/i.test(text)) {
@@ -440,6 +490,7 @@ export function finalizeMemberReply(reply, {
   deck = null,
   savedTitle = "",
   lookupReply = "",
+  recalibrationDone = false,
 } = {}) {
   const list = catalogOf(catalog);
   const intent = classifyIntent(message, deck || []);
@@ -458,6 +509,6 @@ export function finalizeMemberReply(reply, {
   if (codes.stripped) {
     text = `${text}\n\nI can't match that number to a current code.`.trim();
   }
-  text = applyTopicHonesty(text, message, list, { inventedRemoved: stripped.removed });
+  text = applyTopicHonesty(text, message, list, { inventedRemoved: stripped.removed, recalibrationDone });
   return alignRecommendation(text, { message, savedTitle, catalog: list }).trim();
 }

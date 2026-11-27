@@ -32,7 +32,9 @@ import {
   listMessagesByChatId,
   createMessage,
   updateChatSession,
+  getCompletedActivationSlugsByEmail,
 } from "@/lib/airtable";
+import { finishedActivationSlugs } from "@/lib/activityStore";
 import {
   getRelevantMemoriesForPrompt,
   extractMemoriesFromExchange,
@@ -74,6 +76,7 @@ import {
   currentRecommendation,
   finalizeMemberReply,
   listenDebriefReply,
+  recalibrationIsComplete,
   recommendationPromptNote,
   starterChipReply,
 } from "@/lib/memberChat";
@@ -328,6 +331,7 @@ export async function POST(req: NextRequest) {
   // so the model cannot skip the activation or pitch the next card.
   let lookupReplyForRepair = "";
   let deckForReply: any[] | null = null;
+  let recalibrationDone = false;
   if (!process) {
     const sendCanned = async (body: string) => {
       const replyText = stripInternalIds(applySymptomGuardrail(message, body).reply);
@@ -356,7 +360,17 @@ export async function POST(req: NextRequest) {
       }
       return NextResponse.json({ reply: replyText, chatId, openActivationSlug: null });
     };
-    const direct = listenDebriefReply(message) || starterChipReply(message, { savedTitle });
+    const previousAssistant = [...priorMessages].reverse().find((m: any) => m.fields?.role === "assistant")?.fields?.message_text || "";
+    try {
+      const [completedSlugs, finishedSlugs] = await Promise.all([
+        getCompletedActivationSlugsByEmail(email),
+        finishedActivationSlugs(email, ["nervous-system-recalibration"]),
+      ]);
+      recalibrationDone = recalibrationIsComplete({ completedSlugs, finishedSlugs });
+    } catch (err) {
+      console.error("recalibration completion unreadable", err);
+    }
+    const direct = listenDebriefReply(message, { previousAssistant }) || starterChipReply(message, { savedTitle, recalibrationDone });
     if (direct) return await sendCanned(direct);
 
     let deck = null;
@@ -370,7 +384,6 @@ export async function POST(req: NextRequest) {
     if ((intent === "code" || numberInMessage) && deck && !deckError) {
       try { held = await loadHeldCodes(email); } catch (err) { historyUnavailable = true; console.error("held codes unreadable", err); }
     }
-    const previousAssistant = [...priorMessages].reverse().find((m: any) => m.fields?.role === "assistant")?.fields?.message_text || "";
     const plan = planLookupDelivery({
       message,
       deck,
@@ -645,6 +658,7 @@ export async function POST(req: NextRequest) {
         savedTitle,
         lookupReply: lookupReplyForRepair,
         deck: deckForReply,
+        recalibrationDone,
       });
     }
     replyText = stripInternalIds(replyText);
