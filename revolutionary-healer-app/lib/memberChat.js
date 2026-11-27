@@ -484,7 +484,7 @@ export function alignRecommendation(reply, { message = "", savedTitle = "", cata
  * Last pass on a model reply: real lookup facts, no invented names,
  * honest topic matches, then the saved recommendation.
  * @param {string} reply
- * @param {{ message?: string, catalog?: any[]|null, deck?: any[]|null, savedTitle?: string, lookupReply?: string }} [opts]
+ * @param {{ message?: string, catalog?: any[]|null, deck?: any[]|null, savedTitle?: string, lookupReply?: string, recalibrationDone?: boolean }} [opts]
  */
 export function finalizeMemberReply(reply, {
   message = "",
