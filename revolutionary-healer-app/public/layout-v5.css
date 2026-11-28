@@ -562,6 +562,7 @@ body.mlv5 .rf-lsec .in {
 }
 body.mlv5 .rf-lsec b { font-size: 18px; line-height: 1.15; }
 body.mlv5 .rf-lsec.mlv5-rr {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -583,6 +584,7 @@ body.mlv5 .mlv5-rr-thumb {
 }
 body.mlv5 .rf-lsec.mlv5-rr .in { padding: 8px 44px 8px 0; flex: 1; min-width: 0; }
 body.mlv5 .rf-lsec.mlv5-rr .arr { bottom: auto; top: 50%; transform: translateY(-50%); }
+body.mlv5 .rf-lsec.mlv5-rr .new-badge { top: 6px; left: 6px; z-index: 2; }
 
 /* Shift thumbs stay gold and teal. */
 body.mlv5 .rf-xth {
