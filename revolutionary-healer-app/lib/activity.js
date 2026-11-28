@@ -30,6 +30,7 @@ const EVENTS = new Set([
     "gap_next_tap", "gap_next_listen",
     "chat_card_tap", "activation_finder_start", "activation_finder_complete",
     "layout_tap", "go_deeper_book_tap", "program_finder_tap", "program_finder_offer",
+    "lib_new_view", "lib_new_tap",
     "my_gaps_open", "my_codes_open",
 ]);
 const PLAY_STATES = new Set(["start", "pause", "ended", "hidden"]);
@@ -138,6 +139,11 @@ export function validateActivityEvent(input) {
         const target = clipActivityText(input.target, 80);
         if (!target) return { error: "Invalid target." };
         return { value: { ...base, target } };
+    }
+    if (input.event === "lib_new_view") return { value: { ...base } };
+    if (input.event === "lib_new_tap") {
+        if (!SLUG.test(input.slug || "")) return { error: "Invalid activation." };
+        return { value: { ...base, slug: input.slug } };
     }
     if (input.event === "go_deeper_book_tap" || input.event === "program_finder_tap" || input.event === "program_finder_offer" || input.event === "my_gaps_open" || input.event === "my_codes_open") {
         const value = { ...base };

@@ -60,11 +60,27 @@
     st.textContent = 'html.mlv5-hold{background:#06080b!important}html.mlv5-hold body{visibility:hidden!important}';
     de.appendChild(st);
     var shown = false;
-    function reveal() { if (shown) return; shown = true; de.classList.remove('mlv5-hold'); }
+    function reveal() { if (shown) return; shown = true; clearTimeout(timer); de.classList.remove('mlv5-hold'); }
     var timer = setTimeout(reveal, 2500);
+    function deckHome() {
+      var codes = document.getElementById('rf-codes');
+      var slot = document.getElementById('mlv5-code');
+      return !!(codes && slot && slot.contains(codes));
+    }
     function paint() {
       var left = 2;
-      function done() { if (--left <= 0) { clearTimeout(timer); reveal(); } }
+      function done() {
+        if (--left > 0) return;
+        if (window.__rfFeatures && window.__rfFeatures.codePull === true && !deckHome()) {
+          var waits = 0;
+          var iv = setInterval(function () {
+            if (shown) { clearInterval(iv); return; }
+            if (deckHome() || ++waits > 40) { clearInterval(iv); reveal(); }
+          }, 50);
+          return;
+        }
+        reveal();
+      }
       if (!document.getElementById('rf-feat-layout-v5')) {
         var l = document.createElement('link');
         l.rel = 'stylesheet'; l.href = '/layout-v5.css'; l.id = 'rf-feat-layout-v5';
@@ -1690,10 +1706,20 @@ body.rf .activation-player iframe { background:#0c0e12; z-index:1; }
 body.rf .audio-cover-overlay, body.rf .audio-native-overlay, body.rf .audio-custom-controls { z-index:3; }
 body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:#0c0e12; color:#fdfbf5; }
 </style>
+<style id="bf26-bar">
+.bf26-slot{box-sizing:border-box;position:relative;z-index:2;margin:8px 0 10px;max-width:100vw}
+.bf26-banner{position:relative;overflow:hidden;display:block;box-sizing:border-box;width:100%;text-align:center;color:#141414;line-height:1.35;padding:16px 18px 14px;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(165deg,#fffdf8 0%,#f6eec4 68%,#e8d48c 100%)}
+.bf26-foil,.bf26-vignette,.bf26-shine,.bf26-halo,.bf26-bf,.bf26-spark,.bf26-sheen{position:absolute;pointer-events:none}
+.bf26-copy{position:relative;z-index:6;text-align:center}
+.bf26-label{display:inline-block;font-family:Cinzel,Georgia,serif;font-weight:700;font-size:11px;letter-spacing:.28em;color:#141414;text-transform:uppercase;padding:4px 12px;margin:0 0 6px;border-radius:999px;background:linear-gradient(180deg,#fff8dc,#e2c47a)}
+.bf26-headline{font-family:Cinzel,Georgia,serif;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:15px;line-height:1.3;color:#141414;margin:0 0 8px}
+.bf26-banner a.bf26-btn{display:inline-block;text-decoration:none;color:#e2c47a;background:#141414;border-radius:999px;padding:10px 16px;font-weight:700;font-size:13.5px}
+.bf26-sub{color:#141414;font-size:14px;font-weight:700;margin:8px 0 0}
+</style>
 <script id="bf26-early">
 (function () {
   var KILL = false;
-  var UNTIL = Date.parse("2026-12-01T04:59:00Z");
+  var UNTIL = Date.parse("2027-01-01T04:59:00Z");
   if (KILL || !(Date.now() < UNTIL)) return;
   var s = document.createElement("style");
   s.id = "bf26-hide";
@@ -1919,7 +1945,8 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
     <span class="mlv5-pill">Listen</span>
    </span>
   </button>
-  <button type="button" class="mlv5-feature" data-rf-go="rr" data-mlv5-track="rr-home" aria-label="Open Reset and Restore">
+  <button type="button" class="mlv5-feature" data-rf-go="rr" data-new-until="2026-12-31" data-mlv5-track="rr-home" aria-label="Open Reset and Restore">
+   <span class="new-badge" data-new-badge>NEW</span>
    <span class="mlv5-thumb"><img src="/images/covers/reset-and-restore-banner.jpg" alt=""></span>
    <span class="mlv5-nf">
     <span class="mlv5-nt">Reset and Restore</span>
@@ -1940,7 +1967,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
   <button type="button" class="rf-door" data-rf-go="chat"><span class="rf-orb" aria-hidden="true">❋</span><span class="txt"><span><b>Chat with Rachael</b><br><small>Talk through what's coming up for you</small></span></span><span class="arr" aria-hidden="true">→</span></button>
  </div>
  <div class="rf-sec rf-reveal" id="rr-home-sec">
-  <button type="button" class="rr-card" id="rr-home-card" data-rf-go="rr" aria-label="Open Your Reset and Restore Series">
+  <button type="button" class="rr-card" id="rr-home-card" data-rf-go="rr" data-new-until="2026-12-31" aria-label="Open Your Reset and Restore Series">
    <div class="rr-media">
     <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" role="img" aria-label="Reset and Restore"></div>
     <div class="rr-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -2304,12 +2331,16 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
     </div>
 
 <div id="mlv5-act-top" class="mlv5-only" hidden>
+  <section id="mlv5-lib-new" class="mlv5-lib-new" hidden aria-label="New">
+    <h2>New</h2>
+    <div class="card-grid" id="mlv5-lib-new-grid"></div>
+  </section>
   <div id="mlv5-fit"></div>
   <h3 id="mlv5-lib-heading" class="mlv5-lib-heading">Your Activation Library</h3>
 </div>
 
 <div class="rr-lib-wrap" id="rr-lib-sec">
-  <button type="button" class="rr-card" id="rr-lib-card" data-rf-go="rr" aria-label="Open Reset and Restore Series">
+  <button type="button" class="rr-card" id="rr-lib-card" data-rf-go="rr" data-new-until="2026-12-31" aria-label="Open Reset and Restore Series">
    <div class="rr-media">
     <div class="rr-card-art" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" role="img" aria-label="Reset and Restore"></div>
     <div class="rr-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -2325,7 +2356,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
 </div>
 
 <div class="rf-lsecs" id="rf-lsecs">
-  <button type="button" class="rf-lsec mlv5-rr mlv5-only" data-rf-go="rr" data-mlv5-track="rr-library" hidden aria-label="Open Reset and Restore"><span class="mlv5-rr-thumb" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" aria-hidden="true"></span><span class="in"><b>Reset and Restore</b><small>FIVE DAYS · START HERE</small></span><span class="arr" aria-hidden="true">→</span></button>
+  <button type="button" class="rf-lsec mlv5-rr mlv5-only" data-rf-go="rr" data-new-until="2026-12-31" data-mlv5-track="rr-library" hidden aria-label="Open Reset and Restore"><span class="new-badge" data-new-badge>NEW</span><span class="mlv5-rr-thumb" style="background-image:url('/images/covers/reset-and-restore-banner.jpg')" aria-hidden="true"></span><span class="in"><b>Reset and Restore</b><small>FIVE DAYS · START HERE</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec rf-favtile" data-rf-favs hidden><span class="in"><b>Favorites</b><small class="rf-favpitch">Create a list of your favorite activations</small><small data-rf-favcount></small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Mind + Body" style="position:relative"><span class="rf-sec-new" style="position:absolute;top:12px;left:14px;z-index:3;padding:4px 10px;border-radius:999px;background:linear-gradient(135deg,#F3D98A,#CFA646 55%,#A97E2C);color:#241C0A;font:700 10px/1 Cinzel,serif;letter-spacing:.18em;box-shadow:0 0 12px rgba(207,166,70,.65)">NEW</span><span class="bgc" style="background-image:url('/images/sections/sec-mind-body.webp');background-position:62% 28%" aria-hidden="true"></span><span class="in"><b>Mind &amp; Body</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
   <button type="button" class="rf-lsec" data-rf-sec="Gifts + Spirit"><span class="bgc" style="background-image:url('/images/sections/sec-gifts.webp');background-position:24% 22%" aria-hidden="true"></span><span class="in"><b>Gifts &amp; Spirit</b><small><span data-rf-count></span> ACTIVATIONS</small></span><span class="arr" aria-hidden="true">→</span></button>
@@ -2407,7 +2438,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
       <div class="rh-lib-tools"><input type="search" id="rh-lib-search" class="rh-lib-search" placeholder="Search all activations" aria-label="Search activations" oninput="rhLibApply()"><span class="rh-lib-count" id="rh-lib-count" aria-live="polite"></span></div>
       <div class="card-grid rf-favgrid" id="rf-favgrid"></div>
       <div class="card-grid" id="activation-library-grid">
-<div class="media-card" onclick="handleActivationCardClick('worthiness')" style="cursor: pointer;" data-activation-slug="worthiness" data-category="Mind + Body" data-new-until="2026-12-04">
+<div class="media-card" onclick="handleActivationCardClick('worthiness')" style="cursor: pointer;" data-activation-slug="worthiness" data-category="Mind + Body" data-new-until="2026-12-04" data-new-added="2026-11-27">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <span class="new-badge" data-new-badge>NEW</span>
           <div class="media-thumb" style="background-image:url('/images/covers/worthiness.jpg'); background-size:cover; background-position:center;"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
@@ -2420,7 +2451,7 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
             <div class="listening-status">Not started</div>
           </div>
         </div>
-<div class="media-card" onclick="handleActivationCardClick('nervous-system-expansion')" style="cursor: pointer;" data-activation-slug="nervous-system-expansion" data-category="Mind + Body" data-new-until="2026-12-04">
+<div class="media-card" onclick="handleActivationCardClick('nervous-system-expansion')" style="cursor: pointer;" data-activation-slug="nervous-system-expansion" data-category="Mind + Body" data-new-until="2026-12-04" data-new-added="2026-11-26">
           <button class="heart-btn media-heart" onclick="event.stopPropagation(); toggleHeart(this)">♡</button>
           <span class="new-badge" data-new-badge>NEW</span>
           <div class="media-thumb" style="background-image:url('/images/covers/nervous-system-expansion.jpg'); background-size:cover; background-position:center;"><div class="activation-lock-badge"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#241C0A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
@@ -3180,14 +3211,110 @@ body.rf .rh-player-fallback { position:absolute; inset:0; display:flex; align-it
   applyDemoEntitlementLocks();
   // NEW badges expire on data-new-until (end of that UTC day). Future weekly
   // drops reuse the same attribute and the same badge.
+  function rhNewUntilOn(until, now) {
+    var end = Date.parse(String(until || '') + 'T23:59:59Z');
+    return !isNaN(end) && now <= end;
+  }
   function rhPaintNewBadges(now) {
     var t = now ? new Date(now).getTime() : Date.now();
-    document.querySelectorAll('[data-new-until]').forEach(function (card) {
-      var until = Date.parse(card.getAttribute('data-new-until') + 'T23:59:59Z');
-      var on = !isNaN(until) && t <= until;
+    document.querySelectorAll('#activation-library-grid [data-new-until], .mlv5-new [data-new-until], .mlv5-rr[data-new-until]').forEach(function (card) {
+      var on = rhNewUntilOn(card.getAttribute('data-new-until'), t);
       card.querySelectorAll('[data-new-badge]').forEach(function (badge) { badge.hidden = !on; });
     });
+    rhFillLibraryNew(t);
   }
+  function rhNewSlug(el) {
+    var slug = el.getAttribute('data-activation-slug') || '';
+    if (!slug && el.getAttribute('data-rf-go') === 'rr') slug = 'reset-and-restore';
+    if (!slug) {
+      var oc = el.getAttribute('onclick') || '';
+      var m = oc.match(/handleActivationCardClick\('([^']+)'\)/);
+      if (m) slug = m[1];
+    }
+    return slug;
+  }
+  function rhNewTagged(el, now) {
+    var until = el.getAttribute('data-new-until');
+    if (until) return rhNewUntilOn(until, now);
+    var badge = el.querySelector('.new-badge, .rr-new');
+    return !!(badge && !badge.hidden && /NEW/i.test(badge.textContent || ''));
+  }
+  function rhLibraryNewCard(el, slug) {
+    if (el.classList.contains('media-card')) {
+      var copy = el.cloneNode(true);
+      copy.setAttribute('data-lib-new', '1');
+      var heading = copy.querySelector('h3');
+      if (heading) heading.textContent = heading.textContent.replace(/\s+Activation$/, '').trim();
+      return copy;
+    }
+    var card = document.createElement('div');
+    card.className = 'media-card';
+    card.setAttribute('data-lib-new', '1');
+    card.setAttribute('data-activation-slug', slug);
+    card.style.cursor = 'pointer';
+    if (el.getAttribute('data-rf-go') === 'rr') card.setAttribute('data-rf-go', 'rr');
+    var art = '';
+    var img = el.querySelector('img');
+    var bg = el.querySelector('[style*="background-image"]');
+    if (img && img.getAttribute('src')) art = img.getAttribute('src');
+    else if (bg) {
+      var mm = (bg.getAttribute('style') || '').match(/url\((['"]?)([^'")]+)\1\)/);
+      if (mm) art = mm[2];
+    }
+    var title = 'Reset and Restore';
+    var desc = 'Five days to come back to yourself.';
+    if (!art) art = '/images/covers/reset-and-restore-banner.jpg';
+    card.innerHTML = '<span class="new-badge" data-new-badge>NEW</span>' +
+      '<div class="media-thumb" style="background-image:url(\'' + art + '\');background-size:cover;background-position:center;">' +
+      '<div class="play-dot"><svg width="14" height="14" viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg></div></div>' +
+      '<div class="media-body"><h3></h3><p class="media-description"></p></div>';
+    card.querySelector('h3').textContent = title;
+    card.querySelector('.media-description').textContent = desc;
+    return card;
+  }
+  function rhFillLibraryNew(now) {
+    var t = typeof now === 'number' ? now : Date.now();
+    var host = document.getElementById('mlv5-lib-new');
+    var grid = document.getElementById('mlv5-lib-new-grid');
+    if (!host || !grid) return;
+    var best = {};
+    var n = 0;
+    document.querySelectorAll('#activation-library-grid .media-card, #rr-home-card, #rr-lib-card, .mlv5-new .mlv5-feature').forEach(function (el) {
+      var index = n++;
+      if (!rhNewTagged(el, t)) return;
+      var slug = rhNewSlug(el);
+      if (!slug) return;
+      var added = el.getAttribute('data-new-added');
+      var rank = added ? Date.parse(added + 'T12:00:00Z') : 0;
+      if (isNaN(rank)) rank = 0;
+      var isCard = el.classList.contains('media-card');
+      var prev = best[slug];
+      if (!prev || (isCard && !prev.isCard)) best[slug] = { el: el, slug: slug, rank: rank, index: index, isCard: isCard };
+    });
+    var rows = Object.keys(best).map(function (k) { return best[k]; });
+    rows.sort(function (a, b) {
+      if (b.rank !== a.rank) return b.rank - a.rank;
+      if (a.rank > 0) return a.index - b.index;
+      return b.index - a.index;
+    });
+    grid.textContent = '';
+    rows.forEach(function (row) { grid.appendChild(rhLibraryNewCard(row.el, row.slug)); });
+    host.hidden = grid.children.length === 0;
+  }
+  window.rhFillLibraryNew = rhFillLibraryNew;
+  window.rhNoteLibraryNew = function () {
+    var host = document.getElementById('mlv5-lib-new');
+    if (!host || host.hidden) return;
+    if (document.body.getAttribute('data-rf-lib') !== 'sections') return;
+    try { if (window.rhActivity && window.rhActivity.libNewView) window.rhActivity.libNewView(); } catch (e) {}
+  };
+  var newGrid = document.getElementById('mlv5-lib-new-grid');
+  if (newGrid) newGrid.addEventListener('click', function (e) {
+    var card = e.target.closest && e.target.closest('[data-lib-new]');
+    if (!card || (e.target.closest && e.target.closest('.heart-btn'))) return;
+    var slug = card.getAttribute('data-activation-slug') || '';
+    try { if (slug && window.rhActivity && window.rhActivity.libNewTap) window.rhActivity.libNewTap(slug); } catch (err) {}
+  });
   rhPaintNewBadges();
 
   document.querySelectorAll('[data-prompt]').forEach(function(el) {
@@ -8777,6 +8904,7 @@ html body.rf #hero-gap-embed.gm-modal .topbar { padding-top: 68px !important; } 
       var el = b.querySelector('[data-rf-count]'); if (el) el.textContent = n;
     });
     paintActBack();
+    try { if (window.rhNoteLibraryNew) window.rhNoteLibraryNew(); } catch (e) {}
   }
   // ---------- Activations: Favourites tile (Rachael Oct 15) ----------
   // One category tile, first in the grid, hidden with no favourites. Tapping it opens the category view (same back
