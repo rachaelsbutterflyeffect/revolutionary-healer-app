@@ -1,14 +1,15 @@
 /* Member layout v5. Every rule is under body.mlv5 / html.mlv5, and this file
    is linked only when MEMBER_LAYOUT_V5 allows the member. Flag off: not loaded. */
 
-html.mlv5 { background: #0C3A38 !important; }
+html.mlv5 { background: #02110F !important; }
 body.mlv5 {
   --rf-gold: #E8C873;
   --rf-gold2: #FFF1C4;
   --rf-goldd: #C9A961;
   --rf-teal: #3FD6C8;
+  /* Home, Activations, and My Revolution share this: lighter teal at the top, My Revolution's depth lower down. */
   background:
-    radial-gradient(120% 70% at 50% 0%, #15615E 0%, #0E4A47 30%, #0C3A38 58%, #0B2E2C 100%) !important;
+    radial-gradient(140% 92% at 50% -12%, #2AA8A0 0%, #156E68 24%, #0C3A38 52%, #08211F 74%, #02110F 100%) !important;
 }
 body:not(.mlv5) .mlv5-only { display: none !important; }
 /* The chatbot screen stays the pre-v5 charcoal page. v5 paint does not restyle its header, chips, or input. */
@@ -451,13 +452,11 @@ body.mlv5 .mlv5-gd-card .act {
   letter-spacing: .06em; color: #e8c873; white-space: nowrap;
 }
 
-/* My Revolution. Testers only. The counter markup stays; this is paint. */
-html.mlv5:has(body[data-rf="rev"]) { background: #031211 !important; }
+/* My Revolution. Testers only. The counter markup stays; this is paint.
+   The page background is the shared body.mlv5 gradient, not a separate dark field. */
 body.mlv5[data-rf="rev"] {
   --rev-gold: #F0D58A;
   --rev-gold2: #FFF4D0;
-  background:
-    radial-gradient(110% 62% at 50% 0%, #0C2F2C 0%, #08211F 34%, #041615 64%, #02110F 100%) !important;
 }
 body.mlv5[data-rf="rev"] #rf-rev-head .rf-ttl,
 body.mlv5[data-rf="rev"] #rf-rev-head .rf-sub { color: #F7F4EC; }

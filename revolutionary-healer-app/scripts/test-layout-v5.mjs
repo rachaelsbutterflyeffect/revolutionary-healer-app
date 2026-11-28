@@ -113,6 +113,8 @@ assert.match(css, /padding-top: 12px !important/);
 assert.match(css, /#activations-page > \.wrap > \.page-back/);
 assert.match(css, /#mlv5-fit \{ margin: 0 0 20px/);
 assert.equal(css.includes("purple"), false);
+assert.match(css, /#2AA8A0 0%, #156E68 24%, #0C3A38 52%, #08211F 74%, #02110F 100%/);
+assert.equal(css.includes("#0C2F2C"), false);
 
 for (const file of [
   "public/rf-codes.js", "public/rf-checkin.js", "public/bf26.js", "public/bf26.css",
